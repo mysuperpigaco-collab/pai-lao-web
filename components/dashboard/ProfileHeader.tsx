@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { uploadFile } from "@/lib/uploadHelper";
 
 type Props = {
   isOwner: boolean;
@@ -91,12 +93,35 @@ const IconPlus = () => (
 
 export default function ProfileHeader({ isOwner, user = DEFAULT_USER }: Props) {
   const u = { ...DEFAULT_USER, ...user };
-  const { logout } = useAuth();
+  const { logout, refresh } = useAuth();
   const router = useRouter();
+  const [avatarSrc, setAvatarSrc] = useState(u.avatarUrl);
+  const [uploading, setUploading] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     router.push("/login");
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) { alert("รูปโปรไฟล์ต้องไม่เกิน 3MB"); return; }
+    setUploading(true);
+    try {
+      const url = await uploadFile(file, "avatars");
+      await fetch("/api/auth/me", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatarUrl: url }),
+      });
+      setAvatarSrc(url);
+      await refresh();
+    } catch {
+      alert("อัปโหลดรูปไม่สำเร็จ กรุณาลองใหม่");
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -110,10 +135,24 @@ export default function ProfileHeader({ isOwner, user = DEFAULT_USER }: Props) {
       <div style={S.strip}>
 
         <div style={S.avatarWrap}>
-          <img src={u.avatarUrl} alt={u.displayName} style={S.avatar} />
+          <img
+            src={avatarSrc}
+            alt={u.displayName}
+            style={{ ...S.avatar, opacity: uploading ? 0.5 : 1 }}
+          />
           {isOwner && (
-            <label style={S.avatarEdit} title="เปลี่ยนรูปโปรไฟล์">
-              <IconPlus />
+            <label
+              style={{ ...S.avatarEdit, cursor: uploading ? "wait" : "pointer" }}
+              title="เปลี่ยนรูปโปรไฟล์"
+            >
+              {uploading ? "⏳" : <IconPlus />}
+              <input
+                hidden
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                disabled={uploading}
+              />
             </label>
           )}
         </div>

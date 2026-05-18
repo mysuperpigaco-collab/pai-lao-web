@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, hashPassword, verifyPassword } from "@/lib/auth";
 
-// GET /api/business/me — ดึงข้อมูล Business + สถานที่ของ user ที่ login
+// GET /api/business/me
 export async function GET() {
   try {
     const session = await getCurrentUser();
@@ -26,32 +26,21 @@ export async function GET() {
 
     if (!business) return NextResponse.json({ message: "ไม่พบข้อมูลธุรกิจ" }, { status: 404 });
 
-    // คำนวณ avgRating ต่อ place
     const placesWithStats = business.places.map(p => {
       const avgRating = p.reviews.length
         ? Math.round((p.reviews.reduce((s, r) => s + r.rating, 0) / p.reviews.length) * 10) / 10
         : null;
       return {
-        id:               p.id,
-        slug:             p.slug,
-        title:            p.title,
-        titleEn:          p.titleEn,
-        province:         p.province,
-        district:         p.district,
-        category:         p.category,
-        coverUrl:         p.coverUrl,
-        isVerified:       p.isVerified,
-        avgRating,
-        reviewCount:      p._count.reviews,
-        bookmarkCount:    p._count.bookmarks,
-        createdAt:        p.createdAt,
+        id: p.id, slug: p.slug, title: p.title, titleEn: p.titleEn,
+        province: p.province, district: p.district, category: p.category,
+        coverUrl: p.coverUrl, isVerified: p.isVerified, avgRating,
+        reviewCount: p._count.reviews, bookmarkCount: p._count.bookmarks, createdAt: p.createdAt,
       };
     });
 
-    // สรุปสถิติรวม
-    const totalReviews  = placesWithStats.reduce((s, p) => s + p.reviewCount,   0);
-    const allRatings    = business.places.flatMap(p => p.reviews.map(r => r.rating));
-    const overallAvg    = allRatings.length
+    const totalReviews = placesWithStats.reduce((s, p) => s + p.reviewCount, 0);
+    const allRatings   = business.places.flatMap(p => p.reviews.map(r => r.rating));
+    const overallAvg   = allRatings.length
       ? Math.round((allRatings.reduce((s, r) => s + r, 0) / allRatings.length) * 10) / 10
       : null;
 
@@ -59,20 +48,24 @@ export async function GET() {
       business: {
         id:           business.id,
         businessName: business.businessName,
+        contactName:  business.contactName,
         logoUrl:      business.logoUrl,
         coverUrl:     business.coverUrl,
         description:  business.description,
         phone:        business.phone,
+        email:        business.email,
         website:      business.website,
+        province:     business.province,
+        country:      business.country,
         lineId:       business.lineId,
+        facebook:     business.facebook,
+        instagram:    business.instagram,
+        tiktok:       business.tiktok,
+        categories:   business.categories,
         isVerified:   business.isVerified,
       },
-      places:       placesWithStats,
-      stats: {
-        totalPlaces:  placesWithStats.length,
-        totalReviews,
-        overallAvg,
-      },
+      places: placesWithStats,
+      stats: { totalPlaces: placesWithStats.length, totalReviews, overallAvg },
     });
   } catch (error) {
     console.error("GET /api/business/me:", error);
@@ -80,7 +73,7 @@ export async function GET() {
   }
 }
 
-// ── PUT /api/business/me — อัปเดตข้อมูลธุรกิจ ────────────
+// PUT /api/business/me
 export async function PUT(request: Request) {
   try {
     const session = await getCurrentUser();
@@ -97,17 +90,13 @@ export async function PUT(request: Request) {
       currentPw, newPw,
     } = body;
 
-    // เปลี่ยนรหัสผ่าน
     if (newPw) {
       if (!currentPw) return NextResponse.json({ message: "กรุณากรอกรหัสผ่านปัจจุบัน" }, { status: 400 });
       const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { password: true } });
       if (!user) return NextResponse.json({ message: "ไม่พบผู้ใช้" }, { status: 404 });
       const ok = await verifyPassword(currentPw, user.password);
       if (!ok) return NextResponse.json({ message: "รหัสผ่านปัจจุบันไม่ถูกต้อง" }, { status: 400 });
-      await prisma.user.update({
-        where: { id: session.userId },
-        data: { password: await hashPassword(newPw) },
-      });
+      await prisma.user.update({ where: { id: session.userId }, data: { password: await hashPassword(newPw) } });
     }
 
     const updated = await prisma.business.update({

@@ -6,6 +6,14 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
 import { PROVINCES, getDistricts } from "@/data/thailand";
+import {
+  BackButton,
+  CancelButton,
+  SaveButton,
+  ActionBar,
+  PageTag,
+} from "@/components/ui/ActionButtons";
+import "@/components/ui/action-buttons.css";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -202,9 +210,10 @@ export default function EditTripPage({ params }: Props) {
 
         {/* Top nav */}
         <div className="top-nav-actions">
-          <Link href="/dashboard" className="back-link">
-            ← กลับแดชบอร์ด
-          </Link>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+            <BackButton href="/dashboard" label="Dashboard" labelTh="กลับแดชบอร์ด" />
+            <PageTag label="EDIT STORY" />
+          </div>
         </div>
 
         {/* Header */}
@@ -396,20 +405,10 @@ export default function EditTripPage({ params }: Props) {
           </div>
 
           {/* Submit */}
-          <div style={{ display: "flex", gap: 16, marginTop: 40, justifyContent: "center" }}>
-            <Link href="/dashboard" style={{
-              padding: "16px 32px", borderRadius: 16, border: "1.5px solid #cbd5e1",
-              color: "#64748b", fontWeight: 700, textDecoration: "none", fontSize: 15,
-            }}>
-              ยกเลิก
-            </Link>
-            <button type="submit" disabled={isLoading} style={{
-              padding: "16px 48px", borderRadius: 16, background: isLoading ? "#94a3b8" : "#2563eb",
-              color: "white", fontWeight: 800, fontSize: 16, border: "none", cursor: isLoading ? "not-allowed" : "pointer",
-            }}>
-              {isLoading ? "กำลังบันทึก..." : "💾 บันทึกการแก้ไข"}
-            </button>
-          </div>
+          <ActionBar>
+            <CancelButton href="/dashboard" label="ยกเลิก · Discard" />
+            <SaveButton label="💾 บันทึกการแก้ไข · Save Changes" loading={isLoading} />
+          </ActionBar>
 
         </form>
       </div>
@@ -417,8 +416,6 @@ export default function EditTripPage({ params }: Props) {
       <style jsx>{`
         .create-container { padding: 50px 20px; background: #f0f4f8; min-height: 100vh; display: flex; justify-content: center; }
         .create-card { background: white; padding: 60px; border-radius: 50px; box-shadow: 0 30px 80px rgba(0,0,0,0.08); width: 100%; max-width: 1050px; position: relative; height: fit-content; }
-        .back-link { display: inline-flex; align-items: center; gap: 8px; color: #2563eb; font-weight: 700; text-decoration: none; font-size: 14px; padding: 10px 20px; background: #eff6ff; border-radius: 999px; margin-bottom: 10px; }
-        .back-link:hover { background: #dbeafe; }
         .top-nav-actions { margin-bottom: 20px; }
         .header-text { text-align: center; margin-bottom: 40px; }
         .header-text h2 { font-size: 34px; font-weight: 900; color: #1e293b; letter-spacing: -0.5px; }
