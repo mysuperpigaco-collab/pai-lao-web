@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PROVINCES, getDistricts } from "@/data/thailand";
@@ -11,7 +11,7 @@ type PlaceCategory =
   | "วัด / ศาสนสถาน" | "ชายหาด" | "ตลาด / ช้อปปิ้ง"
   | "กีฬา / ผจญภัย" | "พิพิธภัณฑ์ / ประวัติศาสตร์";
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 const CATEGORIES: PlaceCategory[] = [
   "ธรรมชาติ","คาเฟ่","ที่พัก","แคมปิ้ง","อาหาร",
@@ -34,6 +34,7 @@ async function uploadImage(file: File): Promise<string> {
 }
 
 export default function EditPlacePage({ params }: Props) {
+  const { slug } = use(params);
   const router = useRouter();
 
   // ── Loading state ──
@@ -78,7 +79,7 @@ export default function EditPlacePage({ params }: Props) {
 
   // ── Load place from API ──
   useEffect(() => {
-    fetch(`/api/places/${params.slug}`)
+    fetch(`/api/places/${slug}`)
       .then(r => r.json())
       .then(data => {
         if (!data.place) { setNotFound(true); setPageLoading(false); return; }
@@ -104,7 +105,7 @@ export default function EditPlacePage({ params }: Props) {
         setPageLoading(false);
       })
       .catch(() => { setNotFound(true); setPageLoading(false); });
-  }, [params.slug]);
+  }, [slug]);
 
   const handleProvinceChange = (v: string) => { setProvince(v); setDistrict(""); };
 
@@ -155,7 +156,7 @@ export default function EditPlacePage({ params }: Props) {
       const newGalleryUrls = await Promise.all(galleryFiles.map(f => uploadImage(f)));
       const gallery = [...existingGallery, ...newGalleryUrls];
 
-      const res = await fetch(`/api/places/${params.slug}`, {
+      const res = await fetch(`/api/places/${slug}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -444,7 +445,7 @@ export default function EditPlacePage({ params }: Props) {
           {/* ── ACTIONS ── */}
           <div className="action-row">
             <Link href="/business/dashboard" className="btn-cancel">✕ ยกเลิก</Link>
-            <Link href={`/place/${params.slug}`} className="btn-preview" target="_blank">👁️ ดูตัวอย่าง</Link>
+            <Link href={`/place/${slug}`} className="btn-preview" target="_blank">👁️ ดูตัวอย่าง</Link>
             <button type="submit" className="btn-save" disabled={isLoading}>
               {isLoading ? "⏳ กำลังบันทึก..." : "✓ บันทึกข้อมูล"}
             </button>

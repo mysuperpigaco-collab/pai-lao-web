@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
-type Params = { params: { slug: string } };
+type Params = { params: Promise<{ slug: string }> };
 
 // ── GET /api/places/[slug] ────────────────────────────────
 export async function GET(_req: Request, { params }: Params) {
   try {
+    const { slug } = await params;
     const place = await prisma.place.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       include: {
         business: {
           select: { id: true, businessName: true, logoUrl: true, coverUrl: true,
@@ -41,12 +42,12 @@ export async function GET(_req: Request, { params }: Params) {
 // ── PUT /api/places/[slug] — แก้ไข ───────────────────────
 export async function PUT(request: Request, { params }: Params) {
   try {
+    const { slug } = await params;
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 
-    // ตรวจว่าเป็นเจ้าของหรือ admin
     const place = await prisma.place.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       select: { business: { select: { userId: true } } },
     });
     if (!place) return NextResponse.json({ message: "ไม่พบสถานที่" }, { status: 404 });
@@ -60,7 +61,7 @@ export async function PUT(request: Request, { params }: Params) {
             openHours, closedDays, entryFee, phone, website, lineId } = body;
 
     const updated = await prisma.place.update({
-      where: { slug: params.slug },
+      where: { slug },
       data: {
         ...(title            !== undefined && { title }),
         ...(titleEn          !== undefined && { titleEn }),
@@ -95,11 +96,12 @@ export async function PUT(request: Request, { params }: Params) {
 // ── DELETE /api/places/[slug] ─────────────────────────────
 export async function DELETE(_req: Request, { params }: Params) {
   try {
+    const { slug } = await params;
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 
     const place = await prisma.place.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       select: { business: { select: { userId: true } } },
     });
     if (!place) return NextResponse.json({ message: "ไม่พบสถานที่" }, { status: 404 });
@@ -107,7 +109,7 @@ export async function DELETE(_req: Request, { params }: Params) {
       return NextResponse.json({ message: "ไม่มีสิทธิ์ลบ" }, { status: 403 });
     }
 
-    await prisma.place.delete({ where: { slug: params.slug } });
+    await prisma.place.delete({ where: { slug } });
     return NextResponse.json({ message: "ลบสถานที่แล้ว" });
   } catch (error) {
     console.error("DELETE /api/places/[slug]:", error);

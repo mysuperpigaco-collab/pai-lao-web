@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
-type Params = { params: { slug: string } };
+type Params = { params: Promise<{ slug: string }> };
 
 // ── GET /api/trips/[slug] ─────────────────────────────────
 export async function GET(_req: Request, { params }: Params) {
   try {
+    const { slug } = await params;
     const trip = await prisma.trip.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       include: {
         author: { select: { id: true, username: true, displayName: true, firstName: true, lastName: true, avatarUrl: true, bio: true,
           _count: { select: { trips: true, bookmarks: true } } } },
@@ -26,7 +27,6 @@ export async function GET(_req: Request, { params }: Params) {
 
     if (!trip) return NextResponse.json({ message: "ไม่พบทริปนี้" }, { status: 404 });
 
-    // คำนวณ rating เฉลี่ย
     const avgRating = trip.reviews.length
       ? trip.reviews.reduce((sum, r) => sum + r.rating, 0) / trip.reviews.length
       : 0;
@@ -41,10 +41,11 @@ export async function GET(_req: Request, { params }: Params) {
 // ── PUT /api/trips/[slug] — แก้ไขทริป ────────────────────
 export async function PUT(request: Request, { params }: Params) {
   try {
+    const { slug } = await params;
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 
-    const trip = await prisma.trip.findUnique({ where: { slug: params.slug }, select: { authorId: true } });
+    const trip = await prisma.trip.findUnique({ where: { slug }, select: { authorId: true } });
     if (!trip) return NextResponse.json({ message: "ไม่พบทริป" }, { status: 404 });
     if (trip.authorId !== session.userId && session.role !== "ADMIN") {
       return NextResponse.json({ message: "ไม่มีสิทธิ์แก้ไข" }, { status: 403 });
@@ -53,13 +54,12 @@ export async function PUT(request: Request, { params }: Params) {
     const body = await request.json();
     const { title, subtitle, description, coverUrl, gallery, mood, budget, location, tags, isPublished, timeline } = body;
 
-    // ถ้ามี timeline ส่งมา ลบอันเก่าแล้ว insert ใหม่ทั้งหมด
     if (timeline) {
-      await prisma.timelineStop.deleteMany({ where: { trip: { slug: params.slug } } });
+      await prisma.timelineStop.deleteMany({ where: { trip: { slug } } });
     }
 
     const updated = await prisma.trip.update({
-      where: { slug: params.slug },
+      where: { slug },
       data: {
         ...(title       !== undefined && { title }),
         ...(subtitle    !== undefined && { subtitle }),
@@ -102,16 +102,17 @@ export async function PUT(request: Request, { params }: Params) {
 // ── DELETE /api/trips/[slug] ──────────────────────────────
 export async function DELETE(_req: Request, { params }: Params) {
   try {
+    const { slug } = await params;
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 
-    const trip = await prisma.trip.findUnique({ where: { slug: params.slug }, select: { authorId: true } });
+    const trip = await prisma.trip.findUnique({ where: { slug }, select: { authorId: true } });
     if (!trip) return NextResponse.json({ message: "ไม่พบทริป" }, { status: 404 });
     if (trip.authorId !== session.userId && session.role !== "ADMIN") {
       return NextResponse.json({ message: "ไม่มีสิทธิ์ลบ" }, { status: 403 });
     }
 
-    await prisma.trip.delete({ where: { slug: params.slug } });
+    await prisma.trip.delete({ where: { slug } });
     return NextResponse.json({ message: "ลบทริปแล้ว" });
   } catch (error) {
     console.error("DELETE /api/trips/[slug]:", error);
