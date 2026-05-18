@@ -24,7 +24,6 @@ export default async function BusinessProfilePage({ params }: Props) {
   return (
     <main className="min-h-screen bg-gray-50 py-10">
       <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
         <div className="bg-white rounded-2xl shadow p-6 mb-6 flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-3xl">
             🏢
@@ -37,7 +36,6 @@ export default async function BusinessProfilePage({ params }: Props) {
           </div>
         </div>
 
-        {/* Places */}
         <h2 className="text-lg font-semibold text-gray-700 mb-4">
           สถานที่ ({business.places.length})
         </h2>
