@@ -399,7 +399,7 @@ export default function CreatePlacePage() {
 
           <ActionBar>
             <CancelButton href="/business/dashboard" label="ยกเลิก · Discard" />
-            <SaveButton label={isLoading ? "⏳ กำลังบันทึก..." : "🚀 บันทึกสถานที่ · Save Place"} disabled={isLoading} />
+            <SaveButton label={isLoading ? "⏳ กำลังบันทึก..." : "🚀 บันทึกสถานที่ · Save Place"} loading={isLoading} />
           </ActionBar>
 
         </form>
