@@ -4,11 +4,13 @@
 // ============================================================
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
-  provider   = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 // ── Enums ────────────────────────────────────────────────────
