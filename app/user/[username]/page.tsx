@@ -148,7 +148,7 @@ export default function DashboardPage() {
               {stories.length > 0 ? (
                 <div className="story-grid">
                   {stories.map((story) => (
-                    <StoryCard key={story.id} story={story} isOwner={true} />
+                    <StoryCard key={story.slug} story={story} isOwner={true} />
                   ))}
                 </div>
               ) : (
