@@ -11,7 +11,7 @@ interface ReviewAuthor {
 
 interface ReviewReply {
   id: string;
-  content: string;
+  text: string;
   createdAt: string;
   author: ReviewAuthor;
 }

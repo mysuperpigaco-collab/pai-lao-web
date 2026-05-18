@@ -138,9 +138,17 @@ export default async function TripDetailPage({ params }: Props) {
             <div className="content-card">
               <TripComments
                 reviews={trip.reviews.map(r => ({
-                  ...r,
+                  id: r.id,
+                  rating: r.rating,
+                  text: r.text,
                   createdAt: r.createdAt.toISOString(),
-                  replies: r.replies.map(rep => ({ ...rep, createdAt: rep.createdAt.toISOString() })),
+                  author: r.author,
+                  replies: r.replies.map(rep => ({
+                    id: rep.id,
+                    text: rep.text,
+                    createdAt: rep.createdAt.toISOString(),
+                    author: rep.author,
+                  })),
                 }))}
                 avgRating={avgRating}
                 tripSlug={slug}
