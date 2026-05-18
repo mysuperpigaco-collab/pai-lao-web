@@ -1,13 +1,11 @@
 /*
  * app/dashboard/edit-profile/page.tsx  (Traveler profile)
- * ✅ ใช้ design system ใหม่ทั้งหมด
- * ✅ Layout 2-col grid ถูกต้อง
- * ✅ Input ไม่กลม ใช้ ui-input จาก form-card.css
- * ✅ ปุ่มใช้ ActionButtons component
+ * ✅ โหลดข้อมูลจริงจาก /api/auth/me
+ * ✅ บันทึกผ่าน PUT /api/auth/me
  */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import InputField from "@/components/ui/InputField";
 import SelectField from "@/components/ui/SelectField";
 import BusinessSectionTitle from "@/components/business/BusinessSectionTitle";
@@ -34,20 +32,24 @@ function getStrength(pw: string) {
 
 export default function EditTravelerProfilePage() {
 
+  const [isLoading,   setIsLoading  ] = useState(true);
+  const [isSaving,    setIsSaving   ] = useState(false);
+  const [saveMsg,     setSaveMsg    ] = useState("");
+
   /* Personal */
-  const [firstName,   setFirstName  ] = useState("สมชาย");
-  const [lastName,    setLastName   ] = useState("สายเที่ยว");
-  const [displayName, setDisplayName] = useState("แอดมินน้ำตกเอราวัณ");
-  const [gender,      setGender     ] = useState("male");
-  const [phone,       setPhone      ] = useState("08xxxxxxxx");
-  const [email,       setEmail      ] = useState("admin@erawan.com");
+  const [firstName,   setFirstName  ] = useState("");
+  const [lastName,    setLastName   ] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [gender,      setGender     ] = useState("");
+  const [phone,       setPhone      ] = useState("");
+  const [email,       setEmail      ] = useState("");
+  const [bio,         setBio        ] = useState("");
 
   /* Business contacts */
-  const [bizPhone,  setBizPhone ] = useState("0812345678");
-  const [lineId,    setLineId  ] = useState("@erawan_park");
-  const [facebook,  setFacebook] = useState("");
+  const [lineId,    setLineId   ] = useState("");
+  const [facebook,  setFacebook ] = useState("");
   const [instagram, setInstagram] = useState("");
-  const [tiktok,    setTiktok  ] = useState("");
+  const [tiktok,    setTiktok   ] = useState("");
 
   /* Security */
   const [newPw,      setNewPw     ] = useState("");
@@ -59,17 +61,76 @@ export default function EditTravelerProfilePage() {
   const pwMatch   = newPw.length > 0 && newPw === confirmPw;
   const pwNoMatch = confirmPw.length > 0 && newPw !== confirmPw;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // โหลดข้อมูลจริง
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then(r => r.json())
+      .then(data => {
+        if (data.user) {
+          const u = data.user;
+          setFirstName(u.firstName   ?? "");
+          setLastName(u.lastName     ?? "");
+          setDisplayName(u.displayName ?? "");
+          setGender((u.gender ?? "").toLowerCase());
+          setPhone(u.phone           ?? "");
+          setEmail(u.email           ?? "");
+          setBio(u.bio               ?? "");
+          setLineId(u.lineId         ?? "");
+          setFacebook(u.facebook     ?? "");
+          setInstagram(u.instagram   ?? "");
+          setTiktok(u.tiktok         ?? "");
+        }
+      })
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setPwError("");
+    setSaveMsg("");
+
     const isChanging = newPw || confirmPw || currentPw;
     if (isChanging) {
       if (!currentPw) { setPwError("กรุณากรอกรหัสผ่านปัจจุบัน"); return; }
       if (newPw.length < 8) { setPwError("รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร"); return; }
       if (newPw !== confirmPw) { setPwError("รหัสผ่านไม่ตรงกัน · Passwords don't match"); return; }
     }
-    alert("บันทึกเรียบร้อย / Saved!");
+
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/auth/me", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName, lastName, displayName,
+          gender: gender || null,
+          phone, bio,
+          lineId, facebook, instagram, tiktok,
+          ...(isChanging ? { currentPw, newPw } : {}),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPwError(data.message || "เกิดข้อผิดพลาด");
+      } else {
+        setSaveMsg("✓ บันทึกเรียบร้อยแล้ว · Saved successfully!");
+        setCurrentPw(""); setNewPw(""); setConfirmPw("");
+      }
+    } catch {
+      setPwError("ไม่สามารถเชื่อมต่อได้");
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "#64748b" }}>กำลังโหลด...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="edp-page">
@@ -96,6 +157,12 @@ export default function EditTravelerProfilePage() {
           </p>
         </div>
 
+        {saveMsg && (
+          <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "12px", padding: "14px 20px", marginBottom: "20px", color: "#15803d", fontWeight: 700 }}>
+            {saveMsg}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
 
           {/* ── SECTION 1: Personal Information ── */}
@@ -114,43 +181,50 @@ export default function EditTravelerProfilePage() {
               <InputField label="นามสกุล" labelEn="Last name" required
                 value={lastName} onChange={e => setLastName(e.target.value)} />
 
-              <InputField label="ชื่อที่ใช้แสดง" labelEn="Display name" required
+              <InputField label="ชื่อที่ใช้แสดง" labelEn="Display name"
                 value={displayName} onChange={e => setDisplayName(e.target.value)} />
 
               <SelectField
-                label="เพศ" labelEn="Gender" required
+                label="เพศ" labelEn="Gender"
                 value={gender}
                 onChange={e => setGender(e.target.value)}
                 options={[
-                  { label: "ชาย · Male",    value: "male"   },
-                  { label: "หญิง · Female", value: "female" },
-                  { label: "อื่นๆ · Other", value: "other"  },
+                  { label: "-- ไม่ระบุ --",     value: ""       },
+                  { label: "ชาย · Male",         value: "male"   },
+                  { label: "หญิง · Female",      value: "female" },
+                  { label: "อื่นๆ · Other",      value: "other"  },
                 ]}
               />
 
-              <InputField label="เบอร์โทรศัพท์" labelEn="Phone" required type="tel"
+              <InputField label="เบอร์โทรศัพท์" labelEn="Phone" type="tel"
                 value={phone} onChange={e => setPhone(e.target.value)} />
 
               <div className="col-full">
-                <InputField label="อีเมล" labelEn="Email address" required type="email"
-                  value={email} onChange={e => setEmail(e.target.value)} />
+                <InputField label="อีเมล" labelEn="Email address" type="email"
+                  value={email} onChange={() => {}} disabled />
+              </div>
+
+              <div className="col-full">
+                <div className="ui-field">
+                  <label>แนะนำตัว <span className="en">Bio</span></label>
+                  <textarea className="ui-input textarea" rows={3}
+                    placeholder="เล่าเรื่องราวเกี่ยวกับตัวคุณ..."
+                    value={bio} onChange={e => setBio(e.target.value)} />
+                </div>
               </div>
 
             </div>
           </div>
 
-          {/* ── SECTION 2: Business Contacts ── */}
+          {/* ── SECTION 2: Social & Contacts ── */}
           <div className="ui-section-card">
             <div className="ui-form-grid">
 
               <BusinessSectionTitle
-                title="ข้อมูลการติดต่อธุรกิจ"
-                subtitle="Business Contacts"
-                description="ช่องทางที่ลูกค้าจะติดต่อธุรกิจของคุณ · How customers reach your business"
+                title="โซเชียลมีเดีย"
+                subtitle="Social Media"
+                description="ช่องทางที่คนอื่นจะติดต่อหรือติดตามคุณ · Your social links"
               />
-
-              <InputField label="เบอร์โทรติดต่อ" labelEn="Booking & inquiry" required
-                value={bizPhone} onChange={e => setBizPhone(e.target.value)} />
 
               <InputField label="ไลน์ไอดี" labelEn="Line ID"
                 value={lineId} onChange={e => setLineId(e.target.value)} placeholder="@yourline" />
@@ -225,7 +299,7 @@ export default function EditTravelerProfilePage() {
           {/* ── ACTION FOOTER ── */}
           <ActionBar>
             <CancelButton href="/dashboard" label="ยกเลิก · Discard" />
-            <SaveButton label="บันทึกการเปลี่ยนแปลง · Save changes" />
+            <SaveButton label="บันทึกการเปลี่ยนแปลง · Save changes" loading={isSaving} />
           </ActionBar>
 
         </form>
@@ -249,6 +323,7 @@ export default function EditTravelerProfilePage() {
           flex-wrap: wrap;
           gap: 12px;
         }
+        textarea.ui-input { resize: vertical; }
         @media (max-width: 640px) {
           .edp-topbar { flex-direction: column; align-items: flex-start; }
         }

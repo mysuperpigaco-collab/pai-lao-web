@@ -1,12 +1,11 @@
 /*
- * ============================================================
- *  app/business/edit-profile/page.tsx
- *  ใช้ design system ใหม่ทั้งหมด — ไม่มี inline style
- * ============================================================
+ * app/business/edit-profile/page.tsx
+ * ✅ โหลดข้อมูลจริงจาก /api/business/me
+ * ✅ บันทึกผ่าน PUT /api/business/me
  */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   BackButton,
   CancelButton,
@@ -20,76 +19,98 @@ import "@/components/ui/action-buttons.css";
 
 /* ── Category options ── */
 const CATEGORIES = [
-  { id: "adventure",  emoji: "🧗", label: "Adventure"  },
-  { id: "nature",     emoji: "🌿", label: "Nature"     },
-  { id: "cafe",       emoji: "☕", label: "Café"       },
-  { id: "culture",    emoji: "🏛️", label: "Culture"    },
-  { id: "hiking",     emoji: "⛰️", label: "Hiking"     },
-  { id: "sea",        emoji: "🌊", label: "Sea & Island"},
-  { id: "food",       emoji: "🍲", label: "Local Food" },
+  { id: "adventure",  emoji: "🧗", label: "Adventure"    },
+  { id: "nature",     emoji: "🌿", label: "Nature"       },
+  { id: "cafe",       emoji: "☕", label: "Café"         },
+  { id: "culture",    emoji: "🏛️", label: "Culture"      },
+  { id: "hiking",     emoji: "⛰️", label: "Hiking"       },
+  { id: "sea",        emoji: "🌊", label: "Sea & Island" },
+  { id: "food",       emoji: "🍲", label: "Local Food"   },
   { id: "stay",       emoji: "🏨", label: "Accommodation"},
-  { id: "photo",      emoji: "📸", label: "Photography"},
-  { id: "camping",    emoji: "⛺", label: "Camping"    },
-  { id: "slowlife",   emoji: "🌸", label: "Slow Life"  },
-  { id: "community",  emoji: "🏘️", label: "Community"  },
+  { id: "photo",      emoji: "📸", label: "Photography"  },
+  { id: "camping",    emoji: "⛺", label: "Camping"      },
+  { id: "slowlife",   emoji: "🌸", label: "Slow Life"    },
+  { id: "community",  emoji: "🏘️", label: "Community"    },
 ];
 
 /* ── Password strength ── */
-function getStrength(pw: string): {
-  level: "weak" | "fair" | "good" | "strong";
-  label: string;
-} {
+function getStrength(pw: string): { level: "weak"|"fair"|"good"|"strong"; label: string } {
   if (pw.length === 0) return { level: "weak", label: "" };
-  if (pw.length < 6)   return { level: "weak",   label: "อ่อนมาก · Weak"   };
-  if (pw.length < 8)   return { level: "fair",   label: "พอใช้ · Fair"     };
+  if (pw.length < 6)   return { level: "weak",   label: "อ่อนมาก · Weak"    };
+  if (pw.length < 8)   return { level: "fair",   label: "พอใช้ · Fair"      };
   if (/[A-Z]/.test(pw) && /[0-9]/.test(pw))
-                       return { level: "strong", label: "แข็งแกร่ง · Strong"};
-  return               { level: "good",   label: "ดี · Good"              };
+                       return { level: "strong", label: "แข็งแกร่ง · Strong" };
+  return               { level: "good",   label: "ดี · Good"               };
 }
 
 export default function EditBusinessProfilePage() {
 
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving,  setIsSaving ] = useState(false);
+  const [saveMsg,   setSaveMsg  ] = useState("");
+
   /* ── Profile fields ── */
-  const [businessName, setBusinessName] = useState("Pai-Lao Adventure");
-  const [contactName,  setContactName ] = useState("สมชาย ใจดี");
-  const [email,        setEmail       ] = useState("contact@pailao.com");
-  const [phone,        setPhone       ] = useState("+66 81 234 5678");
-  const [website,      setWebsite     ] = useState("https://pailao.com");
-  const [province,     setProvince    ] = useState("Bangkok");
+  const [businessName, setBusinessName] = useState("");
+  const [contactName,  setContactName ] = useState("");
+  const [email,        setEmail       ] = useState("");
+  const [phone,        setPhone       ] = useState("");
+  const [website,      setWebsite     ] = useState("");
+  const [province,     setProvince    ] = useState("");
   const [country,      setCountry     ] = useState("Thailand");
-  const [description,  setDescription ] = useState(
-    "ผู้ให้บริการด้านการท่องเที่ยวและกิจกรรมท้องถิ่น ที่เน้นประสบการณ์จริง"
-  );
+  const [description,  setDescription ] = useState("");
 
   /* ── Categories ── */
-  const [selectedCats, setSelectedCats] = useState<string[]>(["nature", "adventure"]);
+  const [selectedCats, setSelectedCats] = useState<string[]>([]);
   const toggleCat = (id: string) =>
-    setSelectedCats((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
-    );
+    setSelectedCats(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]);
 
   /* ── Social ── */
-  const [facebook,   setFacebook  ] = useState("");
-  const [instagram,  setInstagram ] = useState("");
-  const [tiktok,     setTiktok    ] = useState("");
+  const [facebook,  setFacebook ] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [tiktok,    setTiktok   ] = useState("");
+  const [lineId,    setLineId   ] = useState("");
 
   /* ── Images ── */
-  const [coverImage, setCoverImage] = useState(
-    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600"
-  );
-  const [logoImage, setLogoImage] = useState(
-    "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=400"
-  );
+  const [coverImage, setCoverImage] = useState("");
+  const [logoImage,  setLogoImage ] = useState("");
 
   /* ── Password ── */
-  const [currentPw,  setCurrentPw ] = useState("");
-  const [newPw,      setNewPw     ] = useState("");
-  const [confirmPw,  setConfirmPw ] = useState("");
-  const [pwError,    setPwError   ] = useState("");
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw,     setNewPw    ] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [pwError,   setPwError  ] = useState("");
 
   const strength  = getStrength(newPw);
   const pwMatch   = newPw.length > 0 && newPw === confirmPw;
   const pwNoMatch = confirmPw.length > 0 && newPw !== confirmPw;
+
+  /* ── โหลดข้อมูลจริง ── */
+  useEffect(() => {
+    fetch("/api/business/me")
+      .then(r => r.json())
+      .then(data => {
+        if (data.business) {
+          const b = data.business;
+          setBusinessName(b.businessName ?? "");
+          setContactName(b.contactName  ?? "");
+          setEmail(b.email              ?? "");
+          setPhone(b.phone              ?? "");
+          setWebsite(b.website          ?? "");
+          setProvince(b.province        ?? "");
+          setCountry(b.country          ?? "Thailand");
+          setDescription(b.description  ?? "");
+          setFacebook(b.facebook        ?? "");
+          setInstagram(b.instagram      ?? "");
+          setTiktok(b.tiktok            ?? "");
+          setLineId(b.lineId            ?? "");
+          setCoverImage(b.coverUrl      ?? "");
+          setLogoImage(b.logoUrl        ?? "");
+          setSelectedCats(b.categories  ?? []);
+        }
+      })
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
+  }, []);
 
   /* ── Image upload helpers ── */
   const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,24 +128,52 @@ export default function EditBusinessProfilePage() {
   };
 
   /* ── Submit ── */
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setPwError("");
+    setSaveMsg("");
 
     const isChangingPw = currentPw || newPw || confirmPw;
     if (isChangingPw) {
-      if (!currentPw || !newPw || !confirmPw) {
-        setPwError("กรุณากรอกรหัสผ่านให้ครบทุกช่อง"); return;
-      }
-      if (newPw.length < 8) {
-        setPwError("รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร"); return;
-      }
-      if (newPw !== confirmPw) {
-        setPwError("รหัสผ่านไม่ตรงกัน / Passwords don't match"); return;
-      }
+      if (!currentPw || !newPw || !confirmPw) { setPwError("กรุณากรอกรหัสผ่านให้ครบทุกช่อง"); return; }
+      if (newPw.length < 8) { setPwError("รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร"); return; }
+      if (newPw !== confirmPw) { setPwError("รหัสผ่านไม่ตรงกัน / Passwords don't match"); return; }
     }
-    alert("บันทึกเรียบร้อย / Saved successfully!");
+
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/business/me", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessName, contactName, email, phone, website,
+          province, country, description,
+          facebook, instagram, tiktok, lineId,
+          categories: selectedCats,
+          ...(isChangingPw ? { currentPw, newPw } : {}),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPwError(data.message || "เกิดข้อผิดพลาด");
+      } else {
+        setSaveMsg("✓ บันทึกเรียบร้อยแล้ว · Saved successfully!");
+        setCurrentPw(""); setNewPw(""); setConfirmPw("");
+      }
+    } catch {
+      setPwError("ไม่สามารถเชื่อมต่อได้");
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "#64748b" }}>กำลังโหลด...</p>
+      </div>
+    );
+  }
 
   /* ── Render ── */
   return (
@@ -137,12 +186,19 @@ export default function EditBusinessProfilePage() {
           <PageTag label="BUSINESS PROFILE" />
         </div>
 
+        {saveMsg && (
+          <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "12px", padding: "14px 20px", marginBottom: "20px", color: "#15803d", fontWeight: 700 }}>
+            {saveMsg}
+          </div>
+        )}
+
         {/* ─── HERO ─── */}
         <div className="ep-hero">
-
-          {/* Cover */}
           <div className="ep-cover-wrap">
-            <img src={coverImage} alt="cover" className="ep-cover-img" />
+            {coverImage
+              ? <img src={coverImage} alt="cover" className="ep-cover-img" />
+              : <div className="ep-cover-placeholder">🏢 ยังไม่มีรูปปก</div>
+            }
             <div className="ep-cover-overlay" />
             <label className="ep-change-cover-btn">
               เปลี่ยนภาพปก · Change cover
@@ -150,13 +206,13 @@ export default function EditBusinessProfilePage() {
             </label>
           </div>
 
-          {/* Logo + name + badges */}
           <div className="ep-hero-content">
             <div className="ep-profile-main">
-
-              {/* Logo */}
               <div className="ep-logo-wrap">
-                <img src={logoImage} alt="logo" className="ep-logo-img" />
+                {logoImage
+                  ? <img src={logoImage} alt="logo" className="ep-logo-img" />
+                  : <div className="ep-logo-placeholder">🏢</div>
+                }
                 <label className="ep-logo-edit-btn" title="เปลี่ยนโลโก้">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
                     <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
@@ -164,20 +220,12 @@ export default function EditBusinessProfilePage() {
                   <input hidden type="file" accept="image/*" onChange={handleLogoUpload} />
                 </label>
               </div>
-
-              {/* Text */}
               <div className="ep-profile-text">
-                <h1>{businessName}</h1>
+                <h1>{businessName || "ชื่อธุรกิจ"}</h1>
                 <p>จัดการข้อมูลธุรกิจ รูปภาพ รายละเอียด และความปลอดภัยของบัญชี</p>
-                <div className="ep-badges">
-                  <span className="ep-badge">✓ Verified Business</span>
-                  <span className="ep-badge">🤝 Tourism Partner</span>
-                </div>
               </div>
-
             </div>
           </div>
-
         </div>
 
         {/* ─── FORM ─── */}
@@ -191,59 +239,43 @@ export default function EditBusinessProfilePage() {
                 <p>รายละเอียดหลักของธุรกิจที่นักท่องเที่ยวจะเห็น · Core details visible to travelers</p>
               </div>
             </div>
-
             <div className="ui-form-grid">
               <div className="ui-field">
                 <label>ชื่อธุรกิจ <span className="en">Business name</span></label>
-                <input className="ui-input" type="text" value={businessName}
-                  onChange={e => setBusinessName(e.target.value)} />
+                <input className="ui-input" type="text" value={businessName} onChange={e => setBusinessName(e.target.value)} />
               </div>
-
               <div className="ui-field">
                 <label>ชื่อผู้ติดต่อ <span className="en">Contact name</span></label>
-                <input className="ui-input" type="text" value={contactName}
-                  onChange={e => setContactName(e.target.value)} />
+                <input className="ui-input" type="text" value={contactName} onChange={e => setContactName(e.target.value)} />
               </div>
-
               <div className="ui-field">
-                <label>อีเมล <span className="en">Email</span></label>
-                <input className="ui-input" type="email" value={email}
-                  onChange={e => setEmail(e.target.value)} />
+                <label>อีเมลธุรกิจ <span className="en">Business email</span></label>
+                <input className="ui-input" type="email" value={email} onChange={e => setEmail(e.target.value)} />
               </div>
-
               <div className="ui-field">
                 <label>เบอร์โทร <span className="en">Phone</span></label>
-                <input className="ui-input" type="tel" value={phone}
-                  onChange={e => setPhone(e.target.value)} />
+                <input className="ui-input" type="tel" value={phone} onChange={e => setPhone(e.target.value)} />
               </div>
-
               <div className="ui-field col-full">
                 <label>เว็บไซต์ <span className="en">Website</span></label>
-                <input className="ui-input" type="url" value={website}
-                  onChange={e => setWebsite(e.target.value)} placeholder="https://..." />
+                <input className="ui-input" type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://..." />
               </div>
-
               <div className="ui-field">
                 <label>จังหวัด <span className="en">Province</span></label>
-                <input className="ui-input" type="text" value={province}
-                  onChange={e => setProvince(e.target.value)} />
+                <input className="ui-input" type="text" value={province} onChange={e => setProvince(e.target.value)} />
               </div>
-
               <div className="ui-field">
                 <label>ประเทศ <span className="en">Country</span></label>
-                <input className="ui-input" type="text" value={country}
-                  onChange={e => setCountry(e.target.value)} />
+                <input className="ui-input" type="text" value={country} onChange={e => setCountry(e.target.value)} />
               </div>
-
               <div className="ui-field col-full">
                 <label>รายละเอียดธุรกิจ <span className="en">Description</span></label>
-                <textarea className="ui-input textarea" value={description}
-                  onChange={e => setDescription(e.target.value)} />
+                <textarea className="ui-input textarea" value={description} onChange={e => setDescription(e.target.value)} />
               </div>
             </div>
           </div>
 
-          {/* Section 2 — Business Categories */}
+          {/* Section 2 — Categories */}
           <div className="ui-section-card">
             <div className="ui-section-hdr">
               <div>
@@ -251,18 +283,10 @@ export default function EditBusinessProfilePage() {
                 <p>เลือกประเภทที่ตรงกับธุรกิจของคุณ · Pick all that apply</p>
               </div>
             </div>
-
             <div className="ui-chip-grid">
               {CATEGORIES.map(cat => (
-                <label
-                  key={cat.id}
-                  className={`ui-chip ${selectedCats.includes(cat.id) ? "active" : ""}`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedCats.includes(cat.id)}
-                    onChange={() => toggleCat(cat.id)}
-                  />
+                <label key={cat.id} className={`ui-chip ${selectedCats.includes(cat.id) ? "active" : ""}`}>
+                  <input type="checkbox" checked={selectedCats.includes(cat.id)} onChange={() => toggleCat(cat.id)} />
                   {cat.emoji} {cat.label}
                 </label>
               ))}
@@ -277,41 +301,39 @@ export default function EditBusinessProfilePage() {
                 <p>ลิงก์โซเชียลของธุรกิจ · Your business social links</p>
               </div>
             </div>
-
             <div className="ui-form-grid">
+              <div className="ui-field">
+                <label>Line ID</label>
+                <div className="ui-social-row">
+                  <span className="ui-social-icon">💬</span>
+                  <input className="ui-input" type="text" value={lineId} onChange={e => setLineId(e.target.value)} placeholder="@yourline" />
+                </div>
+              </div>
               <div className="ui-field">
                 <label>Facebook</label>
                 <div className="ui-social-row">
                   <span className="ui-social-icon">📘</span>
-                  <input className="ui-input" type="url" value={facebook}
-                    onChange={e => setFacebook(e.target.value)}
-                    placeholder="https://facebook.com/..." />
+                  <input className="ui-input" type="url" value={facebook} onChange={e => setFacebook(e.target.value)} placeholder="https://facebook.com/..." />
                 </div>
               </div>
-
               <div className="ui-field">
                 <label>Instagram</label>
                 <div className="ui-social-row">
                   <span className="ui-social-icon">📸</span>
-                  <input className="ui-input" type="url" value={instagram}
-                    onChange={e => setInstagram(e.target.value)}
-                    placeholder="https://instagram.com/..." />
+                  <input className="ui-input" type="url" value={instagram} onChange={e => setInstagram(e.target.value)} placeholder="https://instagram.com/..." />
                 </div>
               </div>
-
               <div className="ui-field">
                 <label>TikTok</label>
                 <div className="ui-social-row">
                   <span className="ui-social-icon">🎵</span>
-                  <input className="ui-input" type="url" value={tiktok}
-                    onChange={e => setTiktok(e.target.value)}
-                    placeholder="https://tiktok.com/@..." />
+                  <input className="ui-input" type="url" value={tiktok} onChange={e => setTiktok(e.target.value)} placeholder="https://tiktok.com/@..." />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Section 4 — Security / Password */}
+          {/* Section 4 — Security */}
           <div className="ui-section-card">
             <div className="ui-section-hdr">
               <div>
@@ -319,22 +341,17 @@ export default function EditBusinessProfilePage() {
                 <p>เปลี่ยนรหัสผ่านเฉพาะเมื่อต้องการ · Leave blank to keep current password</p>
               </div>
             </div>
-
             <div className="ui-password-box">
               <h3>🔒 เปลี่ยนรหัสผ่าน · Change Password</h3>
               <p>หากไม่ต้องการเปลี่ยน ให้เว้นว่างไว้ · Leave blank if not changing</p>
-
               <div className="ui-password-grid">
                 <div className="ui-field">
                   <label>รหัสผ่านปัจจุบัน <span className="en">Current password</span></label>
-                  <input className="ui-input" type="password" value={currentPw}
-                    onChange={e => setCurrentPw(e.target.value)} />
+                  <input className="ui-input" type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} />
                 </div>
-
                 <div className="ui-field">
                   <label>รหัสผ่านใหม่ <span className="en">New password</span></label>
-                  <input className="ui-input" type="password" value={newPw}
-                    onChange={e => setNewPw(e.target.value)} />
+                  <input className="ui-input" type="password" value={newPw} onChange={e => setNewPw(e.target.value)} />
                   {newPw.length > 0 && (
                     <>
                       <div className="ui-strength-bar">
@@ -344,22 +361,17 @@ export default function EditBusinessProfilePage() {
                         color: strength.level === "strong" ? "var(--pl-green-deep)"
                              : strength.level === "good"   ? "#22c55e"
                              : strength.level === "fair"   ? "#f59e0b" : "#ef4444"
-                      }}>
-                        {strength.label}
-                      </span>
+                      }}>{strength.label}</span>
                     </>
                   )}
                 </div>
-
                 <div className="ui-field">
                   <label>ยืนยันรหัสผ่าน <span className="en">Confirm password</span></label>
-                  <input className="ui-input" type="password" value={confirmPw}
-                    onChange={e => setConfirmPw(e.target.value)} />
+                  <input className="ui-input" type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} />
                   {pwMatch   && <span className="ui-match-ok">✓ รหัสผ่านตรงกัน · Passwords match</span>}
                   {pwNoMatch && <span className="ui-match-err">✗ รหัสผ่านไม่ตรงกัน · Doesn't match</span>}
                 </div>
               </div>
-
               {pwError && <p className="ui-password-note">⚠️ {pwError}</p>}
             </div>
           </div>
@@ -367,173 +379,31 @@ export default function EditBusinessProfilePage() {
           {/* ─── ACTION FOOTER ─── */}
           <ActionBar>
             <CancelButton href="/business/dashboard" label="ยกเลิก · Discard" />
-            <SaveButton label="บันทึกข้อมูล · Save Changes" />
+            <SaveButton label="บันทึกข้อมูล · Save Changes" loading={isSaving} />
           </ActionBar>
 
         </form>
       </div>
 
       <style jsx>{`
-        /* Page */
-        .ep-page {
-          min-height: 100vh;
-          background: var(--pl-bg, #f8fafc);
-          padding: 36px 20px 80px;
-        }
-        .ep-container {
-          max-width: 1180px;
-          margin: auto;
-        }
-
-        /* Top bar */
-        .ep-topbar {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 28px;
-          flex-wrap: wrap;
-          gap: 12px;
-        }
-
-        /* Hero */
-        .ep-hero {
-          border-radius: 36px;
-          overflow: hidden;
-          background: var(--pl-white, #fff);
-          border: 1px solid #edf2f7;
-          box-shadow: 0 20px 50px rgba(15,23,42,0.05);
-          margin-bottom: 28px;
-        }
-
-        .ep-cover-wrap {
-          position: relative;
-          height: 300px;
-          overflow: hidden;
-        }
-
-        .ep-cover-img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .ep-cover-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(to top, rgba(15,23,42,0.70), rgba(15,23,42,0.15));
-        }
-
-        .ep-change-cover-btn {
-          position: absolute;
-          right: 22px;
-          top: 22px;
-          background: rgba(255,255,255,0.93);
-          color: #0f172a;
-          padding: 10px 18px;
-          border-radius: 999px;
-          font-size: 13px;
-          font-weight: 700;
-          cursor: pointer;
-          backdrop-filter: blur(8px);
-          transition: 0.2s;
-        }
-
-        .ep-change-cover-btn:hover {
-          background: white;
-          transform: translateY(-1px);
-        }
-
-        .ep-hero-content {
-          position: relative;
-          padding: 0 40px 36px;
-          margin-top: -72px;
-          z-index: 5;
-        }
-
-        .ep-profile-main {
-          display: flex;
-          align-items: flex-end;
-          gap: 22px;
-          flex-wrap: wrap;
-        }
-
-        .ep-logo-wrap {
-          position: relative;
-          flex-shrink: 0;
-        }
-
-        .ep-logo-img {
-          width: 130px;
-          height: 130px;
-          border-radius: 28px;
-          object-fit: cover;
-          border: 5px solid white;
-          box-shadow: 0 8px 24px rgba(15,23,42,0.12);
-          background: white;
-        }
-
-        .ep-logo-edit-btn {
-          position: absolute;
-          bottom: 8px;
-          right: 8px;
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          background: #2563eb;
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          box-shadow: 0 4px 12px rgba(37,99,235,0.35);
-          transition: 0.2s;
-        }
-
-        .ep-logo-edit-btn:hover {
-          background: #1d4ed8;
-          transform: scale(1.1);
-        }
-
-        .ep-profile-text {
-          padding-bottom: 4px;
-        }
-
-        .ep-profile-text h1 {
-          font-size: 32px;
-          font-weight: 900;
-          color: #0f172a;
-          margin-bottom: 6px;
-        }
-
-        .ep-profile-text p {
-          color: #64748b;
-          font-size: 14px;
-          line-height: 1.7;
-        }
-
-        .ep-badges {
-          display: flex;
-          gap: 8px;
-          margin-top: 12px;
-          flex-wrap: wrap;
-        }
-
-        .ep-badge {
-          padding: 6px 14px;
-          border-radius: 999px;
-          background: #eff6ff;
-          color: #2563eb;
-          font-size: 12px;
-          font-weight: 700;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-          .ep-hero-content { padding: 0 22px 28px; margin-top: -60px; }
-          .ep-cover-wrap   { height: 200px; }
-          .ep-logo-img     { width: 100px; height: 100px; border-radius: 22px; }
-          .ep-profile-text h1 { font-size: 24px; }
-        }
+        .ep-page { min-height: 100vh; background: var(--pl-bg, #f8fafc); padding: 36px 20px 80px; }
+        .ep-container { max-width: 1180px; margin: auto; }
+        .ep-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+        .ep-hero { border-radius: 36px; overflow: hidden; background: var(--pl-white, #fff); border: 1px solid #edf2f7; box-shadow: 0 20px 50px rgba(15,23,42,0.05); margin-bottom: 28px; }
+        .ep-cover-wrap { position: relative; height: 280px; overflow: hidden; background: #e2e8f0; }
+        .ep-cover-img { width: 100%; height: 100%; object-fit: cover; }
+        .ep-cover-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 48px; color: #94a3b8; }
+        .ep-cover-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,42,0.70), rgba(15,23,42,0.15)); }
+        .ep-change-cover-btn { position: absolute; right: 22px; top: 22px; background: rgba(255,255,255,0.93); color: #0f172a; padding: 10px 18px; border-radius: 999px; font-size: 13px; font-weight: 700; cursor: pointer; backdrop-filter: blur(8px); }
+        .ep-hero-content { position: relative; padding: 0 40px 36px; margin-top: -72px; z-index: 5; }
+        .ep-profile-main { display: flex; align-items: flex-end; gap: 22px; flex-wrap: wrap; }
+        .ep-logo-wrap { position: relative; flex-shrink: 0; }
+        .ep-logo-img { width: 130px; height: 130px; border-radius: 28px; object-fit: cover; border: 5px solid white; box-shadow: 0 8px 24px rgba(15,23,42,0.12); background: white; }
+        .ep-logo-placeholder { width: 130px; height: 130px; border-radius: 28px; border: 5px solid white; box-shadow: 0 8px 24px rgba(15,23,42,0.12); background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 48px; }
+        .ep-logo-edit-btn { position: absolute; bottom: 8px; right: 8px; width: 36px; height: 36px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.35); }
+        .ep-profile-text h1 { font-size: 32px; font-weight: 900; color: #0f172a; margin-bottom: 6px; }
+        .ep-profile-text p { color: #64748b; font-size: 14px; }
+        @media (max-width: 768px) { .ep-hero-content { padding: 0 22px 28px; margin-top: -60px; } .ep-cover-wrap { height: 200px; } .ep-logo-img, .ep-logo-placeholder { width: 100px; height: 100px; } .ep-profile-text h1 { font-size: 24px; } }
       `}</style>
     </div>
   );

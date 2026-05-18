@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, hashPassword, verifyPassword } from "@/lib/auth";
 
 // GET /api/business/me — ดึงข้อมูล Business + สถานที่ของ user ที่ login
 export async function GET() {
@@ -76,6 +76,64 @@ export async function GET() {
     });
   } catch (error) {
     console.error("GET /api/business/me:", error);
+    return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
+  }
+}
+
+// ── PUT /api/business/me — อัปเดตข้อมูลธุรกิจ ────────────
+export async function PUT(request: Request) {
+  try {
+    const session = await getCurrentUser();
+    if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+    if (session.role !== "BUSINESS" && session.role !== "ADMIN") {
+      return NextResponse.json({ message: "เฉพาะเจ้าของธุรกิจเท่านั้น" }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const {
+      businessName, contactName, description, province, country,
+      website, logoUrl, coverUrl, phone, email,
+      lineId, facebook, instagram, tiktok, categories,
+      currentPw, newPw,
+    } = body;
+
+    // เปลี่ยนรหัสผ่าน
+    if (newPw) {
+      if (!currentPw) return NextResponse.json({ message: "กรุณากรอกรหัสผ่านปัจจุบัน" }, { status: 400 });
+      const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { password: true } });
+      if (!user) return NextResponse.json({ message: "ไม่พบผู้ใช้" }, { status: 404 });
+      const ok = await verifyPassword(currentPw, user.password);
+      if (!ok) return NextResponse.json({ message: "รหัสผ่านปัจจุบันไม่ถูกต้อง" }, { status: 400 });
+      await prisma.user.update({
+        where: { id: session.userId },
+        data: { password: await hashPassword(newPw) },
+      });
+    }
+
+    const updated = await prisma.business.update({
+      where: { userId: session.userId },
+      data: {
+        ...(businessName !== undefined && { businessName }),
+        ...(contactName  !== undefined && { contactName }),
+        ...(description  !== undefined && { description }),
+        ...(province     !== undefined && { province }),
+        ...(country      !== undefined && { country }),
+        ...(website      !== undefined && { website }),
+        ...(logoUrl      !== undefined && { logoUrl }),
+        ...(coverUrl     !== undefined && { coverUrl }),
+        ...(phone        !== undefined && { phone }),
+        ...(email        !== undefined && { email }),
+        ...(lineId       !== undefined && { lineId }),
+        ...(facebook     !== undefined && { facebook }),
+        ...(instagram    !== undefined && { instagram }),
+        ...(tiktok       !== undefined && { tiktok }),
+        ...(categories   !== undefined && { categories }),
+      },
+    });
+
+    return NextResponse.json({ message: "อัปเดตสำเร็จ", business: updated });
+  } catch (error) {
+    console.error("PUT /api/business/me:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
   }
 }

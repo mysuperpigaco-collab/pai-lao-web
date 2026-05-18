@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, hashPassword, verifyPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
@@ -38,4 +38,46 @@ export async function GET() {
   }
 
   return NextResponse.json({ user });
+}
+
+// ── PUT /api/auth/me — อัปเดตข้อมูลโปรไฟล์ผู้ใช้ ──────────
+export async function PUT(request: Request) {
+  const session = await getCurrentUser();
+  if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+
+  const body = await request.json();
+  const {
+    firstName, lastName, displayName, phone, gender, bio,
+    lineId, facebook, instagram, tiktok,
+    currentPw, newPw,
+  } = body;
+
+  // กรณีเปลี่ยนรหัสผ่าน
+  if (newPw) {
+    if (!currentPw) return NextResponse.json({ message: "กรุณากรอกรหัสผ่านปัจจุบัน" }, { status: 400 });
+    const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { password: true } });
+    if (!user) return NextResponse.json({ message: "ไม่พบผู้ใช้" }, { status: 404 });
+    const ok = await verifyPassword(currentPw, user.password);
+    if (!ok) return NextResponse.json({ message: "รหัสผ่านปัจจุบันไม่ถูกต้อง" }, { status: 400 });
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: session.userId },
+    data: {
+      ...(firstName   !== undefined && { firstName }),
+      ...(lastName    !== undefined && { lastName }),
+      ...(displayName !== undefined && { displayName }),
+      ...(phone       !== undefined && { phone }),
+      ...(gender      !== undefined && { gender: gender ? gender.toUpperCase() as any : null }),
+      ...(bio         !== undefined && { bio }),
+      ...(lineId      !== undefined && { lineId }),
+      ...(facebook    !== undefined && { facebook }),
+      ...(instagram   !== undefined && { instagram }),
+      ...(tiktok      !== undefined && { tiktok }),
+      ...(newPw       ? { password: await hashPassword(newPw) } : {}),
+    },
+    select: { id: true, firstName: true, lastName: true, username: true, email: true, displayName: true, phone: true, gender: true, bio: true, lineId: true, facebook: true, instagram: true, tiktok: true },
+  });
+
+  return NextResponse.json({ message: "อัปเดตสำเร็จ", user: updated });
 }

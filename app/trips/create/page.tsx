@@ -122,8 +122,8 @@ export default function CreateStoryPage() {
       const data = await res.json();
       if (!res.ok) { setError(data.message || "เกิดข้อผิดพลาด"); setIsLoading(false); return; }
 
-      // 5. redirect ไปหน้า trip ที่เพิ่งสร้าง
-      router.push(`/trips/${data.trip.slug}`);
+      // 5. redirect ไปหน้า dashboard หลังสร้างสำเร็จ
+      router.push("/dashboard");
     } catch (err: any) {
       setError(err.message || "เกิดข้อผิดพลาด กรุณาลองใหม่");
       setIsLoading(false);
