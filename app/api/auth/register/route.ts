@@ -64,7 +64,7 @@ export async function POST(request: Request) {
         password: hashedPassword,
         displayName: displayName || `${firstName} ${lastName}`,
         birthDate: birthDate ? new Date(birthDate) : undefined,
-        gender: gender || undefined,
+        gender: gender ? gender.toUpperCase() as any : undefined,
         role: role === "BUSINESS" ? "BUSINESS" : "TRAVELER",
         // สร้าง Business record พร้อมกันถ้าสมัครเป็นเจ้าของธุรกิจ
         business: role === "BUSINESS" ? {
