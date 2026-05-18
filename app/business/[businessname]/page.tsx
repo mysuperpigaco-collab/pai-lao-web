@@ -13,7 +13,7 @@ export default async function BusinessProfilePage({ params }: Props) {
     where: { businessName: businessname },
     include: {
       places: {
-        where: { isPublished: true },
+        
         orderBy: { createdAt: "desc" },
       },
     },
