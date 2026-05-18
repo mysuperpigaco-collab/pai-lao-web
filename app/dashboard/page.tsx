@@ -115,7 +115,7 @@ export default function DashboardPage() {
             <div className="dp-card">
               <h3 className="sb-title">ข้อมูล <small>Account</small></h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "13px", color: "#475569" }}>
-                {user?.email && <span>📧 {user.email}</span>}
+
                 {user?.role === "TRAVELER" && <span>🎒 Traveler Account</span>}
               </div>
             </div>
