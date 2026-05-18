@@ -7,13 +7,13 @@ import StoryCard from "@/components/dashboard/StoryCard";
 
 /* ── Mock data ── */
 const MY_STORIES = [
-  { id: 1, title: "หนีร้อนไปพึ่งเย็นที่ดอยอินทนนท์", status: "published" as const, date: "12 พ.ค. 2024", img: "https://picsum.photos/seed/story21/600/400" },
-  { id: 2, title: "คาเฟ่เปิดใหม่ย่านอารีย์ ห้ามพลาด!", status: "wait"      as const, date: "5 พ.ค. 2024",  img: "https://picsum.photos/seed/story22/600/400" },
-  { id: 3, title: "เดินตลาดน้ำอัมพวา หาของกินเพลิน", status: "draft"     as const, date: "28 เม.ย. 2024",img: "https://picsum.photos/seed/story23/600/400" },
+  { slug: "doi-inthanon", title: "หนีร้อนไปพึ่งเย็นที่ดอยอินทนนท์", createdAt: "2024-05-12", coverUrl: "https://picsum.photos/seed/story21/600/400", isPublished: true },
+  { slug: "ari-cafe",     title: "คาเฟ่เปิดใหม่ย่านอารีย์ ห้ามพลาด!", createdAt: "2024-05-05", coverUrl: "https://picsum.photos/seed/story22/600/400", isPublished: false },
+  { slug: "amphawa",      title: "เดินตลาดน้ำอัมพวา หาของกินเพลิน",  createdAt: "2024-04-28", coverUrl: "https://picsum.photos/seed/story23/600/400", isPublished: false },
 ];
 
 const SAVED_STORIES = [
-  { id: 4, title: "ทริปเกาะสมุย 3 วัน 2 คืน งบไม่เกิน 5,000", status: "published" as const, date: "1 พ.ค. 2024", img: "https://picsum.photos/seed/story24/600/400" },
+  { slug: "koh-samui", title: "ทริปเกาะสมุย 3 วัน 2 คืน งบไม่เกิน 5,000", createdAt: "2024-05-01", coverUrl: "https://picsum.photos/seed/story24/600/400", isPublished: true },
 ];
 
 const NOTIFICATIONS = [
