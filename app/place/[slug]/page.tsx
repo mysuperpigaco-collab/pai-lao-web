@@ -126,7 +126,7 @@ export default async function PlaceDetailPage({ params }: Props) {
                       <div>
                         <div style={{ fontWeight: 700, fontSize: 14 }}>{r.author.displayName || r.author.firstName}</div>
                         <span style={{ color: "#f59e0b" }}>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>
-                        {r.comment && <p style={{ margin: "6px 0 0", color: "#374151" }}>{r.comment}</p>}
+                        {r.text && <p style={{ margin: "6px 0 0", color: "#374151" }}>{ r.text }</p>}
                       </div>
                     </div>
                   </div>

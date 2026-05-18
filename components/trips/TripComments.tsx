@@ -19,7 +19,7 @@ interface ReviewReply {
 interface Review {
   id: string;
   rating: number;
-  comment?: string | null;
+  text?: string | null;
   createdAt: string;
   author: ReviewAuthor;
   replies: ReviewReply[];
@@ -55,7 +55,7 @@ export default function TripComments({ reviews, avgRating, tripSlug }: Props) {
       const res = await fetch("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tripSlug, rating: newRating, comment: newComment }),
+        body: JSON.stringify({ tripSlug, rating: newRating, text: newComment }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -131,7 +131,7 @@ export default function TripComments({ reviews, avgRating, tripSlug }: Props) {
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 700, fontSize: 14 }}>{review.author.displayName || review.author.firstName}</div>
                 <StarRow rating={review.rating} />
-                {review.comment && <p style={{ margin: "8px 0 0", color: "#374151", lineHeight: 1.6 }}>{review.comment}</p>}
+                {review.text && <p style={{ margin: "8px 0 0", color: "#374151", lineHeight: 1.6 }}>{review.text}</p>}
                 <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 6 }}>
                   {new Date(review.createdAt).toLocaleDateString("th-TH")}
                 </div>
