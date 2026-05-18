@@ -1,0 +1,61 @@
+/*
+ * ============================================================
+ *  PAI-LAO DESIGN TOKENS  —  Single Source of Truth
+ *  วางไว้ที่ app/design-tokens.css แล้ว import ใน globals.css
+ * ============================================================
+ *
+ *  สีหลัก: ฟ้า (#4facfe) + เขียว (#43e97b) + ขาว
+ *  ใช้ชื่อ semantic เสมอ  อย่าใช้ hex โดยตรงในโค้ด
+ */
+
+:root {
+
+  /* ── Brand ── */
+  --pl-blue:        #4facfe;
+  --pl-blue-dark:   #2563eb;
+  --pl-blue-soft:   #eff6ff;
+  --pl-blue-mid:    #dbeafe;
+
+  --pl-green:       #43e97b;
+  --pl-green-dark:  #22a06b;
+  --pl-green-deep:  #15803d;
+  --pl-green-soft:  #ecfdf5;
+
+  /* ── Gradient (ใช้คู่กันเสมอ) ── */
+  --pl-gradient:    linear-gradient(to right, var(--pl-blue), var(--pl-green));
+
+  /* ── Neutral ── */
+  --pl-white:       #ffffff;
+  --pl-bg:          #f8fafc;
+  --pl-border:      #e2e8f0;
+  --pl-border-soft: #dbe7f3;
+
+  --pl-text-primary:   #0f172a;
+  --pl-text-secondary: #64748b;
+  --pl-text-muted:     #94a3b8;
+
+  /* ── Danger (ปุ่มยกเลิก) ── */
+  --pl-red:         #b91c1c;
+  --pl-red-border:  #fecaca;
+  --pl-red-soft:    #fff5f5;
+  --pl-red-mid:     #fef2f2;
+
+  /* ── Warning (password, gallery full) ── */
+  --pl-orange-soft: #fff7ed;
+  --pl-orange-border:#fed7aa;
+  --pl-orange-text: #9a3412;
+
+  /* ── Radius ── */
+  --pl-radius-pill: 999px;
+  --pl-radius-card: 36px;
+  --pl-radius-section: 28px;
+  --pl-radius-input: 18px;
+  --pl-radius-btn:  16px;
+
+  /* ── Shadow ── */
+  --pl-shadow-card: 0 20px 50px rgba(15,23,42,0.05);
+  --pl-shadow-btn:  0 10px 24px rgba(79,172,254,0.22);
+
+  /* ── Button heights ── */
+  --pl-btn-h:       52px;
+}

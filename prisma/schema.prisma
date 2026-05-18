@@ -1,0 +1,263 @@
+// ============================================================
+//  Prisma Schema - ไปเล่า (Pai-Lao)
+//  Version 2.0
+// ============================================================
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ── Enums ────────────────────────────────────────────────────
+
+enum Role {
+  TRAVELER
+  BUSINESS
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum PlaceCategory {
+  NATURE
+  CAFE
+  ACCOMMODATION
+  CAMPING
+  FOOD
+  TEMPLE
+  BEACH
+  MARKET
+  ADVENTURE
+  MUSEUM
+}
+
+// ── User ─────────────────────────────────────────────────────
+
+model User {
+  id          String    @id @default(uuid())
+  firstName   String
+  lastName    String
+  username    String    @unique
+  email       String    @unique
+  phone       String
+  password    String
+
+  displayName String?
+  birthDate   DateTime?
+  gender      Gender?
+  avatarUrl   String?
+  coverUrl    String?
+  bio         String?
+
+  lineId      String?
+  facebook    String?
+  instagram   String?
+  tiktok      String?
+
+  role        Role      @default(TRAVELER)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  trips         Trip[]
+  reviews       Review[]
+  reviewReplies ReviewReply[]
+  bookmarks     Bookmark[]
+  business      Business?
+}
+
+// ── Business ─────────────────────────────────────────────────
+
+model Business {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  businessName String
+  contactName  String?
+  description  String?
+  province     String?
+  country      String   @default("Thailand")
+  website      String?
+  logoUrl      String?
+  coverUrl     String?
+
+  phone        String?
+  email        String?
+  lineId       String?
+  facebook     String?
+  instagram    String?
+  tiktok       String?
+  categories   String[]
+
+  isVerified   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  places       Place[]
+}
+
+// ── Place ─────────────────────────────────────────────────────
+
+model Place {
+  id               String        @id @default(uuid())
+  slug             String        @unique
+  title            String
+  titleEn          String?
+
+  province         String
+  district         String
+  address          String?
+  googleMapsUrl    String?
+  lat              Float?
+  lng              Float?
+
+  category         PlaceCategory
+  tags             String[]
+
+  coverUrl         String
+  gallery          String[]
+
+  description      String
+  descriptionShort String?
+  openHours        String?
+  closedDays       String?
+  entryFee         String?
+  phone            String?
+  website          String?
+  lineId           String?
+
+  isVerified       Boolean   @default(false)
+  businessId       String?
+  business         Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  reviews          Review[]
+  bookmarks        Bookmark[]
+  timelineStops    TimelineStop[]
+}
+
+// ── Trip ──────────────────────────────────────────────────────
+
+model Trip {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  title       String
+  subtitle    String?
+  description String
+  coverUrl    String
+  gallery     String[]
+
+  mood        String
+  budget      Int?
+  location    String?
+  tags        String[]
+
+  isPublished Boolean  @default(true)
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  timeline    TimelineStop[]
+  reviews     Review[]
+  bookmarks   Bookmark[]
+}
+
+// ── TimelineStop ──────────────────────────────────────────────
+
+model TimelineStop {
+  id          String  @id @default(uuid())
+  tripId      String
+  trip        Trip    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  order       Int
+
+  date        String
+  time        String?
+
+  placeName   String
+  province    String
+  district    String
+
+  description String
+  transport   String?
+  duration    String?
+  cost        String?
+  images      String[]
+
+  placeId     String?
+  place       Place?  @relation(fields: [placeId], references: [id], onDelete: SetNull)
+
+  @@index([tripId])
+  @@index([order])
+}
+
+// ── Review ────────────────────────────────────────────────────
+
+model Review {
+  id        String   @id @default(uuid())
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  tripId    String?
+  trip      Trip?    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  placeId   String?
+  place     Place?   @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  rating    Int
+  text      String
+  likes     Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  replies   ReviewReply[]
+
+  @@index([tripId])
+  @@index([placeId])
+  @@index([authorId])
+}
+
+// ── ReviewReply ───────────────────────────────────────────────
+
+model ReviewReply {
+  id        String   @id @default(uuid())
+  reviewId  String
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  text      String
+  createdAt DateTime @default(now())
+
+  @@index([reviewId])
+}
+
+// ── Bookmark ──────────────────────────────────────────────────
+
+model Bookmark {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tripId    String?
+  trip      Trip?    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  placeId   String?
+  place     Place?   @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tripId])
+  @@unique([userId, placeId])
+  @@index([userId])
+}

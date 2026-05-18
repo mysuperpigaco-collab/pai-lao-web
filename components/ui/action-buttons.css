@@ -1,0 +1,232 @@
+/*
+ * ============================================================
+ *  components/ui/action-buttons.css
+ *  Shared styles: BackButton · CancelButton · SaveButton
+ *
+ *  ใช้งาน: import "@/components/ui/action-buttons.css"
+ *  ร่วมกับ component ใน action-buttons.tsx
+ * ============================================================
+ */
+
+/* ─────────────────────────────────────────
+   BACK BUTTON  (กลับแดชบอร์ด / back nav)
+   class: .ui-back-btn
+───────────────────────────────────────── */
+
+.ui-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+
+  height: var(--pl-btn-h, 52px);
+  padding: 0 22px 0 10px;
+
+  border-radius: var(--pl-radius-pill);
+  border: 1.5px solid var(--pl-border-soft);
+  background: var(--pl-white);
+
+  text-decoration: none;
+  color: var(--pl-text-primary);
+  font-size: 14px;
+  font-weight: 800;
+
+  transition: 0.25s ease;
+  box-shadow: 0 4px 14px rgba(15,23,42,0.04);
+}
+
+.ui-back-btn:hover {
+  border-color: var(--pl-blue);
+  transform: translateY(-1px) translateX(-2px);
+  box-shadow: 0 8px 22px rgba(79,172,254,0.14);
+}
+
+/* วงกลมลูกศรซ้ายของปุ่มกลับ */
+.ui-back-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--pl-blue-soft), var(--pl-blue-mid));
+  color: var(--pl-blue-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: 0.25s ease;
+}
+
+.ui-back-btn:hover .ui-back-icon {
+  background: linear-gradient(135deg, var(--pl-blue), var(--pl-blue-dark));
+  color: white;
+}
+
+/* ข้อความในปุ่มกลับ */
+.ui-back-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.ui-back-sub {
+  color: var(--pl-text-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+
+/* ─────────────────────────────────────────
+   CANCEL BUTTON  (ยกเลิก / Discard)
+   class: .ui-cancel-btn
+   พื้นหลังขาว  ขอบแดงอ่อน  ตัวหนังสือแดง
+───────────────────────────────────────── */
+
+.ui-cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  height: var(--pl-btn-h, 52px);
+  padding: 0 24px;
+
+  border-radius: var(--pl-radius-btn);
+  border: 1.5px solid var(--pl-red-border);
+  background: var(--pl-white);          /* ← พื้นขาวตามที่ต้องการ */
+
+  text-decoration: none;
+  color: var(--pl-red);
+  font-size: 14px;
+  font-weight: 800;
+
+  transition: 0.25s ease;
+  box-shadow: 0 4px 14px rgba(185,28,28,0.04);
+}
+
+.ui-cancel-btn:hover {
+  background: var(--pl-red-soft);
+  border-color: #f87171;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(185,28,28,0.10);
+}
+
+/* วงกลม X */
+.ui-cancel-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--pl-red-mid);
+  color: var(--pl-red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: 0.25s ease;
+}
+
+.ui-cancel-btn:hover .ui-cancel-icon {
+  background: #ef4444;
+  color: white;
+}
+
+
+/* ─────────────────────────────────────────
+   SAVE BUTTON  (บันทึก / Save changes)
+   class: .ui-save-btn
+   gradient ฟ้า→เขียว  ตัวหนังสือขาว
+───────────────────────────────────────── */
+
+.ui-save-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  height: var(--pl-btn-h, 52px);
+  min-width: 200px;
+  padding: 0 30px;
+
+  border: none;
+  border-radius: var(--pl-radius-btn);
+  background: var(--pl-gradient);
+
+  color: white;
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+  transition: 0.25s ease;
+  box-shadow: var(--pl-shadow-btn);
+}
+
+.ui-save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(79,172,254,0.30);
+}
+
+.ui-save-btn:active {
+  transform: translateY(0);
+}
+
+/* วงกลม check */
+.ui-save-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+
+/* ─────────────────────────────────────────
+   ACTION BAR  (wrapper ของปุ่ม action)
+───────────────────────────────────────── */
+
+.ui-action-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--pl-border);
+}
+
+
+/* ─────────────────────────────────────────
+   PAGE TAG BADGE  (top-right label)
+───────────────────────────────────────── */
+
+.ui-page-tag {
+  padding: 8px 16px;
+  border-radius: var(--pl-radius-pill);
+  background: var(--pl-white);
+  border: 1px solid var(--pl-border);
+  color: var(--pl-text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+
+/* ─────────────────────────────────────────
+   MOBILE  —  stack vertically
+───────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .ui-action-bar {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .ui-back-btn,
+  .ui-cancel-btn,
+  .ui-save-btn {
+    width: 100%;
+    justify-content: center;
+    min-width: unset;
+  }
+}

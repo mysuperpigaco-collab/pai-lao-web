@@ -1,0 +1,214 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import BusinessProfileCard from "@/components/business/BusinessProfileCard";
+import BusinessPlaceCard from "@/components/business/BusinessPlaceCard";
+
+type BusinessData = {
+  business: {
+    id: string;
+    businessName: string;
+    logoUrl: string | null;
+    coverUrl: string | null;
+    phone: string | null;
+    lineId: string | null;
+    isVerified: boolean;
+  };
+  places: {
+    id: string;
+    slug: string;
+    title: string;
+    province: string;
+    district: string;
+    category: string;
+    coverUrl: string;
+    isVerified: boolean;
+    avgRating: number | null;
+    reviewCount: number;
+    bookmarkCount: number;
+  }[];
+  stats: {
+    totalPlaces: number;
+    totalReviews: number;
+    overallAvg: number | null;
+  };
+};
+
+function StatCard({ value, label, labelEn, color, bg }: {
+  value: string; label: string; labelEn: string; color: string; bg: string;
+}) {
+  return (
+    <div style={{ borderRadius: "24px", padding: "26px 28px", background: bg, display: "flex", flexDirection: "column", gap: "6px" }}>
+      <strong style={{ fontSize: "40px", fontWeight: 900, color, lineHeight: 1 }}>{value}</strong>
+      <span style={{ fontSize: "14px", fontWeight: 700, color: "#0f172a" }}>{label}</span>
+      <small style={{ fontSize: "11px", color: "#64748b" }}>{labelEn}</small>
+    </div>
+  );
+}
+
+export default function BusinessDashboardPage() {
+  const [data, setData] = useState<BusinessData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchData = () => {
+    setLoading(true);
+    fetch("/api/business/me")
+      .then(r => r.json())
+      .then(d => {
+        if (d.message) { setError(d.message); }
+        else { setData(d); }
+        setLoading(false);
+      })
+      .catch(() => { setError("ไม่สามารถโหลดข้อมูลได้"); setLoading(false); });
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const handlePlaceDeleted = (slug: string) => {
+    setData(prev => {
+      if (!prev) return prev;
+      const places = prev.places.filter(p => p.slug !== slug);
+      return { ...prev, places, stats: { ...prev.stats, totalPlaces: places.length } };
+    });
+  };
+
+  if (loading) return (
+    <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <p style={{ color: "#94a3b8", fontSize: "16px" }}>⏳ กำลังโหลดข้อมูล...</p>
+    </div>
+  );
+
+  if (error) return (
+    <div style={{ minHeight: "60vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "16px" }}>
+      <p style={{ color: "#dc2626", fontSize: "16px" }}>⚠️ {error}</p>
+      <button onClick={fetchData} style={{ padding: "10px 24px", borderRadius: "12px", border: "none", background: "#3b82f6", color: "white", fontWeight: 700, cursor: "pointer" }}>
+        ลองใหม่
+      </button>
+    </div>
+  );
+
+  const biz    = data!.business;
+  const stats  = data!.stats;
+  const places = data!.places;
+
+  return (
+    <div className="dashboard-page">
+
+      {/* ── HERO ── */}
+      <section className="dashboard-hero">
+        <p className="dashboard-tag">BUSINESS DASHBOARD</p>
+        <h1>จัดการสถานที่ของคุณ</h1>
+        <span>จัดการข้อมูล โปรไฟล์ รีวิว และสถานที่ทั้งหมดได้ในที่เดียว · Manage all your places in one place</span>
+      </section>
+
+      {/* ── PROFILE CARD ── */}
+      <BusinessProfileCard
+        businessName={biz.businessName}
+        phone={biz.phone ?? undefined}
+        lineId={biz.lineId ?? undefined}
+        logoUrl={biz.logoUrl ?? undefined}
+        isVerified={biz.isVerified}
+      />
+
+      {/* ── STATS ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginBottom: "32px" }}>
+        <StatCard
+          value={String(stats.totalPlaces)}
+          label="สถานที่ทั้งหมด" labelEn="Total Places"
+          color="#2563eb" bg="#eff6ff"
+        />
+        <StatCard
+          value={stats.overallAvg != null ? String(stats.overallAvg) : "—"}
+          label="คะแนนเฉลี่ย" labelEn="Average Rating"
+          color="#15803d" bg="#dcfce7"
+        />
+        <StatCard
+          value={stats.totalReviews > 0 ? String(stats.totalReviews) : "0"}
+          label="รีวิวทั้งหมด" labelEn="Total Reviews"
+          color="#9333ea" bg="#faf5ff"
+        />
+      </div>
+
+      {/* ── PLACES HEADER ── */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
+        <div>
+          <h2 style={{ fontSize: "22px", fontWeight: 900, margin: 0 }}>สถานที่ของคุณ</h2>
+          <p style={{ color: "#64748b", fontSize: "13px", margin: "4px 0 0" }}>
+            {places.length} สถานที่ · จัดการและแก้ไขข้อมูลได้ที่นี่
+          </p>
+        </div>
+        <Link href="/business/places/create" style={{
+          display: "inline-flex", alignItems: "center", gap: "8px",
+          padding: "12px 20px", borderRadius: "14px",
+          background: "linear-gradient(135deg, #4facfe, #43e97b)",
+          color: "white", textDecoration: "none", fontWeight: 800, fontSize: "14px",
+          boxShadow: "0 4px 12px rgba(79,172,254,0.3)",
+        }}>
+          + เพิ่มสถานที่ใหม่
+        </Link>
+      </div>
+
+      {/* ── PLACES GRID ── */}
+      {places.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "60px 20px", background: "#f8fafc", borderRadius: "24px" }}>
+          <p style={{ fontSize: "40px", marginBottom: "12px" }}>🏞️</p>
+          <h3 style={{ fontSize: "18px", fontWeight: 800, color: "#334155" }}>ยังไม่มีสถานที่</h3>
+          <p style={{ color: "#64748b", fontSize: "14px", marginBottom: "24px" }}>เพิ่มสถานที่แรกของคุณเพื่อให้นักท่องเที่ยวค้นพบ</p>
+          <Link href="/business/places/create" style={{
+            display: "inline-flex", padding: "12px 28px", borderRadius: "999px",
+            background: "#3b82f6", color: "white", fontWeight: 800, textDecoration: "none",
+          }}>
+            + เพิ่มสถานที่ใหม่
+          </Link>
+        </div>
+      ) : (
+        <section className="manage-grid">
+          {places.map(p => (
+            <BusinessPlaceCard
+              key={p.slug}
+              slug={p.slug}
+              title={p.title}
+              province={p.province}
+              district={p.district}
+              coverUrl={p.coverUrl}
+              category={p.category}
+              avgRating={p.avgRating}
+              isVerified={p.isVerified}
+              reviewCount={p.reviewCount}
+              bookmarkCount={p.bookmarkCount}
+              onDeleted={handlePlaceDeleted}
+            />
+          ))}
+        </section>
+      )}
+
+      <style jsx>{`
+        .dashboard-page { width: 100%; max-width: 1440px; margin: 0 auto; padding: 40px 24px 80px; }
+
+        .dashboard-hero {
+          background: linear-gradient(135deg, #0f172a, #1e3a8a, #0f766e);
+          border-radius: 36px; padding: 48px; color: white;
+          margin-bottom: 24px; position: relative; overflow: hidden;
+        }
+        .dashboard-hero::before {
+          content: ""; position: absolute; width: 400px; height: 400px;
+          background: rgba(255,255,255,0.06); border-radius: 999px;
+          top: -120px; right: -120px;
+        }
+        .dashboard-tag { font-size: 11px; letter-spacing: 2.5px; font-weight: 800; color: rgba(255,255,255,0.6); margin: 0 0 12px; }
+        .dashboard-hero h1 { font-size: 44px; font-weight: 900; margin: 0 0 12px; line-height: 1.1; color: #ffffff; }
+        .dashboard-hero span { display: block; color: rgba(255,255,255,0.75); font-size: 15px; line-height: 1.7; max-width: 640px; }
+
+        .manage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+
+        @media (max-width: 768px) {
+          .dashboard-page { padding: 24px 16px 60px; }
+          .dashboard-hero { padding: 32px 24px; border-radius: 28px; }
+          .dashboard-hero h1 { font-size: 32px; }
+        }
+      `}</style>
+    </div>
+  );
+}

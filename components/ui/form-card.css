@@ -1,0 +1,250 @@
+/*
+ * ============================================================
+ *  components/ui/form-card.css
+ *  Shared form layout: SectionCard, FormGrid, Label, Input
+ *
+ *  ใช้งาน: import "@/components/ui/form-card.css"
+ *  ร่วมกับ SectionCard.tsx
+ * ============================================================
+ */
+
+/* ── Section Card ── */
+.ui-section-card {
+  background: var(--pl-white);
+  border-radius: var(--pl-radius-section);
+  padding: 32px;
+  margin-bottom: 24px;
+  border: 1px solid var(--pl-border-soft);
+  box-shadow: 0 2px 12px rgba(15,23,42,0.04);
+}
+
+/* ── Section Header ── */
+.ui-section-hdr {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.ui-section-hdr h2 {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--pl-text-primary);
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ui-section-hdr p {
+  font-size: 13px;
+  color: var(--pl-text-secondary);
+  margin: 0;
+}
+
+/* EN tag (เช่น [Business Info]) */
+.ui-en-tag {
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--pl-blue-soft);
+  color: var(--pl-blue-dark);
+  padding: 2px 9px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+
+/* ── Form Grid: 2 col desktop / 1 col mobile ── */
+.ui-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px 26px;
+}
+
+.ui-form-grid .col-full {
+  grid-column: span 2;
+}
+
+/* ── Field ── */
+.ui-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-field label {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--pl-text-primary);
+  margin-bottom: 9px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ui-field label .en {
+  font-size: 11px;
+  color: #378add;
+  font-weight: 400;
+}
+
+.ui-field label .req {
+  color: #ef4444;
+  font-weight: 800;
+}
+
+/* ── Input / Textarea / Select ── */
+.ui-input {
+  width: 100%;
+  border: 1.5px solid var(--pl-border-soft);
+  border-radius: var(--pl-radius-input);
+  background: #f8fbff;
+  padding: 13px 18px;
+  font-size: 15px;
+  color: var(--pl-text-primary);
+  transition: 0.25s ease;
+  box-sizing: border-box;
+}
+
+.ui-input:focus {
+  outline: none;
+  border-color: var(--pl-blue);
+  background: var(--pl-white);
+  box-shadow: 0 0 0 4px rgba(79,172,254,0.12);
+}
+
+.ui-input.textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+/* ── Category chip grid ── */
+.ui-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.ui-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--pl-border);
+  background: var(--pl-bg);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pl-text-secondary);
+  transition: 0.2s;
+  user-select: none;
+}
+
+.ui-chip:hover,
+.ui-chip.active {
+  border-color: var(--pl-blue);
+  background: var(--pl-blue-soft);
+  color: var(--pl-blue-dark);
+}
+
+.ui-chip input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--pl-blue);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── Password Box ── */
+.ui-password-box {
+  margin-top: 28px;
+  background: var(--pl-orange-soft);
+  border: 1px solid var(--pl-orange-border);
+  border-radius: 24px;
+  padding: 26px;
+}
+
+.ui-password-box h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--pl-orange-text);
+  margin-bottom: 6px;
+}
+
+.ui-password-box > p {
+  font-size: 13px;
+  color: #c2410c;
+  margin-bottom: 20px;
+}
+
+.ui-password-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+/* password strength bar */
+.ui-strength-bar {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--pl-border);
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.ui-strength-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s, background 0.3s;
+}
+
+.ui-strength-fill.weak   { background: #ef4444; width: 25%; }
+.ui-strength-fill.fair   { background: #f59e0b; width: 50%; }
+.ui-strength-fill.good   { background: #22c55e; width: 75%; }
+.ui-strength-fill.strong { background: var(--pl-green-dark); width: 100%; }
+
+.ui-strength-label {
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.ui-match-ok  { color: var(--pl-green-deep); font-size: 12px; margin-top: 4px; }
+.ui-match-err { color: #ef4444; font-size: 12px; margin-top: 4px; }
+
+.ui-password-note {
+  font-size: 13px;
+  color: var(--pl-orange-text);
+  margin-top: 16px;
+}
+
+/* ── Social Media Row ── */
+.ui-social-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ui-social-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+  background: var(--pl-bg);
+  border: 1.5px solid var(--pl-border);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .ui-password-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .ui-form-grid { grid-template-columns: 1fr; }
+  .ui-form-grid .col-full { grid-column: span 1; }
+  .ui-section-card { padding: 22px; border-radius: 22px; }
+}
