@@ -142,7 +142,7 @@ export default function BusinessPlaceCard({
 
       {/* ── Actions ── */}
       <div style={{ display: "flex", gap: "8px", padding: "12px 22px 22px" }}>
-        <Link href={`/place/${slug}`} style={btnView}>👁 ดูหน้าเพจ</Link>
+        <Link href={`/business/places/${slug}/preview`} style={btnView}>👁 ดูตัวอย่าง · Preview</Link>
         <Link href={`/business/places/${slug}/edit`} style={btnEdit}>✏️ แก้ไข</Link>
         <button style={btnDel} title="ลบสถานที่" onClick={handleDelete} disabled={deleting}>
           {deleting ? "⏳" : "🗑"}

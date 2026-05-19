@@ -10,6 +10,7 @@ interface Trip {
   province?: string | null;
   district?: string | null;
   category?: string | null;
+  _count?: { reviews: number; bookmarks: number };
 }
 
 const CATEGORIES = [
@@ -76,7 +77,11 @@ export default function ExplorerSection() {
       <div className="ex-cats">
         {CATEGORIES.map(c => (
           <button key={c.id} className={`ex-cat${category === c.id ? " active" : ""}`} onClick={() => setCategory(c.id)}>
-            {c.icon} <span>{c.label}</span>
+            <span className="ex-cat-icon">{c.icon}</span>
+            <span className="ex-cat-labels">
+              <span className="ex-cat-th">{c.label}</span>
+              {c.label !== c.en && <span className="ex-cat-en">{c.en}</span>}
+            </span>
           </button>
         ))}
       </div>
@@ -89,7 +94,7 @@ export default function ExplorerSection() {
             <small>Select a province to explore stories from that area</small>
           </div>
         ) : loading ? (
-          <div className="ex-empty"><span>⏳</span><p>กำลังโหลด...</p></div>
+          <div className="ex-empty"><span>⏳</span><p>กำลังโหลด... <span style={{ fontWeight: 400, color: "#94a3b8" }}>Loading...</span></p></div>
         ) : trips.length === 0 ? (
           <div className="ex-empty">
             <span>📭</span>
@@ -102,10 +107,18 @@ export default function ExplorerSection() {
               <Link key={trip.slug} href={`/trips/${trip.slug}`} className="ex-card">
                 <div className="ex-img">
                   {trip.coverUrl ? <img src={trip.coverUrl} alt={trip.title} /> : <div className="ex-img-ph">🏞️</div>}
+                  {(trip._count?.reviews ?? 0) > 0 && (
+                    <span className="ex-review-badge">💬 {trip._count!.reviews}</span>
+                  )}
                 </div>
                 <div className="ex-info">
                   <h4>{trip.title}</h4>
-                  <p>📍 {[trip.district, trip.province].filter(Boolean).join(", ")}</p>
+                  <div className="ex-info-meta">
+                    <span>📍 {[trip.district, trip.province].filter(Boolean).join(", ")}</span>
+                    {(trip._count?.reviews ?? 0) > 0 && (
+                      <span className="ex-review-text">{trip._count!.reviews} รีวิว · reviews</span>
+                    )}
+                  </div>
                 </div>
               </Link>
             ))}
@@ -129,6 +142,10 @@ export default function ExplorerSection() {
         .ex-cat { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 999px; border: 1.5px solid #e2e8f0; background: white; font-size: 13px; font-weight: 600; color: #475569; cursor: pointer; transition: 0.2s; font-family: inherit; }
         .ex-cat.active { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
         .ex-cat:hover:not(.active) { background: #f8fafc; }
+        .ex-cat-icon { font-size: 14px; }
+        .ex-cat-labels { display: flex; flex-direction: column; line-height: 1.15; }
+        .ex-cat-th { font-size: 12px; font-weight: 700; }
+        .ex-cat-en { font-size: 10px; font-weight: 500; opacity: 0.7; }
         .ex-results { min-height: 160px; }
         .ex-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 20px; gap: 10px; text-align: center; background: #f8fafc; border-radius: 18px; }
         .ex-empty span { font-size: 40px; }
@@ -137,12 +154,15 @@ export default function ExplorerSection() {
         .ex-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
         .ex-card { background: #f8fafc; border-radius: 16px; overflow: hidden; text-decoration: none; color: inherit; transition: 0.2s; border: 1px solid #f1f5f9; display: block; }
         .ex-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(15,23,42,0.08); }
-        .ex-img { height: 130px; overflow: hidden; background: #e2e8f0; }
+        .ex-img { position: relative; height: 130px; overflow: hidden; background: #e2e8f0; }
         .ex-img img { width: 100%; height: 100%; object-fit: cover; }
         .ex-img-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 36px; }
+        .ex-review-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(15,23,42,0.65); color: white; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 999px; backdrop-filter: blur(4px); }
         .ex-info { padding: 12px; }
-        .ex-info h4 { font-size: 13px; font-weight: 700; color: #1e293b; margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .ex-info p { font-size: 11px; color: #94a3b8; margin: 0; }
+        .ex-info h4 { font-size: 13px; font-weight: 700; color: #1e293b; margin: 0 0 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ex-info-meta { display: flex; flex-direction: column; gap: 2px; }
+        .ex-info-meta span { font-size: 11px; color: #94a3b8; }
+        .ex-review-text { color: #64748b !important; font-weight: 600 !important; }
         @media (max-width: 900px) { .ex-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 600px) { .ex-filters { flex-direction: column; } .ex-grid { grid-template-columns: 1fr; } .ex-wrap { padding: 22px 18px; } }
       `}</style>

@@ -132,8 +132,8 @@ export default function HomePage() {
       {/* ─── Must-See ─── */}
       <div className="hp-section-hdr" style={{ marginTop: "48px" }}>
         <div>
-          <h2 className="hp-title">📺 Must-See <span>ไฮไลต์สัปดาห์นี้</span></h2>
-          <p className="hp-sub">คัดมาให้แล้ว เรื่องราวน่าสนใจประจำสัปดาห์ · Curated weekly highlights</p>
+          <h2 className="hp-title">🗺️ ไฮไลต์สถานที่ <span>Explore Places</span></h2>
+          <p className="hp-sub">เรื่องเล่าล่าสุดและสถานที่น่าสนใจจากทุกหมวด · Latest stories & places by category</p>
         </div>
       </div>
       <AutoGridSection />

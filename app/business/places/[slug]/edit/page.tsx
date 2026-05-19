@@ -25,11 +25,15 @@ const CATEGORY_ICON: Record<string, string> = {
 };
 const MAX_PHOTOS = 20;
 
-async function uploadImage(file: File): Promise<string> {
+async function uploadImage(file: File, folder = "places"): Promise<string> {
   const fd = new FormData();
   fd.append("file", file);
+  fd.append("folder", folder);
   const res = await fetch("/api/upload", { method: "POST", body: fd });
-  if (!res.ok) throw new Error("อัปโหลดรูปไม่สำเร็จ");
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "อัปโหลดรูปไม่สำเร็จ");
+  }
   return (await res.json()).url as string;
 }
 
@@ -72,6 +76,7 @@ export default function EditPlacePage({ params }: Props) {
   const [closedDays, setClosedDays] = useState("");
   const [entryFee, setEntryFee]     = useState("");
   const [phone, setPhone]           = useState("");
+  const handlePhone = (v: string) => setPhone(v.replace(/[^0-9+\-() ]/g, ""));
   const [website, setWebsite]       = useState("");
   const [lineId, setLineId]         = useState("");
 
@@ -386,8 +391,10 @@ export default function EditPlacePage({ params }: Props) {
                 <input className="form-control" type="text" value={entryFee} onChange={e => setEntryFee(e.target.value)} placeholder="เช่น ฟรี หรือ 50 ฿/คน" />
               </div>
               <div className="field">
-                <label>เบอร์โทรศัพท์</label>
-                <input className="form-control" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="เช่น 034-574222" />
+                <label>เบอร์โทรศัพท์ <span className="hint">Phone number</span></label>
+                <input className="form-control" type="tel" inputMode="numeric"
+                  value={phone} onChange={e => handlePhone(e.target.value)}
+                  placeholder="เช่น 034-574222" pattern="[0-9+\-() ]*" />
               </div>
               <div className="field">
                 <label>เว็บไซต์</label>
@@ -444,10 +451,12 @@ export default function EditPlacePage({ params }: Props) {
 
           {/* ── ACTIONS ── */}
           <div className="action-row">
-            <Link href="/business/dashboard" className="btn-cancel">✕ ยกเลิก</Link>
-            <Link href={`/place/${slug}`} className="btn-preview" target="_blank">👁️ ดูตัวอย่าง</Link>
+            <Link href="/business/dashboard" className="btn-cancel">✕ ยกเลิก · Cancel</Link>
+            <Link href={`/business/places/${slug}/preview`} className="btn-preview" target="_blank">
+              👁️ ดูตัวอย่าง · Preview
+            </Link>
             <button type="submit" className="btn-save" disabled={isLoading}>
-              {isLoading ? "⏳ กำลังบันทึก..." : "✓ บันทึกข้อมูล"}
+              {isLoading ? "⏳ กำลังบันทึก..." : "✓ บันทึกข้อมูล · Save"}
             </button>
           </div>
 
