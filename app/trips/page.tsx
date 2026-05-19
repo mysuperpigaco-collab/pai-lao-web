@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { PROVINCES } from "@/data/thailand";
@@ -43,8 +43,16 @@ function formatDate(iso?: string) {
   return new Date(iso).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" });
 }
 
-/* ─── Component ──────────────────────────────────────────── */
+/* ─── Default export wrapped in Suspense ────────────────── */
 export default function TripsPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh", background: "#f8fafc" }} />}>
+      <TripsInner />
+    </Suspense>
+  );
+}
+
+function TripsInner() {
   const searchParams = useSearchParams();
 
   const [trips,       setTrips      ] = useState<Trip[]>([]);

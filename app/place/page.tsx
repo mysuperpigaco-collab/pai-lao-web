@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { PROVINCES } from "@/data/thailand";
@@ -47,8 +47,16 @@ const CAT_LABEL: Record<string, string> = Object.fromEntries(
   CATS.filter(c => c.id).map(c => [c.id, c.label])
 );
 
-/* ─── Component ──────────────────────────────────────────── */
+/* ─── Default export wrapped in Suspense ────────────────── */
 export default function PlacesPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh", background: "#f8fafc" }} />}>
+      <PlacesInner />
+    </Suspense>
+  );
+}
+
+function PlacesInner() {
   const searchParams = useSearchParams();
 
   const [places,   setPlaces  ] = useState<Place[]>([]);
