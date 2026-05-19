@@ -58,6 +58,16 @@ export default async function PlaceDetailPage({ params }: Props) {
   const catIcon  = CAT_ICON[place.category]  ?? "📍";
   const isOwner  = session?.userId === place.business?.userId;
 
+  // Serialize Prisma Date → string for client component
+  const serializedReviews = place.reviews.map(r => ({
+    ...r,
+    createdAt: r.createdAt.toISOString(),
+    replies: r.replies.map(rp => ({
+      ...rp,
+      createdAt: rp.createdAt.toISOString(),
+    })),
+  }));
+
   return (
     <div className="pd-page">
 
@@ -159,7 +169,7 @@ export default async function PlaceDetailPage({ params }: Props) {
               <PlaceReviews
                 placeId={place.id}
                 businessOwnerId={place.business?.userId ?? null}
-                initialReviews={place.reviews}
+                initialReviews={serializedReviews}
                 avgRating={avgRating}
               />
             </div>
