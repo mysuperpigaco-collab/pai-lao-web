@@ -11,6 +11,9 @@ export async function GET(request: Request) {
     const mood     = searchParams.get("mood")     ?? undefined;
     const authorId = searchParams.get("authorId") ?? undefined;
     const mine     = searchParams.get("mine")     === "1";
+    const province = searchParams.get("province") ?? undefined;
+    const district = searchParams.get("district") ?? undefined;
+    const category = searchParams.get("category") ?? undefined;
     const skip     = (page - 1) * limit;
 
     // ถ้าส่ง mine=1 จะดึงเฉพาะทริปของ user ที่ login (รวมทั้ง unpublished)
@@ -23,8 +26,11 @@ export async function GET(request: Request) {
 
     const where: any = {
       ...(!includeUnpublished ? { isPublished: true } : {}),
-      ...(mood             ? { mood }                      : {}),
+      ...(mood             ? { mood }                       : {}),
       ...(resolvedAuthorId ? { authorId: resolvedAuthorId } : {}),
+      ...(province ? { timeline: { some: { province: { contains: province, mode: "insensitive" } } } } : {}),
+      ...(district ? { timeline: { some: { district: { contains: district, mode: "insensitive" } } } } : {}),
+      ...(category ? { mood: { contains: category, mode: "insensitive" } } : {}),
     };
 
     const [trips, total] = await Promise.all([
@@ -39,12 +45,20 @@ export async function GET(request: Request) {
           tags: true, createdAt: true, isPublished: true,
           author: { select: { id: true, username: true, displayName: true, firstName: true, avatarUrl: true } },
           _count: { select: { reviews: true, bookmarks: true } },
+          timeline: { select: { province: true, district: true }, take: 1, orderBy: { order: "asc" } },
         },
       }),
       prisma.trip.count({ where }),
     ]);
 
-    return NextResponse.json({ trips, total, page, totalPages: Math.ceil(total / limit) });
+    // flatten province/district จาก first stop ออกมาที่ root
+    const tripsFlat = trips.map(({ timeline, ...t }) => ({
+      ...t,
+      province: timeline?.[0]?.province ?? null,
+      district: timeline?.[0]?.district ?? null,
+    }));
+
+    return NextResponse.json({ trips: tripsFlat, total, page, totalPages: Math.ceil(total / limit) });
   } catch (error) {
     console.error("GET /api/trips:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });

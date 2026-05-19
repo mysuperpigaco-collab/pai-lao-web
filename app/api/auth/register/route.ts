@@ -10,6 +10,8 @@ export async function POST(request: Request) {
       firstName, lastName, username, email, phone, password,
       // Traveler optional
       displayName, birthDate, gender,
+      // Social (optional)
+      lineId, facebook, instagram, tiktok,
       // Account type
       role = "TRAVELER",
       // Business (ถ้า role = BUSINESS)
@@ -65,6 +67,10 @@ export async function POST(request: Request) {
         displayName: displayName || `${firstName} ${lastName}`,
         birthDate: birthDate ? new Date(birthDate) : undefined,
         gender: gender ? gender.toUpperCase() as any : undefined,
+        lineId:    lineId    || undefined,
+        facebook:  facebook  || undefined,
+        instagram: instagram || undefined,
+        tiktok:    tiktok    || undefined,
         role: role === "BUSINESS" ? "BUSINESS" : "TRAVELER",
         // สร้าง Business record พร้อมกันถ้าสมัครเป็นเจ้าของธุรกิจ
         business: role === "BUSINESS" ? {
@@ -73,6 +79,10 @@ export async function POST(request: Request) {
             contactName: `${firstName} ${lastName}`,
             email,
             phone,
+            lineId:    lineId    || undefined,
+            facebook:  facebook  || undefined,
+            instagram: instagram || undefined,
+            tiktok:    tiktok    || undefined,
           },
         } : undefined,
       },

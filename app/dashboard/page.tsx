@@ -237,7 +237,7 @@ export default function DashboardPage() {
         .dp-greeting { font-size: 28px; font-weight: 900; color: #0f172a; margin: 0 0 4px; }
         .dp-subheading { font-size: 14px; color: #64748b; margin: 0; }
 
-        .dp-write-btn { display: inline-flex; align-items: center; gap: 12px; padding: 10px 20px 10px 10px; border-radius: "14px"; background: linear-gradient(135deg, #4facfe 0%, #43e97b 100%); color: #fff; text-decoration: none; border: none; cursor: pointer; box-shadow: 0 6px 18px rgba(79,172,254,0.30); font-family: inherit; border-radius: 14px; }
+        .dp-write-btn { display: inline-flex; align-items: center; gap: 12px; padding: 10px 20px 10px 10px; border-radius: 14px; background: linear-gradient(135deg, #4facfe 0%, #43e97b 100%); color: #fff; text-decoration: none; border: none; cursor: pointer; box-shadow: 0 6px 18px rgba(79,172,254,0.30); font-family: inherit; }
         .dp-write-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .dp-write-text { display: flex; flex-direction: column; gap: 2px; text-align: left; line-height: 1; }
         .dp-write-text strong { font-size: 14px; font-weight: 900; color: #fff; display: block; }

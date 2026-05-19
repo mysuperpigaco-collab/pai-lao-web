@@ -6,6 +6,7 @@ interface Trip {
   slug: string;
   title: string;
   coverUrl?: string | null;
+  province?: string | null;
   author: { displayName?: string | null; firstName: string };
 }
 
@@ -21,88 +22,91 @@ export default function TripSlider() {
       .catch(() => {});
   }, []);
 
-  // auto-advance ทุก 5 วินาที
+  const startTimer = (length: number) => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setCurrentIndex(p => (p + 1) % length), 5000);
+  };
+
   useEffect(() => {
     if (trips.length <= 1) return;
-    timerRef.current = setInterval(() => {
-      setCurrentIndex(prev => (prev + 1) % trips.length);
-    }, 5000);
+    startTimer(trips.length);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [trips.length]);
 
-  // เมื่อคลิก arrow — รีเซ็ต timer แล้วเลื่อน
-  const moveSlide = (direction: number) => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    setCurrentIndex(prev => (prev + direction + trips.length) % trips.length);
-    // เริ่ม timer ใหม่หลังคลิก
-    timerRef.current = setInterval(() => {
-      setCurrentIndex(p => (p + 1) % trips.length);
-    }, 5000);
+  const moveSlide = (dir: number) => {
+    const next = (currentIndex + dir + trips.length) % trips.length;
+    setCurrentIndex(next);
+    startTimer(trips.length);
   };
 
   if (trips.length === 0) {
     return (
-      <div style={{ height: 400, display: "flex", alignItems: "center", justifyContent: "center",
-        background: "#f8fafc", borderRadius: 20, color: "#94a3b8", fontSize: 16 }}>
+      <div style={{ height: 260, display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc", borderRadius: 20, color: "#94a3b8", fontSize: 15 }}>
         ยังไม่มีเรื่องเล่า — เป็นคนแรกที่เล่าให้ฟัง!
       </div>
     );
   }
 
   return (
-    <div className="slider-wrapper">
-      <button className="arrow left" onClick={() => moveSlide(-1)} aria-label="ก่อนหน้า">❮</button>
-      <div className="slider-viewport">
-        <div className="slider-container" style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
+    <div className="sl-wrap">
+      <button className="sl-arrow sl-left" onClick={() => moveSlide(-1)} aria-label="ก่อนหน้า">‹</button>
+
+      <div className="sl-viewport">
+        <div className="sl-track" style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
           {trips.map((trip) => (
-            <Link key={trip.slug} href={`/trips/${trip.slug}`} className="slide-card">
+            <Link key={trip.slug} href={`/trips/${trip.slug}`} className="sl-slide">
               {trip.coverUrl
-                ? <img src={trip.coverUrl} alt={trip.title} />
-                : <div style={{ width: "100%", height: 400, background: "#e2e8f0" }} />
-              }
-              <div className="slide-info">
-                <h3>{trip.title}</h3>
-                <p>โดย {trip.author?.displayName || trip.author?.firstName}</p>
+                ? <img src={trip.coverUrl} alt={trip.title} className="sl-img" />
+                : <div className="sl-ph" />}
+              <div className="sl-overlay" />
+              <div className="sl-info">
+                <div className="sl-info-inner">
+                  <h3 className="sl-title">{trip.title}</h3>
+                  <div className="sl-meta">
+                    {trip.province && <span>📍 {trip.province}</span>}
+                    <span>โดย {trip.author?.displayName || trip.author?.firstName}</span>
+                  </div>
+                </div>
               </div>
             </Link>
           ))}
         </div>
       </div>
-      <button className="arrow right" onClick={() => moveSlide(1)} aria-label="ถัดไป">❯</button>
 
-      {/* dot indicators */}
+      <button className="sl-arrow sl-right" onClick={() => moveSlide(1)} aria-label="ถัดไป">›</button>
+
       {trips.length > 1 && (
-        <div className="dots">
+        <div className="sl-dots">
           {trips.map((_, i) => (
-            <button
-              key={i}
-              className={`dot${i === currentIndex ? " active" : ""}`}
-              onClick={() => moveSlide(i - currentIndex)}
-              aria-label={`สไลด์ที่ ${i + 1}`}
-            />
+            <button key={i} className={`sl-dot${i === currentIndex ? " active" : ""}`}
+              onClick={() => { setCurrentIndex(i); startTimer(trips.length); }}
+              aria-label={`สไลด์ ${i + 1}`} />
           ))}
         </div>
       )}
 
       <style jsx>{`
-        .slider-wrapper { position: relative; display: flex; align-items: center; }
-        .slider-viewport { width: 100%; overflow: hidden; border-radius: 20px; }
-        .slider-container { display: flex; transition: transform 0.5s ease-in-out; }
-        .slide-card { min-width: 100%; position: relative; display: block; text-decoration: none; }
-        .slide-card img { width: 100%; height: 400px; object-fit: cover; display: block; }
-        .slide-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 40px 20px;
-          background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: white; }
-        .slide-info h3 { margin: 0 0 6px; font-size: 22px; }
-        .slide-info p { margin: 0; opacity: 0.85; font-size: 14px; }
-        .arrow { position: absolute; z-index: 10; background: white; border: none; width: 40px;
-          height: 40px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-          font-size: 14px; }
-        .left { left: -20px; } .right { right: -20px; }
-        .dots { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
-          display: flex; gap: 8px; z-index: 10; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5);
-          border: none; cursor: pointer; padding: 0; transition: all 0.3s; }
-        .dot.active { background: white; width: 24px; border-radius: 4px; }
+        .sl-wrap { position: relative; display: flex; align-items: center; margin-bottom: 28px; }
+        .sl-viewport { width: 100%; overflow: hidden; border-radius: 20px; }
+        .sl-track { display: flex; transition: transform 0.45s ease-in-out; }
+        .sl-slide { min-width: 100%; height: 280px; position: relative; display: block; text-decoration: none; overflow: hidden; }
+        .sl-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .sl-ph { width: 100%; height: 100%; background: #e2e8f0; }
+        .sl-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(10,10,20,0.75) 0%, rgba(10,10,20,0.1) 60%, transparent 100%); }
+        .sl-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 0 20px 18px; }
+        .sl-info-inner { max-width: 680px; }
+        .sl-title { color: white; font-size: 18px; font-weight: 900; margin: 0 0 5px; line-height: 1.3; text-shadow: 0 1px 6px rgba(0,0,0,0.4); }
+        .sl-meta { display: flex; gap: 12px; flex-wrap: wrap; }
+        .sl-meta span { color: rgba(255,255,255,0.85); font-size: 12px; font-weight: 500; }
+
+        .sl-arrow { position: absolute; z-index: 10; background: rgba(255,255,255,0.92); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 22px; line-height: 1; box-shadow: 0 2px 10px rgba(0,0,0,0.18); color: #334155; display: flex; align-items: center; justify-content: center; transition: 0.2s; backdrop-filter: blur(4px); }
+        .sl-arrow:hover { background: white; transform: scale(1.08); }
+        .sl-left { left: -18px; }
+        .sl-right { right: -18px; }
+
+        .sl-dots { position: absolute; bottom: 12px; right: 16px; display: flex; gap: 6px; z-index: 10; }
+        .sl-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.45); border: none; cursor: pointer; padding: 0; transition: all 0.3s; }
+        .sl-dot.active { background: white; width: 22px; border-radius: 4px; }
       `}</style>
     </div>
   );

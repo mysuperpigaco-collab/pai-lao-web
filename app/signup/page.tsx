@@ -34,8 +34,11 @@ export default function SignupPage() {
     if (formData.confirmPassword && formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "รหัสผ่านไม่ตรงกัน";
     }
+    if (accountType === "business" && formData.businessName && formData.businessName.trim().length < 2) {
+      newErrors.businessName = "ชื่อธุรกิจต้องมีอย่างน้อย 2 ตัวอักษร";
+    }
     setErrors(newErrors);
-  }, [formData.email, formData.username, formData.password, formData.confirmPassword]);
+  }, [formData.email, formData.username, formData.password, formData.confirmPassword, formData.businessName, accountType]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -45,6 +48,11 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (Object.keys(errors).length > 0) return;
+    // hard-check required fields before sending
+    if (accountType === "business" && !formData.businessName.trim()) {
+      setApiError("กรุณากรอกชื่อธุรกิจ / Please enter your business name");
+      return;
+    }
     setApiError("");
     setIsLoading(true);
 
@@ -62,6 +70,10 @@ export default function SignupPage() {
           displayName:  formData.displayName,
           birthDate:    formData.birthDate  || undefined,
           gender:       formData.gender     || undefined,
+          lineId:       formData.lineId    || undefined,
+          facebook:     formData.facebook   || undefined,
+          instagram:    formData.instagram  || undefined,
+          tiktok:       formData.tiktok     || undefined,
           role:         accountType === "business" ? "BUSINESS" : "TRAVELER",
           businessName: accountType === "business" ? formData.businessName : undefined,
         }),
@@ -137,6 +149,32 @@ export default function SignupPage() {
                 <div className="full-width traveler-box">
                   <TravelerFields />
                 </div>
+              )}
+
+              {accountType === "business" && (
+                <>
+                  <div className="section-divider full-width">ข้อมูลธุรกิจ | <small>Business Info</small></div>
+                  <div className="full-width">
+                    <InputField
+                      label="ชื่อธุรกิจ / สถานที่"
+                      labelEn="Business Name"
+                      name="businessName"
+                      value={formData.businessName}
+                      onChange={handleChange}
+                      required
+                      placeholder="เช่น ร้านกาแฟดอยช้าง, รีสอร์ทภูผา"
+                      error={errors.businessName}
+                    />
+                  </div>
+                  <div className="full-width">
+                    <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: "12px", padding: "12px 16px", fontSize: "13px", color: "#92400e" }}>
+                      💡 ชื่อธุรกิจนี้จะแสดงในหน้าโปรไฟล์ธุรกิจของคุณ สามารถแก้ไขได้ภายหลัง
+                      <span style={{ display: "block", color: "#b45309", marginTop: "2px", fontSize: "12px" }}>
+                        This is your public business name — you can update it anytime.
+                      </span>
+                    </div>
+                  </div>
+                </>
               )}
 
               <div className="section-divider">ข้อมูลบัญชี | <small>Security</small></div>
