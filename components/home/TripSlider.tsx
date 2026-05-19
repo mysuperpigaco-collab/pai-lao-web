@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 interface Trip {
@@ -12,6 +12,7 @@ interface Trip {
 export default function TripSlider() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [trips, setTrips] = useState<Trip[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     fetch("/api/trips?limit=6&sort=recent")
@@ -20,12 +21,23 @@ export default function TripSlider() {
       .catch(() => {});
   }, []);
 
+  // auto-advance ทุก 5 วินาที
+  useEffect(() => {
+    if (trips.length <= 1) return;
+    timerRef.current = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % trips.length);
+    }, 5000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [trips.length]);
+
+  // เมื่อคลิก arrow — รีเซ็ต timer แล้วเลื่อน
   const moveSlide = (direction: number) => {
-    setCurrentIndex(prev =>
-      direction === 1
-        ? Math.min(prev + 1, trips.length - 1)
-        : Math.max(prev - 1, 0)
-    );
+    if (timerRef.current) clearInterval(timerRef.current);
+    setCurrentIndex(prev => (prev + direction + trips.length) % trips.length);
+    // เริ่ม timer ใหม่หลังคลิก
+    timerRef.current = setInterval(() => {
+      setCurrentIndex(p => (p + 1) % trips.length);
+    }, 5000);
   };
 
   if (trips.length === 0) {
@@ -39,7 +51,7 @@ export default function TripSlider() {
 
   return (
     <div className="slider-wrapper">
-      <button className="arrow left" onClick={() => moveSlide(-1)}>❮</button>
+      <button className="arrow left" onClick={() => moveSlide(-1)} aria-label="ก่อนหน้า">❮</button>
       <div className="slider-viewport">
         <div className="slider-container" style={{ transform: `translateX(-${currentIndex * 100}%)` }}>
           {trips.map((trip) => (
@@ -56,7 +68,21 @@ export default function TripSlider() {
           ))}
         </div>
       </div>
-      <button className="arrow right" onClick={() => moveSlide(1)}>❯</button>
+      <button className="arrow right" onClick={() => moveSlide(1)} aria-label="ถัดไป">❯</button>
+
+      {/* dot indicators */}
+      {trips.length > 1 && (
+        <div className="dots">
+          {trips.map((_, i) => (
+            <button
+              key={i}
+              className={`dot${i === currentIndex ? " active" : ""}`}
+              onClick={() => moveSlide(i - currentIndex)}
+              aria-label={`สไลด์ที่ ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
 
       <style jsx>{`
         .slider-wrapper { position: relative; display: flex; align-items: center; }
@@ -69,8 +95,14 @@ export default function TripSlider() {
         .slide-info h3 { margin: 0 0 6px; font-size: 22px; }
         .slide-info p { margin: 0; opacity: 0.85; font-size: 14px; }
         .arrow { position: absolute; z-index: 10; background: white; border: none; width: 40px;
-          height: 40px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+          height: 40px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+          font-size: 14px; }
         .left { left: -20px; } .right { right: -20px; }
+        .dots { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+          display: flex; gap: 8px; z-index: 10; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5);
+          border: none; cursor: pointer; padding: 0; transition: all 0.3s; }
+        .dot.active { background: white; width: 24px; border-radius: 4px; }
       `}</style>
     </div>
   );

@@ -13,81 +13,43 @@ type Props = {
     displayName?: string;
     level?: string;
     avatarUrl?: string;
-    coverUrl?: string;
     storiesCount?: number;
     likesCount?: string;
     followingCount?: number;
     interests?: string[];
+    bio?: string;
   };
 };
 
 const DEFAULT_USER = {
-  username:       "@SOMCHAI_TRAVELER",
-  displayName:    "สมชาย รักการเที่ยว",
+  username:       "@traveler",
+  displayName:    "นักเดินทาง",
   level:          "Bronze",
-  avatarUrl:      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&q=80",
-  coverUrl:       "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80",
-  storiesCount:   5,
-  likesCount:     "1.2k",
-  followingCount: 142,
-  interests:      ["☕ Café", "⛰️ Trekking", "📸 Photo", "🍲 Foodie"],
-};
-
-const S = {
-  wrap: {
-    background: "#ffffff", borderRadius: "32px", overflow: "hidden",
-    boxShadow: "0 10px 40px rgba(15,23,42,0.06)", marginBottom: "32px",
-    border: "1px solid #f1f5f9",
-  } as React.CSSProperties,
-  cover: { position: "relative" as const, height: "220px", overflow: "hidden" } as React.CSSProperties,
-  coverImg: { width: "100%", height: "100%", objectFit: "cover" as const, display: "block" } as React.CSSProperties,
-  coverOverlay: { position: "absolute" as const, inset: 0, background: "linear-gradient(to top, rgba(15,23,42,0.55), transparent 60%)" } as React.CSSProperties,
-  strip: { display: "flex", alignItems: "flex-end", gap: "24px", padding: "0 36px 32px", marginTop: "-56px", position: "relative" as const, zIndex: 2, flexWrap: "wrap" as const } as React.CSSProperties,
-  avatarWrap: { position: "relative" as const, flexShrink: 0 } as React.CSSProperties,
-  avatar: { width: "130px", height: "130px", borderRadius: "50%", objectFit: "cover" as const, border: "5px solid #ffffff", boxShadow: "0 8px 24px rgba(15,23,42,0.14)", background: "#f1f5f9", display: "block" } as React.CSSProperties,
-  avatarEdit: { position: "absolute" as const, bottom: "6px", right: "6px", width: "32px", height: "32px", borderRadius: "50%", background: "#2563eb", color: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 4px 10px rgba(37,99,235,0.35)" } as React.CSSProperties,
-  info: { flex: 1, minWidth: 0, paddingTop: "60px" } as React.CSSProperties,
-  nameRow: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" as const, marginBottom: "18px" } as React.CSSProperties,
-  handle: { fontSize: "13px", fontWeight: 700, color: "#4facfe", letterSpacing: "1px", margin: "0 0 4px" } as React.CSSProperties,
-  name: { fontSize: "28px", fontWeight: 900, color: "#0f172a", margin: "0 0 10px" } as React.CSSProperties,
-  badgeRow: { display: "flex", gap: "8px", flexWrap: "wrap" as const } as React.CSSProperties,
-  badgeBlue: { padding: "4px 12px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, background: "#eff6ff", color: "#2563eb" } as React.CSSProperties,
-  badgeGreen: { padding: "4px 12px", borderRadius: "999px", fontSize: "12px", fontWeight: 700, background: "#ecfdf5", color: "#15803d" } as React.CSSProperties,
-  btnRow: { display: "flex", gap: "10px", flexShrink: 0, flexWrap: "wrap" as const } as React.CSSProperties,
-  btnEdit: { display: "inline-flex", alignItems: "center", gap: "10px", padding: "10px 18px 10px 10px", borderRadius: "14px", background: "#ffffff", border: "1.5px solid #dbeafe", color: "#1d4ed8", textDecoration: "none", fontSize: "13px", fontWeight: 700, cursor: "pointer" } as React.CSSProperties,
-  btnEditIcon: { width: "32px", height: "32px", borderRadius: "9px", background: "#dbeafe", color: "#2563eb", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 } as React.CSSProperties,
-  btnLogout: { display: "inline-flex", alignItems: "center", gap: "10px", padding: "10px 18px 10px 10px", borderRadius: "14px", background: "#ffffff", border: "1.5px solid #fecaca", color: "#dc2626", fontSize: "13px", fontWeight: 700, cursor: "pointer" } as React.CSSProperties,
-  btnLogoutIcon: { width: "32px", height: "32px", borderRadius: "9px", background: "#fee2e2", color: "#dc2626", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 } as React.CSSProperties,
-  btnTextBlock: { display: "flex", flexDirection: "column" as const, gap: "2px", textAlign: "left" as const, lineHeight: 1 } as React.CSSProperties,
-  btnMainLabel: { fontSize: "13px", fontWeight: 700, lineHeight: 1 } as React.CSSProperties,
-  btnSubLabel: { fontSize: "10px", fontWeight: 400, opacity: 0.65 } as React.CSSProperties,
-  statsRow: { display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" as const } as React.CSSProperties,
-  stat: { display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "2px" } as React.CSSProperties,
-  statNum: { fontSize: "22px", fontWeight: 900, color: "#0f172a", lineHeight: 1 } as React.CSSProperties,
-  statLabel: { fontSize: "12px", color: "#64748b", fontWeight: 500 } as React.CSSProperties,
-  statDiv: { width: "1px", height: "36px", background: "#e2e8f0", flexShrink: 0 } as React.CSSProperties,
-  interestRow: { display: "flex", gap: "8px", flexWrap: "wrap" as const, marginLeft: "8px" } as React.CSSProperties,
-  tag: { padding: "5px 12px", borderRadius: "999px", background: "#f8fafc", border: "1px solid #e2e8f0", color: "#64748b", fontSize: "12px", fontWeight: 600 } as React.CSSProperties,
+  avatarUrl:      "",
+  storiesCount:   0,
+  likesCount:     "0",
+  followingCount: 0,
+  interests:      [] as string[],
+  bio:            "",
 };
 
 const IconEdit = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z"/>
   </svg>
 );
-
 const IconLogout = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <polyline points="16 17 21 12 16 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+    <polyline points="16 17 21 12 16 7"/>
+    <line x1="21" y1="12" x2="9" y2="12"/>
   </svg>
 );
-
-const IconPlus = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-    <path d="M12 5V19M5 12H19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+const IconCamera = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+    <circle cx="12" cy="13" r="4"/>
   </svg>
 );
 
@@ -98,10 +60,7 @@ export default function ProfileHeader({ isOwner, user = DEFAULT_USER }: Props) {
   const [avatarSrc, setAvatarSrc] = useState(u.avatarUrl);
   const [uploading, setUploading] = useState(false);
 
-  const handleLogout = async () => {
-    await logout();
-    router.push("/login");
-  };
+  const handleLogout = async () => { await logout(); router.push("/login"); };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -110,111 +69,101 @@ export default function ProfileHeader({ isOwner, user = DEFAULT_USER }: Props) {
     setUploading(true);
     try {
       const url = await uploadFile(file, "avatars");
-      await fetch("/api/auth/me", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ avatarUrl: url }),
-      });
+      await fetch("/api/auth/me", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ avatarUrl: url }) });
       setAvatarSrc(url);
       await refresh();
-    } catch {
-      alert("อัปโหลดรูปไม่สำเร็จ กรุณาลองใหม่");
-    } finally {
-      setUploading(false);
-    }
+    } catch { alert("อัปโหลดรูปไม่สำเร็จ"); }
+    finally { setUploading(false); }
   };
 
+  const initials = u.displayName?.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase() || "?";
+
   return (
-    <div style={S.wrap}>
+    <div style={{ background: "#fff", borderRadius: "28px", overflow: "hidden", border: "1px solid #f1f5f9", boxShadow: "0 4px 24px rgba(15,23,42,0.07)" }}>
 
-      <div style={S.cover}>
-        <img src={u.coverUrl} alt="cover" style={S.coverImg} />
-        <div style={S.coverOverlay} />
-      </div>
-
-      <div style={S.strip}>
-
-        <div style={S.avatarWrap}>
-          <img
-            src={avatarSrc}
-            alt={u.displayName}
-            style={{ ...S.avatar, opacity: uploading ? 0.5 : 1 }}
-          />
-          {isOwner && (
-            <label
-              style={{ ...S.avatarEdit, cursor: uploading ? "wait" : "pointer" }}
-              title="เปลี่ยนรูปโปรไฟล์"
-            >
-              {uploading ? "⏳" : <IconPlus />}
-              <input
-                hidden
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                disabled={uploading}
-              />
-            </label>
-          )}
-        </div>
-
-        <div style={S.info}>
-          <div style={S.nameRow}>
-
-            <div>
-              <p style={S.handle}>{u.username}</p>
-              <h2 style={S.name}>{u.displayName}</h2>
-              <div style={S.badgeRow}>
-                <span style={S.badgeBlue}>✓ Verified Traveler</span>
-                <span style={S.badgeGreen}>🥉 {u.level} Storyteller</span>
-              </div>
-            </div>
-
-            {isOwner && (
-              <div style={S.btnRow}>
-
-                <Link href="/dashboard/edit-profile" style={S.btnEdit}>
-                  <span style={S.btnEditIcon}><IconEdit /></span>
-                  <span style={S.btnTextBlock}>
-                    <span style={S.btnMainLabel}>แก้ไขโปรไฟล์</span>
-                    <span style={S.btnSubLabel}>Edit Profile</span>
-                  </span>
-                </Link>
-
-                <button style={S.btnLogout} onClick={handleLogout}>
-                  <span style={S.btnLogoutIcon}><IconLogout /></span>
-                  <span style={S.btnTextBlock}>
-                    <span style={S.btnMainLabel}>ออกจากระบบ</span>
-                    <span style={S.btnSubLabel}>Logout</span>
-                  </span>
-                </button>
-
+      {/* ─── Gradient top ─── */}
+      <div style={{ height: "110px", background: "linear-gradient(135deg, #667eea 0%, #4facfe 50%, #43e97b 100%)", position: "relative" }}>
+        {/* Decorative dots */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
+        {/* Avatar */}
+        <div style={{ position: "absolute", bottom: "-44px", left: "50%", transform: "translateX(-50%)" }}>
+          <div style={{ position: "relative", width: "88px", height: "88px" }}>
+            {avatarSrc ? (
+              <img src={avatarSrc} alt={u.displayName} style={{ width: "88px", height: "88px", borderRadius: "50%", objectFit: "cover", border: "4px solid #fff", boxShadow: "0 8px 20px rgba(15,23,42,0.15)", opacity: uploading ? 0.5 : 1, display: "block", background: "#f1f5f9" }} />
+            ) : (
+              <div style={{ width: "88px", height: "88px", borderRadius: "50%", border: "4px solid #fff", boxShadow: "0 8px 20px rgba(15,23,42,0.15)", background: "linear-gradient(135deg, #667eea, #4facfe)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", fontWeight: 900, color: "#fff" }}>
+                {initials}
               </div>
             )}
+            {isOwner && (
+              <label style={{ position: "absolute", bottom: "2px", right: "2px", width: "28px", height: "28px", borderRadius: "50%", background: "#0f172a", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: uploading ? "wait" : "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.25)", border: "2px solid #fff" }} title="เปลี่ยนรูป">
+                {uploading ? <span style={{ fontSize: "10px" }}>⏳</span> : <IconCamera />}
+                <input hidden type="file" accept="image/*" onChange={handleAvatarChange} disabled={uploading} />
+              </label>
+            )}
           </div>
+        </div>
+      </div>
 
-          <div style={S.statsRow}>
-            <div style={S.stat}>
-              <strong style={S.statNum}>{u.storiesCount}</strong>
-              <span style={S.statLabel}>เรื่องเล่า <span style={{ color: "#94a3b8", fontSize: "10px" }}>Stories</span></span>
-            </div>
-            <div style={S.statDiv} />
-            <div style={S.stat}>
-              <strong style={S.statNum}>{u.likesCount}</strong>
-              <span style={S.statLabel}>ถูกใจ <span style={{ color: "#94a3b8", fontSize: "10px" }}>Likes</span></span>
-            </div>
-            <div style={S.statDiv} />
-            <div style={S.stat}>
-              <strong style={S.statNum}>{u.followingCount}</strong>
-              <span style={S.statLabel}>ติดตาม <span style={{ color: "#94a3b8", fontSize: "10px" }}>Following</span></span>
-            </div>
-            <div style={S.interestRow}>
-              {u.interests.map((tag) => (
-                <span key={tag} style={S.tag}>{tag}</span>
-              ))}
-            </div>
+      {/* ─── Body ─── */}
+      <div style={{ padding: "56px 22px 24px", textAlign: "center" }}>
+        <p style={{ fontSize: "11px", fontWeight: 700, color: "#4facfe", letterSpacing: "1.2px", textTransform: "uppercase", margin: "0 0 4px" }}>{u.username}</p>
+        <h2 style={{ fontSize: "20px", fontWeight: 900, color: "#0f172a", margin: "0 0 12px", lineHeight: 1.2 }}>{u.displayName}</h2>
+
+        {/* Badges */}
+        <div style={{ display: "flex", gap: "6px", justifyContent: "center", flexWrap: "wrap", marginBottom: "16px" }}>
+          <span style={{ fontSize: "11px", fontWeight: 700, background: "#eff6ff", color: "#2563eb", padding: "4px 10px", borderRadius: "999px" }}>✓ Traveler</span>
+          <span style={{ fontSize: "11px", fontWeight: 700, background: "#fefce8", color: "#a16207", padding: "4px 10px", borderRadius: "999px" }}>🥉 {u.level}</span>
+        </div>
+
+        {u.bio && (
+          <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 16px", lineHeight: 1.6, fontStyle: "italic" }}>"{u.bio}"</p>
+        )}
+
+        {/* Divider */}
+        <div style={{ height: "1px", background: "#f1f5f9", margin: "0 0 16px" }} />
+
+        {/* Stats */}
+        <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", marginBottom: "16px" }}>
+          <div style={{ textAlign: "center" }}>
+            <strong style={{ display: "block", fontSize: "20px", fontWeight: 900, color: "#2563eb", lineHeight: 1 }}>{u.storiesCount}</strong>
+            <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 500 }}>เรื่องเล่า</span>
+          </div>
+          <div style={{ width: "1px", height: "32px", background: "#f1f5f9" }} />
+          <div style={{ textAlign: "center" }}>
+            <strong style={{ display: "block", fontSize: "20px", fontWeight: 900, color: "#22a06b", lineHeight: 1 }}>{u.likesCount}</strong>
+            <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 500 }}>Likes</span>
+          </div>
+          <div style={{ width: "1px", height: "32px", background: "#f1f5f9" }} />
+          <div style={{ textAlign: "center" }}>
+            <strong style={{ display: "block", fontSize: "20px", fontWeight: 900, color: "#7c3aed", lineHeight: 1 }}>{u.followingCount}</strong>
+            <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 500 }}>ติดตาม</span>
           </div>
         </div>
 
+        {/* Interests */}
+        {u.interests.length > 0 && (
+          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", justifyContent: "center", marginBottom: "20px" }}>
+            {u.interests.map(tag => (
+              <span key={tag} style={{ fontSize: "11px", padding: "4px 10px", borderRadius: "999px", background: "#f8fafc", border: "1px solid #e2e8f0", color: "#64748b", fontWeight: 600 }}>{tag}</span>
+            ))}
+          </div>
+        )}
+
+        {/* Divider */}
+        <div style={{ height: "1px", background: "#f1f5f9", margin: "0 0 16px" }} />
+
+        {/* Action buttons */}
+        {isOwner && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <Link href="/dashboard/edit-profile" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 16px", borderRadius: "12px", background: "#eff6ff", color: "#2563eb", textDecoration: "none", fontSize: "13px", fontWeight: 700, border: "1.5px solid #dbeafe" }}>
+              <IconEdit /> แก้ไขโปรไฟล์
+            </Link>
+            <button onClick={handleLogout} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 16px", borderRadius: "12px", background: "#fff5f5", color: "#dc2626", fontSize: "13px", fontWeight: 700, border: "1.5px solid #fecaca", cursor: "pointer", width: "100%", fontFamily: "inherit" }}>
+              <IconLogout /> ออกจากระบบ
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

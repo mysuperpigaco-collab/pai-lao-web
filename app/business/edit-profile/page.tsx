@@ -6,6 +6,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import InputField from "@/components/ui/InputField";
 import {
   BackButton,
   CancelButton,
@@ -345,13 +346,11 @@ export default function EditBusinessProfilePage() {
               <h3>🔒 เปลี่ยนรหัสผ่าน · Change Password</h3>
               <p>หากไม่ต้องการเปลี่ยน ให้เว้นว่างไว้ · Leave blank if not changing</p>
               <div className="ui-password-grid">
-                <div className="ui-field">
-                  <label>รหัสผ่านปัจจุบัน <span className="en">Current password</span></label>
-                  <input className="ui-input" type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} />
+                <div>
+                  <InputField label="รหัสผ่านปัจจุบัน" labelEn="Current password" type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} />
                 </div>
-                <div className="ui-field">
-                  <label>รหัสผ่านใหม่ <span className="en">New password</span></label>
-                  <input className="ui-input" type="password" value={newPw} onChange={e => setNewPw(e.target.value)} />
+                <div>
+                  <InputField label="รหัสผ่านใหม่" labelEn="New password" type="password" value={newPw} onChange={e => setNewPw(e.target.value)} />
                   {newPw.length > 0 && (
                     <>
                       <div className="ui-strength-bar">
@@ -365,11 +364,10 @@ export default function EditBusinessProfilePage() {
                     </>
                   )}
                 </div>
-                <div className="ui-field">
-                  <label>ยืนยันรหัสผ่าน <span className="en">Confirm password</span></label>
-                  <input className="ui-input" type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} />
+                <div>
+                  <InputField label="ยืนยันรหัสผ่าน" labelEn="Confirm password" type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} />
                   {pwMatch   && <span className="ui-match-ok">✓ รหัสผ่านตรงกัน · Passwords match</span>}
-                  {pwNoMatch && <span className="ui-match-err">✗ รหัสผ่านไม่ตรงกัน · Doesn't match</span>}
+                  {pwNoMatch && <span className="ui-match-err">✗ รหัสผ่านไม่ตรงกัน · Doesn&apos;t match</span>}
                 </div>
               </div>
               {pwError && <p className="ui-password-note">⚠️ {pwError}</p>}

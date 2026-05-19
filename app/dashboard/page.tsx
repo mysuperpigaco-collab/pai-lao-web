@@ -15,39 +15,54 @@ type TripItem = {
 };
 
 type BookmarkItem = {
-  trip?: { slug: string; title: string; coverUrl: string | null; createdAt: string } | null;
+  trip?:  { slug: string; title: string; coverUrl: string | null; createdAt: string } | null;
   place?: { slug: string; title: string; coverUrl: string | null; createdAt: string } | null;
 };
 
-const WRITE_BTN: React.CSSProperties = {
-  display: "inline-flex", alignItems: "center", gap: "12px",
-  padding: "10px 20px 10px 10px", borderRadius: "14px",
-  background: "linear-gradient(135deg, #4facfe 0%, #43e97b 100%)",
-  color: "#ffffff", textDecoration: "none", border: "none",
-  cursor: "pointer", boxShadow: "0 6px 18px rgba(79,172,254,0.30)", fontFamily: "inherit",
-};
-const WRITE_ICON: React.CSSProperties = { width: "36px", height: "36px", borderRadius: "10px", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
-const WRITE_TEXT_WRAP: React.CSSProperties = { display: "flex", flexDirection: "column", gap: "3px", textAlign: "left", lineHeight: 1 };
-const WRITE_STRONG: React.CSSProperties = { fontSize: "14px", fontWeight: 900, color: "#ffffff", display: "block" };
-const WRITE_SMALL: React.CSSProperties = { fontSize: "10px", fontWeight: 400, color: "rgba(255,255,255,0.82)", display: "block" };
+type Notice = { id: string; type: "info" | "tip" | "success" | "warning"; icon: string; title: string; body: string; action?: { label: string; href: string } };
 
 const IconWrite = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-    <path d="M12 5H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M18.375 2.625a1.875 1.875 0 1 1 2.65 2.65L12 14.25l-4 1 1-4 9.375-8.625Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 5H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>
+    <path d="M18.375 2.625a1.875 1.875 0 1 1 2.65 2.65L12 14.25l-4 1 1-4 9.375-8.625Z"/>
   </svg>
 );
 
+const NOTICE_STYLE: Record<Notice["type"], { bg: string; border: string; icon_bg: string; title: string }> = {
+  info:    { bg: "#eff6ff", border: "#bfdbfe", icon_bg: "#2563eb", title: "#1e40af" },
+  tip:     { bg: "#f0fdf4", border: "#bbf7d0", icon_bg: "#16a34a", title: "#15803d" },
+  success: { bg: "#f0fdf4", border: "#bbf7d0", icon_bg: "#22a06b", title: "#15803d" },
+  warning: { bg: "#fffbeb", border: "#fde68a", icon_bg: "#d97706", title: "#92400e" },
+};
+
+function NoticeCard({ n, onDismiss }: { n: Notice; onDismiss: (id: string) => void }) {
+  const s = NOTICE_STYLE[n.type];
+  return (
+    <div style={{ background: s.bg, border: `1.5px solid ${s.border}`, borderRadius: "16px", padding: "16px 18px", display: "flex", gap: "14px", alignItems: "flex-start", position: "relative" }}>
+      <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: s.icon_bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}>{n.icon}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontWeight: 800, fontSize: "14px", color: s.title, margin: "0 0 3px" }}>{n.title}</p>
+        <p style={{ fontSize: "13px", color: "#475569", margin: 0, lineHeight: 1.5 }}>{n.body}</p>
+        {n.action && (
+          <Link href={n.action.href} style={{ display: "inline-block", marginTop: "8px", fontSize: "12px", fontWeight: 700, color: s.icon_bg, textDecoration: "none", background: "rgba(255,255,255,0.7)", padding: "4px 12px", borderRadius: "999px", border: `1px solid ${s.border}` }}>
+            {n.action.label} →
+          </Link>
+        )}
+      </div>
+      <button onClick={() => onDismiss(n.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "16px", lineHeight: 1, padding: "2px 4px", flexShrink: 0 }} aria-label="ปิด">×</button>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"my-stories" | "saved">("my-stories");
-
+  const [activeTab, setActiveTab]   = useState<"my-stories" | "saved">("my-stories");
   const [myTrips, setMyTrips]       = useState<TripItem[]>([]);
   const [bookmarks, setBookmarks]   = useState<BookmarkItem[]>([]);
   const [loadingTrips, setLoadingTrips] = useState(true);
   const [loadingBm, setLoadingBm]   = useState(false);
+  const [dismissed, setDismissed]   = useState<Set<string>>(new Set());
 
-  // load my trips
   useEffect(() => {
     setLoadingTrips(true);
     fetch("/api/trips?mine=1&limit=50")
@@ -56,7 +71,6 @@ export default function DashboardPage() {
       .catch(() => setLoadingTrips(false));
   }, []);
 
-  // load bookmarks when tab is selected
   useEffect(() => {
     if (activeTab !== "saved") return;
     setLoadingBm(true);
@@ -66,17 +80,41 @@ export default function DashboardPage() {
       .catch(() => setLoadingBm(false));
   }, [activeTab]);
 
-  const handleTripDeleted = (slug: string) =>
-    setMyTrips(prev => prev.filter(t => t.slug !== slug));
+  const handleTripDeleted = (slug: string) => setMyTrips(prev => prev.filter(t => t.slug !== slug));
+  const dismiss = (id: string) => setDismissed(prev => new Set([...prev, id]));
 
-  // saved trips (from bookmarks — only trip bookmarks for now)
-  const savedTrips = bookmarks
-    .filter(b => b.trip)
-    .map(b => b.trip!);
+  // ─── สร้าง notices แบบ dynamic ตามข้อมูลจริง ───
+  const notices: Notice[] = [];
+
+  if (user && !user.avatarUrl) notices.push({
+    id: "no-avatar", type: "tip", icon: "📸",
+    title: "เพิ่มรูปโปรไฟล์ของคุณ",
+    body: "รูปโปรไฟล์ช่วยให้คนอื่นจดจำคุณได้ง่ายขึ้น · Add a photo to stand out",
+    action: { label: "อัปโหลดรูปเลย", href: "/dashboard/edit-profile" },
+  });
+
+  if (!loadingTrips && myTrips.length === 0) notices.push({
+    id: "no-stories", type: "info", icon: "✍️",
+    title: "เริ่มเขียนเรื่องเล่าแรกของคุณ",
+    body: "แชร์ประสบการณ์การเดินทางให้นักเดินทางทั่วไทยได้อ่าน · Share your first adventure",
+    action: { label: "เขียนเรื่องเลย", href: "/trips/create" },
+  });
+
+  if (myTrips.length >= 3) notices.push({
+    id: "milestone-3", type: "success", icon: "🏆",
+    title: `ยอดเยี่ยม! คุณมีเรื่องเล่าแล้ว ${myTrips.length} เรื่อง`,
+    body: "ยิ่งเขียนมาก ยิ่งมีคนติดตาม — ไปต่อได้เลย · Keep sharing, keep inspiring!",
+  });
+
+  const visibleNotices = notices.filter(n => !dismissed.has(n.id));
+
+  const savedTrips = bookmarks.filter(b => b.trip).map(b => b.trip!);
+  const isLoading  = activeTab === "my-stories" ? loadingTrips : loadingBm;
+  const stories    = activeTab === "my-stories" ? myTrips : savedTrips;
 
   const profileUser = user ? {
     username:       `@${user.username}`,
-    displayName:    user.displayName || `${user.firstName}`,
+    displayName:    user.displayName || user.firstName,
     avatarUrl:      user.avatarUrl || undefined,
     storiesCount:   myTrips.length,
     likesCount:     "—",
@@ -84,109 +122,110 @@ export default function DashboardPage() {
     interests:      [],
   } : undefined;
 
-  const isLoading = activeTab === "my-stories" ? loadingTrips : loadingBm;
-  const stories   = activeTab === "my-stories" ? myTrips : savedTrips;
-
   return (
     <div className="dp-page">
       <div className="dp-container">
 
-        <ProfileHeader isOwner={true} user={profileUser} />
+        {/* ─── Page header ─── */}
+        <div className="dp-page-header">
+          <div>
+            <h1 className="dp-greeting">
+              สวัสดี{user ? `, ${user.displayName || user.firstName}` : ""} 👋
+            </h1>
+            <p className="dp-subheading">จัดการโปรไฟล์ เรื่องเล่า และกิจกรรมทั้งหมดของคุณ</p>
+          </div>
+          <Link href="/trips/create" className="dp-write-btn">
+            <span className="dp-write-icon"><IconWrite /></span>
+            <span className="dp-write-text">
+              <strong>เขียนเรื่องใหม่</strong>
+              <small>แชร์ประสบการณ์</small>
+            </span>
+          </Link>
+        </div>
 
+        {/* ─── Notification boxes ─── */}
+        {visibleNotices.length > 0 && (
+          <div className="dp-notices">
+            {visibleNotices.map(n => <NoticeCard key={n.id} n={n} onDismiss={dismiss} />)}
+          </div>
+        )}
+
+        {/* ─── Main grid ─── */}
         <div className="dp-grid">
 
-          {/* ── SIDEBAR ── */}
+          {/* ── Sidebar ── */}
           <aside className="dp-sidebar">
+            <ProfileHeader isOwner={true} user={profileUser} />
 
-            <div className="dp-card">
-              <h3 className="sb-title">สถิติ <small>Statistics</small></h3>
-              <div className="stats-row">
-                <div className="stat-card">
-                  <strong style={{ color: "#2563eb" }}>{myTrips.length}</strong>
-                  <span>เรื่องเล่า <small>Stories</small></span>
+            <div className="dp-card" style={{ marginTop: "16px" }}>
+              <h3 className="sb-title">บัญชีของฉัน <small>My Account</small></h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#475569" }}>
+                  <span>ประเภท</span>
+                  <span style={{ fontWeight: 700, color: "#0f172a" }}>🎒 Traveler</span>
                 </div>
-                <div className="stat-card">
-                  <strong style={{ color: "#22a06b" }}>{bookmarks.length || "—"}</strong>
-                  <span>บันทึกไว้ <small>Saved</small></span>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#475569" }}>
+                  <span>บันทึกไว้</span>
+                  <span style={{ fontWeight: 700, color: "#0f172a" }}>{bookmarks.length || 0} รายการ</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#475569" }}>
+                  <span>เรื่องเล่า</span>
+                  <span style={{ fontWeight: 700, color: "#2563eb" }}>{myTrips.length} เรื่อง</span>
                 </div>
               </div>
             </div>
-
-            <div className="dp-card">
-              <h3 className="sb-title">ข้อมูล <small>Account</small></h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "13px", color: "#475569" }}>
-
-                {user?.role === "TRAVELER" && <span>🎒 Traveler Account</span>}
-              </div>
-            </div>
-
           </aside>
 
-          {/* ── MAIN ── */}
+          {/* ── Main content ── */}
           <main className="dp-main">
             <div className="dp-card main-card">
-
               <div className="tab-bar">
                 <div className="tabs">
-                  {(["my-stories", "saved"] as const).map((id) => (
-                    <button
-                      key={id}
-                      className={`tab-btn ${activeTab === id ? "active" : ""}`}
-                      onClick={() => setActiveTab(id)}
-                    >
-                      {id === "my-stories" ? "เรื่องเล่าของฉัน · My Stories" : "บันทึกไว้ · Saved"}
+                  {(["my-stories", "saved"] as const).map(id => (
+                    <button key={id} className={`tab-btn${activeTab === id ? " active" : ""}`} onClick={() => setActiveTab(id)}>
+                      {id === "my-stories" ? `เรื่องเล่าของฉัน (${myTrips.length})` : `บันทึกไว้ (${savedTrips.length})`}
                     </button>
                   ))}
                 </div>
-
-                <Link href="/trips/create" style={WRITE_BTN}>
-                  <span style={WRITE_ICON}><IconWrite /></span>
-                  <span style={WRITE_TEXT_WRAP}>
-                    <strong style={WRITE_STRONG}>เขียนเรื่องใหม่</strong>
-                    <small style={WRITE_SMALL}>แชร์ประสบการณ์การเดินทาง</small>
-                  </span>
-                </Link>
               </div>
 
               {isLoading ? (
-                <p style={{ color: "#94a3b8", padding: "40px 0", textAlign: "center" }}>⏳ กำลังโหลด...</p>
+                <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                  <div style={{ fontSize: "32px", marginBottom: "12px" }}>⏳</div>
+                  <p style={{ margin: 0 }}>กำลังโหลด...</p>
+                </div>
               ) : stories.length > 0 ? (
                 <>
-                  <p className="info-row">พบ <strong>{stories.length}</strong> รายการ</p>
+                  <p style={{ fontSize: "13px", color: "#94a3b8", margin: "0 0 20px" }}>
+                    พบ <strong style={{ color: "#1e293b" }}>{stories.length}</strong> รายการ
+                  </p>
                   <div className="story-grid">
-                    {stories.map((story) => (
-                      <StoryCard
-                        key={story.slug}
-                        story={story}
-                        isOwner={activeTab === "my-stories"}
-                        onDeleted={activeTab === "my-stories" ? handleTripDeleted : undefined}
-                      />
+                    {stories.map(story => (
+                      <StoryCard key={story.slug} story={story} isOwner={activeTab === "my-stories"} onDeleted={activeTab === "my-stories" ? handleTripDeleted : undefined} />
                     ))}
                   </div>
                 </>
               ) : (
-                <div className="empty-state">
-                  <span>📭</span>
-                  <p>
-                    {activeTab === "my-stories"
-                      ? "ยังไม่มีเรื่องเล่า · No stories yet"
-                      : "ยังไม่มีรายการที่บันทึกไว้ · No saved items"}
+                <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                  <div style={{ fontSize: "48px", marginBottom: "12px" }}>
+                    {activeTab === "my-stories" ? "📭" : "🔖"}
+                  </div>
+                  <p style={{ color: "#94a3b8", fontSize: "15px", margin: "0 0 20px" }}>
+                    {activeTab === "my-stories" ? "ยังไม่มีเรื่องเล่า · No stories yet" : "ยังไม่มีรายการที่บันทึกไว้ · Nothing saved"}
                   </p>
                   {activeTab === "my-stories" && (
-                    <Link href="/trips/create" style={{ ...WRITE_BTN, marginTop: "16px" }}>
-                      <span style={WRITE_ICON}><IconWrite /></span>
-                      <span style={WRITE_TEXT_WRAP}>
-                        <strong style={WRITE_STRONG}>เขียนเรื่องแรก</strong>
-                        <small style={WRITE_SMALL}>Start writing</small>
+                    <Link href="/trips/create" className="dp-write-btn" style={{ display: "inline-flex" }}>
+                      <span className="dp-write-icon"><IconWrite /></span>
+                      <span className="dp-write-text">
+                        <strong>เขียนเรื่องแรก</strong>
+                        <small>Start writing</small>
                       </span>
                     </Link>
                   )}
                 </div>
               )}
-
             </div>
           </main>
-
         </div>
       </div>
 
@@ -194,41 +233,36 @@ export default function DashboardPage() {
         .dp-page { min-height: 100vh; background: #f8fafc; padding: 36px 0 80px; }
         .dp-container { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
 
-        .dp-grid { display: grid; grid-template-columns: 280px 1fr; gap: 28px; align-items: start; }
+        .dp-page-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; }
+        .dp-greeting { font-size: 28px; font-weight: 900; color: #0f172a; margin: 0 0 4px; }
+        .dp-subheading { font-size: 14px; color: #64748b; margin: 0; }
 
-        .dp-card { background: white; border-radius: 28px; padding: 28px; border: 1px solid #f1f5f9; box-shadow: 0 2px 12px rgba(15,23,42,0.04); margin-bottom: 20px; }
-        .dp-card:last-child { margin-bottom: 0; }
+        .dp-write-btn { display: inline-flex; align-items: center; gap: 12px; padding: 10px 20px 10px 10px; border-radius: "14px"; background: linear-gradient(135deg, #4facfe 0%, #43e97b 100%); color: #fff; text-decoration: none; border: none; cursor: pointer; box-shadow: 0 6px 18px rgba(79,172,254,0.30); font-family: inherit; border-radius: 14px; }
+        .dp-write-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .dp-write-text { display: flex; flex-direction: column; gap: 2px; text-align: left; line-height: 1; }
+        .dp-write-text strong { font-size: 14px; font-weight: 900; color: #fff; display: block; }
+        .dp-write-text small { font-size: 10px; font-weight: 400; color: rgba(255,255,255,0.82); display: block; }
 
+        .dp-notices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+
+        .dp-grid { display: grid; grid-template-columns: 290px 1fr; gap: 28px; align-items: start; }
         .dp-sidebar { position: sticky; top: 100px; }
 
-        .sb-title { font-size: 15px; font-weight: 900; color: #1e293b; margin: 0 0 18px; }
+        .dp-card { background: white; border-radius: 24px; padding: 22px; border: 1px solid #f1f5f9; box-shadow: 0 2px 12px rgba(15,23,42,0.04); }
+        .sb-title { font-size: 14px; font-weight: 900; color: #1e293b; margin: 0 0 14px; }
         .sb-title small { font-size: 11px; color: #94a3b8; font-weight: 400; margin-left: 5px; }
 
-        .stats-row { display: flex; gap: 10px; }
-        .stat-card { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; padding: 16px 12px; background: #f8fafc; border-radius: 16px; }
-        .stat-card strong { font-size: 24px; font-weight: 900; line-height: 1; }
-        .stat-card span { font-size: 12px; color: #64748b; text-align: center; }
-        .stat-card small { color: #94a3b8; font-size: 10px; }
-
-        .main-card { padding: 32px; }
-
-        .tab-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 22px; }
+        .main-card { padding: 28px; }
+        .tab-bar { border-bottom: 2px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 22px; }
         .tabs { display: flex; gap: 4px; }
-        .tab-btn { padding: 10px 18px; border-radius: 10px; border: none; background: transparent; font-size: 14px; font-weight: 700; color: #94a3b8; cursor: pointer; transition: 0.2s; }
+        .tab-btn { padding: 9px 18px; border-radius: 10px; border: none; background: transparent; font-size: 13px; font-weight: 700; color: #94a3b8; cursor: pointer; transition: 0.2s; font-family: inherit; }
         .tab-btn.active { background: #eff6ff; color: #2563eb; }
         .tab-btn:hover:not(.active) { background: #f8fafc; color: #64748b; }
 
-        .info-row { font-size: 13px; color: #94a3b8; margin: 0 0 22px; }
-        .info-row strong { color: #1e293b; }
-
-        .story-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
-
-        .empty-state { text-align: center; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-        .empty-state > span { font-size: 48px; }
-        .empty-state > p    { color: #94a3b8; font-size: 15px; margin: 0; }
+        .story-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 
         @media (max-width: 1100px) { .dp-grid { grid-template-columns: 1fr; } .dp-sidebar { position: static; } }
-        @media (max-width: 640px) { .story-grid { grid-template-columns: 1fr; } .main-card { padding: 20px; } .tab-btn { font-size: 12px; padding: 8px 12px; } }
+        @media (max-width: 640px) { .story-grid { grid-template-columns: 1fr; } .main-card { padding: 18px; } .dp-greeting { font-size: 22px; } }
       `}</style>
     </div>
   );

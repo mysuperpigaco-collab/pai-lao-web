@@ -5,6 +5,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 import InputField from "@/components/ui/InputField";
 import SelectField from "@/components/ui/SelectField";
 import BusinessSectionTitle from "@/components/business/BusinessSectionTitle";
@@ -24,6 +25,7 @@ function getStrength(pw: string) {
 }
 
 export default function EditTravelerProfilePage() {
+  const { refresh } = useAuth();
   const [isLoading,   setIsLoading  ] = useState(true);
   const [isSaving,    setIsSaving   ] = useState(false);
   const [saveMsg,     setSaveMsg    ] = useState("");
@@ -89,7 +91,7 @@ export default function EditTravelerProfilePage() {
       });
       const data = await res.json();
       if (!res.ok) setPwError(data.message || "เกิดข้อผิดพลาด");
-      else { setSaveMsg("✓ บันทึกเรียบร้อยแล้ว"); setCurrentPw(""); setNewPw(""); setConfirmPw(""); }
+      else { setSaveMsg("✓ บันทึกเรียบร้อยแล้ว"); setCurrentPw(""); setNewPw(""); setConfirmPw(""); await refresh(); }
     } catch { setPwError("ไม่สามารถเชื่อมต่อได้"); }
     finally { setIsSaving(false); }
   };
@@ -164,32 +166,29 @@ export default function EditTravelerProfilePage() {
             <div className="ui-form-grid">
               <BusinessSectionTitle title="ความปลอดภัยบัญชี" subtitle="Account Security" description="เปลี่ยนรหัสผ่านเฉพาะเมื่อต้องการ · Leave blank to keep current password" />
               <div className="ui-field">
-                <label>รหัสผ่านใหม่ <span className="en">New password</span></label>
-                <input className="ui-input" type="password" placeholder="ปล่อยว่างหากไม่ต้องการเปลี่ยน" value={newPw} onChange={e => setNewPw(e.target.value)} />
+                <InputField label="รหัสผ่านใหม่" labelEn="New password" type="password" placeholder="ปล่อยว่างหากไม่ต้องการเปลี่ยน" value={newPw} onChange={e => setNewPw(e.target.value)} />
                 {strength && (
                   <>
-                    <div style={{ height: "4px", borderRadius: "999px", background: "#e2e8f0", marginTop: "8px", overflow: "hidden" }}>
+                    <div style={{ height: "4px", borderRadius: "999px", background: "#e2e8f0", marginTop: "6px", overflow: "hidden" }}>
                       <div style={{ height: "100%", borderRadius: "999px", background: strength.color, width: strength.width, transition: "width 0.3s" }} />
                     </div>
-                    <span style={{ fontSize: "11px", fontWeight: 700, color: strength.color, marginTop: "4px" }}>{strength.label}</span>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: strength.color, marginTop: "4px", display: "block" }}>{strength.label}</span>
                   </>
                 )}
               </div>
               <div className="ui-field">
-                <label>ยืนยันรหัสผ่านใหม่ <span className="en">Confirm new password</span></label>
-                <input className="ui-input" type="password" placeholder="ยืนยันรหัสผ่านใหม่อีกครั้ง" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} />
-                {pwMatch   && <span style={{ fontSize: "12px", color: "#22a06b", marginTop: "4px", display: "block" }}>{"✓ รหัสผ่านตรงกัน · Passwords match"}</span>}
-                {pwNoMatch && <span style={{ fontSize: "12px", color: "#ef4444", marginTop: "4px", display: "block" }}>{"✗ รหัสผ่านไม่ตรงกัน · Doesn't match"}</span>}
+                <InputField label="ยืนยันรหัสผ่านใหม่" labelEn="Confirm new password" type="password" placeholder="ยืนยันรหัสผ่านใหม่อีกครั้ง" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} />
+                {pwMatch   && <span style={{ fontSize: "12px", color: "#22a06b", marginTop: "4px", display: "block" }}>✓ รหัสผ่านตรงกัน · Passwords match</span>}
+                {pwNoMatch && <span style={{ fontSize: "12px", color: "#ef4444", marginTop: "4px", display: "block" }}>✗ รหัสผ่านไม่ตรงกัน · Doesn&apos;t match</span>}
               </div>
               <div className="col-full">
                 <div className="ui-password-box">
-                  <h3>{"🔒 ยืนยันตัวตน · Confirm identity"}</h3>
+                  <h3>🔒 ยืนยันตัวตน · Confirm identity</h3>
                   <p>กรอกรหัสผ่านปัจจุบันเพื่อบันทึกการเปลี่ยนแปลง · Required to save any changes</p>
-                  <div className="ui-field" style={{ marginTop: 12 }}>
-                    <label>รหัสผ่านปัจจุบัน <span className="en">Current password</span> <span className="req">*</span></label>
-                    <input className="ui-input" type="password" placeholder="Current password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} />
+                  <div style={{ marginTop: 12 }}>
+                    <InputField label="รหัสผ่านปัจจุบัน" labelEn="Current password" required type="password" placeholder="Current password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} />
                   </div>
-                  {pwError && <p className="ui-password-note">{"⚠️ "}{pwError}</p>}
+                  {pwError && <p className="ui-password-note">⚠️ {pwError}</p>}
                 </div>
               </div>
             </div>
