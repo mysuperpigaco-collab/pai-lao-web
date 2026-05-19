@@ -134,11 +134,20 @@ export default function DashboardPage() {
             </h1>
             <p className="dp-subheading">จัดการโปรไฟล์ เรื่องเล่า และกิจกรรมทั้งหมดของคุณ</p>
           </div>
-          <Link href="/trips/create" className="dp-write-btn">
-            <span className="dp-write-icon"><IconWrite /></span>
-            <span className="dp-write-text">
-              <strong>เขียนเรื่องใหม่</strong>
-              <small>แชร์ประสบการณ์</small>
+          <Link href="/trips/create" style={{
+            display: "inline-flex", alignItems: "center", gap: "10px",
+            padding: "11px 22px 11px 12px", borderRadius: "14px",
+            background: "linear-gradient(135deg, #10b981 0%, #06b6d4 100%)",
+            color: "#fff", textDecoration: "none",
+            boxShadow: "0 6px 18px rgba(16,185,129,0.30)",
+            flexShrink: 0,
+          }}>
+            <span style={{ width: "34px", height: "34px", borderRadius: "10px", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <IconWrite />
+            </span>
+            <span style={{ display: "flex", flexDirection: "column", gap: "1px", lineHeight: 1 }}>
+              <strong style={{ fontSize: "14px", fontWeight: 900, color: "#fff" }}>เขียนเรื่องใหม่</strong>
+              <small style={{ fontSize: "10px", fontWeight: 400, color: "rgba(255,255,255,0.85)" }}>แชร์ประสบการณ์</small>
             </span>
           </Link>
         </div>
@@ -214,11 +223,19 @@ export default function DashboardPage() {
                     {activeTab === "my-stories" ? "ยังไม่มีเรื่องเล่า · No stories yet" : "ยังไม่มีรายการที่บันทึกไว้ · Nothing saved"}
                   </p>
                   {activeTab === "my-stories" && (
-                    <Link href="/trips/create" className="dp-write-btn" style={{ display: "inline-flex" }}>
-                      <span className="dp-write-icon"><IconWrite /></span>
-                      <span className="dp-write-text">
-                        <strong>เขียนเรื่องแรก</strong>
-                        <small>Start writing</small>
+                    <Link href="/trips/create" style={{
+                      display: "inline-flex", alignItems: "center", gap: "10px",
+                      padding: "11px 22px 11px 12px", borderRadius: "14px",
+                      background: "linear-gradient(135deg, #10b981 0%, #06b6d4 100%)",
+                      color: "#fff", textDecoration: "none",
+                      boxShadow: "0 6px 18px rgba(16,185,129,0.30)",
+                    }}>
+                      <span style={{ width: "34px", height: "34px", borderRadius: "10px", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <IconWrite />
+                      </span>
+                      <span style={{ display: "flex", flexDirection: "column", gap: "1px", lineHeight: 1 }}>
+                        <strong style={{ fontSize: "14px", fontWeight: 900, color: "#fff" }}>เขียนเรื่องแรก</strong>
+                        <small style={{ fontSize: "10px", color: "rgba(255,255,255,0.85)" }}>Start writing</small>
                       </span>
                     </Link>
                   )}

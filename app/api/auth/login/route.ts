@@ -26,9 +26,13 @@ export async function POST(request: Request) {
         username: true,
         firstName: true,
         lastName: true,
+        displayName: true,
         avatarUrl: true,
         role: true,
         password: true,
+        business: {
+          select: { id: true, businessName: true, logoUrl: true, isVerified: true },
+        },
       },
     });
 
@@ -56,16 +60,11 @@ export async function POST(request: Request) {
     });
     await setAuthCookie(token);
 
+    // ── strip password, return full user ─────────────────────
+    const { password: _pw, ...safeUser } = user;
     return NextResponse.json({
       message: "เข้าสู่ระบบสำเร็จ",
-      user: {
-        id: user.id,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        avatarUrl: user.avatarUrl,
-        role: user.role,
-      },
+      user: safeUser,
     });
 
   } catch (error) {

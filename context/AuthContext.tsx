@@ -22,7 +22,7 @@ type AuthUser = {
 type AuthContextType = {
   user: AuthUser | null;
   isLoading: boolean;
-  login: (emailOrUsername: string, password: string) => Promise<{ ok: boolean; message: string }>;
+  login: (emailOrUsername: string, password: string) => Promise<{ ok: boolean; message: string; role?: string }>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -61,8 +61,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       const data = await res.json();
       if (!res.ok) return { ok: false, message: data.message || "เกิดข้อผิดพลาด" };
+      // ตั้ง user จาก login response ก่อน (เร็ว — มี displayName + business แล้ว)
       setUser(data.user);
-      return { ok: true, message: data.message };
+      // refresh background เพื่อให้แน่ใจว่าข้อมูลครบและ cookie ใช้ได้
+      refresh();
+      return { ok: true, message: data.message, role: data.user?.role as string };
     } catch {
       return { ok: false, message: "ไม่สามารถเชื่อมต่อระบบได้" };
     }

@@ -34,11 +34,8 @@ export default function LoginPage() {
       return;
     }
 
-    // redirect ตาม role (me endpoint จะให้ข้อมูล role)
-    const meRes = await fetch("/api/auth/me");
-    const meData = await meRes.json();
-    const role = meData.user?.role;
-
+    // role ถูกส่งกลับจาก login() โดยตรง ไม่ต้อง fetch /api/auth/me อีกรอบ
+    const role = result.role;
     router.push(role === "BUSINESS" ? "/business/dashboard" : "/dashboard");
   };
 

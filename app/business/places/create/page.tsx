@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import {
   BackButton, CancelButton, SaveButton, ActionBar, PageTag,
 } from "@/components/ui/ActionButtons";
@@ -26,17 +27,19 @@ const CATEGORY_ICON: Record<string, string> = {
 };
 const MAX_PHOTOS = 20;
 
-async function uploadImage(file: File): Promise<string> {
+async function uploadImage(file: File, folder = "places"): Promise<string> {
   const fd = new FormData();
   fd.append("file", file);
+  fd.append("folder", folder);
   const res = await fetch("/api/upload", { method: "POST", body: fd });
-  if (!res.ok) throw new Error("อัปโหลดรูปไม่สำเร็จ");
   const data = await res.json();
+  if (!res.ok) throw new Error(data.message || "อัปโหลดรูปไม่สำเร็จ");
   return data.url as string;
 }
 
 export default function CreatePlacePage() {
   const router = useRouter();
+  const { user } = useAuth();
 
   // cover
   const [coverFile, setCoverFile]     = useState<File | null>(null);
@@ -108,6 +111,15 @@ export default function CreatePlacePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // ตรวจสอบสิทธิ์ก่อน
+    if (!user || user.role !== "BUSINESS") {
+      setApiError("เฉพาะเจ้าของธุรกิจเท่านั้น กรุณาเข้าสู่ระบบด้วยบัญชีเจ้าของสถานที่");
+      return;
+    }
+    if (!user.business) {
+      setApiError("ไม่พบข้อมูลธุรกิจของคุณ กรุณาติดต่อทีมงาน หรือสมัครใหม่เป็นเจ้าของสถานที่");
+      return;
+    }
     if (!coverFile) { setApiError("กรุณาอัปโหลดรูปปกสถานที่"); return; }
     if (!title || !province || !district || !description) {
       setApiError("กรุณากรอกข้อมูลที่จำเป็น (ชื่อ, จังหวัด, อำเภอ, คำอธิบาย)");

@@ -66,9 +66,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "กรุณากรอกข้อมูลที่จำเป็นให้ครบ" }, { status: 400 });
     }
 
-    // หา business ของ user นี้
-    const business = await prisma.business.findUnique({ where: { userId: session.userId } });
-    if (!business) return NextResponse.json({ message: "ไม่พบข้อมูลธุรกิจ" }, { status: 404 });
+    // หา business ของ user นี้ — ถ้าไม่มีให้สร้างอัตโนมัติ (กรณี account เก่า)
+    let business = await prisma.business.findUnique({ where: { userId: session.userId } });
+    if (!business) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.userId },
+        select: { firstName: true, lastName: true, email: true, phone: true },
+      });
+      if (!user) return NextResponse.json({ message: "ไม่พบข้อมูลผู้ใช้" }, { status: 404 });
+      business = await prisma.business.create({
+        data: {
+          userId:      session.userId,
+          businessName: `ธุรกิจของ ${user.firstName} ${user.lastName}`,
+          contactName: `${user.firstName} ${user.lastName}`,
+          email:       user.email ?? undefined,
+          phone:       user.phone ?? undefined,
+        },
+      });
+    }
 
     const slug = `${title.replace(/[^a-zA-Z0-9ก-๙]/g, "-").replace(/-+/g, "-").toLowerCase()}-${Date.now()}`;
 

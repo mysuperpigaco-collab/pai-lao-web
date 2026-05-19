@@ -57,9 +57,30 @@ export default function InputField({
   max,
   min,
 }: Props) {
-  const [showPw, setShowPw] = useState(false);
+  const [showPw,   setShowPw  ] = useState(false);
+  const [phoneErr, setPhoneErr] = useState("");
   const isPassword = type === "password";
+  const isTel      = type === "tel";
   const inputType  = isPassword ? (showPw ? "text" : "password") : type;
+
+  // Filter: tel allows digits + + - ( ) space only
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (isTel) {
+      const raw = (e.target as HTMLInputElement).value;
+      const filtered = raw.replace(/[^0-9+\-() ]/g, "");
+      if (raw !== filtered) {
+        (e.target as HTMLInputElement).value = filtered;
+      }
+      if (filtered && !/^[0-9+]/.test(filtered)) {
+        setPhoneErr("ต้องเริ่มด้วยตัวเลข");
+      } else if (filtered && filtered.replace(/[^0-9]/g, "").length > 15) {
+        setPhoneErr("หมายเลขยาวเกินไป");
+      } else {
+        setPhoneErr("");
+      }
+    }
+    onChange?.(e);
+  };
 
   return (
     <div className="ui-field">
@@ -73,15 +94,17 @@ export default function InputField({
         <input
           type={inputType}
           name={name}
-          className={`ui-input${error ? " ui-input--error" : ""}`}
+          className={`ui-input${(error || phoneErr) ? " ui-input--error" : ""}`}
           placeholder={placeholder}
           value={value}
           defaultValue={defaultValue}
-          onChange={onChange as React.ChangeEventHandler<HTMLInputElement>}
+          onChange={handleChange as React.ChangeEventHandler<HTMLInputElement>}
           disabled={disabled}
           readOnly={readOnly}
           max={max}
           min={min}
+          inputMode={isTel ? "numeric" : undefined}
+          pattern={isTel ? "[0-9+\\-() ]*" : undefined}
           style={isPassword ? { paddingRight: "42px" } : undefined}
         />
         {isPassword && (
@@ -101,12 +124,12 @@ export default function InputField({
         )}
       </div>
 
-      {error && (
-        <span style={{ fontSize: "12px", color: "var(--pl-red)", marginTop: "4px", display: "block" }}>
-          {error}
+      {(error || phoneErr) && (
+        <span style={{ fontSize: "12px", color: "var(--pl-red, #ef4444)", marginTop: "4px", display: "block" }}>
+          {error || phoneErr}
         </span>
       )}
-      {hint && !error && (
+      {hint && !error && !phoneErr && (
         <span style={{ fontSize: "12px", color: "var(--pl-text-muted)", marginTop: "5px", display: "block" }}>
           {hint}
         </span>
