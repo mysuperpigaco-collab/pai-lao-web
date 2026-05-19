@@ -57,8 +57,19 @@ export async function PUT(request: Request, { params }: Params) {
 
     const body = await request.json();
     const { title, titleEn, province, district, address, googleMapsUrl, lat, lng,
-            category, tags, coverUrl, gallery, description, descriptionShort,
+            category: categoryRaw, tags, coverUrl, gallery, description, descriptionShort,
             openHours, closedDays, entryFee, phone, website, lineId } = body;
+
+    // Map Thai UI label → Prisma PlaceCategory enum (same as POST handler)
+    const CATEGORY_MAP: Record<string, string> = {
+      "ธรรมชาติ": "NATURE", "คาเฟ่": "CAFE", "ที่พัก": "ACCOMMODATION",
+      "แคมปิ้ง": "CAMPING", "อาหาร": "FOOD", "วัด / ศาสนสถาน": "TEMPLE",
+      "ชายหาด": "BEACH", "ตลาด / ช้อปปิ้ง": "MARKET",
+      "กีฬา / ผจญภัย": "ADVENTURE", "พิพิธภัณฑ์ / ประวัติศาสตร์": "MUSEUM",
+    };
+    const category = categoryRaw !== undefined
+      ? (CATEGORY_MAP[categoryRaw] ?? categoryRaw) as any
+      : undefined;
 
     const updated = await prisma.place.update({
       where: { slug },

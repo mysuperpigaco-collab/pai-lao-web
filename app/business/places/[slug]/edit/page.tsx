@@ -18,6 +18,13 @@ const CATEGORIES: PlaceCategory[] = [
   "วัด / ศาสนสถาน","ชายหาด","ตลาด / ช้อปปิ้ง",
   "กีฬา / ผจญภัย","พิพิธภัณฑ์ / ประวัติศาสตร์",
 ];
+
+// Reverse map: Prisma enum → Thai UI label (for loading existing place data)
+const ENUM_TO_THAI: Record<string, PlaceCategory> = {
+  NATURE: "ธรรมชาติ", CAFE: "คาเฟ่", ACCOMMODATION: "ที่พัก", CAMPING: "แคมปิ้ง",
+  FOOD: "อาหาร", TEMPLE: "วัด / ศาสนสถาน", BEACH: "ชายหาด",
+  MARKET: "ตลาด / ช้อปปิ้ง", ADVENTURE: "กีฬา / ผจญภัย", MUSEUM: "พิพิธภัณฑ์ / ประวัติศาสตร์",
+};
 const CATEGORY_ICON: Record<string, string> = {
   "ธรรมชาติ":"🌿","คาเฟ่":"☕","ที่พัก":"🏨","แคมปิ้ง":"⛺","อาหาร":"🍲",
   "วัด / ศาสนสถาน":"🛕","ชายหาด":"🏖️","ตลาด / ช้อปปิ้ง":"🛍️",
@@ -95,7 +102,7 @@ export default function EditPlacePage({ params }: Props) {
         setDistrict(p.district ?? "");
         setAddress(p.address ?? "");
         setGoogleMaps(p.googleMapsUrl ?? "");
-        setCategory(p.category ?? "ธรรมชาติ");
+        setCategory(ENUM_TO_THAI[p.category] ?? p.category ?? "ธรรมชาติ");
         setTags(p.tags ?? []);
         setDescription(p.description ?? "");
         setDescShort(p.descriptionShort ?? "");

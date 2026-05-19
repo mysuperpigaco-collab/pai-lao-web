@@ -35,6 +35,9 @@ const TABS = [
   { id: "FOOD",          icon: "🍲", label: "อาหาร",            en: "Food",            type: "place", param: "FOOD" },
   { id: "TEMPLE",        icon: "🛕", label: "วัด",              en: "Temple",          type: "place", param: "TEMPLE" },
   { id: "ADVENTURE",     icon: "🧗", label: "ผจญภัย",          en: "Adventure",       type: "place", param: "ADVENTURE" },
+  { id: "MARKET",        icon: "🛍️", label: "ตลาด",            en: "Market",          type: "place", param: "MARKET" },
+  { id: "MUSEUM",        icon: "🏛️", label: "พิพิธภัณฑ์",     en: "Museum",          type: "place", param: "MUSEUM" },
+  { id: "CAMPING",       icon: "⛺", label: "แคมปิ้ง",         en: "Camping",         type: "place", param: "CAMPING" },
 ] as const;
 
 function formatDate(iso?: string) {
