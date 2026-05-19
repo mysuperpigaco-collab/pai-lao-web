@@ -15,6 +15,7 @@ export async function GET(request: Request) {
     const district = searchParams.get("district") ?? undefined;
     const category = searchParams.get("category") ?? undefined;
     const sort     = searchParams.get("sort")     ?? "recent";
+    const q        = searchParams.get("q")        ?? undefined;
     const skip     = (page - 1) * limit;
 
     // ถ้าส่ง mine=1 จะดึงเฉพาะทริปของ user ที่ login (รวมทั้ง unpublished)
@@ -32,6 +33,11 @@ export async function GET(request: Request) {
       ...(province ? { timeline: { some: { province: { contains: province, mode: "insensitive" } } } } : {}),
       ...(district ? { timeline: { some: { district: { contains: district, mode: "insensitive" } } } } : {}),
       ...(category ? { mood: { contains: category, mode: "insensitive" } } : {}),
+      ...(q ? { OR: [
+        { title:    { contains: q, mode: "insensitive" } },
+        { subtitle: { contains: q, mode: "insensitive" } },
+        { timeline: { some: { province: { contains: q, mode: "insensitive" } } } },
+      ]} : {}),
     };
 
     const orderBy: any = sort === "popular"

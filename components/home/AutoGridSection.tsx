@@ -119,26 +119,43 @@ export default function AutoGridSection() {
         places.length === 0 ? (
           <div className="ag-loading">ยังไม่มีสถานที่ในหมวดนี้ · No places yet</div>
         ) : (
-          <div className="ag-grid ag-grid-4">
-            {places.map(place => (
-              <Link key={place.slug} href={`/place/${place.slug}`} className="ag-card">
-                <div className="ag-img">
-                  <img src={place.coverUrl} alt={place.title} loading="lazy" />
-                  {place.business?.isVerified && (
-                    <span className="ag-badge-green">✓ Verified</span>
-                  )}
-                  {(place._count?.reviews ?? 0) > 0 && (
-                    <span className="ag-badge-dark">⭐ {place._count!.reviews}</span>
-                  )}
-                </div>
-                <div className="ag-body">
-                  <h4 className="ag-title">{place.title}</h4>
-                  {place.titleEn && <p className="ag-en">{place.titleEn}</p>}
-                  <p className="ag-loc">📍 {[place.district, place.province].filter(Boolean).join(", ")}</p>
-                </div>
+          <>
+            <div className="ag-grid ag-grid-4">
+              {places.map(place => (
+                <Link key={place.slug} href={`/place/${place.slug}`} className="ag-card">
+                  <div className="ag-img">
+                    <img src={place.coverUrl} alt={place.title} loading="lazy" />
+                    {place.business?.isVerified && (
+                      <span className="ag-badge-green">✓ Verified</span>
+                    )}
+                    {(place._count?.reviews ?? 0) > 0 && (
+                      <span className="ag-badge-dark">⭐ {place._count!.reviews}</span>
+                    )}
+                  </div>
+                  <div className="ag-body">
+                    <h4 className="ag-title">{place.title}</h4>
+                    {place.titleEn && <p className="ag-en">{place.titleEn}</p>}
+                    <p className="ag-loc">📍 {[place.district, place.province].filter(Boolean).join(", ")}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <div style={{ textAlign: "center", marginTop: 28 }}>
+              <Link
+                href={`/place?category=${tab.param}&sort=popular`}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "12px 28px", borderRadius: 14,
+                  background: "linear-gradient(135deg, #0f172a, #1e3a8a)",
+                  color: "white", textDecoration: "none",
+                  fontWeight: 800, fontSize: 14,
+                  boxShadow: "0 4px 14px rgba(15,23,42,0.18)",
+                }}
+              >
+                ดูสถานที่{tab.label}ทั้งหมด · See all {tab.en} →
               </Link>
-            ))}
-          </div>
+            </div>
+          </>
         )
       )}
 

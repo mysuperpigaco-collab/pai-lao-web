@@ -75,12 +75,31 @@ export default function Navbar() {
           </div>
         </Link>
 
+        {/* ── Nav Links ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: "4px", flexShrink: 0 }}>
+          <Link href="/" style={{ textDecoration: "none", color: "#475569", fontWeight: 700, fontSize: "13px", padding: "7px 12px", borderRadius: "10px", transition: "0.15s" }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#f0fdf4")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+            🏠 หน้าแรก
+          </Link>
+          <Link href="/place" style={{ textDecoration: "none", color: "#475569", fontWeight: 700, fontSize: "13px", padding: "7px 12px", borderRadius: "10px", transition: "0.15s" }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#f0fdf4")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+            🗺️ สถานที่
+          </Link>
+          <Link href="/trips" style={{ textDecoration: "none", color: "#475569", fontWeight: 700, fontSize: "13px", padding: "7px 12px", borderRadius: "10px", transition: "0.15s" }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#f0fdf4")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+            ✈️ ทริป
+          </Link>
+        </div>
+
         {/* ── Search ── */}
         <div style={{
           display: "flex", alignItems: "center",
           background: "#f0fdf4",
           borderRadius: "14px", padding: "0 14px 0 10px",
-          flex: "0 1 420px", border: "1.5px solid #d1fae5",
+          flex: "0 1 360px", border: "1.5px solid #d1fae5",
           height: "42px", gap: "8px",
         }}>
           <select style={{

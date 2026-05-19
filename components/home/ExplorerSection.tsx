@@ -127,7 +127,7 @@ export default function ExplorerSection() {
             </p>
             <div className="ex-grid">
               {places.map((place, i) => (
-                <Link key={place.slug} href={`/place/${place.slug}`} className="ex-card">
+                <Link key={place.slug} href={`/place/${place.slug}`} className="ex-card" style={{ textDecoration: "none", color: "inherit" }}>
                   <div className="ex-img">
                     {place.coverUrl
                       ? <img src={place.coverUrl} alt={place.title} loading="lazy" />
@@ -161,6 +161,23 @@ export default function ExplorerSection() {
                   </div>
                 </Link>
               ))}
+            </div>
+            {/* See all link */}
+            <div style={{ textAlign: "center", marginTop: 24 }}>
+              <Link
+                href={`/place?province=${encodeURIComponent(province.split(" (")[0])}${category ? `&category=${category}` : ""}&sort=popular`}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "12px 28px", borderRadius: 14,
+                  background: "linear-gradient(135deg, #0f172a, #1e3a8a)",
+                  color: "white", textDecoration: "none",
+                  fontWeight: 800, fontSize: 14,
+                  boxShadow: "0 4px 14px rgba(15,23,42,0.2)",
+                  transition: "0.2s",
+                }}
+              >
+                ดูทั้งหมด {total} สถานที่ · See all places →
+              </Link>
             </div>
           </>
         )}
