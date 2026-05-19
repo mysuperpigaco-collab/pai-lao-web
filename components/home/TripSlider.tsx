@@ -23,7 +23,7 @@ export default function TripSlider() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    fetch("/api/trips?limit=6&sort=recent")
+    fetch("/api/trips?limit=8&sort=popular")
       .then(r => r.json())
       .then(d => {
         if (d.trips?.length) { setTrips(d.trips); }

@@ -7,8 +7,10 @@ interface Trip {
   title: string;
   coverUrl?: string | null;
   province?: string | null;
+  district?: string | null;
   author?: { displayName?: string | null; firstName: string };
-  _count?: { reviews: number };
+  _count?: { reviews: number; bookmarks: number };
+  createdAt?: string;
 }
 
 interface Place {
@@ -20,9 +22,8 @@ interface Place {
   province: string;
   district: string;
   category: string;
-  descriptionShort?: string | null;
   _count?: { reviews: number; bookmarks: number };
-  business?: { businessName: string; isVerified: boolean } | null;
+  business?: { businessName: string; isVerified?: boolean } | null;
 }
 
 const TABS = [
@@ -36,11 +37,10 @@ const TABS = [
   { id: "ADVENTURE",     icon: "🧗", label: "ผจญภัย",          en: "Adventure",       type: "place", param: "ADVENTURE" },
 ] as const;
 
-const CARD: React.CSSProperties = {
-  background: "white", borderRadius: 18, overflow: "hidden",
-  boxShadow: "0 4px 16px rgba(0,0,0,0.05)", textDecoration: "none",
-  color: "inherit", display: "block", border: "1px solid #f1f5f9",
-};
+function formatDate(iso?: string) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" });
+}
 
 export default function AutoGridSection() {
   const [activeTab, setActiveTab] = useState("recent");
@@ -53,72 +53,63 @@ export default function AutoGridSection() {
   useEffect(() => {
     setLoading(true);
     if (tab.type === "trip") {
-      fetch("/api/trips?limit=8&sort=recent")
+      fetch("/api/trips?limit=20&sort=recent")
         .then(r => r.json())
         .then(d => { setTrips(d.trips ?? []); setLoading(false); })
         .catch(() => setLoading(false));
     } else {
-      fetch(`/api/places?limit=8&category=${tab.param}`)
+      fetch(`/api/places?limit=12&category=${tab.param}&sort=popular`)
         .then(r => r.json())
         .then(d => { setPlaces(d.places ?? []); setLoading(false); })
         .catch(() => setLoading(false));
     }
   }, [activeTab]);
 
-  const grid: React.CSSProperties = {
-    display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16,
-  };
-
   return (
-    <div style={{ marginTop: 20 }}>
-
+    <div className="ag-root">
       {/* ── Tab strip ── */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 22, overflowX: "auto", paddingBottom: 8 }}>
+      <div className="ag-tabs">
         {TABS.map(t => (
-          <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
-            display: "inline-flex", flexDirection: "column", alignItems: "center",
-            padding: "8px 16px", borderRadius: 14, border: "none", cursor: "pointer",
-            background: activeTab === t.id ? "#0f172a" : "#f1f5f9",
-            color: activeTab === t.id ? "#fff" : "#475569",
-            fontWeight: activeTab === t.id ? 800 : 600, fontSize: 13,
-            whiteSpace: "nowrap", transition: "all 0.2s", fontFamily: "inherit",
-            boxShadow: activeTab === t.id ? "0 4px 14px rgba(0,0,0,0.14)" : "none",
-            flexShrink: 0,
-          }}>
-            <span style={{ fontSize: 18, marginBottom: 3 }}>{t.icon}</span>
-            <span>{t.label}</span>
-            <span style={{ fontSize: 10, opacity: 0.6, marginTop: 1 }}>{t.en}</span>
+          <button
+            key={t.id}
+            onClick={() => setActiveTab(t.id)}
+            className={`ag-tab${activeTab === t.id ? " ag-tab-active" : ""}`}
+          >
+            <span className="ag-tab-icon">{t.icon}</span>
+            <span className="ag-tab-th">{t.label}</span>
+            <span className="ag-tab-en">{t.en}</span>
           </button>
         ))}
       </div>
 
       {/* ── Content ── */}
       {loading ? (
-        <div style={{ textAlign: "center", padding: "48px", color: "#94a3b8" }}>⏳ กำลังโหลด...</div>
+        <div className="ag-loading">⏳ กำลังโหลด... <span className="ag-muted">Loading...</span></div>
       ) : tab.type === "trip" ? (
         trips.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "48px", color: "#94a3b8" }}>ยังไม่มีเรื่องเล่า</div>
+          <div className="ag-loading">ยังไม่มีเรื่องเล่า · No stories yet</div>
         ) : (
-          <div style={grid}>
+          <div className="ag-grid ag-grid-5">
             {trips.map(trip => (
-              <Link key={trip.slug} href={`/trips/${trip.slug}`} style={CARD}>
-                <div style={{ height: 150, overflow: "hidden", background: "#f0fdf4", position: "relative" }}>
+              <Link key={trip.slug} href={`/trips/${trip.slug}`} className="ag-card">
+                <div className="ag-img">
                   {trip.coverUrl
-                    ? <img src={trip.coverUrl} alt={trip.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>🗺️</div>
+                    ? <img src={trip.coverUrl} alt={trip.title} loading="lazy" />
+                    : <div className="ag-img-ph">🗺️</div>
                   }
-                  {trip._count && trip._count.reviews > 0 && (
-                    <span style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(0,0,0,0.6)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>
-                      💬 {trip._count.reviews}
-                    </span>
+                  {(trip._count?.reviews ?? 0) > 0 && (
+                    <span className="ag-badge-dark">💬 {trip._count!.reviews}</span>
                   )}
                 </div>
-                <div style={{ padding: "12px 14px 14px" }}>
-                  <h4 style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 800, color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{trip.title}</h4>
-                  <p style={{ margin: 0, fontSize: 12, color: "#94a3b8" }}>
+                <div className="ag-body">
+                  <h4 className="ag-title">{trip.title}</h4>
+                  <p className="ag-loc">
                     {trip.province ? `📍 ${trip.province}` : ""}
-                    {trip.author ? ` · โดย ${trip.author.displayName || trip.author.firstName}` : ""}
+                    {trip.author ? ` · ${trip.author.displayName || trip.author.firstName}` : ""}
                   </p>
+                  {trip.createdAt && (
+                    <p className="ag-date">{formatDate(trip.createdAt)}</p>
+                  )}
                 </div>
               </Link>
             ))}
@@ -126,28 +117,24 @@ export default function AutoGridSection() {
         )
       ) : (
         places.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "48px", color: "#94a3b8" }}>ยังไม่มีสถานที่ในหมวดนี้</div>
+          <div className="ag-loading">ยังไม่มีสถานที่ในหมวดนี้ · No places yet</div>
         ) : (
-          <div style={grid}>
+          <div className="ag-grid ag-grid-4">
             {places.map(place => (
-              <Link key={place.slug} href={`/place/${place.slug}`} style={CARD}>
-                <div style={{ height: 150, overflow: "hidden", background: "#e2e8f0", position: "relative" }}>
-                  <img src={place.coverUrl} alt={place.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <Link key={place.slug} href={`/place/${place.slug}`} className="ag-card">
+                <div className="ag-img">
+                  <img src={place.coverUrl} alt={place.title} loading="lazy" />
                   {place.business?.isVerified && (
-                    <span style={{ position: "absolute", top: 8, right: 8, background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 999 }}>
-                      ✓ Verified
-                    </span>
+                    <span className="ag-badge-green">✓ Verified</span>
                   )}
-                  {place._count && place._count.reviews > 0 && (
-                    <span style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(0,0,0,0.6)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>
-                      ⭐ {place._count.reviews}
-                    </span>
+                  {(place._count?.reviews ?? 0) > 0 && (
+                    <span className="ag-badge-dark">⭐ {place._count!.reviews}</span>
                   )}
                 </div>
-                <div style={{ padding: "12px 14px 14px" }}>
-                  <h4 style={{ margin: "0 0 2px", fontSize: 14, fontWeight: 800, color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{place.title}</h4>
-                  {place.titleEn && <p style={{ margin: "0 0 3px", fontSize: 11, color: "#64748b", fontStyle: "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{place.titleEn}</p>}
-                  <p style={{ margin: 0, fontSize: 12, color: "#94a3b8" }}>📍 {place.district}, {place.province}</p>
+                <div className="ag-body">
+                  <h4 className="ag-title">{place.title}</h4>
+                  {place.titleEn && <p className="ag-en">{place.titleEn}</p>}
+                  <p className="ag-loc">📍 {[place.district, place.province].filter(Boolean).join(", ")}</p>
                 </div>
               </Link>
             ))}
@@ -156,8 +143,102 @@ export default function AutoGridSection() {
       )}
 
       <style jsx>{`
-        @media (max-width: 992px) { :global(.ag-grid) { grid-template-columns: repeat(2,1fr) !important; } }
-        @media (max-width: 600px) { :global(.ag-grid) { grid-template-columns: 1fr !important; } }
+        .ag-root { margin-top: 20px; }
+
+        /* Tabs */
+        .ag-tabs {
+          display: flex; gap: 8px; margin-bottom: 22px;
+          overflow-x: auto; padding-bottom: 4px;
+        }
+        .ag-tab {
+          display: inline-flex; flex-direction: column; align-items: center;
+          gap: 2px; padding: 10px 16px; border-radius: 14px;
+          border: none; cursor: pointer; font-family: inherit;
+          background: #f1f5f9; color: #475569;
+          transition: all 0.2s; flex-shrink: 0; min-width: 72px;
+        }
+        .ag-tab:hover:not(.ag-tab-active) { background: #e2e8f0; }
+        .ag-tab-active {
+          background: #0f172a; color: #fff;
+          box-shadow: 0 4px 14px rgba(15,23,42,0.25);
+        }
+        .ag-tab-icon { font-size: 20px; line-height: 1; }
+        .ag-tab-th { font-size: 12px; font-weight: 700; line-height: 1.2; }
+        .ag-tab-en { font-size: 10px; opacity: 0.65; line-height: 1; }
+        .ag-tab-active .ag-tab-en { opacity: 0.75; }
+
+        /* Loading / empty */
+        .ag-loading { text-align: center; padding: 52px; color: #94a3b8; font-size: 15px; }
+        .ag-muted { font-weight: 400; }
+
+        /* Grid */
+        .ag-grid { display: grid; gap: 16px; }
+        .ag-grid-5 { grid-template-columns: repeat(5, 1fr); }
+        .ag-grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+        /* Card */
+        .ag-card {
+          background: white; border-radius: 18px; overflow: hidden;
+          text-decoration: none; color: inherit;
+          border: 1px solid #f1f5f9;
+          box-shadow: 0 2px 10px rgba(15,23,42,0.04);
+          display: flex; flex-direction: column;
+          transition: all 0.2s;
+        }
+        .ag-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 10px 28px rgba(15,23,42,0.09);
+          border-color: #e0e7ff;
+        }
+
+        /* Image */
+        .ag-img {
+          position: relative; height: 140px;
+          overflow: hidden; background: #e2e8f0; flex-shrink: 0;
+        }
+        .ag-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .ag-card:hover .ag-img img { transform: scale(1.04); }
+        .ag-img-ph {
+          width: 100%; height: 100%;
+          display: flex; align-items: center; justify-content: center; font-size: 32px;
+        }
+        .ag-badge-green {
+          position: absolute; top: 8px; right: 8px;
+          background: #dcfce7; color: #15803d;
+          font-size: 10px; font-weight: 800;
+          padding: 3px 8px; border-radius: 999px;
+        }
+        .ag-badge-dark {
+          position: absolute; bottom: 8px; right: 8px;
+          background: rgba(15,23,42,0.65); color: white;
+          font-size: 10px; font-weight: 700;
+          padding: 3px 8px; border-radius: 999px;
+          backdrop-filter: blur(4px);
+        }
+
+        /* Body */
+        .ag-body { padding: 11px 13px 13px; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+        .ag-title {
+          font-size: 13px; font-weight: 800; color: #1e293b; margin: 0;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .ag-en {
+          font-size: 11px; color: #64748b; font-style: italic; margin: 0;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .ag-loc { font-size: 11px; color: #94a3b8; margin: 0; }
+        .ag-date { font-size: 10px; color: #cbd5e1; margin: 0; margin-top: 2px; }
+
+        /* Responsive */
+        @media (max-width: 1200px) { .ag-grid-5 { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 900px)  {
+          .ag-grid-5 { grid-template-columns: repeat(3, 1fr); }
+          .ag-grid-4 { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 640px)  {
+          .ag-grid-5, .ag-grid-4 { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+          .ag-tab { padding: 8px 12px; min-width: 62px; }
+        }
       `}</style>
     </div>
   );

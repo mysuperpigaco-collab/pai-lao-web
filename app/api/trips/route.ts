@@ -14,6 +14,7 @@ export async function GET(request: Request) {
     const province = searchParams.get("province") ?? undefined;
     const district = searchParams.get("district") ?? undefined;
     const category = searchParams.get("category") ?? undefined;
+    const sort     = searchParams.get("sort")     ?? "recent";
     const skip     = (page - 1) * limit;
 
     // ถ้าส่ง mine=1 จะดึงเฉพาะทริปของ user ที่ login (รวมทั้ง unpublished)
@@ -33,12 +34,16 @@ export async function GET(request: Request) {
       ...(category ? { mood: { contains: category, mode: "insensitive" } } : {}),
     };
 
+    const orderBy: any = sort === "popular"
+      ? { bookmarks: { _count: "desc" } }
+      : { createdAt: "desc" };
+
     const [trips, total] = await Promise.all([
       prisma.trip.findMany({
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: "desc" },
+        orderBy,
         select: {
           id: true, slug: true, title: true, subtitle: true,
           coverUrl: true, mood: true, budget: true, location: true,

@@ -3,70 +3,83 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { PROVINCES, getDistricts } from "@/data/thailand";
 
-interface Trip {
+interface Place {
+  id: string;
   slug: string;
   title: string;
-  coverUrl?: string | null;
-  province?: string | null;
-  district?: string | null;
-  category?: string | null;
+  titleEn?: string | null;
+  coverUrl: string;
+  province: string;
+  district: string;
+  category: string;
+  isVerified?: boolean;
   _count?: { reviews: number; bookmarks: number };
+  business?: { businessName: string; isVerified?: boolean } | null;
 }
 
-const CATEGORIES = [
-  { id: "",          icon: "🗺️", label: "ทั้งหมด",          en: "All" },
-  { id: "adventure", icon: "🧗", label: "Adventure",         en: "Adventure" },
-  { id: "nature",    icon: "🌿", label: "ธรรมชาติ",          en: "Nature" },
-  { id: "cafe",      icon: "☕", label: "คาเฟ่",             en: "Café" },
-  { id: "sea",       icon: "🌊", label: "ทะเล",              en: "Sea" },
-  { id: "food",      icon: "🍲", label: "อาหาร",             en: "Food" },
-  { id: "stay",      icon: "🏨", label: "ที่พัก",            en: "Stay" },
-  { id: "culture",   icon: "🏛️", label: "วัฒนธรรม",         en: "Culture" },
+const PLACE_CATS = [
+  { id: "",             icon: "🗺️", label: "ทั้งหมด",               en: "All" },
+  { id: "NATURE",       icon: "🌿", label: "ธรรมชาติ",               en: "Nature" },
+  { id: "CAFE",         icon: "☕", label: "คาเฟ่",                  en: "Café" },
+  { id: "BEACH",        icon: "🏖️", label: "ชายหาด",                en: "Beach" },
+  { id: "ACCOMMODATION",icon: "🏨", label: "ที่พัก",                 en: "Stay" },
+  { id: "FOOD",         icon: "🍲", label: "อาหาร",                  en: "Food" },
+  { id: "TEMPLE",       icon: "🛕", label: "วัด",                    en: "Temple" },
+  { id: "ADVENTURE",    icon: "🧗", label: "ผจญภัย",                 en: "Adventure" },
+  { id: "MARKET",       icon: "🛍️", label: "ตลาด",                  en: "Market" },
+  { id: "MUSEUM",       icon: "🏛️", label: "พิพิธภัณฑ์",            en: "Museum" },
+  { id: "CAMPING",      icon: "⛺", label: "แคมปิ้ง",               en: "Camping" },
 ];
+
+const CAT_LABEL: Record<string, string> = {
+  NATURE: "ธรรมชาติ", CAFE: "คาเฟ่", BEACH: "ชายหาด",
+  ACCOMMODATION: "ที่พัก", FOOD: "อาหาร", TEMPLE: "วัด",
+  ADVENTURE: "ผจญภัย", MARKET: "ตลาด", MUSEUM: "พิพิธภัณฑ์", CAMPING: "แคมปิ้ง",
+};
 
 export default function ExplorerSection() {
   const [province, setProvince] = useState("");
   const [district, setDistrict] = useState("");
   const [category, setCategory] = useState("");
-  const [trips,    setTrips    ] = useState<Trip[]>([]);
-  const [loading,  setLoading  ] = useState(false);
+  const [places,   setPlaces  ] = useState<Place[]>([]);
+  const [loading,  setLoading ] = useState(false);
+  const [total,    setTotal   ] = useState(0);
 
   const districts = province ? getDistricts(province) : [];
 
   useEffect(() => {
-    if (!province) { setTrips([]); return; }
+    if (!province) { setPlaces([]); setTotal(0); return; }
     setLoading(true);
-    const params = new URLSearchParams({ limit: "12" });
-    // ดึงชื่อจังหวัดไทย (ตัดส่วน EN ออก)
-    const provTh = province.split(" (")[0];
-    params.set("province", provTh);
+    const params = new URLSearchParams({ limit: "12", sort: "popular" });
+    params.set("province", province.split(" (")[0]);
     if (district) params.set("district", district);
     if (category) params.set("category", category);
-    fetch(`/api/trips?${params}`)
+    fetch(`/api/places?${params}`)
       .then(r => r.json())
-      .then(d => { setTrips(d.trips ?? []); setLoading(false); })
+      .then(d => { setPlaces(d.places ?? []); setTotal(d.total ?? 0); setLoading(false); })
       .catch(() => setLoading(false));
   }, [province, district, category]);
 
-  const handleProvinceChange = (v: string) => { setProvince(v); setDistrict(""); };
+  const handleProvinceChange = (v: string) => { setProvince(v); setDistrict(""); setCategory(""); };
 
   return (
     <div className="ex-wrap">
       <div className="ex-header">
         <h2 className="ex-title">📍 เจาะลึกรายพื้นที่ <span>Explore by Area</span></h2>
-        <p className="ex-sub">เลือกจังหวัดและอำเภอเพื่อดูเรื่องเล่าจากพื้นที่นั้น · Filter stories by location</p>
+        <p className="ex-sub">สถานที่ยอดนิยมในจังหวัดที่คุณเลือก วัดจากยอด Bookmark · Top places by area</p>
       </div>
 
+      {/* ── Filters ── */}
       <div className="ex-filters">
         <div className="ex-select-wrap">
-          <label className="ex-label">จังหวัด · Province</label>
+          <label className="ex-label">🗾 จังหวัด · Province</label>
           <select className="ex-select" value={province} onChange={e => handleProvinceChange(e.target.value)}>
             <option value="">-- เลือกจังหวัด / Select Province --</option>
             {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
         <div className="ex-select-wrap">
-          <label className="ex-label">อำเภอ · District</label>
+          <label className="ex-label">📌 อำเภอ · District</label>
           <select className="ex-select" value={district} onChange={e => setDistrict(e.target.value)} disabled={!province}>
             <option value="">-- ทุกอำเภอ / All Districts --</option>
             {districts.map(d => <option key={d} value={d}>{d}</option>)}
@@ -74,97 +87,229 @@ export default function ExplorerSection() {
         </div>
       </div>
 
+      {/* ── Category chips ── */}
       <div className="ex-cats">
-        {CATEGORIES.map(c => (
-          <button key={c.id} className={`ex-cat${category === c.id ? " active" : ""}`} onClick={() => setCategory(c.id)}>
+        {PLACE_CATS.map(c => (
+          <button
+            key={c.id}
+            className={`ex-cat${category === c.id ? " active" : ""}`}
+            onClick={() => setCategory(c.id)}
+          >
             <span className="ex-cat-icon">{c.icon}</span>
-            <span className="ex-cat-labels">
-              <span className="ex-cat-th">{c.label}</span>
-              {c.label !== c.en && <span className="ex-cat-en">{c.en}</span>}
-            </span>
+            <span className="ex-cat-th">{c.label}</span>
+            <span className="ex-cat-en">{c.en}</span>
           </button>
         ))}
       </div>
 
+      {/* ── Results ── */}
       <div className="ex-results">
         {!province ? (
           <div className="ex-empty">
             <span>🗺️</span>
-            <p>เลือกจังหวัดด้านบนเพื่อดูเรื่องเล่าจากพื้นที่นั้น</p>
-            <small>Select a province to explore stories from that area</small>
+            <p>เลือกจังหวัดเพื่อดูสถานที่ยอดนิยม</p>
+            <small>Select a province to explore popular places</small>
           </div>
         ) : loading ? (
-          <div className="ex-empty"><span>⏳</span><p>กำลังโหลด... <span style={{ fontWeight: 400, color: "#94a3b8" }}>Loading...</span></p></div>
-        ) : trips.length === 0 ? (
+          <div className="ex-empty"><span>⏳</span><p>กำลังโหลด... <span className="ex-en-muted">Loading...</span></p></div>
+        ) : places.length === 0 ? (
           <div className="ex-empty">
             <span>📭</span>
-            <p>ยังไม่มีเรื่องเล่าจาก{province.split(" (")[0]}</p>
-            <small>No stories from this area yet — be the first!</small>
+            <p>ยังไม่มีสถานที่ใน{province.split(" (")[0]}</p>
+            <small>No places in this area yet</small>
           </div>
         ) : (
-          <div className="ex-grid">
-            {trips.map(trip => (
-              <Link key={trip.slug} href={`/trips/${trip.slug}`} className="ex-card">
-                <div className="ex-img">
-                  {trip.coverUrl ? <img src={trip.coverUrl} alt={trip.title} /> : <div className="ex-img-ph">🏞️</div>}
-                  {(trip._count?.reviews ?? 0) > 0 && (
-                    <span className="ex-review-badge">💬 {trip._count!.reviews}</span>
-                  )}
-                </div>
-                <div className="ex-info">
-                  <h4>{trip.title}</h4>
-                  <div className="ex-info-meta">
-                    <span>📍 {[trip.district, trip.province].filter(Boolean).join(", ")}</span>
-                    {(trip._count?.reviews ?? 0) > 0 && (
-                      <span className="ex-review-text">{trip._count!.reviews} รีวิว · reviews</span>
+          <>
+            <p className="ex-count">
+              พบ <strong>{total}</strong> สถานที่ · {total} places
+              {category ? ` · ${CAT_LABEL[category] ?? category}` : ""}
+              {district ? ` · ${district}` : ""}
+            </p>
+            <div className="ex-grid">
+              {places.map((place, i) => (
+                <Link key={place.slug} href={`/place/${place.slug}`} className="ex-card">
+                  <div className="ex-img">
+                    {place.coverUrl
+                      ? <img src={place.coverUrl} alt={place.title} loading="lazy" />
+                      : <div className="ex-img-ph">🏞️</div>
+                    }
+                    {/* Rank badge for top 3 */}
+                    {i < 3 && (
+                      <span className={`ex-rank ex-rank-${i + 1}`}>
+                        {["🥇", "🥈", "🥉"][i]}
+                      </span>
+                    )}
+                    {/* Verified */}
+                    {place.business?.isVerified && (
+                      <span className="ex-verified">✓</span>
+                    )}
+                    {/* Bookmark count */}
+                    {(place._count?.bookmarks ?? 0) > 0 && (
+                      <span className="ex-bm-badge">🔖 {place._count!.bookmarks}</span>
                     )}
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                  <div className="ex-info">
+                    <div className="ex-cat-tag">{CAT_LABEL[place.category] ?? place.category}</div>
+                    <h4>{place.title}</h4>
+                    {place.titleEn && <p className="ex-en">{place.titleEn}</p>}
+                    <div className="ex-meta">
+                      <span>📍 {[place.district, place.province].filter(Boolean).join(", ")}</span>
+                      {(place._count?.reviews ?? 0) > 0 && (
+                        <span className="ex-reviews">⭐ {place._count!.reviews} รีวิว</span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
       <style jsx>{`
-        .ex-wrap { background: white; padding: 36px; border-radius: 28px; box-shadow: 0 8px 28px rgba(15,23,42,0.05); margin-top: 48px; border: 1px solid #f1f5f9; }
+        .ex-wrap {
+          background: white;
+          padding: 36px;
+          border-radius: 28px;
+          box-shadow: 0 8px 28px rgba(15,23,42,0.06);
+          margin-top: 48px;
+          border: 1px solid #f1f5f9;
+        }
         .ex-header { margin-bottom: 22px; }
         .ex-title { font-size: 22px; font-weight: 900; color: #0f172a; margin: 0 0 6px; }
         .ex-title span { color: #2563eb; }
         .ex-sub { font-size: 13px; color: #64748b; margin: 0; }
-        .ex-filters { display: flex; gap: 16px; margin-bottom: 16px; }
-        .ex-select-wrap { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+
+        /* Filters */
+        .ex-filters { display: flex; gap: 16px; margin-bottom: 18px; }
+        .ex-select-wrap { flex: 1; display: flex; flex-direction: column; gap: 5px; }
         .ex-label { font-size: 12px; font-weight: 700; color: #64748b; }
-        .ex-select { padding: 10px 14px; border-radius: 12px; border: 1.5px solid #e2e8f0; font-size: 14px; color: #0f172a; background: white; outline: none; font-family: inherit; }
+        .ex-select {
+          padding: 11px 14px; border-radius: 12px; border: 1.5px solid #e2e8f0;
+          font-size: 14px; color: #0f172a; background: white;
+          outline: none; font-family: inherit; cursor: pointer;
+        }
         .ex-select:focus { border-color: #4facfe; }
         .ex-select:disabled { opacity: 0.5; cursor: not-allowed; background: #f8fafc; }
-        .ex-cats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-        .ex-cat { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 999px; border: 1.5px solid #e2e8f0; background: white; font-size: 13px; font-weight: 600; color: #475569; cursor: pointer; transition: 0.2s; font-family: inherit; }
-        .ex-cat.active { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
-        .ex-cat:hover:not(.active) { background: #f8fafc; }
-        .ex-cat-icon { font-size: 14px; }
-        .ex-cat-labels { display: flex; flex-direction: column; line-height: 1.15; }
-        .ex-cat-th { font-size: 12px; font-weight: 700; }
-        .ex-cat-en { font-size: 10px; font-weight: 500; opacity: 0.7; }
+
+        /* Category chips */
+        .ex-cats {
+          display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px;
+          padding-bottom: 4px;
+        }
+        .ex-cat {
+          display: inline-flex; flex-direction: column; align-items: center;
+          gap: 1px; padding: 8px 14px; border-radius: 14px;
+          border: 1.5px solid #e2e8f0; background: #f8fafc;
+          cursor: pointer; transition: all 0.18s; font-family: inherit;
+          min-width: 64px;
+        }
+        .ex-cat:hover:not(.active) { background: #eff6ff; border-color: #bfdbfe; }
+        .ex-cat.active {
+          background: linear-gradient(135deg, #eff6ff, #dbeafe);
+          border-color: #3b82f6; color: #1d4ed8;
+          box-shadow: 0 2px 10px rgba(59,130,246,0.18);
+        }
+        .ex-cat-icon { font-size: 18px; line-height: 1; }
+        .ex-cat-th { font-size: 11px; font-weight: 700; color: #334155; line-height: 1.2; }
+        .ex-cat-en { font-size: 9px; font-weight: 500; color: #94a3b8; line-height: 1; }
+        .ex-cat.active .ex-cat-th { color: #1d4ed8; }
+        .ex-cat.active .ex-cat-en { color: #60a5fa; }
+
+        /* Results */
         .ex-results { min-height: 160px; }
-        .ex-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 20px; gap: 10px; text-align: center; background: #f8fafc; border-radius: 18px; }
-        .ex-empty span { font-size: 40px; }
-        .ex-empty p { font-size: 15px; color: #475569; font-weight: 600; margin: 0; }
+        .ex-count { font-size: 13px; color: #64748b; margin: 0 0 16px; }
+        .ex-count strong { color: #1e293b; font-weight: 800; }
+        .ex-en-muted { font-weight: 400; color: #94a3b8; }
+
+        /* Empty state */
+        .ex-empty {
+          display: flex; flex-direction: column; align-items: center;
+          justify-content: center; padding: 52px 20px; gap: 12px;
+          text-align: center; background: #f8fafc; border-radius: 18px;
+        }
+        .ex-empty span { font-size: 44px; }
+        .ex-empty p { font-size: 15px; color: #475569; font-weight: 700; margin: 0; }
         .ex-empty small { font-size: 12px; color: #94a3b8; }
-        .ex-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-        .ex-card { background: #f8fafc; border-radius: 16px; overflow: hidden; text-decoration: none; color: inherit; transition: 0.2s; border: 1px solid #f1f5f9; display: block; }
-        .ex-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(15,23,42,0.08); }
-        .ex-img { position: relative; height: 130px; overflow: hidden; background: #e2e8f0; }
-        .ex-img img { width: 100%; height: 100%; object-fit: cover; }
-        .ex-img-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 36px; }
-        .ex-review-badge { position: absolute; bottom: 8px; right: 8px; background: rgba(15,23,42,0.65); color: white; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 999px; backdrop-filter: blur(4px); }
-        .ex-info { padding: 12px; }
-        .ex-info h4 { font-size: 13px; font-weight: 700; color: #1e293b; margin: 0 0 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .ex-info-meta { display: flex; flex-direction: column; gap: 2px; }
-        .ex-info-meta span { font-size: 11px; color: #94a3b8; }
-        .ex-review-text { color: #64748b !important; font-weight: 600 !important; }
-        @media (max-width: 900px) { .ex-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 600px) { .ex-filters { flex-direction: column; } .ex-grid { grid-template-columns: 1fr; } .ex-wrap { padding: 22px 18px; } }
+
+        /* Grid */
+        .ex-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+
+        /* Card */
+        .ex-card {
+          background: white; border-radius: 18px; overflow: hidden;
+          text-decoration: none; color: inherit; transition: all 0.2s;
+          border: 1px solid #f1f5f9;
+          box-shadow: 0 2px 10px rgba(15,23,42,0.04);
+          display: flex; flex-direction: column;
+        }
+        .ex-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 28px rgba(15,23,42,0.1);
+          border-color: #e0e7ff;
+        }
+
+        /* Card image */
+        .ex-img {
+          position: relative; height: 160px;
+          overflow: hidden; background: #e2e8f0; flex-shrink: 0;
+        }
+        .ex-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .ex-card:hover .ex-img img { transform: scale(1.04); }
+        .ex-img-ph {
+          width: 100%; height: 100%;
+          display: flex; align-items: center; justify-content: center; font-size: 40px;
+        }
+
+        /* Badges on image */
+        .ex-rank {
+          position: absolute; top: 10px; left: 10px;
+          font-size: 20px; line-height: 1;
+          filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
+        }
+        .ex-verified {
+          position: absolute; top: 10px; right: 10px;
+          background: #dcfce7; color: #15803d;
+          font-size: 10px; font-weight: 800;
+          padding: 3px 8px; border-radius: 999px;
+        }
+        .ex-bm-badge {
+          position: absolute; bottom: 8px; right: 8px;
+          background: rgba(15,23,42,0.65); color: white;
+          font-size: 10px; font-weight: 700;
+          padding: 3px 8px; border-radius: 999px;
+          backdrop-filter: blur(4px);
+        }
+
+        /* Card body */
+        .ex-info { padding: 13px 14px 14px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+        .ex-cat-tag {
+          font-size: 10px; font-weight: 700; color: #2563eb;
+          background: #eff6ff; border-radius: 6px;
+          padding: 2px 7px; align-self: flex-start; margin-bottom: 2px;
+        }
+        .ex-info h4 {
+          font-size: 13px; font-weight: 800; color: #1e293b; margin: 0;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .ex-en {
+          font-size: 11px; color: #64748b; font-style: italic; margin: 0;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .ex-meta { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+        .ex-meta span { font-size: 11px; color: #94a3b8; }
+        .ex-reviews { color: #f59e0b !important; font-weight: 700 !important; }
+
+        /* Responsive */
+        @media (max-width: 1100px) { .ex-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 780px)  { .ex-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) {
+          .ex-wrap { padding: 22px 16px; }
+          .ex-filters { flex-direction: column; }
+          .ex-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+          .ex-cats { gap: 6px; }
+          .ex-cat { padding: 7px 10px; min-width: 56px; }
+        }
       `}</style>
     </div>
   );

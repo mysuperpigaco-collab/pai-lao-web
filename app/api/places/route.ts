@@ -10,12 +10,15 @@ export async function GET(request: Request) {
     const limit    = Number(searchParams.get("limit")    ?? 12);
     const category = searchParams.get("category")        ?? undefined;
     const province = searchParams.get("province")        ?? undefined;
+    const district = searchParams.get("district")        ?? undefined;
+    const sort     = searchParams.get("sort")            ?? "recent";
     const q        = searchParams.get("q")               ?? undefined;
     const skip     = (page - 1) * limit;
 
     const where: any = {
-      ...(category ? { category: category as any } : {}),
-      ...(province ? { province }                 : {}),
+      ...(category ? { category: category as any }                              : {}),
+      ...(province ? { province: { contains: province, mode: "insensitive" } } : {}),
+      ...(district ? { district: { contains: district, mode: "insensitive" } } : {}),
       ...(q        ? { OR: [
         { title:       { contains: q, mode: "insensitive" } },
         { description: { contains: q, mode: "insensitive" } },
@@ -23,12 +26,16 @@ export async function GET(request: Request) {
       ]} : {}),
     };
 
+    const orderBy: any = sort === "popular"
+      ? { bookmarks: { _count: "desc" } }
+      : { createdAt: "desc" };
+
     const [places, total] = await Promise.all([
       prisma.place.findMany({
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: "desc" },
+        orderBy,
         select: {
           id: true, slug: true, title: true, titleEn: true,
           province: true, district: true, category: true, tags: true,

@@ -17,7 +17,8 @@ export default function FollowButton({ targetUserId, initialFollowing = false, i
   const [count, setCount] = useState(initialCount);
   const [loading, setLoading] = useState(false);
 
-  // Don't render if viewing own profile
+  // Business accounts cannot follow; also hide on own profile
+  if (user?.role === "BUSINESS") return null;
   if (user?.id === targetUserId) return null;
 
   const handleToggle = async () => {

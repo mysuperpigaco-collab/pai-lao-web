@@ -1,0 +1,340 @@
+"use client";
+import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+
+interface ReviewAuthor {
+  id: string;
+  username: string;
+  firstName: string;
+  displayName?: string | null;
+  avatarUrl?: string | null;
+}
+
+interface ReviewReply {
+  id: string;
+  text: string;
+  createdAt: string;
+  author: ReviewAuthor;
+}
+
+interface Review {
+  id: string;
+  rating: number;
+  text: string;
+  createdAt: string;
+  author: ReviewAuthor;
+  replies: ReviewReply[];
+}
+
+type Props = {
+  placeId: string;
+  businessOwnerId?: string | null; // userId of the business owner
+  initialReviews: Review[];
+  avgRating: number;
+};
+
+function Stars({ rating, size = 14 }: { rating: number; size?: number }) {
+  return (
+    <span style={{ color: "#f59e0b", fontSize: size, letterSpacing: 1 }}>
+      {"★".repeat(rating)}{"☆".repeat(5 - rating)}
+    </span>
+  );
+}
+
+function Avatar({ user, size = 36 }: { user: ReviewAuthor; size?: number }) {
+  const name = user.displayName || user.firstName;
+  if (user.avatarUrl)
+    return <img src={user.avatarUrl} alt="" style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />;
+  return (
+    <div style={{ width: size, height: size, borderRadius: "50%", background: "linear-gradient(135deg,#3b82f6,#8b5cf6)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: size * 0.38, flexShrink: 0 }}>
+      {name.slice(0, 1).toUpperCase()}
+    </div>
+  );
+}
+
+export default function PlaceReviews({ placeId, businessOwnerId, initialReviews, avgRating }: Props) {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const [reviews, setReviews] = useState<Review[]>(initialReviews);
+  const [newRating, setNewRating] = useState(5);
+  const [newText, setNewText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  // Reply state per review
+  const [replyOpen, setReplyOpen] = useState<Record<string, boolean>>({});
+  const [replyText, setReplyText] = useState<Record<string, string>>({});
+  const [replySubmitting, setReplySubmitting] = useState<Record<string, boolean>>({});
+
+  const isBusiness = user?.role === "BUSINESS";
+  const isOwner = isBusiness && user?.id === businessOwnerId;
+  const canReview = !!user && !isBusiness;
+
+  const currentAvg = reviews.length
+    ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+    : avgRating;
+
+  // ── Submit new review ──────────────────────────────────────
+  const handleReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) { router.push("/login"); return; }
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ placeId, rating: newRating, text: newText }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setReviews(prev => [{ ...data.review, replies: [] }, ...prev]);
+        setNewText("");
+        setNewRating(5);
+      }
+    } catch {}
+    setSubmitting(false);
+  };
+
+  // ── Submit owner reply ─────────────────────────────────────
+  const handleReply = async (reviewId: string) => {
+    const text = replyText[reviewId]?.trim();
+    if (!text) return;
+    setReplySubmitting(r => ({ ...r, [reviewId]: true }));
+    try {
+      const res = await fetch(`/api/reviews/${reviewId}/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setReviews(prev => prev.map(r =>
+          r.id === reviewId
+            ? { ...r, replies: [...(r.replies ?? []), data.reply] }
+            : r
+        ));
+        setReplyText(t => ({ ...t, [reviewId]: "" }));
+        setReplyOpen(o => ({ ...o, [reviewId]: false }));
+      }
+    } catch {}
+    setReplySubmitting(r => ({ ...r, [reviewId]: false }));
+  };
+
+  const ratingBreakdown = [5, 4, 3, 2, 1].map(star => ({
+    star,
+    count: reviews.filter(r => r.rating === star).length,
+  }));
+
+  return (
+    <div>
+      {/* ── Rating summary ── */}
+      {reviews.length > 0 && (
+        <div className="pr-summary">
+          <div className="pr-score">
+            <div className="pr-big-num">{currentAvg.toFixed(1)}</div>
+            <Stars rating={Math.round(currentAvg)} size={18} />
+            <div className="pr-count">{reviews.length} รีวิว · reviews</div>
+          </div>
+          <div className="pr-bars">
+            {ratingBreakdown.map(({ star, count }) => (
+              <div key={star} className="pr-bar-row">
+                <span className="pr-bar-label">{star} ★</span>
+                <div className="pr-bar-track">
+                  <div className="pr-bar-fill" style={{ width: reviews.length ? `${(count / reviews.length) * 100}%` : "0%" }} />
+                </div>
+                <span className="pr-bar-num">{count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── BUSINESS notice / review form ── */}
+      {isBusiness && !isOwner && (
+        <div className="pr-notice">
+          🏢 บัญชีธุรกิจไม่สามารถรีวิวสถานที่ได้ · Business accounts cannot leave reviews
+        </div>
+      )}
+      {isOwner && (
+        <div className="pr-owner-notice">
+          🏢 คุณเป็นเจ้าของสถานที่นี้ · You own this place — you can reply to reviews below
+        </div>
+      )}
+      {!user && (
+        <div className="pr-notice">
+          <span>เข้าสู่ระบบเพื่อรีวิวสถานที่นี้ · </span>
+          <a href="/login" style={{ color: "#2563eb", fontWeight: 700 }}>Login</a>
+        </div>
+      )}
+
+      {canReview && (
+        <form onSubmit={handleReview} className="pr-form">
+          <div className="pr-form-title">✍️ เขียนรีวิว · Write a review</div>
+          <div className="pr-stars-row">
+            {[1, 2, 3, 4, 5].map(s => (
+              <button key={s} type="button" onClick={() => setNewRating(s)}
+                className="pr-star-btn" style={{ color: s <= newRating ? "#f59e0b" : "#d1d5db" }}>★</button>
+            ))}
+            <span className="pr-star-hint">{newRating}/5</span>
+          </div>
+          <textarea
+            value={newText}
+            onChange={e => setNewText(e.target.value)}
+            placeholder="แบ่งปันประสบการณ์ของคุณ... Share your experience..."
+            className="pr-textarea"
+            required
+          />
+          <button type="submit" disabled={submitting || !newText.trim()} className="pr-submit-btn">
+            {submitting ? "⏳ กำลังส่ง..." : "📤 ส่งรีวิว · Submit"}
+          </button>
+        </form>
+      )}
+
+      {/* ── Review list ── */}
+      {reviews.length === 0 ? (
+        <div className="pr-empty">
+          <div style={{ fontSize: 40 }}>💬</div>
+          <p>ยังไม่มีรีวิว · No reviews yet</p>
+          <small>เป็นคนแรกที่รีวิวสถานที่นี้! Be the first to review!</small>
+        </div>
+      ) : (
+        <div className="pr-list">
+          {reviews.map(review => (
+            <div key={review.id} className="pr-review">
+              {/* Review header */}
+              <div className="pr-review-head">
+                <Avatar user={review.author} />
+                <div style={{ flex: 1 }}>
+                  <div className="pr-reviewer-name">{review.author.displayName || review.author.firstName}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Stars rating={review.rating} size={13} />
+                    <span className="pr-date">{new Date(review.createdAt).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })}</span>
+                  </div>
+                </div>
+              </div>
+              <p className="pr-review-text">{review.text}</p>
+
+              {/* Owner replies */}
+              {review.replies?.length > 0 && (
+                <div className="pr-replies">
+                  {review.replies.map(reply => (
+                    <div key={reply.id} className="pr-reply">
+                      <div className="pr-reply-head">
+                        <Avatar user={reply.author} size={28} />
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <span className="pr-reply-name">{reply.author.displayName || reply.author.firstName}</span>
+                            <span className="pr-owner-badge">🏢 เจ้าของ · Owner</span>
+                          </div>
+                          <span className="pr-date">{new Date(reply.createdAt).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })}</span>
+                        </div>
+                      </div>
+                      <p className="pr-reply-text">{reply.text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Owner reply input */}
+              {isOwner && !review.replies?.length && (
+                <div className="pr-reply-zone">
+                  {replyOpen[review.id] ? (
+                    <div className="pr-reply-form">
+                      <textarea
+                        value={replyText[review.id] ?? ""}
+                        onChange={e => setReplyText(t => ({ ...t, [review.id]: e.target.value }))}
+                        placeholder="ตอบกลับในฐานะเจ้าของสถานที่... Reply as owner..."
+                        className="pr-reply-textarea"
+                      />
+                      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                        <button
+                          onClick={() => handleReply(review.id)}
+                          disabled={replySubmitting[review.id] || !replyText[review.id]?.trim()}
+                          className="pr-reply-submit"
+                        >
+                          {replySubmitting[review.id] ? "⏳" : "🏢 ตอบกลับ · Reply"}
+                        </button>
+                        <button onClick={() => setReplyOpen(o => ({ ...o, [review.id]: false }))} className="pr-reply-cancel">
+                          ยกเลิก
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button onClick={() => setReplyOpen(o => ({ ...o, [review.id]: true }))} className="pr-reply-open-btn">
+                      🏢 ตอบกลับในฐานะเจ้าของ · Reply as owner
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <style jsx>{`
+        /* Summary */
+        .pr-summary { display: flex; gap: 24px; align-items: center; padding: 20px 24px; background: #f8fafc; border-radius: 16px; margin-bottom: 22px; border: 1px solid #f1f5f9; }
+        .pr-score { text-align: center; min-width: 80px; }
+        .pr-big-num { font-size: 42px; font-weight: 900; color: #0f172a; line-height: 1; margin-bottom: 4px; }
+        .pr-count { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+        .pr-bars { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+        .pr-bar-row { display: flex; align-items: center; gap: 8px; }
+        .pr-bar-label { font-size: 12px; color: #64748b; width: 28px; text-align: right; }
+        .pr-bar-track { flex: 1; height: 7px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+        .pr-bar-fill { height: 100%; background: linear-gradient(90deg, #f59e0b, #fbbf24); border-radius: 999px; transition: width 0.4s; }
+        .pr-bar-num { font-size: 12px; color: #94a3b8; width: 18px; }
+
+        /* Notices */
+        .pr-notice { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 13px 18px; margin-bottom: 20px; font-size: 13px; color: #64748b; }
+        .pr-owner-notice { background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 12px; padding: 13px 18px; margin-bottom: 20px; font-size: 13px; color: #065f46; font-weight: 600; }
+
+        /* Review form */
+        .pr-form { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 26px; }
+        .pr-form-title { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 12px; }
+        .pr-stars-row { display: flex; align-items: center; gap: 2px; margin-bottom: 12px; }
+        .pr-star-btn { font-size: 28px; background: none; border: none; cursor: pointer; transition: transform 0.1s; padding: 0; }
+        .pr-star-btn:hover { transform: scale(1.2); }
+        .pr-star-hint { font-size: 13px; color: #64748b; margin-left: 6px; font-weight: 700; }
+        .pr-textarea { width: 100%; border-radius: 12px; border: 1.5px solid #e2e8f0; padding: 12px 14px; font-size: 14px; resize: vertical; min-height: 90px; box-sizing: border-box; font-family: inherit; background: white; color: #0f172a; }
+        .pr-textarea:focus { outline: none; border-color: #4facfe; }
+        .pr-submit-btn { margin-top: 10px; padding: 10px 24px; border-radius: 12px; border: none; background: linear-gradient(135deg, #3b82f6, #6366f1); color: white; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s; font-family: inherit; }
+        .pr-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .pr-submit-btn:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(59,130,246,0.3); }
+
+        /* Empty */
+        .pr-empty { text-align: center; padding: 48px 20px; color: #94a3b8; }
+        .pr-empty p { font-size: 15px; font-weight: 600; margin: 8px 0 4px; color: #475569; }
+        .pr-empty small { font-size: 12px; }
+
+        /* Review list */
+        .pr-list { display: flex; flex-direction: column; gap: 0; }
+        .pr-review { padding: 20px 0; border-bottom: 1px solid #f1f5f9; }
+        .pr-review:last-child { border-bottom: none; }
+        .pr-review-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; }
+        .pr-reviewer-name { font-size: 14px; font-weight: 800; color: #1e293b; margin-bottom: 3px; }
+        .pr-date { font-size: 11px; color: #94a3b8; }
+        .pr-review-text { font-size: 14px; color: #374151; line-height: 1.7; margin: 0 0 0 48px; }
+
+        /* Replies */
+        .pr-replies { margin: 12px 0 0 48px; display: flex; flex-direction: column; gap: 10px; }
+        .pr-reply { background: #f0fdf4; border-left: 3px solid #10b981; border-radius: 0 12px 12px 0; padding: 12px 14px; }
+        .pr-reply-head { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 6px; }
+        .pr-reply-name { font-size: 13px; font-weight: 800; color: #065f46; }
+        .pr-owner-badge { background: #dcfce7; color: #15803d; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 999px; border: 1px solid #a7f3d0; }
+        .pr-reply-text { font-size: 13px; color: #374151; margin: 0 0 0 38px; line-height: 1.6; }
+
+        /* Reply input */
+        .pr-reply-zone { margin: 10px 0 0 48px; }
+        .pr-reply-open-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 10px; border: 1.5px solid #a7f3d0; background: #f0fdf4; color: #059669; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; font-family: inherit; }
+        .pr-reply-open-btn:hover { background: #dcfce7; border-color: #6ee7b7; }
+        .pr-reply-form { display: flex; flex-direction: column; }
+        .pr-reply-textarea { border: 1.5px solid #a7f3d0; border-radius: 10px; padding: 10px 12px; font-size: 13px; resize: vertical; min-height: 70px; font-family: inherit; background: #f0fdf4; color: #065f46; }
+        .pr-reply-textarea:focus { outline: none; border-color: #10b981; }
+        .pr-reply-submit { padding: 8px 16px; border-radius: 10px; border: none; background: linear-gradient(135deg, #10b981, #06b6d4); color: white; font-weight: 800; font-size: 12px; cursor: pointer; font-family: inherit; }
+        .pr-reply-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+        .pr-reply-cancel { padding: 8px 16px; border-radius: 10px; border: 1.5px solid #e2e8f0; background: white; color: #64748b; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+      `}</style>
+    </div>
+  );
+}

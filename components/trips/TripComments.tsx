@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 interface ReviewAuthor {
   id: string;
@@ -43,6 +44,8 @@ function Avatar({ user }: { user: ReviewAuthor }) {
 }
 
 export default function TripComments({ reviews, avgRating, tripId }: Props) {
+  const { user } = useAuth();
+  const isBusiness = user?.role === "BUSINESS";
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -99,8 +102,15 @@ export default function TripComments({ reviews, avgRating, tripId }: Props) {
         </div>
       </div>
 
+      {/* Business accounts cannot review trips */}
+      {isBusiness && (
+        <div style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "14px 18px", marginBottom: 24, color: "#64748b", fontSize: 13, display: "flex", alignItems: "center", gap: 8 }}>
+          🏢 บัญชีธุรกิจไม่สามารถรีวิวทริปได้ · Business accounts cannot review trips
+        </div>
+      )}
+
       {/* Add review form */}
-      <form onSubmit={handleSubmit} style={{ background: "#f8fafc", borderRadius: 12, padding: 16, marginBottom: 24 }}>
+      {!isBusiness && <form onSubmit={handleSubmit} style={{ background: "#f8fafc", borderRadius: 12, padding: 16, marginBottom: 24 }}>
         <div style={{ fontWeight: 700, marginBottom: 12 }}>✍️ เขียนรีวิว</div>
         <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
           {[1, 2, 3, 4, 5].map(s => (
@@ -118,7 +128,8 @@ export default function TripComments({ reviews, avgRating, tripId }: Props) {
             background: "#3b82f6", color: "white", fontWeight: 700, cursor: "pointer" }}>
           {submitting ? "⏳ กำลังส่ง..." : "ส่งรีวิว"}
         </button>
-      </form>
+      </form>}
+
 
       {/* Review list */}
       {localReviews.length === 0 ? (

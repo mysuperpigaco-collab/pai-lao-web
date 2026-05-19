@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import BusinessProfileCard from "@/components/business/BusinessProfileCard";
 import BusinessPlaceCard from "@/components/business/BusinessPlaceCard";
+import BusinessNotifications from "@/components/business/BusinessNotifications";
 
 type BusinessData = {
   business: {
@@ -130,6 +131,9 @@ export default function BusinessDashboardPage() {
           color="#9333ea" bg="#faf5ff"
         />
       </div>
+
+      {/* ── NOTIFICATIONS ── */}
+      <BusinessNotifications />
 
       {/* ── PLACES HEADER ── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>

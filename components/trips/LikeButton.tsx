@@ -18,6 +18,9 @@ export default function LikeButton({ tripId, initialLiked = false, initialCount 
   const [loading, setLoading] = useState(false);
   const [animating, setAnimating] = useState(false);
 
+  // Business accounts cannot like content
+  if (user?.role === "BUSINESS") return null;
+
   const handleToggle = async () => {
     if (!user) { router.push("/login"); return; }
     setAnimating(true);
