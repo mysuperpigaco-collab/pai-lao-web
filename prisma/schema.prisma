@@ -73,6 +73,10 @@ model User {
   reviewReplies ReviewReply[]
   bookmarks     Bookmark[]
   business      Business?
+  tripLikes     TripLike[]
+  placeLikes    PlaceLike[]
+  following     Follow[]      @relation("Follower")
+  followers     Follow[]      @relation("Following")
 }
 
 // ── Business ─────────────────────────────────────────────────
@@ -146,6 +150,7 @@ model Place {
   reviews          Review[]
   bookmarks        Bookmark[]
   timelineStops    TimelineStop[]
+  likes            PlaceLike[]
 }
 
 // ── Trip ──────────────────────────────────────────────────────
@@ -174,6 +179,7 @@ model Trip {
   timeline    TimelineStop[]
   reviews     Review[]
   bookmarks   Bookmark[]
+  likes       TripLike[]
 }
 
 // ── TimelineStop ──────────────────────────────────────────────
@@ -262,4 +268,49 @@ model Bookmark {
   @@unique([userId, tripId])
   @@unique([userId, placeId])
   @@index([userId])
+}
+
+// ── TripLike ──────────────────────────────────────────────────
+
+model TripLike {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tripId    String
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tripId])
+  @@index([tripId])
+  @@index([userId])
+}
+
+// ── PlaceLike ─────────────────────────────────────────────────
+
+model PlaceLike {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placeId   String
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, placeId])
+  @@index([placeId])
+  @@index([userId])
+}
+
+// ── Follow ────────────────────────────────────────────────────
+
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String
+  follower    User     @relation("Follower",  fields: [followerId],  references: [id], onDelete: Cascade)
+  followingId String
+  following   User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
 }

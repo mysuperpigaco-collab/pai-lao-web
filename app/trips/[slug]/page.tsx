@@ -1,9 +1,12 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 import BackButton from "@/components/common/BackButton";
 import TripTimeline from "@/components/trips/TripTimeline";
 import TripComments from "@/components/trips/TripComments";
 import BookmarkButton from "@/components/trips/BookmarkButton";
+import LikeButton from "@/components/trips/LikeButton";
+import FollowButton from "@/components/trips/FollowButton";
 import Link from "next/link";
 import "./trip-detail.css";
 
@@ -37,6 +40,33 @@ export default async function TripDetailPage({ params }: Props) {
   });
 
   if (!trip || !trip.isPublished) return notFound();
+
+  // Check if logged-in user has bookmarked / liked this trip, and follow status
+  const session = await getCurrentUser();
+  let initialSaved = false;
+  let initialLiked = false;
+  let initialFollowing = false;
+  let likeCount = 0;
+  let followerCount = 0;
+
+  if (session) {
+    const [bm, lk, fl] = await Promise.all([
+      prisma.bookmark.findUnique({
+        where: { userId_tripId: { userId: session.userId, tripId: trip.id } },
+      }),
+      prisma.tripLike.findUnique({
+        where: { userId_tripId: { userId: session.userId, tripId: trip.id } },
+      }),
+      prisma.follow.findUnique({
+        where: { followerId_followingId: { followerId: session.userId, followingId: trip.author.id } },
+      }),
+    ]);
+    initialSaved = !!bm;
+    initialLiked = !!lk;
+    initialFollowing = !!fl;
+  }
+  likeCount = await prisma.tripLike.count({ where: { tripId: trip.id } });
+  followerCount = await prisma.follow.count({ where: { followingId: trip.author.id } });
 
   const avgRating = trip.reviews.length
     ? trip.reviews.reduce((s, r) => s + r.rating, 0) / trip.reviews.length
@@ -121,7 +151,7 @@ export default async function TripDetailPage({ params }: Props) {
                 <h2>📸 รูปจากทริป</h2>
                 <div className="gallery-grid-new">
                   {trip.gallery.map((img, i) => (
-                    <div className={`gallery-item ${i === 0 ? "gallery-main" : ""}`} key={i}>
+                    <div className="gallery-item" key={i}>
                       <img src={img} alt={`${trip.title} ${i + 1}`} />
                     </div>
                   ))}
@@ -151,7 +181,7 @@ export default async function TripDetailPage({ params }: Props) {
                   })),
                 }))}
                 avgRating={avgRating}
-                tripSlug={slug}
+                tripId={trip.id}
               />
             </div>
           </div>
@@ -166,13 +196,23 @@ export default async function TripDetailPage({ params }: Props) {
               <div className="author-name">{authorName}</div>
               <div className="author-sub">นักเล่าเรื่อง · {trip.author._count.trips} เรื่อง</div>
               {trip.author.bio && <p style={{ fontSize: 13, color: "#64748b", margin: "8px 0 0", textAlign: "center" }}>{trip.author.bio}</p>}
+              <div style={{ marginTop: 12 }}>
+                <FollowButton
+                  targetUserId={trip.author.id}
+                  initialFollowing={initialFollowing}
+                  initialCount={followerCount}
+                />
+              </div>
             </div>
 
-            {/* Bookmark */}
+            {/* Like + Bookmark */}
             <div className="side-card bm-card">
-              <div className="bm-card-title">💾 บันทึกเรื่องนี้</div>
-              <div className="bm-card-sub">บุ๊คมาร์คไว้อ่านทีหลัง หรือแชร์ให้เพื่อน</div>
-              <BookmarkButton tripSlug={trip.slug} />
+              <div className="bm-card-title">❤️ ถูกใจและบันทึก</div>
+              <div className="bm-card-sub">กดถูกใจหรือบุ๊คมาร์คไว้อ่านทีหลัง</div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
+                <LikeButton tripId={trip.id} initialLiked={initialLiked} initialCount={likeCount} />
+                <BookmarkButton tripId={trip.id} initialSaved={initialSaved} />
+              </div>
             </div>
 
             {/* Info */}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import TripSlider from "@/components/home/TripSlider";
 import ExplorerSection from "@/components/home/ExplorerSection";
 import AutoGridSection from "@/components/home/AutoGridSection";
+import { useAuth } from "@/context/AuthContext";
 
 interface Trip {
   slug: string;
@@ -22,6 +23,7 @@ const IconArrow = () => (
 );
 
 export default function HomePage() {
+  const { user } = useAuth();
   const [showArchive, setShowArchive] = useState(false);
   const [archiveTrips, setArchiveTrips] = useState<Trip[]>([]);
   const [archiveLoading, setArchiveLoading] = useState(false);
@@ -53,7 +55,13 @@ export default function HomePage() {
           <h2 className="hp-title">✨ เรื่องเล่า <span>Spotlight</span></h2>
           <p className="hp-sub">เรื่องเล่าการเดินทางล่าสุด · Latest travel stories</p>
         </div>
-        <Link href="/trips" className="hp-see-all">ดูทั้งหมด · See all →</Link>
+        {user ? (
+          <Link href={user.role === "BUSINESS" ? "/business/dashboard" : "/dashboard"} className="hp-see-all">
+            👤 ข้อมูลส่วนตัว →
+          </Link>
+        ) : (
+          <Link href="/trips" className="hp-see-all">ดูทั้งหมด · See all →</Link>
+        )}
       </div>
       <TripSlider />
 

@@ -14,6 +14,11 @@ const IconPencil = () => (
     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z"/>
   </svg>
 );
+const IconPlus = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
 
 export default function Navbar() {
   const { user, isLoading, logout } = useAuth();
@@ -103,18 +108,32 @@ export default function Navbar() {
             <div style={{ width: "80px", height: "38px", background: "#f0fdf4", borderRadius: "12px" }} />
           ) : user ? (
             <>
-              {/* Write button */}
-              <Link href="/trips/create" style={{
-                display: "flex", alignItems: "center", gap: "6px",
-                textDecoration: "none", color: "#fff",
-                background: "linear-gradient(135deg, #10b981, #06b6d4)",
-                padding: "9px 16px", borderRadius: "12px",
-                fontWeight: 700, fontSize: "13px",
-                boxShadow: "0 3px 10px rgba(16,185,129,0.3)",
-                whiteSpace: "nowrap",
-              }}>
-                <IconPencil /> เขียนทริป
-              </Link>
+              {/* Write / Add Place button — depends on role */}
+              {user.role === "BUSINESS" ? (
+                <Link href="/business/places/create" style={{
+                  display: "flex", alignItems: "center", gap: "6px",
+                  textDecoration: "none", color: "#fff",
+                  background: "linear-gradient(135deg, #10b981, #06b6d4)",
+                  padding: "9px 16px", borderRadius: "12px",
+                  fontWeight: 700, fontSize: "13px",
+                  boxShadow: "0 3px 10px rgba(16,185,129,0.3)",
+                  whiteSpace: "nowrap",
+                }}>
+                  <IconPlus /> เพิ่มสถานที่
+                </Link>
+              ) : (
+                <Link href="/trips/create" style={{
+                  display: "flex", alignItems: "center", gap: "6px",
+                  textDecoration: "none", color: "#fff",
+                  background: "linear-gradient(135deg, #10b981, #06b6d4)",
+                  padding: "9px 16px", borderRadius: "12px",
+                  fontWeight: 700, fontSize: "13px",
+                  boxShadow: "0 3px 10px rgba(16,185,129,0.3)",
+                  whiteSpace: "nowrap",
+                }}>
+                  <IconPencil /> เขียนทริป
+                </Link>
+              )}
 
               {/* Avatar + name */}
               <Link href={dashboardHref} style={{

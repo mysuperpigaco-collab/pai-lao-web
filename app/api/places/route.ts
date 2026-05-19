@@ -59,12 +59,27 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const { title, titleEn, province, district, address, googleMapsUrl, lat, lng,
-            category, tags, coverUrl, gallery, description, descriptionShort,
+            category: categoryRaw, tags, coverUrl, gallery, description, descriptionShort,
             openHours, closedDays, entryFee, phone, website, lineId } = body;
 
-    if (!title || !province || !district || !category || !coverUrl || !description) {
+    if (!title || !province || !district || !categoryRaw || !coverUrl || !description) {
       return NextResponse.json({ message: "กรุณากรอกข้อมูลที่จำเป็นให้ครบ" }, { status: 400 });
     }
+
+    // Map Thai UI labels → Prisma PlaceCategory enum
+    const CATEGORY_MAP: Record<string, string> = {
+      "ธรรมชาติ": "NATURE",
+      "คาเฟ่": "CAFE",
+      "ที่พัก": "ACCOMMODATION",
+      "แคมปิ้ง": "CAMPING",
+      "อาหาร": "FOOD",
+      "วัด / ศาสนสถาน": "TEMPLE",
+      "ชายหาด": "BEACH",
+      "ตลาด / ช้อปปิ้ง": "MARKET",
+      "กีฬา / ผจญภัย": "ADVENTURE",
+      "พิพิธภัณฑ์ / ประวัติศาสตร์": "MUSEUM",
+    };
+    const category = (CATEGORY_MAP[categoryRaw] ?? categoryRaw) as any;
 
     // หา business ของ user นี้ — ถ้าไม่มีให้สร้างอัตโนมัติ (กรณี account เก่า)
     let business = await prisma.business.findUnique({ where: { userId: session.userId } });

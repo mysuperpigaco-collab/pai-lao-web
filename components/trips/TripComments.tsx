@@ -28,7 +28,7 @@ interface Review {
 type Props = {
   reviews: Review[];
   avgRating: number;
-  tripSlug: string;
+  tripId: string;
 };
 
 function StarRow({ rating }: { rating: number }) {
@@ -42,7 +42,7 @@ function Avatar({ user }: { user: ReviewAuthor }) {
     display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>{initials}</div>;
 }
 
-export default function TripComments({ reviews, avgRating, tripSlug }: Props) {
+export default function TripComments({ reviews, avgRating, tripId }: Props) {
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -55,7 +55,7 @@ export default function TripComments({ reviews, avgRating, tripSlug }: Props) {
       const res = await fetch("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tripSlug, rating: newRating, text: newComment }),
+        body: JSON.stringify({ tripId, rating: newRating, text: newComment }),
       });
       if (res.ok) {
         const data = await res.json();
