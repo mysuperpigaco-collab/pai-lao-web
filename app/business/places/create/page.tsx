@@ -69,6 +69,7 @@ export default function CreatePlacePage() {
   const [closedDays, setClosedDays]   = useState("");
   const [entryFee, setEntryFee]       = useState("");
   const [phone, setPhone]             = useState("");
+  const handlePhone = (v: string) => setPhone(v.replace(/[^0-9+\-() ]/g, ""));
   const [website, setWebsite]         = useState("");
   const [lineId, setLineId]           = useState("");
 
@@ -364,7 +365,9 @@ export default function CreatePlacePage() {
               </div>
               <div className="ui-field">
                 <label>เบอร์โทรศัพท์</label>
-                <input className="ui-input" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="เช่น 034-574222" />
+                <input className="ui-input" type="tel" inputMode="numeric" value={phone}
+                  onChange={e => handlePhone(e.target.value)} placeholder="เช่น 034-574222"
+                  pattern="[0-9+\-() ]*" />
               </div>
               <div className="ui-field">
                 <label>เว็บไซต์</label>

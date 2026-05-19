@@ -90,6 +90,7 @@ model Business {
   contactName  String?
   description  String?
   province     String?
+  district     String?
   country      String   @default("Thailand")
   website      String?
   logoUrl      String?

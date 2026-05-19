@@ -14,6 +14,7 @@ import {
   ActionBar,
   PageTag,
 } from "@/components/ui/ActionButtons";
+import { PROVINCES, getDistricts } from "@/data/thailand";
 
 import "@/components/ui/form-card.css";
 import "@/components/ui/action-buttons.css";
@@ -34,16 +35,6 @@ const CATEGORIES = [
   { id: "community",  emoji: "🏘️", label: "Community"    },
 ];
 
-/* ── Password strength ── */
-function getStrength(pw: string): { level: "weak"|"fair"|"good"|"strong"; label: string } {
-  if (pw.length === 0) return { level: "weak", label: "" };
-  if (pw.length < 6)   return { level: "weak",   label: "อ่อนมาก · Weak"    };
-  if (pw.length < 8)   return { level: "fair",   label: "พอใช้ · Fair"      };
-  if (/[A-Z]/.test(pw) && /[0-9]/.test(pw))
-                       return { level: "strong", label: "แข็งแกร่ง · Strong" };
-  return               { level: "good",   label: "ดี · Good"               };
-}
-
 export default function EditBusinessProfilePage() {
 
   const [isLoading, setIsLoading] = useState(true);
@@ -57,8 +48,12 @@ export default function EditBusinessProfilePage() {
   const [phone,        setPhone       ] = useState("");
   const [website,      setWebsite     ] = useState("");
   const [province,     setProvince    ] = useState("");
+  const [district,     setDistrict    ] = useState("");
   const [country,      setCountry     ] = useState("Thailand");
   const [description,  setDescription ] = useState("");
+
+  /* ── Derived districts ── */
+  const districts = province ? getDistricts(province) : [];
 
   /* ── Categories ── */
   const [selectedCats, setSelectedCats] = useState<string[]>([]);
@@ -78,12 +73,19 @@ export default function EditBusinessProfilePage() {
   /* ── Password ── */
   const [currentPw, setCurrentPw] = useState("");
   const [newPw,     setNewPw    ] = useState("");
-  const [confirmPw, setConfirmPw] = useState("");
   const [pwError,   setPwError  ] = useState("");
 
-  const strength  = getStrength(newPw);
-  const pwMatch   = newPw.length > 0 && newPw === confirmPw;
-  const pwNoMatch = confirmPw.length > 0 && newPw !== confirmPw;
+  /* ── Phone filter — digits only ── */
+  const handlePhone = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const raw = (e.target as HTMLInputElement).value;
+    setPhone(raw.replace(/[^0-9+\-() ]/g, ""));
+  };
+
+  /* ── Province change — reset district ── */
+  const handleProvince = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setProvince(e.target.value);
+    setDistrict("");
+  };
 
   /* ── โหลดข้อมูลจริง ── */
   useEffect(() => {
@@ -98,6 +100,7 @@ export default function EditBusinessProfilePage() {
           setPhone(b.phone              ?? "");
           setWebsite(b.website          ?? "");
           setProvince(b.province        ?? "");
+          setDistrict(b.district        ?? "");
           setCountry(b.country          ?? "Thailand");
           setDescription(b.description  ?? "");
           setFacebook(b.facebook        ?? "");
@@ -134,11 +137,11 @@ export default function EditBusinessProfilePage() {
     setPwError("");
     setSaveMsg("");
 
-    const isChangingPw = currentPw || newPw || confirmPw;
+    // Only validate password section if the user is filling it in
+    const isChangingPw = !!(currentPw || newPw);
     if (isChangingPw) {
-      if (!currentPw || !newPw || !confirmPw) { setPwError("กรุณากรอกรหัสผ่านให้ครบทุกช่อง"); return; }
-      if (newPw.length < 8) { setPwError("รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร"); return; }
-      if (newPw !== confirmPw) { setPwError("รหัสผ่านไม่ตรงกัน / Passwords don't match"); return; }
+      if (!currentPw) { setPwError("กรุณากรอกรหัสผ่านปัจจุบัน"); return; }
+      if (!newPw || newPw.length < 8) { setPwError("รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร"); return; }
     }
 
     setIsSaving(true);
@@ -148,7 +151,7 @@ export default function EditBusinessProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           businessName, contactName, email, phone, website,
-          province, country, description,
+          province, district, country, description,
           facebook, instagram, tiktok, lineId,
           categories: selectedCats,
           ...(isChangingPw ? { currentPw, newPw } : {}),
@@ -159,7 +162,7 @@ export default function EditBusinessProfilePage() {
         setPwError(data.message || "เกิดข้อผิดพลาด");
       } else {
         setSaveMsg("✓ บันทึกเรียบร้อยแล้ว · Saved successfully!");
-        setCurrentPw(""); setNewPw(""); setConfirmPw("");
+        setCurrentPw(""); setNewPw("");
       }
     } catch {
       setPwError("ไม่สามารถเชื่อมต่อได้");
@@ -255,20 +258,33 @@ export default function EditBusinessProfilePage() {
               </div>
               <div className="ui-field">
                 <label>เบอร์โทร <span className="en">Phone</span></label>
-                <input className="ui-input" type="tel" value={phone} onChange={e => setPhone(e.target.value)} />
+                <input className="ui-input" type="tel" inputMode="numeric" value={phone}
+                  onChange={handlePhone} placeholder="เช่น 081-234-5678" pattern="[0-9+\-() ]*" />
               </div>
               <div className="ui-field col-full">
                 <label>เว็บไซต์ <span className="en">Website</span></label>
                 <input className="ui-input" type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://..." />
               </div>
+
+              {/* Province dropdown */}
               <div className="ui-field">
                 <label>จังหวัด <span className="en">Province</span></label>
-                <input className="ui-input" type="text" value={province} onChange={e => setProvince(e.target.value)} />
+                <select className="ui-input" value={province} onChange={handleProvince}>
+                  <option value="">— เลือกจังหวัด —</option>
+                  {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
               </div>
+
+              {/* District dropdown */}
               <div className="ui-field">
-                <label>ประเทศ <span className="en">Country</span></label>
-                <input className="ui-input" type="text" value={country} onChange={e => setCountry(e.target.value)} />
+                <label>อำเภอ / เขต <span className="en">District</span></label>
+                <select className="ui-input" value={district} onChange={e => setDistrict(e.target.value)} disabled={!province}>
+                  <option value="">— เลือกอำเภอ —</option>
+                  {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+                {!province && <span style={{ fontSize: 12, color: "#94a3b8", marginTop: 4, display: "block" }}>เลือกจังหวัดก่อน</span>}
               </div>
+
               <div className="ui-field col-full">
                 <label>รายละเอียดธุรกิจ <span className="en">Description</span></label>
                 <textarea className="ui-input textarea" value={description} onChange={e => setDescription(e.target.value)} />
@@ -344,30 +360,13 @@ export default function EditBusinessProfilePage() {
             </div>
             <div className="ui-password-box">
               <h3>🔒 เปลี่ยนรหัสผ่าน · Change Password</h3>
-              <p>หากไม่ต้องการเปลี่ยน ให้เว้นว่างไว้ · Leave blank if not changing</p>
-              <div className="ui-password-grid">
+              <p>กรอกเฉพาะเมื่อต้องการเปลี่ยนรหัสผ่าน · Only fill in if you want to change your password</p>
+              <div className="ui-password-grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
                 <div>
-                  <InputField label="รหัสผ่านปัจจุบัน" labelEn="Current password" type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} />
+                  <InputField label="รหัสผ่านปัจจุบัน" labelEn="Current password" type="password" value={currentPw} onChange={e => setCurrentPw((e.target as HTMLInputElement).value)} />
                 </div>
                 <div>
-                  <InputField label="รหัสผ่านใหม่" labelEn="New password" type="password" value={newPw} onChange={e => setNewPw(e.target.value)} />
-                  {newPw.length > 0 && (
-                    <>
-                      <div className="ui-strength-bar">
-                        <div className={`ui-strength-fill ${strength.level}`} />
-                      </div>
-                      <span className="ui-strength-label" style={{
-                        color: strength.level === "strong" ? "var(--pl-green-deep)"
-                             : strength.level === "good"   ? "#22c55e"
-                             : strength.level === "fair"   ? "#f59e0b" : "#ef4444"
-                      }}>{strength.label}</span>
-                    </>
-                  )}
-                </div>
-                <div>
-                  <InputField label="ยืนยันรหัสผ่าน" labelEn="Confirm password" type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} />
-                  {pwMatch   && <span className="ui-match-ok">✓ รหัสผ่านตรงกัน · Passwords match</span>}
-                  {pwNoMatch && <span className="ui-match-err">✗ รหัสผ่านไม่ตรงกัน · Doesn&apos;t match</span>}
+                  <InputField label="รหัสผ่านใหม่" labelEn="New password (min 8 chars)" type="password" value={newPw} onChange={e => setNewPw((e.target as HTMLInputElement).value)} />
                 </div>
               </div>
               {pwError && <p className="ui-password-note">⚠️ {pwError}</p>}

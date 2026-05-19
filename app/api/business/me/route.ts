@@ -56,6 +56,7 @@ export async function GET() {
         email:        business.email,
         website:      business.website,
         province:     business.province,
+        district:     business.district,
         country:      business.country,
         lineId:       business.lineId,
         facebook:     business.facebook,
@@ -84,7 +85,7 @@ export async function PUT(request: Request) {
 
     const body = await request.json();
     const {
-      businessName, contactName, description, province, country,
+      businessName, contactName, description, province, district, country,
       website, logoUrl, coverUrl, phone, email,
       lineId, facebook, instagram, tiktok, categories,
       currentPw, newPw,
@@ -106,6 +107,7 @@ export async function PUT(request: Request) {
         ...(contactName  !== undefined && { contactName }),
         ...(description  !== undefined && { description }),
         ...(province     !== undefined && { province }),
+        ...(district     !== undefined && { district }),
         ...(country      !== undefined && { country }),
         ...(website      !== undefined && { website }),
         ...(logoUrl      !== undefined && { logoUrl }),

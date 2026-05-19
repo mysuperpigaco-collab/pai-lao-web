@@ -56,8 +56,21 @@ export default function HomePage() {
           <p className="hp-sub">เรื่องเล่าการเดินทางล่าสุด · Latest travel stories</p>
         </div>
         {user ? (
-          <Link href={user.role === "BUSINESS" ? "/business/dashboard" : "/dashboard"} className="hp-see-all">
-            👤 ข้อมูลส่วนตัว →
+          <Link href={user.role === "BUSINESS" ? "/business/dashboard" : "/dashboard"} style={{
+            display: "inline-flex", alignItems: "center", gap: 7,
+            padding: "9px 18px", borderRadius: 999,
+            background: "linear-gradient(135deg, #10b981 0%, #06b6d4 100%)",
+            color: "#fff", fontWeight: 800, fontSize: 13,
+            textDecoration: "none", whiteSpace: "nowrap",
+            boxShadow: "0 4px 14px rgba(16,185,129,0.28)",
+          }}>
+            {user.avatarUrl
+              ? <img src={user.avatarUrl} alt="" style={{ width: 22, height: 22, borderRadius: "50%", objectFit: "cover", border: "1.5px solid rgba(255,255,255,0.6)" }} />
+              : <span style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900 }}>
+                  {(user.displayName || user.firstName).slice(0, 1).toUpperCase()}
+                </span>
+            }
+            {user.displayName || user.firstName}
           </Link>
         ) : (
           <Link href="/trips" className="hp-see-all">ดูทั้งหมด · See all →</Link>
