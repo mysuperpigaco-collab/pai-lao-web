@@ -19,11 +19,13 @@ export default function CreateStoryPage() {
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
 
-  const [title,    setTitle   ] = useState("");
-  const [content,  setContent ] = useState("");
-  const [budget,   setBudget  ] = useState("");
-  const [mood,     setMood    ] = useState("Cafe Hopping");
-  const [tags,     setTags    ] = useState("");
+  const [title,      setTitle     ] = useState("");
+  const [content,    setContent   ] = useState("");
+  const [budget,     setBudget    ] = useState("");
+  const [mood,       setMood      ] = useState("Cafe Hopping");
+  const [tags,       setTags      ] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [tiktokUrl,  setTiktokUrl ] = useState("");
 
   const [timeline, setTimeline] = useState([
     { date: today, time: "", place: "", province: "", district: "", description: "",
@@ -114,7 +116,9 @@ export default function CreateStoryPage() {
           mood,
           budget:   budget || null,
           location: timeline[0]?.province || "",
-          tags:     tags.split(",").map(t => t.trim()).filter(Boolean),
+          tags:       tags.split(",").map(t => t.trim()).filter(Boolean),
+          youtubeUrl: youtubeUrl.trim() || null,
+          tiktokUrl:  tiktokUrl.trim()  || null,
           timeline: timelineData,
         }),
       });
@@ -222,6 +226,18 @@ export default function CreateStoryPage() {
               <label>แท็ก | <small>TAGS (คั่นด้วยจุลภาค)</small></label>
               <input type="text" className="form-control" value={tags}
                 onChange={(e) => setTags(e.target.value)} placeholder="เช่น กาญจนบุรี, น้ำตก, วันเดียว" />
+            </div>
+            <div className="form-group full-width">
+              <label>🎬 YouTube Video URL <small style={{color:"#94a3b8",fontWeight:500}}>(ไม่บังคับ · Optional)</small></label>
+              <input type="url" className="form-control" value={youtubeUrl}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=... หรือ https://youtu.be/..." />
+            </div>
+            <div className="form-group full-width">
+              <label>🎵 TikTok Video URL <small style={{color:"#94a3b8",fontWeight:500}}>(ไม่บังคับ · Optional)</small></label>
+              <input type="url" className="form-control" value={tiktokUrl}
+                onChange={(e) => setTiktokUrl(e.target.value)}
+                placeholder="https://www.tiktok.com/@user/video/..." />
             </div>
           </div>
 

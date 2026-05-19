@@ -83,7 +83,7 @@ export async function POST(request: Request) {
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 
     const body = await request.json();
-    const { title, subtitle, description, coverUrl, gallery, mood, budget, location, tags, timeline } = body;
+    const { title, subtitle, description, coverUrl, gallery, mood, budget, location, tags, timeline, youtubeUrl, tiktokUrl } = body;
 
     if (!title || !description || !coverUrl) {
       return NextResponse.json({ message: "กรุณากรอก ชื่อ คำอธิบาย และรูปปก" }, { status: 400 });
@@ -103,6 +103,8 @@ export async function POST(request: Request) {
         budget:      budget      ? Number(budget) : null,
         location:    location    ?? "",
         tags:        tags        ?? [],
+        youtubeUrl:  youtubeUrl  ?? null,
+        tiktokUrl:   tiktokUrl   ?? null,
         isPublished: true,
         authorId:    session.userId,
         timeline: timeline?.length ? {

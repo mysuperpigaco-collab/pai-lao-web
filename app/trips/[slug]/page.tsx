@@ -10,6 +10,22 @@ import FollowButton from "@/components/trips/FollowButton";
 import Link from "next/link";
 import "./trip-detail.css";
 
+/** Extract YouTube video ID from various URL formats */
+function getYoutubeId(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname === "youtu.be") return u.pathname.slice(1).split("?")[0];
+    if (u.hostname.includes("youtube.com")) {
+      const v = u.searchParams.get("v");
+      if (v) return v;
+      // /shorts/ID
+      const m = u.pathname.match(/\/shorts\/([^/?]+)/);
+      if (m) return m[1];
+    }
+  } catch {}
+  return null;
+}
+
 type Props = { params: Promise<{ slug: string }> };
 
 export default async function TripDetailPage({ params }: Props) {
@@ -156,6 +172,107 @@ export default async function TripDetailPage({ params }: Props) {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* ── Video Section ── */}
+            {(trip.youtubeUrl || trip.tiktokUrl) && (
+              <div className="content-card">
+                <h2>🎬 วิดีโอ <span style={{ fontSize: 14, fontWeight: 600, color: "#94a3b8" }}>Video</span></h2>
+
+                <div className="video-section">
+                  {/* YouTube embed */}
+                  {trip.youtubeUrl && (() => {
+                    const ytId = getYoutubeId(trip.youtubeUrl!);
+                    return ytId ? (
+                      <div className="video-block">
+                        <div className="video-label">
+                          <span className="video-badge yt-badge">▶ YouTube</span>
+                        </div>
+                        <div className="yt-embed-wrap">
+                          <iframe
+                            src={`https://www.youtube.com/embed/${ytId}`}
+                            title="YouTube video"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="video-block">
+                        <div className="video-label">
+                          <span className="video-badge yt-badge">▶ YouTube</span>
+                        </div>
+                        <a href={trip.youtubeUrl!} target="_blank" rel="noreferrer" className="video-link-btn yt-link">
+                          🎬 ดูวิดีโอบน YouTube · Watch on YouTube
+                        </a>
+                      </div>
+                    );
+                  })()}
+
+                  {/* TikTok */}
+                  {trip.tiktokUrl && (
+                    <div className="video-block">
+                      <div className="video-label">
+                        <span className="video-badge tt-badge">♪ TikTok</span>
+                      </div>
+                      <a href={trip.tiktokUrl} target="_blank" rel="noreferrer" className="video-link-btn tt-link">
+                        <div className="tt-card">
+                          <div className="tt-icon">♪</div>
+                          <div className="tt-text">
+                            <div style={{ fontWeight: 800, fontSize: 15, color: "#0f172a" }}>ดูวิดีโอบน TikTok</div>
+                            <div style={{ fontSize: 12, color: "#64748b", marginTop: 3 }}>Watch on TikTok · เปิดในแอป TikTok</div>
+                            <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4, wordBreak: "break-all" }}>{trip.tiktokUrl}</div>
+                          </div>
+                          <div style={{ fontSize: 20, color: "#94a3b8" }}>→</div>
+                        </div>
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+                <style jsx>{`
+                  .video-section { display: flex; flex-direction: column; gap: 20px; }
+                  .video-block {}
+                  .video-label { margin-bottom: 10px; }
+                  .video-badge {
+                    display: inline-flex; align-items: center;
+                    padding: 4px 12px; border-radius: 999px;
+                    font-size: 12px; font-weight: 800; letter-spacing: 0.3px;
+                  }
+                  .yt-badge { background: #fee2e2; color: #b91c1c; }
+                  .tt-badge { background: #fce7f3; color: #9d174d; }
+
+                  .yt-embed-wrap {
+                    position: relative; padding-bottom: 56.25%; height: 0;
+                    border-radius: 16px; overflow: hidden;
+                    box-shadow: 0 4px 20px rgba(15,23,42,0.12);
+                  }
+                  .yt-embed-wrap iframe {
+                    position: absolute; top: 0; left: 0;
+                    width: 100%; height: 100%; border: 0;
+                  }
+
+                  .video-link-btn { text-decoration: none; display: block; }
+                  .yt-link .tt-card { background: linear-gradient(135deg, #fff5f5, #fee2e2); border-color: #fecaca; }
+
+                  .tt-card {
+                    display: flex; align-items: center; gap: 16px;
+                    padding: 18px 20px; border-radius: 16px;
+                    background: linear-gradient(135deg, #fdf4ff, #fce7f3);
+                    border: 1.5px solid #f0abfc;
+                    transition: all 0.2s;
+                  }
+                  .tt-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(157,23,77,0.12); }
+                  .tt-icon {
+                    width: 52px; height: 52px; border-radius: 14px;
+                    background: linear-gradient(135deg, #ec4899, #8b5cf6);
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 24px; color: white; flex-shrink: 0;
+                    box-shadow: 0 4px 12px rgba(236,72,153,0.35);
+                  }
+                  .tt-text { flex: 1; min-width: 0; }
+                `}</style>
               </div>
             )}
 

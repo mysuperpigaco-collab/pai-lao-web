@@ -170,6 +170,9 @@ model Trip {
   location    String?
   tags        String[]
 
+  youtubeUrl  String?
+  tiktokUrl   String?
+
   isPublished Boolean  @default(true)
   authorId    String
   author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)

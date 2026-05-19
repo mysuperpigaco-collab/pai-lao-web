@@ -52,7 +52,7 @@ export async function PUT(request: Request, { params }: Params) {
     }
 
     const body = await request.json();
-    const { title, subtitle, description, coverUrl, gallery, mood, budget, location, tags, isPublished, timeline } = body;
+    const { title, subtitle, description, coverUrl, gallery, mood, budget, location, tags, isPublished, timeline, youtubeUrl, tiktokUrl } = body;
 
     if (timeline) {
       await prisma.timelineStop.deleteMany({ where: { trip: { slug } } });
@@ -70,6 +70,8 @@ export async function PUT(request: Request, { params }: Params) {
         ...(budget      !== undefined && { budget: budget ? Number(budget) : null }),
         ...(location    !== undefined && { location }),
         ...(tags        !== undefined && { tags }),
+        ...(youtubeUrl  !== undefined && { youtubeUrl: youtubeUrl || null }),
+        ...(tiktokUrl   !== undefined && { tiktokUrl:  tiktokUrl  || null }),
         ...(isPublished !== undefined && { isPublished }),
         ...(timeline?.length && {
           timeline: {

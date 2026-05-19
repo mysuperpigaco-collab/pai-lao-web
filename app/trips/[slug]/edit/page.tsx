@@ -37,11 +37,13 @@ export default function EditTripPage({ params }: Props) {
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [existingGallery, setExistingGallery] = useState<string[]>([]);
 
-  const [title,   setTitle  ] = useState("");
-  const [content, setContent] = useState("");
-  const [budget,  setBudget ] = useState("");
-  const [mood,    setMood   ] = useState("Cafe Hopping");
-  const [tags,    setTags   ] = useState("");
+  const [title,      setTitle     ] = useState("");
+  const [content,    setContent   ] = useState("");
+  const [budget,     setBudget    ] = useState("");
+  const [mood,       setMood      ] = useState("Cafe Hopping");
+  const [tags,       setTags      ] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [tiktokUrl,  setTiktokUrl ] = useState("");
 
   const [timeline, setTimeline] = useState<{
     date: string; time: string; place: string; province: string; district: string;
@@ -60,6 +62,8 @@ export default function EditTripPage({ params }: Props) {
         setBudget(t.budget ? String(t.budget) : "");
         setMood(t.mood           ?? "Cafe Hopping");
         setTags(Array.isArray(t.tags) ? t.tags.join(", ") : "");
+        setYoutubeUrl(t.youtubeUrl ?? "");
+        setTiktokUrl(t.tiktokUrl   ?? "");
         setExistingCoverUrl(t.coverUrl ?? "");
         setCoverPreview(t.coverUrl ?? null);
         setExistingGallery(t.gallery ?? []);
@@ -168,6 +172,8 @@ export default function EditTripPage({ params }: Props) {
           mood,
           budget:      budget || null,
           tags:        tags.split(",").map(t => t.trim()).filter(Boolean),
+          youtubeUrl:  youtubeUrl.trim() || null,
+          tiktokUrl:   tiktokUrl.trim()  || null,
           timeline:    timelineData,
         }),
       });
@@ -309,6 +315,20 @@ export default function EditTripPage({ params }: Props) {
               <label>แท็ก | <small>TAGS (คั่นด้วยจุลภาค)</small></label>
               <input type="text" className="form-control" value={tags}
                 onChange={e => setTags(e.target.value)} placeholder="เช่น กาญจนบุรี, น้ำตก, วันเดียว" />
+            </div>
+
+            <div className="form-group full-width">
+              <label>🎬 YouTube Video URL <small style={{color:"#94a3b8",fontWeight:500}}>(ไม่บังคับ · Optional)</small></label>
+              <input type="url" className="form-control" value={youtubeUrl}
+                onChange={e => setYoutubeUrl(e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=... หรือ https://youtu.be/..." />
+            </div>
+
+            <div className="form-group full-width">
+              <label>🎵 TikTok Video URL <small style={{color:"#94a3b8",fontWeight:500}}>(ไม่บังคับ · Optional)</small></label>
+              <input type="url" className="form-control" value={tiktokUrl}
+                onChange={e => setTiktokUrl(e.target.value)}
+                placeholder="https://www.tiktok.com/@user/video/..." />
             </div>
 
             <div className="form-group full-width">
