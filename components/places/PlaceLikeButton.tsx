@@ -8,9 +8,10 @@ type Props = {
   placeId: string;
   initialLiked?: boolean;
   initialCount?: number;
+  businessOwnerId?: string | null;
 };
 
-export default function PlaceLikeButton({ placeId, initialLiked = false, initialCount = 0 }: Props) {
+export default function PlaceLikeButton({ placeId, initialLiked = false, initialCount = 0, businessOwnerId }: Props) {
   const { user } = useAuth();
   const router = useRouter();
   const [liked, setLiked] = useState(initialLiked);
@@ -19,6 +20,23 @@ export default function PlaceLikeButton({ placeId, initialLiked = false, initial
   const [pop, setPop] = useState(false);
 
   if (user?.role === "BUSINESS") return null;
+
+  // Owner cannot like their own place
+  const isOwner = !!user && !!businessOwnerId && user.id === businessOwnerId;
+  if (isOwner) {
+    return (
+      <button disabled style={{
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+        flex: 1, padding: "12px 8px", borderRadius: 14,
+        border: "1.5px solid #e2e8f0", background: "#f8fafc",
+        color: "#cbd5e1", fontWeight: 800, fontSize: 14,
+        cursor: "not-allowed", opacity: 0.7, fontFamily: "inherit",
+      }}>
+        <span style={{ fontSize: 20 }}>🤍</span>
+        <span>{count > 0 ? count.toLocaleString() : ""} ถูกใจ</span>
+      </button>
+    );
+  }
 
   const handleToggle = async () => {
     if (!user) { router.push("/login"); return; }

@@ -70,6 +70,7 @@ export default function SearchPageClient() {
   const [searched, setSearched] = useState(false);
   const [totalTrips, setTotalTrips]   = useState(0);
   const [totalPlaces, setTotalPlaces] = useState(0);
+  const [searchError, setSearchError] = useState("");
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -79,8 +80,12 @@ export default function SearchPageClient() {
     const fprov    = overrides?.province ?? province;
     const fcat     = overrides?.category ?? category;
     const fsort    = overrides?.sort    ?? sort;
-    if (!fq.trim()) return;
-
+    if (!fq.trim()) {
+      setSearchError("กรุณาพิมพ์คำค้นหา · Please enter a search keyword");
+      inputRef.current?.focus();
+      return;
+    }
+    setSearchError("");
     setLoading(true);
     setSearched(true);
 
@@ -166,6 +171,13 @@ export default function SearchPageClient() {
             ค้นหา
           </button>
         </div>
+
+        {/* Validation error */}
+        {searchError && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff7ed", border: "1.5px solid #fed7aa", borderRadius: 10, padding: "10px 14px", marginBottom: 8, color: "#c2410c", fontSize: 13, fontWeight: 700 }}>
+            ⚠️ {searchError}
+          </div>
+        )}
 
         {/* Filter row */}
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>

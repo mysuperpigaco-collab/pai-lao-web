@@ -174,6 +174,7 @@ export default async function PlaceDetailPage({ params }: Props) {
                 businessOwnerId={place.business?.userId ?? null}
                 initialReviews={serializedReviews}
                 avgRating={avgRating}
+                currentUserId={session?.userId ?? null}
               />
             </div>
           </div>
@@ -201,7 +202,7 @@ export default async function PlaceDetailPage({ params }: Props) {
 
             {/* Like + Bookmark row */}
             <div style={{ display: "flex", gap: 8 }}>
-              <PlaceLikeButton placeId={place.id} initialLiked={initialLiked} initialCount={likeCount} />
+              <PlaceLikeButton placeId={place.id} initialLiked={initialLiked} initialCount={likeCount} businessOwnerId={place.business?.userId ?? null} />
               <PlaceBookmarkButton placeId={place.id} initialSaved={initialSaved} />
             </div>
 

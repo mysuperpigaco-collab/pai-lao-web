@@ -288,7 +288,7 @@ export default async function TripDetailPage({ params }: Props) {
               <div className="bm-card-title">❤️ ถูกใจและบันทึก</div>
               <div className="bm-card-sub">กดถูกใจหรือบุ๊คมาร์คไว้อ่านทีหลัง</div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
-                <LikeButton tripId={trip.id} initialLiked={initialLiked} initialCount={likeCount} />
+                <LikeButton tripId={trip.id} initialLiked={initialLiked} initialCount={likeCount} tripAuthorId={trip.author.id} />
                 <BookmarkButton tripId={trip.id} initialSaved={initialSaved} />
               </div>
               <div style={{ marginTop: 8 }}>
