@@ -183,15 +183,6 @@ export default async function PlaceDetailPage({ params }: Props) {
                   </div>
                 </>
               )}
-              {place.shareCount > 0 && (
-                <>
-                  <div style={{ width: 1, background: "#f1f5f9" }} />
-                  <div style={{ flex: 1, textAlign: "center", padding: "8px 0" }}>
-                    <div style={{ fontSize: 26, fontWeight: 900, color: "#0f172a" }}>{place.shareCount.toLocaleString()}</div>
-                    <div style={{ fontSize: 11, color: "#64748b", fontWeight: 600, marginTop: 2 }}>Shared</div>
-                  </div>
-                </>
-              )}
             </div>
 
             <ShareButton
@@ -215,7 +206,7 @@ export default async function PlaceDetailPage({ params }: Props) {
                   <div className="pd-info-row">
                     <span className="pd-info-icon">&#x1F550;</span>
                     <div>
-                      <div className="pd-info-label">เวลาเปิด–ปิด · Hours</div>
+                      <div className="pd-info-label">เวลาเปิด-ปิด · Hours</div>
                       <div className="pd-info-val">{place.openHours}</div>
                     </div>
                   </div>
