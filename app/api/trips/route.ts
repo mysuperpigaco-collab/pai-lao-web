@@ -130,4 +130,11 @@ export async function POST(request: Request) {
         } : undefined,
       },
       include: { timeline: true },
-  
+    });
+
+    return NextResponse.json({ message: "สร้างทริปสำเร็จ", trip }, { status: 201 });
+  } catch (error) {
+    console.error("POST /api/trips:", error);
+    return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
+  }
+}

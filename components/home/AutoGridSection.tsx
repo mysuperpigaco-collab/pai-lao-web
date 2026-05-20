@@ -262,3 +262,23 @@ export default function AutoGridSection() {
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .ag-en {
+          font-size: 11px; color: #64748b; font-style: italic; margin: 0;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .ag-loc { font-size: 11px; color: #94a3b8; margin: 0; }
+        .ag-date { font-size: 10px; color: #cbd5e1; margin: 0; margin-top: 2px; }
+
+        /* Responsive */
+        @media (max-width: 1200px) { .ag-grid-5 { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 900px)  {
+          .ag-grid-5 { grid-template-columns: repeat(3, 1fr); }
+          .ag-grid-4 { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 640px)  {
+          .ag-grid-5, .ag-grid-4 { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+          .ag-tab { padding: 8px 12px; min-width: 62px; }
+        }
+      `}</style>
+    </div>
+  );
+}
