@@ -72,8 +72,8 @@ export default async function PlaceDetailPage({ params }: Props) {
         <div className="pd-hero">
           <div className="pd-hero-actions">
             <Link href="/place" className="floating-back-btn">
-              <span className="icon-circle">back</span>
-              <span>สถานที่ทั้งหมด</span>
+              <span className="icon-circle">&#8592;</span>
+              <span>สถานที่ทั้งหมด · All Places</span>
             </Link>
           </div>
           {place.coverUrl
@@ -186,54 +186,56 @@ export default async function PlaceDetailPage({ params }: Props) {
 
             {place.googleMapsUrl && (
               <a href={place.googleMapsUrl} target="_blank" rel="noreferrer" className="pd-maps-btn">
-                เส้นทาง Get Directions
+                &#x1F5FA; เส้นทาง · Get Directions
               </a>
             )}
 
             <div className="pd-side-card pd-info-card">
-              <div className="pd-side-title">ข้อมูลสำคัญ Key Info</div>
+              <div className="pd-side-title">
+                &#x1F4CB; ข้อมูลสำคัญ <span style={{ fontSize: 11, color: "#94a3b8" }}>Key Info</span>
+              </div>
               <div className="pd-info-list">
                 {place.openHours && (
                   <div className="pd-info-row">
-                    <span className="pd-info-icon">clock</span>
+                    <span className="pd-info-icon">&#x1F550;</span>
                     <div>
-                      <div className="pd-info-label">Hours</div>
+                      <div className="pd-info-label">เวลาเปิด–ปิด · Hours</div>
                       <div className="pd-info-val">{place.openHours}</div>
                     </div>
                   </div>
                 )}
                 {place.closedDays && (
                   <div className="pd-info-row">
-                    <span className="pd-info-icon">cal</span>
+                    <span className="pd-info-icon">&#x1F4C5;</span>
                     <div>
-                      <div className="pd-info-label">Closed</div>
+                      <div className="pd-info-label">วันหยุด · Closed</div>
                       <div className="pd-info-val">{place.closedDays}</div>
                     </div>
                   </div>
                 )}
                 {place.entryFee && (
                   <div className="pd-info-row">
-                    <span className="pd-info-icon">fee</span>
+                    <span className="pd-info-icon">&#x1F39F;</span>
                     <div>
-                      <div className="pd-info-label">Entry fee</div>
+                      <div className="pd-info-label">ค่าเข้าชม · Entry fee</div>
                       <div className="pd-info-val">{place.entryFee}</div>
                     </div>
                   </div>
                 )}
                 {place.phone && (
                   <div className="pd-info-row">
-                    <span className="pd-info-icon">ph</span>
+                    <span className="pd-info-icon">&#x1F4DE;</span>
                     <div>
-                      <div className="pd-info-label">Phone</div>
+                      <div className="pd-info-label">โทรศัพท์ · Phone</div>
                       <a href={"tel:" + place.phone} className="pd-info-link">{place.phone}</a>
                     </div>
                   </div>
                 )}
                 {place.website && (
                   <div className="pd-info-row">
-                    <span className="pd-info-icon">web</span>
+                    <span className="pd-info-icon">&#x1F310;</span>
                     <div>
-                      <div className="pd-info-label">Website</div>
+                      <div className="pd-info-label">เว็บไซต์ · Website</div>
                       <a href={place.website} target="_blank" rel="noreferrer" className="pd-info-link">
                         {place.website.replace(/^https?:\/\//, "")}
                       </a>
@@ -242,7 +244,7 @@ export default async function PlaceDetailPage({ params }: Props) {
                 )}
                 {place.lineId && (
                   <div className="pd-info-row">
-                    <span className="pd-info-icon">line</span>
+                    <span className="pd-info-icon">&#x1F4AC;</span>
                     <div>
                       <div className="pd-info-label">Line ID</div>
                       <div className="pd-info-val">{place.lineId}</div>
@@ -253,7 +255,9 @@ export default async function PlaceDetailPage({ params }: Props) {
             </div>
 
             <div className="pd-side-card">
-              <div className="pd-side-title">ที่ตั้ง Location</div>
+              <div className="pd-side-title">
+                &#x1F4CD; ที่ตั้ง <span style={{ fontSize: 11, color: "#94a3b8" }}>Location</span>
+              </div>
               <div className="pd-loc-province">{place.province}</div>
               <div className="pd-loc-district">{place.district}</div>
               {place.address && <div className="pd-loc-address">{place.address}</div>}
@@ -266,7 +270,9 @@ export default async function PlaceDetailPage({ params }: Props) {
 
             {place.business && (
               <div className="pd-side-card">
-                <div className="pd-side-title">ธุรกิจ Business</div>
+                <div className="pd-side-title">
+                  &#x1F3E2; ธุรกิจ <span style={{ fontSize: 11, color: "#94a3b8" }}>Business</span>
+                </div>
                 {place.business.logoUrl && (
                   <img src={place.business.logoUrl} alt="" style={{ width: 48, height: 48, borderRadius: 12, objectFit: "cover", marginBottom: 10 }} />
                 )}
@@ -290,8 +296,8 @@ export default async function PlaceDetailPage({ params }: Props) {
             )}
 
             {isOwner && (
-              <Link href={"/business/places/" + slug + "/edit"} className="pd-edit-btn">
-                แก้ไขสถานที่ Edit Place
+              <Link href={`/business/places/${slug}/edit`} className="pd-edit-btn">
+                &#x270F;&#xFE0F; แก้ไขสถานที่ · Edit Place
               </Link>
             )}
           </aside>
