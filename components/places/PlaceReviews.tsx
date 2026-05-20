@@ -218,33 +218,39 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
               {/* Owner replies */}
               {review.replies?.length > 0 && (
                 <div className="pr-replies">
-                  {review.replies.map(reply => (
-                    <div key={reply.id} className="pr-reply">
-                      <div className="pr-reply-head">
-                        <Avatar user={reply.author} size={28} />
-                        <div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                            <span className="pr-reply-name">{reply.author.displayName || reply.author.firstName}</span>
-                            <span className="pr-owner-badge">🏢 เจ้าของ · Owner</span>
+                  {review.replies.map(reply => {
+                    const isReplyOwner = (reply.author as any).role === "BUSINESS";
+                    return (
+                      <div key={reply.id} className="pr-reply">
+                        <div className="pr-reply-head">
+                          <Avatar user={reply.author} size={28} />
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <span className="pr-reply-name">{reply.author.displayName || reply.author.firstName}</span>
+                              {isReplyOwner
+                                ? <span className="pr-owner-badge">🏢 เจ้าของ</span>
+                                : <span className="pr-user-badge">💬 ผู้ใช้</span>
+                              }
+                            </div>
+                            <span className="pr-date">{new Date(reply.createdAt).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })}</span>
                           </div>
-                          <span className="pr-date">{new Date(reply.createdAt).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })}</span>
                         </div>
+                        <p className="pr-reply-text">{reply.text}</p>
                       </div>
-                      <p className="pr-reply-text">{reply.text}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 
-              {/* Owner reply input */}
-              {isOwner && !review.replies?.length && (
+              {/* Reply input — any logged-in user */}
+              {user && (
                 <div className="pr-reply-zone">
                   {replyOpen[review.id] ? (
                     <div className="pr-reply-form">
                       <textarea
                         value={replyText[review.id] ?? ""}
                         onChange={e => setReplyText(t => ({ ...t, [review.id]: e.target.value }))}
-                        placeholder="ตอบกลับในฐานะเจ้าของสถานที่... Reply as owner..."
+                        placeholder={isOwner ? "ตอบกลับในฐานะเจ้าของสถานที่..." : "ตอบกลับความคิดเห็น..."}
                         className="pr-reply-textarea"
                       />
                       <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
@@ -253,7 +259,7 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
                           disabled={replySubmitting[review.id] || !replyText[review.id]?.trim()}
                           className="pr-reply-submit"
                         >
-                          {replySubmitting[review.id] ? "⏳" : "🏢 ตอบกลับ · Reply"}
+                          {replySubmitting[review.id] ? "⏳" : isOwner ? "🏢 ตอบกลับ" : "💬 ตอบกลับ"}
                         </button>
                         <button onClick={() => setReplyOpen(o => ({ ...o, [review.id]: false }))} className="pr-reply-cancel">
                           ยกเลิก
@@ -262,7 +268,7 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
                     </div>
                   ) : (
                     <button onClick={() => setReplyOpen(o => ({ ...o, [review.id]: true }))} className="pr-reply-open-btn">
-                      🏢 ตอบกลับในฐานะเจ้าของ · Reply as owner
+                      {isOwner ? "🏢 ตอบกลับในฐานะเจ้าของ" : "💬 ตอบกลับ · Reply"}
                     </button>
                   )}
                 </div>
@@ -322,6 +328,7 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
         .pr-reply-head { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 6px; }
         .pr-reply-name { font-size: 13px; font-weight: 800; color: #065f46; }
         .pr-owner-badge { background: #dcfce7; color: #15803d; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 999px; border: 1px solid #a7f3d0; }
+        .pr-user-badge { background: #eff6ff; color: #2563eb; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 999px; border: 1px solid #bfdbfe; }
         .pr-reply-text { font-size: 13px; color: #374151; margin: 0 0 0 38px; line-height: 1.6; }
 
         /* Reply input */

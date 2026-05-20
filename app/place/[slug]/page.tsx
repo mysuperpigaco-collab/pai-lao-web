@@ -131,8 +131,8 @@ export default async function PlaceDetailPage({ params }: Props) {
               <div className="pd-card">
                 <h2>รูปภาพ Gallery</h2>
                 <div className="pd-gallery">
-                  {place.gallery.slice(0, 5).map((img, i) => (
-                    <div key={i} className={i === 0 ? "pd-gal-item pd-gal-main" : "pd-gal-item"}>
+                  {place.gallery.slice(0, 6).map((img, i) => (
+                    <div key={i} className="pd-gal-item">
                       <img src={img} alt={place.title + " " + (i + 1)} />
                     </div>
                   ))}

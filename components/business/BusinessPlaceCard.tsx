@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 
 type Props = {
   slug: string;
@@ -21,156 +22,130 @@ const CAT_ICON: Record<string, string> = {
   FOOD:"🍲", TEMPLE:"🛕", BEACH:"🏖️", MARKET:"🛍️", ADVENTURE:"🧗", MUSEUM:"🏛️",
 };
 
+const IconEye = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+  </svg>
+);
+const IconEdit = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z"/>
+  </svg>
+);
+const IconTrash = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+    <path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+  </svg>
+);
+
+const BASE_BTN: React.CSSProperties = {
+  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+  gap: "4px", padding: "9px 4px", borderRadius: "10px",
+  textDecoration: "none", border: "1.5px solid", textAlign: "center",
+  transition: "background 0.15s", cursor: "pointer", fontFamily: "inherit",
+};
+const VARIANT = {
+  view: { background: "#f8fafc", borderColor: "#e2e8f0", color: "#475569" },
+  edit: { background: "#eff6ff", borderColor: "#dbeafe", color: "#2563eb" },
+  del:  { background: "#fff8f8", borderColor: "#fecaca", color: "#dc2626" },
+};
+function btnStyle(v: "view" | "edit" | "del"): React.CSSProperties {
+  return { ...BASE_BTN, ...VARIANT[v] };
+}
+const labelStyle: React.CSSProperties = {
+  display: "flex", flexDirection: "column", gap: "1px", lineHeight: 1,
+};
+
 export default function BusinessPlaceCard({
   slug, title, province, district, coverUrl,
   category, avgRating, isVerified, reviewCount, bookmarkCount, onDeleted,
 }: Props) {
   const icon = CAT_ICON[category] ?? "📍";
+  const [confirm, setConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   async function handleDelete() {
-    if (!confirm(`ลบสถานที่ "${title}" ใช่หรือไม่?`)) return;
+    if (!confirm) { setConfirm(true); return; }
+    setDeleting(true);
     try {
       const res = await fetch(`/api/places/${slug}`, { method: "DELETE" });
       if (res.ok) onDeleted?.(slug);
-      else alert("ไม่สามารถลบได้");
+      else { alert("ไม่สามารถลบได้"); setDeleting(false); setConfirm(false); }
     } catch {
-      alert("เกิดข้อผิดพลาด");
+      alert("เกิดข้อผิดพลาด"); setDeleting(false); setConfirm(false);
     }
   }
 
   return (
-    <div className="bpc-card">
-      <div className="bpc-img-wrap">
+    <div style={{ background: "#fff", borderRadius: "20px", border: "1px solid #f1f5f9", overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,0.05)", display: "flex", flexDirection: "column", opacity: deleting ? 0.5 : 1, transition: "box-shadow 0.2s, transform 0.2s" }}
+      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 10px 28px rgba(15,23,42,0.1)"; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ""; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 12px rgba(15,23,42,0.05)"; }}
+    >
+      {/* Cover */}
+      <div style={{ position: "relative", height: 180, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
         {coverUrl
-          ? <img src={coverUrl} alt={title} />
-          : <div className="bpc-img-placeholder">{icon}</div>
+          ? <img src={coverUrl} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
+          : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48, background: "linear-gradient(135deg,#f0fdf4,#ecfeff)" }}>{icon}</div>
         }
-        <div className="bpc-overlay">
-          <span className="bpc-cat">{icon} {category}</span>
-          {isVerified && <span className="bpc-verified">✓ Verified</span>}
-        </div>
-      </div>
-
-      <div className="bpc-body">
-        <h3 className="bpc-title">{title}</h3>
-        <p className="bpc-loc">📍 {province} · {district}</p>
-        <div className="bpc-stats">
-          {avgRating != null && avgRating > 0 && (
-            <span className="bpc-stat">⭐ {avgRating.toFixed(1)}</span>
-          )}
-          {reviewCount != null && (
-            <span className="bpc-stat">💬 {reviewCount} รีวิว</span>
-          )}
-          {bookmarkCount != null && (
-            <span className="bpc-stat">🔖 {bookmarkCount}</span>
-          )}
-        </div>
-      </div>
-
-      <div className="bpc-actions">
-        <div className="bpc-btn-row">
-          <Link href={`/place/${slug}`} className="bpc-btn bpc-view">👁 ดูสาธารณะ</Link>
-          <Link href={`/business/places/${slug}/edit`} className="bpc-btn bpc-edit">✏️ แก้ไข</Link>
-        </div>
-        {onDeleted && (
-          <button onClick={handleDelete} className="bpc-btn bpc-delete">🗑 ลบสถานที่นี้</button>
+        <span style={{ position: "absolute", bottom: 10, left: 10, background: "rgba(15,23,42,0.65)", backdropFilter: "blur(6px)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 999 }}>
+          {icon} {category}
+        </span>
+        {isVerified && (
+          <span style={{ position: "absolute", top: 10, right: 10, background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 999, border: "1px solid #bbf7d0" }}>
+            ✓ Verified
+          </span>
         )}
       </div>
 
-      <style jsx>{`
-        .bpc-card {
-          background: white;
-          border-radius: 24px;
-          overflow: hidden;
-          border: 1.5px solid #f1f5f9;
-          box-shadow: 0 4px 18px rgba(0,0,0,0.05);
-          transition: transform 0.25s, box-shadow 0.25s;
-          display: flex;
-          flex-direction: column;
-        }
-        .bpc-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 16px 40px rgba(0,0,0,0.10);
-        }
-        .bpc-img-wrap {
-          height: 200px;
-          position: relative;
-          overflow: hidden;
-          background: #e2e8f0;
-        }
-        .bpc-img-wrap img {
-          width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s;
-        }
-        .bpc-card:hover .bpc-img-wrap img { transform: scale(1.05); }
-        .bpc-img-placeholder {
-          width: 100%; height: 100%;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 48px;
-        }
-        .bpc-overlay {
-          position: absolute; bottom: 0; left: 0; right: 0;
-          background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-          padding: 16px 14px 12px;
-          display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-        }
-        .bpc-cat {
-          background: rgba(255,255,255,0.18); backdrop-filter: blur(8px);
-          color: white; font-size: 11px; font-weight: 700;
-          padding: 4px 10px; border-radius: 999px;
-        }
-        .bpc-verified {
-          background: rgba(16,185,129,0.35); color: #d1fae5;
-          font-size: 11px; font-weight: 700;
-          padding: 4px 10px; border-radius: 999px;
-        }
-        .bpc-body {
-          padding: 18px 18px 12px;
-          flex: 1;
-        }
-        .bpc-title {
-          font-size: 17px; font-weight: 900; color: #0f172a;
-          margin-bottom: 5px; line-height: 1.3;
-        }
-        .bpc-loc {
-          font-size: 13px; color: #64748b; margin-bottom: 10px;
-        }
-        .bpc-stats {
-          display: flex; gap: 8px; flex-wrap: wrap;
-        }
-        .bpc-stat {
-          font-size: 12px; font-weight: 700; color: #475569;
-          background: #f8fafc; border: 1px solid #e2e8f0;
-          padding: 3px 10px; border-radius: 999px;
-        }
-        .bpc-actions {
-          display: flex; flex-direction: column; gap: 8px;
-          padding: 12px 18px 18px;
-        }
-        .bpc-btn-row {
-          display: flex; gap: 8px;
-        }
-        .bpc-btn {
-          flex: 1; text-align: center; padding: 10px 8px;
-          border-radius: 12px; font-size: 13px; font-weight: 700;
-          text-decoration: none; cursor: pointer;
-          border: none; font-family: inherit; transition: 0.2s;
-          white-space: nowrap;
-        }
-        .bpc-view {
-          background: #eff6ff; color: #2563eb;
-        }
-        .bpc-view:hover { background: #dbeafe; }
-        .bpc-edit {
-          background: linear-gradient(135deg, #3b82f6, #10b981);
-          color: white;
-        }
-        .bpc-edit:hover { opacity: 0.9; }
-        .bpc-delete {
-          background: #fff1f2; color: #e11d48;
-          width: 100%; flex: none;
-        }
-        .bpc-delete:hover { background: #ffe4e6; }
-      `}</style>
+      {/* Body */}
+      <div style={{ padding: "14px 16px 4px", flex: 1 }}>
+        <h4 style={{ fontSize: 14, fontWeight: 800, color: "#1e293b", margin: "0 0 4px", lineHeight: 1.4 }}>{title}</h4>
+        <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 8px" }}>📍 {province} · {district}</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {avgRating != null && avgRating > 0 && (
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#f59e0b" }}>{"★".repeat(Math.round(avgRating))} {avgRating.toFixed(1)}</span>
+          )}
+          {reviewCount != null && reviewCount > 0 && (
+            <span style={{ fontSize: 11, color: "#94a3b8" }}>💬 {reviewCount}</span>
+          )}
+          {bookmarkCount != null && bookmarkCount > 0 && (
+            <span style={{ fontSize: 11, color: "#94a3b8" }}>🔖 {bookmarkCount}</span>
+          )}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div style={{ padding: "10px 12px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
+        {!confirm ? (
+          <div style={{ display: "grid", gridTemplateColumns: onDeleted ? "1fr 1fr 1fr" : "1fr 1fr", gap: 6 }}>
+            <Link href={`/place/${slug}`} style={btnStyle("view")}>
+              <IconEye />
+              <span style={labelStyle}><span style={{ fontSize: 12, fontWeight: 700 }}>ดู</span><span style={{ fontSize: 9, opacity: 0.7 }}>View</span></span>
+            </Link>
+            <Link href={`/business/places/${slug}/edit`} style={btnStyle("edit")}>
+              <IconEdit />
+              <span style={labelStyle}><span style={{ fontSize: 12, fontWeight: 700 }}>แก้ไข</span><span style={{ fontSize: 9, opacity: 0.7 }}>Edit</span></span>
+            </Link>
+            {onDeleted && (
+              <button onClick={handleDelete} style={{ ...btnStyle("del"), border: "1.5px solid #fecaca" }}>
+                <IconTrash />
+                <span style={labelStyle}><span style={{ fontSize: 12, fontWeight: 700 }}>ลบ</span><span style={{ fontSize: 9, opacity: 0.7 }}>Delete</span></span>
+              </button>
+            )}
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+            <button onClick={handleDelete} disabled={deleting} style={{ padding: 10, borderRadius: 10, border: "none", background: "#dc2626", color: "#fff", fontSize: 12, fontWeight: 800, cursor: deleting ? "wait" : "pointer", fontFamily: "inherit" }}>
+              {deleting ? "⏳ กำลังลบ..." : "🗑 ยืนยันลบ"}
+            </button>
+            <button onClick={() => setConfirm(false)} style={{ padding: 10, borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#64748b", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+              ยกเลิก
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -17,7 +17,9 @@ interface Place {
   category: string;
   descriptionShort?: string | null;
   isVerified?: boolean;
-  _count?: { reviews: number; bookmarks: number };
+  _count?: { reviews: number; bookmarks: number; likes?: number };
+  avgRating?: number | null;
+  shareCount?: number;
   business?: { businessName: string; isVerified?: boolean } | null;
 }
 
@@ -405,11 +407,12 @@ function PlaceCard({ place }: { place: Place }) {
     FOOD:"อาหาร",TEMPLE:"วัด",BEACH:"ชายหาด",MARKET:"ตลาด",ADVENTURE:"ผจญภัย",MUSEUM:"พิพิธภัณฑ์",
   };
 
-  const icon   = catIcon[place.category]  ?? "📍";
-  const label  = catLabel[place.category] ?? place.category;
-  const rating = (place._count?.reviews ?? 0) > 0
-    ? null   // no avg from this API — show review count instead
-    : null;
+  const icon  = catIcon[place.category]  ?? "📍";
+  const label = catLabel[place.category] ?? place.category;
+  const avg   = place.avgRating;
+  const likes = place._count?.likes ?? 0;
+  const revs  = place._count?.reviews ?? 0;
+  const bms   = place._count?.bookmarks ?? 0;
 
   return (
     <Link href={`/place/${place.slug}`} className="plc-card">
@@ -419,15 +422,11 @@ function PlaceCard({ place }: { place: Place }) {
           ? <img src={place.coverUrl} alt={place.title} loading="lazy" />
           : <div className="plc-img-ph">{icon}</div>
         }
-        {/* Category chip */}
         <span className="plc-cat-chip">{icon} {label}</span>
-        {/* Verified */}
-        {place.business?.isVerified && (
-          <span className="plc-verified">✓ Verified</span>
-        )}
-        {/* Bookmark count */}
-        {(place._count?.bookmarks ?? 0) > 0 && (
-          <span className="plc-bm">🔖 {place._count!.bookmarks}</span>
+        {place.business?.isVerified && <span className="plc-verified">✓ Verified</span>}
+        {/* avg rating badge on image */}
+        {avg != null && avg > 0 && (
+          <span className="plc-rating-badge">⭐ {avg.toFixed(1)}</span>
         )}
       </div>
 
@@ -436,18 +435,20 @@ function PlaceCard({ place }: { place: Place }) {
         <h3 className="plc-title">{place.title}</h3>
         {place.titleEn && <p className="plc-title-en">{place.titleEn}</p>}
         <p className="plc-loc">📍 {[place.district, place.province].filter(Boolean).join(", ")}</p>
-
         {place.descriptionShort && (
           <p className="plc-desc">{place.descriptionShort}</p>
         )}
 
-        {/* Footer stats */}
+        {/* Stats row */}
+        <div className="plc-stats-row">
+          {revs > 0 && <span className="plc-chip">💬 {revs}</span>}
+          {likes > 0 && <span className="plc-chip plc-chip-red">❤️ {likes}</span>}
+          {bms > 0 && <span className="plc-chip plc-chip-amber">🔖 {bms}</span>}
+          {revs === 0 && likes === 0 && <span className="plc-stat plc-stat-dim">ยังไม่มีรีวิว</span>}
+        </div>
+
         <div className="plc-footer">
-          {(place._count?.reviews ?? 0) > 0 ? (
-            <span className="plc-stat">💬 {place._count!.reviews} รีวิว</span>
-          ) : (
-            <span className="plc-stat plc-stat-dim">ยังไม่มีรีวิว</span>
-          )}
+          <span style={{ flex: 1 }} />
           <span className="plc-arrow">→</span>
         </div>
       </div>
@@ -493,12 +494,22 @@ function PlaceCard({ place }: { place: Place }) {
           padding: 3px 8px; border-radius: 999px;
         }
 
+        .plc-rating-badge {
+          position: absolute; top: 10px; left: 10px;
+          background: rgba(245,158,11,0.9); color: white;
+          font-size: 11px; font-weight: 800;
+          padding: 3px 8px; border-radius: 999px;
+        }
         .plc-body { padding: 14px 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
         .plc-title { font-size: 14px; font-weight: 800; color: #1e293b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .plc-title-en { font-size: 11px; color: #64748b; font-style: italic; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .plc-loc { font-size: 12px; color: #94a3b8; margin: 2px 0 0; }
         .plc-desc { font-size: 12px; color: #64748b; margin: 4px 0 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .plc-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 10px; }
+        .plc-stats-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+        .plc-chip { font-size: 11px; font-weight: 700; color: #059669; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 2px 8px; border-radius: 999px; }
+        .plc-chip-red { color: #e11d48; background: #fff1f2; border-color: #fecdd3; }
+        .plc-chip-amber { color: #b45309; background: #fffbeb; border-color: #fde68a; }
+        .plc-footer { display: flex; justify-content: flex-end; align-items: center; margin-top: auto; padding-top: 8px; }
         .plc-stat { font-size: 12px; color: #059669; font-weight: 700; }
         .plc-stat-dim { color: #cbd5e1 !important; font-weight: 500 !important; }
         .plc-arrow { font-size: 16px; color: #94a3b8; transition: transform 0.2s; }

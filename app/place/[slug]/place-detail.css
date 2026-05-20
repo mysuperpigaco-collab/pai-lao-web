@@ -188,18 +188,14 @@
 /* ─── GALLERY ─── */
 .pd-gallery {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  grid-template-rows: 175px 175px;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 
 .pd-gal-item {
   border-radius: 16px;
   overflow: hidden;
-}
-
-.pd-gal-main {
-  grid-row: span 2;
+  height: 180px;
 }
 
 .pd-gal-item img {
@@ -417,10 +413,9 @@
   .pd-hero-content h1 { font-size: 30px; }
   .pd-card { padding: 22px 18px; border-radius: 22px; }
   .pd-gallery {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 140px 140px;
+    grid-template-columns: repeat(2, 1fr);
   }
-  .pd-gal-main { grid-row: span 1; grid-column: span 2; }
+  .pd-gal-item { height: 150px; }
   .pd-sidebar { grid-template-columns: 1fr; }
   .pd-action-card { grid-column: span 1; }
 }

@@ -21,6 +21,14 @@ type BookmarkItem = {
 
 type Notice = { id: string; type: "info" | "tip" | "success" | "warning"; icon: string; title: string; body: string; action?: { label: string; href: string } };
 
+type ReplyNotif = {
+  id: string;
+  text: string;
+  place?: { slug: string; title: string } | null;
+  trip?:  { slug: string; title: string } | null;
+  replies: { id: string; text: string; createdAt: string; author: { displayName?: string | null; firstName: string; role?: string } }[];
+};
+
 const IconWrite = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 5H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>
@@ -62,6 +70,8 @@ export default function DashboardPage() {
   const [loadingTrips, setLoadingTrips] = useState(true);
   const [loadingBm, setLoadingBm]   = useState(false);
   const [dismissed, setDismissed]   = useState<Set<string>>(new Set());
+  const [replyNotifs, setReplyNotifs] = useState<ReplyNotif[]>([]);
+  const [loadingNotifs, setLoadingNotifs] = useState(true);
 
   useEffect(() => {
     setLoadingTrips(true);
@@ -69,6 +79,13 @@ export default function DashboardPage() {
       .then(r => r.json())
       .then(d => { setMyTrips(d.trips ?? []); setLoadingTrips(false); })
       .catch(() => setLoadingTrips(false));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/reviews/notifications")
+      .then(r => r.json())
+      .then(d => { setReplyNotifs(d.reviews ?? []); setLoadingNotifs(false); })
+      .catch(() => setLoadingNotifs(false));
   }, []);
 
   useEffect(() => {
@@ -156,6 +173,46 @@ export default function DashboardPage() {
         {visibleNotices.length > 0 && (
           <div className="dp-notices">
             {visibleNotices.map(n => <NoticeCard key={n.id} n={n} onDismiss={dismiss} />)}
+          </div>
+        )}
+
+        {/* ─── Reply Notifications ─── */}
+        {!loadingNotifs && replyNotifs.length > 0 && (
+          <div style={{ marginBottom: 28 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0f172a", marginBottom: 12 }}>
+              🔔 การแจ้งเตือน · Notifications
+              <span style={{ marginLeft: 8, fontSize: 12, fontWeight: 700, color: "#fff", background: "#e11d48", padding: "2px 8px", borderRadius: 999 }}>{replyNotifs.length}</span>
+            </h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {replyNotifs.map(notif => {
+                const dest = notif.place
+                  ? `/place/${notif.place.slug}`
+                  : notif.trip ? `/trips/${notif.trip.slug}` : "#";
+                const destTitle = notif.place?.title ?? notif.trip?.title ?? "สถานที่";
+                const latestReply = notif.replies[0];
+                const replierName = latestReply?.author.displayName || latestReply?.author.firstName || "ผู้ใช้";
+                const isOwnerReply = latestReply?.author.role === "BUSINESS";
+                return (
+                  <Link key={notif.id} href={dest} style={{ textDecoration: "none" }}>
+                    <div style={{ background: "#fff", border: "1.5px solid #e0f2fe", borderRadius: 16, padding: "14px 18px", display: "flex", gap: 14, alignItems: "flex-start", transition: "box-shadow 0.2s", boxShadow: "0 2px 8px rgba(14,165,233,0.06)" }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 12, background: isOwnerReply ? "#dcfce7" : "#eff6ff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>
+                        {isOwnerReply ? "🏢" : "💬"}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", margin: "0 0 2px" }}>
+                          {replierName} {isOwnerReply ? "(เจ้าของ) " : ""}ตอบกลับรีวิวของคุณ
+                        </p>
+                        <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 4px" }}>📍 {destTitle}</p>
+                        <p style={{ fontSize: 12, color: "#374151", margin: 0, fontStyle: "italic", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>
+                          &ldquo;{latestReply?.text}&rdquo;
+                        </p>
+                      </div>
+                      <span style={{ fontSize: 16, color: "#94a3b8" }}>→</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         )}
 

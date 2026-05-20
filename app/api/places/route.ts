@@ -40,15 +40,24 @@ export async function GET(request: Request) {
           id: true, slug: true, title: true, titleEn: true,
           province: true, district: true, category: true, tags: true,
           coverUrl: true, descriptionShort: true, entryFee: true,
-          isVerified: true, createdAt: true,
-          business: { select: { id: true, businessName: true, logoUrl: true } },
-          _count: { select: { reviews: true, bookmarks: true } },
+          isVerified: true, createdAt: true, shareCount: true,
+          business: { select: { id: true, businessName: true, logoUrl: true, isVerified: true } },
+          _count: { select: { reviews: true, bookmarks: true, likes: true } },
+          reviews: { select: { rating: true } },
         },
       }),
       prisma.place.count({ where }),
     ]);
 
-    return NextResponse.json({ places, total, page, totalPages: Math.ceil(total / limit) });
+    // Compute avgRating per place
+    const placesWithAvg = places.map(p => {
+      const ratings = (p.reviews ?? []).map((r: { rating: number }) => r.rating);
+      const avgRating = ratings.length ? ratings.reduce((s: number, r: number) => s + r, 0) / ratings.length : null;
+      const { reviews: _r, ...rest } = p;
+      return { ...rest, avgRating };
+    });
+
+    return NextResponse.json({ places: placesWithAvg, total, page, totalPages: Math.ceil(total / limit) });
   } catch (error) {
     console.error("GET /api/places:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
