@@ -32,6 +32,7 @@ type Props = {
   avgRating: number;
   tripId: string;
   currentUserId?: string | null;
+  tripAuthorId?: string | null;
 };
 
 function StarRow({ rating }: { rating: number }) {
@@ -40,7 +41,7 @@ function StarRow({ rating }: { rating: number }) {
 
 function Avatar({ user, size = 36 }: { user: ReviewAuthor; size?: number }) {
   if (user.avatarUrl) return <img src={user.avatarUrl} alt="" style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />;
-  const initials = (user.displayName || user.firstName).slice(0, 1).toUpperCase();
+  const initials = (user.displayName || user.firstName || "?").slice(0, 1).toUpperCase();
   return (
     <div style={{ width: size, height: size, borderRadius: "50%", background: "#3b82f6", color: "white",
       display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, flexShrink: 0,
@@ -48,15 +49,87 @@ function Avatar({ user, size = 36 }: { user: ReviewAuthor; size?: number }) {
   );
 }
 
-export default function TripComments({ reviews, avgRating, tripId, currentUserId }: Props) {
+// ── Report Modal ──────────────────────────────────────────
+const REPORT_TYPES = [
+  { value: "SPAM",          label: "สแปม · Spam" },
+  { value: "INAPPROPRIATE", label: "เนื้อหาไม่เหมาะสม · Inappropriate" },
+  { value: "FAKE",          label: "ข้อมูลเท็จ · Fake/Misleading" },
+  { value: "HARASSMENT",    label: "การคุกคาม · Harassment" },
+  { value: "OTHER",         label: "อื่นๆ · Other" },
+];
+
+function ReportModal({ targetId, targetType, onClose }: { targetId: string; targetType: string; onClose: () => void }) {
+  const [reason, setReason] = useState("SPAM");
+  const [detail, setDetail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      await fetch("/api/reports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetId, targetType, reason, detail }),
+      });
+      setDone(true);
+    } catch {}
+    setSubmitting(false);
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={onClose}>
+      <div style={{ background: "white", borderRadius: 20, padding: 28, width: "100%", maxWidth: 420, boxShadow: "0 20px 60px rgba(0,0,0,0.25)" }} onClick={e => e.stopPropagation()}>
+        {done ? (
+          <div style={{ textAlign: "center", padding: "20px 0" }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+            <h3 style={{ fontWeight: 800, color: "#0f172a", margin: "0 0 8px" }}>ส่งรายงานแล้ว</h3>
+            <p style={{ color: "#64748b", fontSize: 14, margin: "0 0 20px" }}>ขอบคุณที่แจ้งเรา ทีมงานจะตรวจสอบโดยเร็ว</p>
+            <button onClick={onClose} style={{ padding: "8px 24px", borderRadius: 10, border: "none", background: "#0f172a", color: "white", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>ปิด</button>
+          </div>
+        ) : (
+          <>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <h3 style={{ fontWeight: 800, fontSize: 16, color: "#0f172a", margin: 0 }}>🚩 รายงานเนื้อหา · Report</h3>
+              <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#94a3b8", lineHeight: 1 }}>×</button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+              {REPORT_TYPES.map(rt => (
+                <label key={rt.value} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 12,
+                  background: reason === rt.value ? "#eff6ff" : "#f8fafc",
+                  border: `1.5px solid ${reason === rt.value ? "#bfdbfe" : "#e2e8f0"}`,
+                  cursor: "pointer", transition: "all 0.15s" }}>
+                  <input type="radio" name="reason" value={rt.value} checked={reason === rt.value} onChange={() => setReason(rt.value)} style={{ accentColor: "#2563eb" }} />
+                  <span style={{ fontSize: 13, fontWeight: reason === rt.value ? 700 : 500, color: reason === rt.value ? "#1e40af" : "#374151" }}>{rt.label}</span>
+                </label>
+              ))}
+            </div>
+            <textarea value={detail} onChange={e => setDetail(e.target.value)} placeholder="รายละเอียดเพิ่มเติม (ไม่บังคับ)..."
+              rows={3} style={{ width: "100%", borderRadius: 10, border: "1.5px solid #e2e8f0", padding: "10px 12px", fontSize: 13, resize: "none", fontFamily: "inherit", boxSizing: "border-box", marginBottom: 16 }} />
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={onClose} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "white", color: "#475569", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>ยกเลิก</button>
+              <button onClick={handleSubmit} disabled={submitting} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", background: "#e11d48", color: "white", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                {submitting ? "⏳ กำลังส่ง..." : "🚩 ส่งรายงาน"}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default function TripComments({ reviews, avgRating, tripId, currentUserId, tripAuthorId }: Props) {
   const { user } = useAuth();
   const isBusiness = user?.role === "BUSINESS";
-
-  // Check if current user already reviewed this trip
   const meId = currentUserId ?? user?.id ?? null;
-  const myExistingReview = reviews.find(r => r.author.id === meId) ?? null;
-  const [alreadyReviewed, setAlreadyReviewed] = useState(!!myExistingReview);
+  const isOwner = meId != null && meId === tripAuthorId;
 
+  // Check if current user already submitted a rating review
+  const myExistingReview = reviews.find(r => r.author.id === meId) ?? null;
+  const [alreadyRated, setAlreadyRated] = useState(!!myExistingReview);
+
+  // Review form state
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -68,7 +141,11 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
   const [replyText, setReplyText] = useState<Record<string, string>>({});
   const [replySubmitting, setReplySubmitting] = useState<Record<string, boolean>>({});
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Report modal state
+  const [reportTarget, setReportTarget] = useState<{ id: string; type: string } | null>(null);
+
+  // Submit new rating+review (first time)
+  const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setSubmitError("");
@@ -82,17 +159,39 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
       if (res.ok) {
         setLocalReviews(prev => [{ ...data.review, replies: [] }, ...prev]);
         setNewComment("");
-        setNewRating(5);
-        setAlreadyReviewed(true);
+        setAlreadyRated(true);
       } else if (res.status === 409) {
-        setAlreadyReviewed(true);
-        setSubmitError("คุณได้รีวิวทริปนี้ไปแล้ว · You have already reviewed this trip");
+        setAlreadyRated(true);
       } else {
         setSubmitError(data.message ?? "เกิดข้อผิดพลาด");
       }
-    } catch {
-      setSubmitError("เกิดข้อผิดพลาด กรุณาลองใหม่");
-    }
+    } catch { setSubmitError("เกิดข้อผิดพลาด กรุณาลองใหม่"); }
+    setSubmitting(false);
+  };
+
+  // Submit text-only comment (after already rated)
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      // Use reply API on existing review
+      const existingId = myExistingReview?.id ?? localReviews.find(r => r.author.id === meId)?.id;
+      if (existingId) {
+        const res = await fetch(`/api/reviews/${existingId}/reply`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: newComment }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setLocalReviews(prev => prev.map(r => r.id === existingId
+            ? { ...r, replies: [...(r.replies ?? []), data.reply] } : r));
+          setNewComment("");
+        }
+      }
+    } catch {}
     setSubmitting(false);
   };
 
@@ -108,11 +207,8 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
       });
       if (res.ok) {
         const data = await res.json();
-        setLocalReviews(prev =>
-          prev.map(r => r.id === reviewId
-            ? { ...r, replies: [...(r.replies ?? []), data.reply] }
-            : r)
-        );
+        setLocalReviews(prev => prev.map(r => r.id === reviewId
+          ? { ...r, replies: [...(r.replies ?? []), data.reply] } : r));
         setReplyText(t => ({ ...t, [reviewId]: "" }));
         setReplyOpen(o => ({ ...o, [reviewId]: false }));
       }
@@ -125,13 +221,18 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
     count: localReviews.filter(r => r.rating === star).length,
   }));
 
+  const canInteract = !!user && !isBusiness;
+
   return (
     <div>
+      {reportTarget && (
+        <ReportModal targetId={reportTarget.id} targetType={reportTarget.type} onClose={() => setReportTarget(null)} />
+      )}
+
       <h2>💬 รีวิวและความคิดเห็น</h2>
 
       {/* Rating summary */}
-      <div style={{ display: "flex", gap: 24, alignItems: "center", marginBottom: 24,
-        background: "#f8fafc", borderRadius: 12, padding: 16 }}>
+      <div style={{ display: "flex", gap: 24, alignItems: "center", marginBottom: 24, background: "#f8fafc", borderRadius: 12, padding: 16 }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 40, fontWeight: 900, color: "#1e293b" }}>{avgRating.toFixed(1)}</div>
           <StarRow rating={Math.round(avgRating)} />
@@ -152,49 +253,67 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
         </div>
       </div>
 
-      {/* Business accounts cannot review trips */}
+      {/* Business block */}
       {isBusiness && (
-        <div style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "14px 18px", marginBottom: 24, color: "#64748b", fontSize: 13, display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "14px 18px", marginBottom: 24, color: "#64748b", fontSize: 13 }}>
           🏢 บัญชีธุรกิจไม่สามารถรีวิวทริปได้ · Business accounts cannot review trips
         </div>
       )}
 
-      {/* Already reviewed notice */}
-      {!isBusiness && alreadyReviewed && (
-        <div style={{ background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: 12, padding: "14px 18px", marginBottom: 24, color: "#166534", fontSize: 13, display: "flex", alignItems: "center", gap: 8 }}>
-          ✅ คุณได้รีวิวทริปนี้แล้ว · You have already reviewed this trip
+      {/* Owner block */}
+      {canInteract && isOwner && (
+        <div style={{ background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: 12, padding: "14px 18px", marginBottom: 24, color: "#166534", fontSize: 13 }}>
+          🏠 คุณเป็นเจ้าของทริปนี้ ไม่สามารถให้คะแนนทริปของตัวเองได้ · You cannot rate your own trip
         </div>
       )}
 
-      {/* Add review form — only if logged in, not business, not already reviewed */}
-      {user && !isBusiness && !alreadyReviewed && (
-        <form onSubmit={handleSubmit} style={{ background: "#f8fafc", borderRadius: 12, padding: 16, marginBottom: 24 }}>
-          <div style={{ fontWeight: 700, marginBottom: 12 }}>✍️ เขียนรีวิว</div>
-          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+      {/* First-time review form: rating + text */}
+      {canInteract && !isOwner && !alreadyRated && (
+        <form onSubmit={handleSubmitReview} style={{ background: "#f8fafc", borderRadius: 12, padding: 16, marginBottom: 24, border: "1.5px solid #e2e8f0" }}>
+          <div style={{ fontWeight: 700, marginBottom: 12 }}>✍️ เขียนรีวิว · Write a Review</div>
+          <div style={{ display: "flex", gap: 6, marginBottom: 12, alignItems: "center" }}>
+            <span style={{ fontSize: 13, color: "#64748b", marginRight: 4 }}>คะแนน:</span>
             {[1, 2, 3, 4, 5].map(s => (
               <button key={s} type="button" onClick={() => setNewRating(s)}
-                style={{ fontSize: 24, background: "none", border: "none", cursor: "pointer",
-                  color: s <= newRating ? "#f59e0b" : "#d1d5db" }}>★</button>
+                style={{ fontSize: 26, background: "none", border: "none", cursor: "pointer", padding: "0 2px",
+                  color: s <= newRating ? "#f59e0b" : "#d1d5db", transition: "color 0.15s" }}>★</button>
             ))}
+            <span style={{ fontSize: 12, color: "#f59e0b", marginLeft: 4, fontWeight: 700 }}>{newRating}/5</span>
           </div>
-          <textarea value={newComment} onChange={e => setNewComment(e.target.value)}
+          <textarea value={newComment} onChange={e => setNewComment(e.target.value)} required
             placeholder="แบ่งปันประสบการณ์ของคุณ..."
-            required
             style={{ width: "100%", borderRadius: 8, border: "1px solid #e2e8f0", padding: "10px 12px",
               fontSize: 14, resize: "vertical", minHeight: 80, boxSizing: "border-box" }} />
-          {submitError && (
-            <p style={{ color: "#dc2626", fontSize: 13, marginTop: 6 }}>{submitError}</p>
-          )}
+          {submitError && <p style={{ color: "#dc2626", fontSize: 13, margin: "6px 0 0" }}>{submitError}</p>}
           <button type="submit" disabled={submitting || !newComment.trim()}
-            style={{ marginTop: 10, padding: "8px 20px", borderRadius: 8, border: "none",
+            style={{ marginTop: 10, padding: "9px 22px", borderRadius: 8, border: "none",
               background: "#3b82f6", color: "white", fontWeight: 700, cursor: "pointer",
-              opacity: (!newComment.trim() || submitting) ? 0.6 : 1 }}>
+              opacity: (!newComment.trim() || submitting) ? 0.6 : 1, fontFamily: "inherit" }}>
             {submitting ? "⏳ กำลังส่ง..." : "ส่งรีวิว"}
           </button>
         </form>
       )}
 
-      {/* Not logged in prompt */}
+      {/* Already rated — text-only comment box */}
+      {canInteract && !isOwner && alreadyRated && (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: 10, padding: "10px 16px", marginBottom: 12, color: "#166534", fontSize: 13, display: "flex", alignItems: "center", gap: 8 }}>
+            ✅ คุณให้คะแนนทริปนี้แล้ว · Already rated — ยังสามารถเพิ่มความคิดเห็นได้
+          </div>
+          <form onSubmit={handleSubmitComment} style={{ background: "#f8fafc", borderRadius: 12, padding: 14, border: "1.5px solid #e2e8f0", display: "flex", gap: 10 }}>
+            <textarea value={newComment} onChange={e => setNewComment(e.target.value)}
+              placeholder="เพิ่มความคิดเห็น..."
+              rows={2}
+              style={{ flex: 1, borderRadius: 8, border: "1px solid #e2e8f0", padding: "8px 12px", fontSize: 13, resize: "none", fontFamily: "inherit" }} />
+            <button type="submit" disabled={submitting || !newComment.trim()}
+              style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "#3b82f6", color: "white", fontWeight: 700, cursor: "pointer", flexShrink: 0, fontFamily: "inherit", opacity: !newComment.trim() ? 0.5 : 1 }}>
+              {submitting ? "⏳" : "💬 ส่ง"}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Not logged in */}
       {!user && (
         <div style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "14px 18px", marginBottom: 24, color: "#64748b", fontSize: 13, textAlign: "center" }}>
           <a href="/login" style={{ color: "#2563eb", fontWeight: 700 }}>เข้าสู่ระบบ</a> เพื่อเขียนรีวิว · <a href="/login" style={{ color: "#2563eb", fontWeight: 700 }}>Login</a> to write a review
@@ -203,22 +322,32 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
 
       {/* Review list */}
       {localReviews.length === 0 ? (
-        <p style={{ color: "#94a3b8", textAlign: "center" }}>ยังไม่มีรีวิว เป็นคนแรกที่รีวิวทริปนี้!</p>
+        <p style={{ color: "#94a3b8", textAlign: "center", padding: "24px 0" }}>ยังไม่มีรีวิว เป็นคนแรกที่รีวิวทริปนี้!</p>
       ) : (
         localReviews.map(review => (
           <div key={review.id} style={{ borderBottom: "1px solid #f1f5f9", paddingBottom: 20, marginBottom: 20 }}>
-            {/* Review row */}
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
               <Avatar user={review.author} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: 14 }}>{review.author.displayName || review.author.firstName}</div>
-                <StarRow rating={review.rating} />
-                {review.text && <p style={{ margin: "8px 0 0", color: "#374151", lineHeight: 1.6 }}>{review.text}</p>}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 14 }}>{review.author.displayName || review.author.firstName}</div>
+                    <StarRow rating={review.rating} />
+                  </div>
+                  {/* Report button */}
+                  {user && user.id !== review.author.id && (
+                    <button onClick={() => setReportTarget({ id: review.id, type: "REVIEW" })}
+                      style={{ padding: "3px 10px", borderRadius: 999, border: "1px solid #fee2e2", background: "#fff5f5", color: "#dc2626", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}>
+                      🚩 รายงาน
+                    </button>
+                  )}
+                </div>
+                {review.text && <p style={{ margin: "8px 0 0", color: "#374151", lineHeight: 1.6, fontSize: 14 }}>{review.text}</p>}
                 <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 6 }}>
                   {new Date(review.createdAt).toLocaleDateString("th-TH")}
                 </div>
 
-                {/* Reply button — any logged-in user */}
+                {/* Reply button */}
                 {user && (
                   <button
                     onClick={() => setReplyOpen(o => ({ ...o, [review.id]: !o[review.id] }))}
@@ -233,18 +362,24 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
             {(review.replies ?? []).length > 0 && (
               <div style={{ marginTop: 12, marginLeft: 48, display: "flex", flexDirection: "column", gap: 10 }}>
                 {review.replies.map(reply => {
-                  const isOwner = reply.author.role === "BUSINESS";
+                  const isOwnerR = reply.author.role === "BUSINESS";
                   return (
-                    <div key={reply.id} style={{ background: isOwner ? "#f0fdf4" : "#f8fafc", border: `1px solid ${isOwner ? "#bbf7d0" : "#f1f5f9"}`, borderRadius: 12, padding: "10px 14px", display: "flex", gap: 10 }}>
+                    <div key={reply.id} style={{ background: isOwnerR ? "#f0fdf4" : "#f8fafc", border: `1px solid ${isOwnerR ? "#bbf7d0" : "#f1f5f9"}`, borderRadius: 12, padding: "10px 14px", display: "flex", gap: 10 }}>
                       <Avatar user={reply.author} size={28} />
                       <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
                           <span style={{ fontWeight: 700, fontSize: 13 }}>{reply.author.displayName || reply.author.firstName}</span>
-                          {isOwner
+                          {isOwnerR
                             ? <span style={{ fontSize: 10, fontWeight: 800, background: "#dcfce7", color: "#15803d", padding: "2px 6px", borderRadius: 999 }}>🏢 เจ้าของ</span>
                             : <span style={{ fontSize: 10, fontWeight: 800, background: "#eff6ff", color: "#2563eb", padding: "2px 6px", borderRadius: 999 }}>💬 ผู้ใช้</span>
                           }
-                          <span style={{ fontSize: 11, color: "#94a3b8", marginLeft: "auto" }}>{new Date(reply.createdAt).toLocaleDateString("th-TH")}</span>
+                          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontSize: 11, color: "#94a3b8" }}>{new Date(reply.createdAt).toLocaleDateString("th-TH")}</span>
+                            {user && user.id !== reply.author.id && (
+                              <button onClick={() => setReportTarget({ id: reply.id, type: "REPLY" })}
+                                style={{ background: "none", border: "none", color: "#94a3b8", fontSize: 11, cursor: "pointer", padding: "0 2px", fontFamily: "inherit" }}>🚩</button>
+                            )}
+                          </div>
                         </div>
                         <p style={{ margin: 0, fontSize: 13, color: "#374151", lineHeight: 1.5 }}>{reply.text}</p>
                       </div>

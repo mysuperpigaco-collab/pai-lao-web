@@ -259,6 +259,7 @@ export default async function TripDetailPage({ params }: Props) {
                 avgRating={avgRating}
                 tripId={trip.id}
                 currentUserId={session?.userId ?? null}
+                tripAuthorId={trip.author.id}
               />
             </div>
           </div>

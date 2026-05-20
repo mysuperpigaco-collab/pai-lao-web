@@ -77,6 +77,7 @@ model User {
   placeLikes    PlaceLike[]
   following     Follow[]      @relation("Follower")
   followers     Follow[]      @relation("Following")
+  reports       Report[]
 }
 
 // ── Business ─────────────────────────────────────────────────
@@ -321,3 +322,20 @@ model Follow {
   @@index([followerId])
   @@index([followingId])
 }
+
+// ── Report ───────────────────────────────────────────────
+model Report {
+  id         String   @id @default(uuid())
+  reporterId String
+  reporter   User     @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  targetId   String
+  targetType String   // "REVIEW" | "REPLY" | "TRIP" | "PLACE" | "USER"
+  reason     String   // "SPAM" | "INAPPROPRIATE" | "FAKE" | "HARASSMENT" | "OTHER"
+  detail     String?
+  status     String   @default("PENDING") // "PENDING" | "REVIEWED" | "DISMISSED"
+  createdAt  DateTime @default(now())
+
+  @@index([reporterId])
+  @@index([targetId])
+}
+

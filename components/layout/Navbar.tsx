@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 const IconSearch = () => (
@@ -22,9 +24,25 @@ const IconPlus = () => (
 
 export default function Navbar() {
   const { user, isLoading, logout } = useAuth();
+  const router = useRouter();
+  const [searchQ, setSearchQ] = useState("");
+  const [searchType, setSearchType] = useState("all");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const dashboardHref = user?.role === "BUSINESS" ? "/business/dashboard" : "/dashboard";
   const avatarInitial = user ? (user.displayName || user.firstName).charAt(0).toUpperCase() : "";
+
+  const handleSearch = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const q = searchQ.trim();
+    if (!q) {
+      inputRef.current?.focus();
+      return;
+    }
+    const params = new URLSearchParams({ q });
+    if (searchType !== "all") params.set("type", searchType);
+    router.push(`/search?${params.toString()}`);
+  };
 
   return (
     <nav style={{
@@ -47,7 +65,6 @@ export default function Navbar() {
 
         {/* ── Logo ── */}
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none", flexShrink: 0 }}>
-          {/* Icon badge */}
           <div style={{
             width: "42px", height: "42px", borderRadius: "14px",
             background: "linear-gradient(135deg, #10b981 0%, #06b6d4 100%)",
@@ -95,31 +112,45 @@ export default function Navbar() {
         </div>
 
         {/* ── Search ── */}
-        <div style={{
+        <form onSubmit={handleSearch} style={{
           display: "flex", alignItems: "center",
           background: "#f0fdf4",
-          borderRadius: "14px", padding: "0 14px 0 10px",
-          flex: "0 1 360px", border: "1.5px solid #d1fae5",
-          height: "42px", gap: "8px",
+          borderRadius: "14px", padding: "0 6px 0 10px",
+          flex: "0 1 380px", border: "1.5px solid #d1fae5",
+          height: "42px", gap: "6px",
         }}>
-          <select style={{
-            background: "none", border: "none", padding: "0 8px 0 2px",
-            outline: "none", fontSize: "13px", color: "#059669", fontWeight: 700,
-            borderRight: "1.5px solid #a7f3d0", cursor: "pointer", height: "100%",
-          }}>
-            <option>ทริป</option>
-            <option>ที่เที่ยว</option>
+          <select
+            value={searchType}
+            onChange={e => setSearchType(e.target.value)}
+            style={{
+              background: "none", border: "none", padding: "0 8px 0 2px",
+              outline: "none", fontSize: "13px", color: "#059669", fontWeight: 700,
+              borderRight: "1.5px solid #a7f3d0", cursor: "pointer", height: "100%",
+            }}>
+            <option value="all">ทั้งหมด</option>
+            <option value="trip">ทริป</option>
+            <option value="place">ที่เที่ยว</option>
           </select>
           <input
+            ref={inputRef}
             type="text"
+            value={searchQ}
+            onChange={e => setSearchQ(e.target.value)}
             placeholder="ค้นหาทริปหรือสถานที่..."
             style={{
               background: "none", border: "none", flex: 1,
               outline: "none", fontSize: "13.5px", color: "#1e293b",
             }}
           />
-          <span style={{ color: "#10b981", display: "flex" }}><IconSearch /></span>
-        </div>
+          <button type="submit" style={{
+            background: "linear-gradient(135deg, #10b981, #06b6d4)",
+            border: "none", borderRadius: 10, width: 32, height: 32,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", color: "white", flexShrink: 0,
+          }}>
+            <IconSearch />
+          </button>
+        </form>
 
         {/* ── Auth Zone ── */}
         <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
@@ -127,7 +158,6 @@ export default function Navbar() {
             <div style={{ width: "80px", height: "38px", background: "#f0fdf4", borderRadius: "12px" }} />
           ) : user ? (
             <>
-              {/* Write / Add Place button — depends on role */}
               {user.role === "BUSINESS" ? (
                 <Link href="/business/places/create" style={{
                   display: "flex", alignItems: "center", gap: "6px",
@@ -154,7 +184,6 @@ export default function Navbar() {
                 </Link>
               )}
 
-              {/* Avatar + name */}
               <Link href={dashboardHref} style={{
                 display: "flex", alignItems: "center", gap: "8px",
                 textDecoration: "none",
@@ -178,7 +207,6 @@ export default function Navbar() {
                 </span>
               </Link>
 
-              {/* Logout */}
               <button onClick={logout} style={{
                 background: "none", border: "1.5px solid #e2e8f0", borderRadius: "10px",
                 padding: "8px 12px", fontSize: "12px", color: "#94a3b8", cursor: "pointer",

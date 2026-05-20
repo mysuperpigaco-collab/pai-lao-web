@@ -234,16 +234,22 @@ export default function DashboardPage() {
             ...tripReviews.map(n => ({ kind: "trip" as const, n })),
             ...replyNotifs.map(n => ({ kind: "reply" as const, n })),
           ];
-          if (allItems.length === 0) return null;
+          // filter out dismissed
+          const visibleItems = allItems.filter(({ kind, n }) =>
+            !seenIds.has(`del:${kind === "trip" ? `tr:${n.id}` : `rp:${n.id}`}`)
+          );
+          if (visibleItems.length === 0) return null;
 
-          const unreadCount = allItems.filter(({ kind, n }) =>
+          const unreadCount = visibleItems.filter(({ kind, n }) =>
             !seenIds.has(kind === "trip" ? `tr:${n.id}` : `rp:${n.id}`)
           ).length;
+
+          const dismissNotif = (key: string) => markSeen([`del:${key}`]);
 
           return (
             <div style={{ marginBottom: 28 }}>
               {/* Header */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
                 <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0f172a", margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
                   🔔 การแจ้งเตือน · Notifications
                   {unreadCount > 0 && (
@@ -251,12 +257,12 @@ export default function DashboardPage() {
                       {unreadCount}
                     </span>
                   )}
-                  {unreadCount === 0 && allItems.length > 0 && (
+                  {unreadCount === 0 && (
                     <span style={{ fontSize: 11, fontWeight: 700, color: "#16a34a", background: "#dcfce7", padding: "2px 9px", borderRadius: 999 }}>✓ อ่านแล้วทั้งหมด</span>
                   )}
                 </h3>
                 <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
-                  <span style={{ fontSize: 11, color: "#94a3b8" }}>{allItems.length} รายการ</span>
+                  <span style={{ fontSize: 11, color: "#94a3b8" }}>{visibleItems.length} รายการ</span>
                   {unreadCount > 0 && (
                     <button onClick={markAllRead} style={{ fontSize: 11, fontWeight: 700, color: "#2563eb", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 999, padding: "4px 12px", cursor: "pointer", fontFamily: "inherit" }}>
                       ✓ อ่านทั้งหมด
@@ -265,110 +271,143 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Scrollable list */}
+              {/* 2-column scrollable grid */}
               <div style={{
-                maxHeight: allItems.length > 4 ? 440 : undefined,
-                overflowY: allItems.length > 4 ? "auto" : undefined,
-                display: "flex", flexDirection: "column", gap: 8,
-                paddingRight: allItems.length > 4 ? 4 : 0,
-                borderRadius: 16,
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: 10,
+                maxHeight: visibleItems.length > 4 ? 520 : undefined,
+                overflowY: visibleItems.length > 4 ? "auto" : undefined,
+                paddingRight: visibleItems.length > 4 ? 4 : 0,
               }}>
                 {/* Trip-owner review notifications */}
-                {tripReviews.map(notif => {
-                  const nid = `tr:${notif.id}`;
-                  const isRead = seenIds.has(nid);
-                  const reviewerName = notif.author.displayName || notif.author.firstName || "ผู้ใช้";
-                  const alreadyReplied = notif.replies.length > 0;
-                  const stars = notif.rating ? "⭐".repeat(Math.round(notif.rating)) : "";
-                  return (
-                    <div
-                      key={notif.id}
-                      onClick={() => markSeen([nid])}
-                      style={{
-                        background: isRead ? "#f8fafc" : "#fffbeb",
-                        border: isRead ? "1.5px solid #e2e8f0" : "1.5px solid #fde68a",
-                        borderLeft: isRead ? "4px solid #e2e8f0" : "4px solid #f59e0b",
-                        borderRadius: 16, padding: "13px 16px",
-                        display: "flex", gap: 13, alignItems: "flex-start",
-                        boxShadow: isRead ? "none" : "0 2px 12px rgba(245,158,11,0.10)",
-                        transition: "all 0.3s ease", cursor: "default",
-                        opacity: isRead ? 0.72 : 1,
-                      }}
-                    >
-                      <div style={{ position: "relative", flexShrink: 0 }}>
-                        <div style={{ width: 38, height: 38, borderRadius: 11, background: isRead ? "#f1f5f9" : "#fffbeb", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>✍️</div>
-                        {!isRead && <span style={{ position: "absolute", top: -3, right: -3, width: 10, height: 10, borderRadius: "50%", background: "#e11d48", border: "2px solid white" }} />}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                          <p style={{ fontSize: 13, fontWeight: isRead ? 600 : 800, color: isRead ? "#475569" : "#0f172a", margin: 0 }}>{reviewerName} รีวิวเรื่องของคุณ {stars}</p>
-                          {!isRead && <span style={{ fontSize: 10, fontWeight: 800, background: "#fef3c7", color: "#92400e", padding: "1px 6px", borderRadius: 999, flexShrink: 0 }}>ใหม่</span>}
+                {tripReviews
+                  .filter(n => !seenIds.has(`del:tr:${n.id}`))
+                  .map(notif => {
+                    const nid = `tr:${notif.id}`;
+                    const isRead = seenIds.has(nid);
+                    const reviewerName = notif.author.displayName || notif.author.firstName || "ผู้ใช้";
+                    const alreadyReplied = notif.replies.length > 0;
+                    const starStr = notif.rating ? "★".repeat(Math.round(notif.rating)) : "";
+                    return (
+                      <div
+                        key={notif.id}
+                        onClick={() => markSeen([nid])}
+                        style={{
+                          background: isRead ? "#f8fafc" : "#fffbeb",
+                          border: isRead ? "1.5px solid #e2e8f0" : "1.5px solid #fde68a",
+                          borderLeft: isRead ? "4px solid #e2e8f0" : "4px solid #f59e0b",
+                          borderRadius: 16, padding: "13px 14px",
+                          display: "flex", flexDirection: "column", gap: 8,
+                          boxShadow: isRead ? "none" : "0 2px 12px rgba(245,158,11,0.10)",
+                          transition: "all 0.3s ease",
+                          opacity: isRead ? 0.75 : 1,
+                          position: "relative",
+                        }}
+                      >
+                        {/* Delete button */}
+                        <button
+                          onClick={e => { e.stopPropagation(); dismissNotif(`tr:${notif.id}`); }}
+                          style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#94a3b8", fontFamily: "inherit", lineHeight: 1 }}
+                          title="ลบการแจ้งเตือน"
+                        >×</button>
+
+                        <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                          <div style={{ position: "relative", flexShrink: 0 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 10, background: isRead ? "#f1f5f9" : "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17 }}>✍️</div>
+                            {!isRead && <span style={{ position: "absolute", top: -2, right: -2, width: 9, height: 9, borderRadius: "50%", background: "#e11d48", border: "2px solid white" }} />}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0, paddingRight: 18 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", marginBottom: 2 }}>
+                              <span style={{ fontSize: 12, fontWeight: isRead ? 600 : 800, color: isRead ? "#475569" : "#0f172a" }}>{reviewerName}</span>
+                              {!isRead && <span style={{ fontSize: 9, fontWeight: 800, background: "#fef3c7", color: "#92400e", padding: "1px 5px", borderRadius: 999 }}>ใหม่</span>}
+                            </div>
+                            <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 2px" }}>รีวิวเรื่อง: {notif.trip.title}</p>
+                            {starStr && <p style={{ fontSize: 12, color: "#f59e0b", margin: "0 0 3px", letterSpacing: 1 }}>{starStr}</p>}
+                            <p style={{ fontSize: 11, color: isRead ? "#94a3b8" : "#374151", margin: 0, fontStyle: "italic",
+                              display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>
+                              &ldquo;{notif.text}&rdquo;
+                            </p>
+                          </div>
                         </div>
-                        <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 3px" }}>📖 {notif.trip.title}</p>
-                        <p style={{ fontSize: 12, color: isRead ? "#94a3b8" : "#374151", margin: "0 0 8px", fontStyle: "italic", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>
-                          &ldquo;{notif.text}&rdquo;
-                        </p>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4, borderTop: "1px solid rgba(0,0,0,0.05)" }}>
                           <Link
                             href={`/trips/${notif.trip.slug}`}
                             onClick={() => markSeen([nid])}
-                            style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: alreadyReplied ? "#64748b" : "#2563eb", textDecoration: "none", background: alreadyReplied ? "#f1f5f9" : "#eff6ff", padding: "4px 12px", borderRadius: 999, border: `1px solid ${alreadyReplied ? "#e2e8f0" : "#bfdbfe"}` }}>
+                            style={{ fontSize: 11, fontWeight: 700, color: alreadyReplied ? "#64748b" : "#2563eb", textDecoration: "none", background: alreadyReplied ? "#f1f5f9" : "#eff6ff", padding: "3px 10px", borderRadius: 999, border: `1px solid ${alreadyReplied ? "#e2e8f0" : "#bfdbfe"}` }}>
                             {alreadyReplied ? "✓ ตอบแล้ว" : "💬 ตอบกลับ"} →
                           </Link>
-                          <span style={{ fontSize: 11, color: "#94a3b8" }}>{new Date(notif.createdAt).toLocaleDateString("th-TH")}</span>
+                          <span style={{ fontSize: 10, color: "#94a3b8" }}>{new Date(notif.createdAt).toLocaleDateString("th-TH")}</span>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
 
                 {/* Reply notifications */}
-                {replyNotifs.map(notif => {
-                  const nid = `rp:${notif.id}`;
-                  const isRead = seenIds.has(nid);
-                  const dest = notif.place ? `/place/${notif.place.slug}` : notif.trip ? `/trips/${notif.trip.slug}` : "#";
-                  const destTitle = notif.place?.title ?? notif.trip?.title ?? "สถานที่";
-                  const latestReply = notif.replies[0];
-                  const replierName = latestReply?.author.displayName || latestReply?.author.firstName || "ผู้ใช้";
-                  const isOwnerReply = latestReply?.author.role === "BUSINESS";
-                  return (
-                    <Link key={notif.id} href={dest} onClick={() => markSeen([nid])} style={{ textDecoration: "none" }}>
-                      <div style={{
-                        background: isRead ? "#f8fafc" : (isOwnerReply ? "#f0fdf4" : "#eff6ff"),
-                        border: isRead ? "1.5px solid #e2e8f0" : `1.5px solid ${isOwnerReply ? "#bbf7d0" : "#bfdbfe"}`,
-                        borderLeft: isRead ? "4px solid #e2e8f0" : `4px solid ${isOwnerReply ? "#22c55e" : "#3b82f6"}`,
-                        borderRadius: 16, padding: "13px 16px",
-                        display: "flex", gap: 13, alignItems: "flex-start",
-                        boxShadow: isRead ? "none" : `0 2px 12px ${isOwnerReply ? "rgba(34,197,94,0.09)" : "rgba(59,130,246,0.09)"}`,
-                        transition: "all 0.3s ease",
-                        opacity: isRead ? 0.72 : 1,
-                      }}>
-                        <div style={{ position: "relative", flexShrink: 0 }}>
-                          <div style={{ width: 38, height: 38, borderRadius: 11, background: isRead ? "#f1f5f9" : (isOwnerReply ? "#dcfce7" : "#dbeafe"), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>
-                            {isOwnerReply ? "🏢" : "💬"}
+                {replyNotifs
+                  .filter(n => !seenIds.has(`del:rp:${n.id}`))
+                  .map(notif => {
+                    const nid = `rp:${notif.id}`;
+                    const isRead = seenIds.has(nid);
+                    const dest = notif.place ? `/place/${notif.place.slug}` : notif.trip ? `/trips/${notif.trip.slug}` : "#";
+                    const destTitle = notif.place?.title ?? notif.trip?.title ?? "สถานที่";
+                    const latestReply = notif.replies[0];
+                    const replierName = latestReply?.author.displayName || latestReply?.author.firstName || "ผู้ใช้";
+                    const isOwnerReply = latestReply?.author.role === "BUSINESS";
+                    return (
+                      <div
+                        key={notif.id}
+                        style={{
+                          background: isRead ? "#f8fafc" : (isOwnerReply ? "#f0fdf4" : "#eff6ff"),
+                          border: isRead ? "1.5px solid #e2e8f0" : `1.5px solid ${isOwnerReply ? "#bbf7d0" : "#bfdbfe"}`,
+                          borderLeft: isRead ? "4px solid #e2e8f0" : `4px solid ${isOwnerReply ? "#22c55e" : "#3b82f6"}`,
+                          borderRadius: 16, padding: "13px 14px",
+                          display: "flex", flexDirection: "column", gap: 8,
+                          boxShadow: isRead ? "none" : "0 2px 12px rgba(59,130,246,0.08)",
+                          transition: "all 0.3s ease",
+                          opacity: isRead ? 0.75 : 1,
+                          position: "relative",
+                          cursor: "pointer",
+                        }}
+                        onClick={() => markSeen([nid])}
+                      >
+                        {/* Delete button */}
+                        <button
+                          onClick={e => { e.stopPropagation(); dismissNotif(`rp:${notif.id}`); }}
+                          style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#94a3b8", fontFamily: "inherit", lineHeight: 1 }}
+                          title="ลบการแจ้งเตือน"
+                        >×</button>
+
+                        <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                          <div style={{ position: "relative", flexShrink: 0 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 10, background: isRead ? "#f1f5f9" : (isOwnerReply ? "#dcfce7" : "#dbeafe"), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17 }}>
+                              {isOwnerReply ? "🏢" : "💬"}
+                            </div>
+                            {!isRead && <span style={{ position: "absolute", top: -2, right: -2, width: 9, height: 9, borderRadius: "50%", background: "#e11d48", border: "2px solid white" }} />}
                           </div>
-                          {!isRead && <span style={{ position: "absolute", top: -3, right: -3, width: 10, height: 10, borderRadius: "50%", background: "#e11d48", border: "2px solid white" }} />}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                            <p style={{ fontSize: 13, fontWeight: isRead ? 600 : 800, color: isRead ? "#475569" : "#0f172a", margin: 0 }}>
-                              {replierName} {isOwnerReply ? "(เจ้าของ) " : ""}ตอบกลับรีวิวของคุณ
-                            </p>
-                            {!isRead && <span style={{ fontSize: 10, fontWeight: 800, background: isOwnerReply ? "#dcfce7" : "#dbeafe", color: isOwnerReply ? "#15803d" : "#1e40af", padding: "1px 6px", borderRadius: 999, flexShrink: 0 }}>ใหม่</span>}
-                          </div>
-                          <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 3px" }}>📍 {destTitle}</p>
-                          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 8 }}>
-                            <p style={{ fontSize: 12, color: isRead ? "#94a3b8" : "#374151", margin: 0, fontStyle: "italic", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden", flex: 1 }}>
+                          <div style={{ flex: 1, minWidth: 0, paddingRight: 18 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 2 }}>
+                              <span style={{ fontSize: 12, fontWeight: isRead ? 600 : 800, color: isRead ? "#475569" : "#0f172a" }}>
+                                {replierName}{isOwnerReply ? " (เจ้าของ)" : ""}
+                              </span>
+                              {!isRead && <span style={{ fontSize: 9, fontWeight: 800, background: isOwnerReply ? "#dcfce7" : "#dbeafe", color: isOwnerReply ? "#15803d" : "#1e40af", padding: "1px 5px", borderRadius: 999 }}>ใหม่</span>}
+                            </div>
+                            <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 3px" }}>ตอบกลับรีวิวของคุณ · {destTitle}</p>
+                            <p style={{ fontSize: 11, color: isRead ? "#94a3b8" : "#374151", margin: 0, fontStyle: "italic",
+                              display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>
                               &ldquo;{latestReply?.text}&rdquo;
                             </p>
-                            <span style={{ fontSize: 11, color: "#94a3b8", flexShrink: 0 }}>{new Date(notif.replies[0]?.createdAt ?? notif.id).toLocaleDateString("th-TH")}</span>
                           </div>
                         </div>
-                        <span style={{ fontSize: 14, color: "#94a3b8", flexShrink: 0 }}>→</span>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4, borderTop: "1px solid rgba(0,0,0,0.05)" }}>
+                          <Link href={dest} onClick={() => markSeen([nid])} style={{ fontSize: 11, fontWeight: 700, color: isOwnerReply ? "#15803d" : "#2563eb", textDecoration: "none" }}>
+                            ดูรีวิว →
+                          </Link>
+                          <span style={{ fontSize: 10, color: "#94a3b8" }}>{new Date(latestReply?.createdAt ?? notif.id).toLocaleDateString("th-TH")}</span>
+                        </div>
                       </div>
-                    </Link>
-                  );
-                })}
+                    );
+                  })}
               </div>
             </div>
           );
