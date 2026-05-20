@@ -55,19 +55,25 @@ export async function GET(request: Request) {
           coverUrl: true, mood: true, budget: true, location: true,
           tags: true, createdAt: true, isPublished: true,
           author: { select: { id: true, username: true, displayName: true, firstName: true, avatarUrl: true } },
-          _count: { select: { reviews: true, bookmarks: true } },
+          _count: { select: { reviews: true, bookmarks: true, likes: true } },
+          reviews: { select: { rating: true } },
           timeline: { select: { province: true, district: true }, take: 1, orderBy: { order: "asc" } },
         },
       }),
       prisma.trip.count({ where }),
     ]);
 
-    // flatten province/district จาก first stop ออกมาที่ root
-    const tripsFlat = trips.map(({ timeline, ...t }) => ({
-      ...t,
-      province: timeline?.[0]?.province ?? null,
-      district: timeline?.[0]?.district ?? null,
-    }));
+    // flatten province/district + compute avgRating
+    const tripsFlat = trips.map(({ timeline, reviews, ...t }) => {
+      const ratings = (reviews ?? []).map((r: { rating: number }) => r.rating).filter(Boolean);
+      const avgRating = ratings.length ? ratings.reduce((s: number, r: number) => s + r, 0) / ratings.length : null;
+      return {
+        ...t,
+        avgRating,
+        province: timeline?.[0]?.province ?? null,
+        district: timeline?.[0]?.district ?? null,
+      };
+    });
 
     return NextResponse.json({ trips: tripsFlat, total, page, totalPages: Math.ceil(total / limit) });
   } catch (error) {
@@ -124,11 +130,4 @@ export async function POST(request: Request) {
         } : undefined,
       },
       include: { timeline: true },
-    });
-
-    return NextResponse.json({ message: "สร้างทริปสำเร็จ", trip }, { status: 201 });
-  } catch (error) {
-    console.error("POST /api/trips:", error);
-    return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
-  }
-}
+  

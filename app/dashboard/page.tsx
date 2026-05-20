@@ -12,6 +12,18 @@ type TripItem = {
   coverUrl: string | null;
   createdAt: string;
   isPublished: boolean;
+  avgRating?: number | null;
+  _count?: { reviews: number; bookmarks: number; likes: number };
+};
+
+type TripOwnerNotif = {
+  id: string;
+  text: string;
+  rating?: number | null;
+  createdAt: string;
+  trip: { slug: string; title: string };
+  author: { displayName?: string | null; firstName: string; avatarUrl?: string | null };
+  replies: { id: string }[];
 };
 
 type BookmarkItem = {
@@ -70,7 +82,8 @@ export default function DashboardPage() {
   const [loadingTrips, setLoadingTrips] = useState(true);
   const [loadingBm, setLoadingBm]   = useState(false);
   const [dismissed, setDismissed]   = useState<Set<string>>(new Set());
-  const [replyNotifs, setReplyNotifs] = useState<ReplyNotif[]>([]);
+  const [replyNotifs, setReplyNotifs]   = useState<ReplyNotif[]>([]);
+  const [tripReviews, setTripReviews]   = useState<TripOwnerNotif[]>([]);
   const [loadingNotifs, setLoadingNotifs] = useState(true);
 
   useEffect(() => {
@@ -84,7 +97,11 @@ export default function DashboardPage() {
   useEffect(() => {
     fetch("/api/reviews/notifications")
       .then(r => r.json())
-      .then(d => { setReplyNotifs(d.reviews ?? []); setLoadingNotifs(false); })
+      .then(d => {
+        setReplyNotifs(d.reviews ?? []);
+        setTripReviews(d.tripReviews ?? []);
+        setLoadingNotifs(false);
+      })
       .catch(() => setLoadingNotifs(false));
   }, []);
 
@@ -177,25 +194,50 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* ─── Reply Notifications ─── */}
-        {!loadingNotifs && replyNotifs.length > 0 && (
+        {/* ─── Notifications (reply + trip-owner) ─── */}
+        {!loadingNotifs && (replyNotifs.length > 0 || tripReviews.length > 0) && (
           <div style={{ marginBottom: 28 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0f172a", marginBottom: 12 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0f172a", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
               🔔 การแจ้งเตือน · Notifications
-              <span style={{ marginLeft: 8, fontSize: 12, fontWeight: 700, color: "#fff", background: "#e11d48", padding: "2px 8px", borderRadius: 999 }}>{replyNotifs.length}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#fff", background: "#e11d48", padding: "2px 8px", borderRadius: 999 }}>{replyNotifs.length + tripReviews.length}</span>
             </h3>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+
+              {/* รีวิวบนทริปของเรา (trip-owner) */}
+              {tripReviews.map(notif => {
+                const reviewerName = notif.author.displayName || notif.author.firstName || "ผู้ใช้";
+                const alreadyReplied = notif.replies.length > 0;
+                const stars = notif.rating ? "⭐".repeat(Math.round(notif.rating)) : "";
+                return (
+                  <div key={notif.id} style={{ background: "#fff", border: "1.5px solid #fde68a", borderRadius: 16, padding: "14px 18px", display: "flex", gap: 14, alignItems: "flex-start", boxShadow: "0 2px 8px rgba(245,158,11,0.07)" }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 12, background: "#fffbeb", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>✍️</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", margin: "0 0 2px" }}>
+                        {reviewerName} รีวิวเรื่องของคุณ {stars}
+                      </p>
+                      <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 4px" }}>📖 {notif.trip.title}</p>
+                      <p style={{ fontSize: 12, color: "#374151", margin: "0 0 8px", fontStyle: "italic", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>
+                        &ldquo;{notif.text}&rdquo;
+                      </p>
+                      <Link href={`/trips/${notif.trip.slug}`}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: alreadyReplied ? "#64748b" : "#2563eb", textDecoration: "none", background: alreadyReplied ? "#f8fafc" : "#eff6ff", padding: "5px 12px", borderRadius: 999, border: `1px solid ${alreadyReplied ? "#e2e8f0" : "#bfdbfe"}` }}>
+                        {alreadyReplied ? "✓ ตอบแล้ว" : "💬 ตอบกลับ"} →
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* ตอบกลับรีวิวของเรา (reply to my review) */}
               {replyNotifs.map(notif => {
-                const dest = notif.place
-                  ? `/place/${notif.place.slug}`
-                  : notif.trip ? `/trips/${notif.trip.slug}` : "#";
+                const dest = notif.place ? `/place/${notif.place.slug}` : notif.trip ? `/trips/${notif.trip.slug}` : "#";
                 const destTitle = notif.place?.title ?? notif.trip?.title ?? "สถานที่";
                 const latestReply = notif.replies[0];
                 const replierName = latestReply?.author.displayName || latestReply?.author.firstName || "ผู้ใช้";
                 const isOwnerReply = latestReply?.author.role === "BUSINESS";
                 return (
                   <Link key={notif.id} href={dest} style={{ textDecoration: "none" }}>
-                    <div style={{ background: "#fff", border: "1.5px solid #e0f2fe", borderRadius: 16, padding: "14px 18px", display: "flex", gap: 14, alignItems: "flex-start", transition: "box-shadow 0.2s", boxShadow: "0 2px 8px rgba(14,165,233,0.06)" }}>
+                    <div style={{ background: "#fff", border: "1.5px solid #e0f2fe", borderRadius: 16, padding: "14px 18px", display: "flex", gap: 14, alignItems: "flex-start", boxShadow: "0 2px 8px rgba(14,165,233,0.06)" }}>
                       <div style={{ width: 40, height: 40, borderRadius: 12, background: isOwnerReply ? "#dcfce7" : "#eff6ff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>
                         {isOwnerReply ? "🏢" : "💬"}
                       </div>
@@ -318,77 +360,25 @@ export default function DashboardPage() {
                   </p>
                   <div className="story-grid">
                     {stories.map(story => (
-                      <StoryCard key={story.slug} story={story} isOwner={activeTab === "my-stories"} onDeleted={activeTab === "my-stories" ? handleTripDeleted : undefined} />
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div style={{ textAlign: "center", padding: "60px 20px" }}>
-                  <div style={{ fontSize: "48px", marginBottom: "12px" }}>
-                    {activeTab === "my-stories" ? "📭" : "🔖"}
-                  </div>
-                  <p style={{ color: "#94a3b8", fontSize: "15px", margin: "0 0 20px" }}>
-                    {activeTab === "my-stories" ? "ยังไม่มีเรื่องเล่า · No stories yet" : "ยังไม่มีทริปที่บันทึกไว้"}
-                  </p>
-                  {activeTab === "my-stories" && (
-                    <Link href="/trips/create" style={{
-                      display: "inline-flex", alignItems: "center", gap: "10px",
-                      padding: "11px 22px 11px 12px", borderRadius: "14px",
-                      background: "linear-gradient(135deg, #10b981 0%, #06b6d4 100%)",
-                      color: "#fff", textDecoration: "none",
-                      boxShadow: "0 6px 18px rgba(16,185,129,0.30)",
-                    }}>
-                      <span style={{ width: "34px", height: "34px", borderRadius: "10px", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <IconWrite />
-                      </span>
-                      <span style={{ display: "flex", flexDirection: "column", gap: "1px", lineHeight: 1 }}>
-                        <strong style={{ fontSize: "14px", fontWeight: 900, color: "#fff" }}>เขียนเรื่องแรก</strong>
-                        <small style={{ fontSize: "10px", color: "rgba(255,255,255,0.85)" }}>Start writing</small>
-                      </span>
-                    </Link>
-                  )}
-                </div>
-              )}
-            </div>
-          </main>
-        </div>
-      </div>
-
-      <style jsx>{`
-        .dp-page { min-height: 100vh; background: #f8fafc; padding: 36px 0 80px; }
-        .dp-container { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
-
-        .dp-page-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; }
-        .dp-greeting { font-size: 28px; font-weight: 900; color: #0f172a; margin: 0 0 4px; }
-        .dp-subheading { font-size: 14px; color: #64748b; margin: 0; }
-
-        .dp-write-btn { display: inline-flex; align-items: center; gap: 12px; padding: 10px 20px 10px 10px; border-radius: 14px; background: linear-gradient(135deg, #4facfe 0%, #43e97b 100%); color: #fff; text-decoration: none; border: none; cursor: pointer; box-shadow: 0 6px 18px rgba(79,172,254,0.30); font-family: inherit; }
-        .dp-write-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .dp-write-text { display: flex; flex-direction: column; gap: 2px; text-align: left; line-height: 1; }
-        .dp-write-text strong { font-size: 14px; font-weight: 900; color: #fff; display: block; }
-        .dp-write-text small { font-size: 10px; font-weight: 400; color: rgba(255,255,255,0.82); display: block; }
-
-        .dp-notices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
-
-        .dp-grid { display: grid; grid-template-columns: 290px 1fr; gap: 28px; align-items: start; }
-        .dp-sidebar { position: sticky; top: 100px; }
-
-        .dp-card { background: white; border-radius: 24px; padding: 22px; border: 1px solid #f1f5f9; box-shadow: 0 2px 12px rgba(15,23,42,0.04); }
-        .sb-title { font-size: 14px; font-weight: 900; color: #1e293b; margin: 0 0 14px; }
-        .sb-title small { font-size: 11px; color: #94a3b8; font-weight: 400; margin-left: 5px; }
-
-        .main-card { padding: 28px; }
-        .tab-bar { border-bottom: 2px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 22px; }
-        .tabs { display: flex; gap: 4px; }
-        .tab-btn { padding: 9px 18px; border-radius: 10px; border: none; background: transparent; font-size: 13px; font-weight: 700; color: #94a3b8; cursor: pointer; transition: 0.2s; font-family: inherit; }
-        .tab-btn.active { background: #eff6ff; color: #2563eb; }
-        .tab-btn:hover:not(.active) { background: #f8fafc; color: #64748b; }
-
-        .story-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-
-        @media (max-width: 1100px) { .dp-grid { grid-template-columns: 1fr; } .dp-sidebar { position: static; } }
-        @media (max-width: 640px) { .story-grid { grid-template-columns: 1fr; } .main-card { padding: 18px; } .dp-greeting { font-size: 22px; } }
-      `}</style>
-    </div>
-  );
-}
+                      <div key={story.slug}>
+                        <StoryCard story={story} isOwner={activeTab === "my-stories"} onDeleted={activeTab === "my-stories" ? handleTripDeleted : undefined} />
+                        {activeTab === "my-stories" && (story as TripItem)._count && (
+                          <div style={{ display: "flex", gap: 8, padding: "6px 4px 2px", flexWrap: "wrap" }}>
+                            {((story as TripItem)._count?.likes ?? 0) > 0 && (
+                              <span style={{ fontSize: 11, fontWeight: 700, color: "#e11d48", background: "#fff1f2", padding: "3px 8px", borderRadius: 999, border: "1px solid #fecdd3" }}>
+                                ❤️ {(story as TripItem)._count!.likes} ไลค์
+                              </span>
+                            )}
+                            {((story as TripItem)._count?.reviews ?? 0) > 0 && (
+                              <span style={{ fontSize: 11, fontWeight: 700, color: "#2563eb", background: "#eff6ff", padding: "3px 8px", borderRadius: 999, border: "1px solid #bfdbfe" }}>
+                                💬 {(story as TripItem)._count!.reviews} รีวิว
+                              </span>
+                            )}
+                            {(story as TripItem).avgRating != null && (story as TripItem).avgRating! > 0 && (
+                              <span style={{ fontSize: 11, fontWeight: 700, color: "#d97706", background: "#fffbeb", padding: "3px 8px", borderRadius: 999, border: "1px solid #fde68a" }}>
+                                ⭐ {(story as TripItem).avgRating!.toFixed(1)}
+                              </span>
+                            )}
+                          </div>
+                        )}
+          

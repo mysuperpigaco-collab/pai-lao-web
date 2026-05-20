@@ -9,7 +9,8 @@ interface Trip {
   province?: string | null;
   district?: string | null;
   author?: { displayName?: string | null; firstName: string };
-  _count?: { reviews: number; bookmarks: number };
+  _count?: { reviews: number; bookmarks: number; likes: number };
+  avgRating?: number | null;
   createdAt?: string;
 }
 
@@ -100,9 +101,17 @@ export default function AutoGridSection() {
                     ? <img src={trip.coverUrl} alt={trip.title} loading="lazy" />
                     : <div className="ag-img-ph">🗺️</div>
                   }
-                  {(trip._count?.reviews ?? 0) > 0 && (
-                    <span className="ag-badge-dark">💬 {trip._count!.reviews}</span>
+                  {trip.avgRating != null && trip.avgRating > 0 && (
+                    <span className="ag-badge-rating">⭐ {trip.avgRating.toFixed(1)}</span>
                   )}
+                  <div className="ag-badge-row">
+                    {(trip._count?.likes ?? 0) > 0 && (
+                      <span className="ag-badge-dark">❤️ {trip._count!.likes}</span>
+                    )}
+                    {(trip._count?.reviews ?? 0) > 0 && (
+                      <span className="ag-badge-dark">💬 {trip._count!.reviews}</span>
+                    )}
+                  </div>
                 </div>
                 <div className="ag-body">
                   <h4 className="ag-title">{trip.title}</h4>
@@ -228,8 +237,18 @@ export default function AutoGridSection() {
           font-size: 10px; font-weight: 800;
           padding: 3px 8px; border-radius: 999px;
         }
-        .ag-badge-dark {
+        .ag-badge-rating {
+          position: absolute; top: 8px; left: 8px;
+          background: rgba(251,191,36,0.92); color: #1e293b;
+          font-size: 10px; font-weight: 800;
+          padding: 3px 8px; border-radius: 999px;
+          backdrop-filter: blur(4px);
+        }
+        .ag-badge-row {
           position: absolute; bottom: 8px; right: 8px;
+          display: flex; gap: 4px;
+        }
+        .ag-badge-dark {
           background: rgba(15,23,42,0.65); color: white;
           font-size: 10px; font-weight: 700;
           padding: 3px 8px; border-radius: 999px;
@@ -243,23 +262,3 @@ export default function AutoGridSection() {
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .ag-en {
-          font-size: 11px; color: #64748b; font-style: italic; margin: 0;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .ag-loc { font-size: 11px; color: #94a3b8; margin: 0; }
-        .ag-date { font-size: 10px; color: #cbd5e1; margin: 0; margin-top: 2px; }
-
-        /* Responsive */
-        @media (max-width: 1200px) { .ag-grid-5 { grid-template-columns: repeat(4, 1fr); } }
-        @media (max-width: 900px)  {
-          .ag-grid-5 { grid-template-columns: repeat(3, 1fr); }
-          .ag-grid-4 { grid-template-columns: repeat(3, 1fr); }
-        }
-        @media (max-width: 640px)  {
-          .ag-grid-5, .ag-grid-4 { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-          .ag-tab { padding: 8px 12px; min-width: 62px; }
-        }
-      `}</style>
-    </div>
-  );
-}
