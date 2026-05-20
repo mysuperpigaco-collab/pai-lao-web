@@ -53,7 +53,6 @@ export default async function PlaceDetailPage({ params }: Props) {
   const avgRating = place.reviews.length
     ? place.reviews.reduce((s, r) => s + r.rating, 0) / place.reviews.length
     : 0;
-  const ratingStars = Math.round(avgRating);
   const catLabel = CAT_LABEL[place.category] ?? place.category;
   const catIcon  = CAT_ICON[place.category]  ?? "📍";
   const isOwner  = session?.userId === place.business?.userId;
