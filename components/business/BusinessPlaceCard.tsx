@@ -68,10 +68,12 @@ export default function BusinessPlaceCard({
       </div>
 
       <div className="bpc-actions">
-        <Link href={`/place/${slug}`} className="bpc-btn bpc-view">ดูหน้าสาธารณะ</Link>
-        <Link href={`/business/places/${slug}/edit`} className="bpc-btn bpc-edit">แก้ไข</Link>
+        <div className="bpc-btn-row">
+          <Link href={`/place/${slug}`} className="bpc-btn bpc-view">👁 ดูสาธารณะ</Link>
+          <Link href={`/business/places/${slug}/edit`} className="bpc-btn bpc-edit">✏️ แก้ไข</Link>
+        </div>
         {onDeleted && (
-          <button onClick={handleDelete} className="bpc-btn bpc-delete">ลบ</button>
+          <button onClick={handleDelete} className="bpc-btn bpc-delete">🗑 ลบสถานที่นี้</button>
         )}
       </div>
 
@@ -141,14 +143,18 @@ export default function BusinessPlaceCard({
           padding: 3px 10px; border-radius: 999px;
         }
         .bpc-actions {
-          display: flex; gap: 8px; padding: 12px 18px 18px;
-          flex-wrap: wrap;
+          display: flex; flex-direction: column; gap: 8px;
+          padding: 12px 18px 18px;
+        }
+        .bpc-btn-row {
+          display: flex; gap: 8px;
         }
         .bpc-btn {
-          flex: 1; text-align: center; padding: 9px 12px;
+          flex: 1; text-align: center; padding: 10px 8px;
           border-radius: 12px; font-size: 13px; font-weight: 700;
           text-decoration: none; cursor: pointer;
           border: none; font-family: inherit; transition: 0.2s;
+          white-space: nowrap;
         }
         .bpc-view {
           background: #eff6ff; color: #2563eb;
@@ -161,7 +167,7 @@ export default function BusinessPlaceCard({
         .bpc-edit:hover { opacity: 0.9; }
         .bpc-delete {
           background: #fff1f2; color: #e11d48;
-          flex: 0; padding: 9px 14px;
+          width: 100%; flex: none;
         }
         .bpc-delete:hover { background: #ffe4e6; }
       `}</style>

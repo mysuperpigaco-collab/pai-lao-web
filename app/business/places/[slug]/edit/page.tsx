@@ -45,7 +45,8 @@ async function uploadImage(file: File, folder = "places"): Promise<string> {
 }
 
 export default function EditPlacePage({ params }: Props) {
-  const { slug } = use(params);
+  const { slug: rawSlug } = use(params);
+  const slug = decodeURIComponent(rawSlug);
   const router = useRouter();
 
   // ── Loading state ──

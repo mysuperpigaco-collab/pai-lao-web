@@ -21,7 +21,8 @@ const CAT_ICON: Record<string, string> = {
 };
 
 export default async function PlaceDetailPage({ params }: Props) {
-  const { slug } = await params;
+  const raw = await params;
+  const slug = decodeURIComponent(raw.slug);
 
   const place = await prisma.place.findUnique({
     where: { slug },

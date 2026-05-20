@@ -7,7 +7,8 @@ type Params = { params: Promise<{ slug: string }> };
 // ── GET /api/places/[slug] ────────────────────────────────
 export async function GET(_req: Request, { params }: Params) {
   try {
-    const { slug } = await params;
+    const { slug: rawSlug } = await params;
+    const slug = decodeURIComponent(rawSlug);
     const place = await prisma.place.findUnique({
       where: { slug },
       include: {
@@ -42,7 +43,8 @@ export async function GET(_req: Request, { params }: Params) {
 // ── PUT /api/places/[slug] — แก้ไข ───────────────────────
 export async function PUT(request: Request, { params }: Params) {
   try {
-    const { slug } = await params;
+    const { slug: rawSlug } = await params;
+    const slug = decodeURIComponent(rawSlug);
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 
@@ -107,7 +109,8 @@ export async function PUT(request: Request, { params }: Params) {
 // ── DELETE /api/places/[slug] ─────────────────────────────
 export async function DELETE(_req: Request, { params }: Params) {
   try {
-    const { slug } = await params;
+    const { slug: rawSlug } = await params;
+    const slug = decodeURIComponent(rawSlug);
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 

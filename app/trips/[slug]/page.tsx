@@ -30,7 +30,8 @@ function getYoutubeId(url: string): string | null {
 type Props = { params: Promise<{ slug: string }> };
 
 export default async function TripDetailPage({ params }: Props) {
-  const { slug } = await params;
+  const raw = await params;
+  const slug = decodeURIComponent(raw.slug);
 
   const trip = await prisma.trip.findUnique({
     where: { slug },

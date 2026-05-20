@@ -7,7 +7,8 @@ import "@/app/place/[slug]/place-detail.css";
 type Props = { params: Promise<{ slug: string }> };
 
 export default async function PlacePreviewPage({ params }: Props) {
-  const { slug } = await params;
+  const raw = await params;
+  const slug = decodeURIComponent(raw.slug);
 
   const place = await prisma.place.findUnique({
     where: { slug },
