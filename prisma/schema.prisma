@@ -19,6 +19,7 @@ enum Role {
   TRAVELER
   BUSINESS
   ADMIN
+  SUPERADMIN
 }
 
 enum Gender {
@@ -143,6 +144,7 @@ model Place {
   lineId           String?
 
   shareCount       Int       @default(0)
+  viewCount        Int       @default(0)
 
   isVerified       Boolean   @default(false)
   businessId       String?
@@ -176,6 +178,7 @@ model Trip {
   youtubeUrl  String?
   tiktokUrl   String?
   shareCount  Int      @default(0)
+  viewCount   Int      @default(0)
 
   isPublished Boolean  @default(true)
   authorId    String
@@ -339,3 +342,16 @@ model Report {
   @@index([targetId])
 }
 
+// ── AdminLog ─────────────────────────────────────────────────
+model AdminLog {
+  id         String   @id @default(uuid())
+  adminId    String
+  action     String   // "BAN_USER" | "CHANGE_ROLE" | "DELETE_TRIP" | "DELETE_PLACE" | "RESOLVE_REPORT" | "DISMISS_REPORT" | "VERIFY_PLACE" | "UNVERIFY_PLACE" | "UNPUBLISH_TRIP"
+  targetId   String?
+  targetType String?  // "USER" | "TRIP" | "PLACE" | "REPORT"
+  detail     String?
+  createdAt  DateTime @default(now())
+
+  @@index([adminId])
+  @@index([createdAt])
+}

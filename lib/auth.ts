@@ -25,7 +25,7 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 export type JWTPayload = {
   userId: string;
   username: string;
-  role: "TRAVELER" | "BUSINESS" | "ADMIN";
+  role: "TRAVELER" | "BUSINESS" | "ADMIN" | "SUPERADMIN";
 };
 
 export async function signToken(payload: JWTPayload): Promise<string> {
