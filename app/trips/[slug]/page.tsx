@@ -7,6 +7,7 @@ import TripComments from "@/components/trips/TripComments";
 import BookmarkButton from "@/components/trips/BookmarkButton";
 import LikeButton from "@/components/trips/LikeButton";
 import FollowButton from "@/components/trips/FollowButton";
+import ShareButton from "@/components/common/ShareButton";
 import Link from "next/link";
 import "./trip-detail.css";
 
@@ -279,13 +280,20 @@ export default async function TripDetailPage({ params }: Props) {
               </div>
             </div>
 
-            {/* Like + Bookmark */}
+            {/* Like + Bookmark + Share */}
             <div className="side-card bm-card">
               <div className="bm-card-title">❤️ ถูกใจและบันทึก</div>
               <div className="bm-card-sub">กดถูกใจหรือบุ๊คมาร์คไว้อ่านทีหลัง</div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
                 <LikeButton tripId={trip.id} initialLiked={initialLiked} initialCount={likeCount} />
                 <BookmarkButton tripId={trip.id} initialSaved={initialSaved} />
+              </div>
+              <div style={{ marginTop: 8 }}>
+                <ShareButton
+                  title={trip.title}
+                  tripId={trip.id}
+                  initialShareCount={trip.shareCount}
+                />
               </div>
             </div>
 
@@ -321,6 +329,12 @@ export default async function TripDetailPage({ params }: Props) {
                   <span className="info-icon">💬</span>
                   <div><div className="info-label">รีวิว</div><div className="info-val">{trip._count.reviews} รีวิว</div></div>
                 </div>
+                {trip.shareCount > 0 && (
+                  <div className="info-row">
+                    <span className="info-icon">↗</span>
+                    <div><div className="info-label">แชร์</div><div className="info-val">{trip.shareCount.toLocaleString()} ครั้ง</div></div>
+                  </div>
+                )}
               </div>
             </div>
 

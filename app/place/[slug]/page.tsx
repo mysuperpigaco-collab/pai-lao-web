@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import PlaceReviews from "@/components/places/PlaceReviews";
+import ShareButton from "@/components/common/ShareButton";
 import "./place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -182,7 +183,22 @@ export default async function PlaceDetailPage({ params }: Props) {
                   </div>
                 </>
               )}
+              {place.shareCount > 0 && (
+                <>
+                  <div style={{ width: 1, background: "#f1f5f9" }} />
+                  <div style={{ flex: 1, textAlign: "center", padding: "8px 0" }}>
+                    <div style={{ fontSize: 26, fontWeight: 900, color: "#0f172a" }}>{place.shareCount.toLocaleString()}</div>
+                    <div style={{ fontSize: 11, color: "#64748b", fontWeight: 600, marginTop: 2 }}>Shared</div>
+                  </div>
+                </>
+              )}
             </div>
+
+            <ShareButton
+              title={place.title}
+              placeId={place.id}
+              initialShareCount={place.shareCount}
+            />
 
             {place.googleMapsUrl && (
               <a href={place.googleMapsUrl} target="_blank" rel="noreferrer" className="pd-maps-btn">
