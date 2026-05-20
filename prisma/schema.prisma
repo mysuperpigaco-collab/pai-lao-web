@@ -317,7 +317,4 @@ model Follow {
   following   User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
 
-  @@unique([followerId, followingId])
-  @@index([followerId])
-  @@index([followingId])
-}
+  @@unique([

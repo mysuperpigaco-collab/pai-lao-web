@@ -126,7 +126,4 @@ export async function DELETE(_req: Request, { params }: Params) {
     await prisma.place.delete({ where: { slug } });
     return NextResponse.json({ message: "ลบสถานที่แล้ว" });
   } catch (error) {
-    console.error("DELETE /api/places/[slug]:", error);
-    return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
-  }
-}
+   

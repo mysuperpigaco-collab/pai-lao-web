@@ -506,15 +506,4 @@ function PlaceCard({ place }: { place: Place }) {
         .plc-loc { font-size: 12px; color: #94a3b8; margin: 2px 0 0; }
         .plc-desc { font-size: 12px; color: #64748b; margin: 4px 0 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .plc-stats-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-        .plc-chip { font-size: 11px; font-weight: 700; color: #059669; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 2px 8px; border-radius: 999px; }
-        .plc-chip-red { color: #e11d48; background: #fff1f2; border-color: #fecdd3; }
-        .plc-chip-amber { color: #b45309; background: #fffbeb; border-color: #fde68a; }
-        .plc-footer { display: flex; justify-content: flex-end; align-items: center; margin-top: auto; padding-top: 8px; }
-        .plc-stat { font-size: 12px; color: #059669; font-weight: 700; }
-        .plc-stat-dim { color: #cbd5e1 !important; font-weight: 500 !important; }
-        .plc-arrow { font-size: 16px; color: #94a3b8; transition: transform 0.2s; }
-        .plc-card:hover .plc-arrow { transform: translateX(4px); color: #2563eb; }
-      `}</style>
-    </Link>
-  );
-}
+        .

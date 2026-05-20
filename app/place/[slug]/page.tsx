@@ -3,6 +3,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import PlaceReviews from "@/components/places/PlaceReviews";
+import PlaceLikeButton from "@/components/places/PlaceLikeButton";
+import PlaceBookmarkButton from "@/components/places/PlaceBookmarkButton";
 import ShareButton from "@/components/common/ShareButton";
 import "./place-detail.css";
 
@@ -58,6 +60,18 @@ export default async function PlaceDetailPage({ params }: Props) {
   const catLabel = CAT_LABEL[place.category] ?? place.category;
   const catIcon  = CAT_ICON[place.category]  ?? "📍";
   const isOwner  = session?.userId === place.business?.userId;
+
+  let initialLiked = false;
+  let initialSaved = false;
+  const likeCount = await prisma.placeLike.count({ where: { placeId: place.id } });
+  if (session) {
+    const [pl, bm] = await Promise.all([
+      prisma.placeLike.findUnique({ where: { userId_placeId: { userId: session.userId, placeId: place.id } } }),
+      prisma.bookmark.findUnique({ where: { userId_placeId: { userId: session.userId, placeId: place.id } } }),
+    ]);
+    initialLiked = !!pl;
+    initialSaved = !!bm;
+  }
 
   const serializedReviews = place.reviews.map(r => ({
     ...r,
@@ -165,25 +179,30 @@ export default async function PlaceDetailPage({ params }: Props) {
           </div>
 
           <aside className="pd-sidebar">
-            <div className="pd-side-card" style={{ display: "flex", gap: 0 }}>
-              <div style={{ flex: 1, textAlign: "center", padding: "8px 0" }}>
-                <div style={{ fontSize: 26, fontWeight: 900, color: "#0f172a" }}>{place._count.reviews}</div>
-                <div style={{ fontSize: 11, color: "#64748b", fontWeight: 600, marginTop: 2 }}>Reviews</div>
+            {/* Stats boxes */}
+            <div className="pd-side-card" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
+              <div style={{ textAlign: "center", padding: "10px 0", borderRight: "1px solid #f1f5f9", borderBottom: "1px solid #f1f5f9" }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "#0f172a" }}>{place._count.reviews}</div>
+                <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600, marginTop: 2 }}>💬 รีวิว</div>
               </div>
-              <div style={{ width: 1, background: "#f1f5f9" }} />
-              <div style={{ flex: 1, textAlign: "center", padding: "8px 0" }}>
-                <div style={{ fontSize: 26, fontWeight: 900, color: "#0f172a" }}>{place._count.bookmarks}</div>
-                <div style={{ fontSize: 11, color: "#64748b", fontWeight: 600, marginTop: 2 }}>Saved</div>
+              <div style={{ textAlign: "center", padding: "10px 0", borderBottom: "1px solid #f1f5f9" }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "#e11d48" }}>{likeCount}</div>
+                <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600, marginTop: 2 }}>❤️ ถูกใจ</div>
               </div>
-              {avgRating > 0 && (
-                <>
-                  <div style={{ width: 1, background: "#f1f5f9" }} />
-                  <div style={{ flex: 1, textAlign: "center", padding: "8px 0" }}>
-                    <div style={{ fontSize: 26, fontWeight: 900, color: "#f59e0b" }}>{avgRating.toFixed(1)}</div>
-                    <div style={{ fontSize: 11, color: "#64748b", fontWeight: 600, marginTop: 2 }}>Rating</div>
-                  </div>
-                </>
-              )}
+              <div style={{ textAlign: "center", padding: "10px 0", borderRight: "1px solid #f1f5f9" }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "#0f172a" }}>{place._count.bookmarks}</div>
+                <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600, marginTop: 2 }}>🔖 บันทึก</div>
+              </div>
+              <div style={{ textAlign: "center", padding: "10px 0" }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "#f59e0b" }}>{avgRating > 0 ? avgRating.toFixed(1) : "—"}</div>
+                <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600, marginTop: 2 }}>⭐ คะแนน</div>
+              </div>
+            </div>
+
+            {/* Like + Bookmark row */}
+            <div style={{ display: "flex", gap: 8 }}>
+              <PlaceLikeButton placeId={place.id} initialLiked={initialLiked} initialCount={likeCount} />
+              <PlaceBookmarkButton placeId={place.id} initialSaved={initialSaved} />
             </div>
 
             <ShareButton

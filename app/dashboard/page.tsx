@@ -64,7 +64,7 @@ function NoticeCard({ n, onDismiss }: { n: Notice; onDismiss: (id: string) => vo
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab]   = useState<"my-stories" | "saved">("my-stories");
+  const [activeTab, setActiveTab]   = useState<"my-stories" | "saved" | "saved-places">("my-stories");
   const [myTrips, setMyTrips]       = useState<TripItem[]>([]);
   const [bookmarks, setBookmarks]   = useState<BookmarkItem[]>([]);
   const [loadingTrips, setLoadingTrips] = useState(true);
@@ -125,9 +125,10 @@ export default function DashboardPage() {
 
   const visibleNotices = notices.filter(n => !dismissed.has(n.id));
 
-  const savedTrips = bookmarks.filter(b => b.trip).map(b => b.trip!);
-  const isLoading  = activeTab === "my-stories" ? loadingTrips : loadingBm;
-  const stories    = activeTab === "my-stories" ? myTrips : savedTrips;
+  const savedTrips   = bookmarks.filter(b => b.trip).map(b => b.trip!);
+  const savedPlaces  = bookmarks.filter(b => b.place).map(b => b.place!);
+  const isLoading    = activeTab === "my-stories" ? loadingTrips : loadingBm;
+  const stories      = activeTab === "my-stories" ? myTrips : savedTrips;
 
   const profileUser = user ? {
     username:       `@${user.username}`,
@@ -232,7 +233,7 @@ export default function DashboardPage() {
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#475569" }}>
                   <span>บันทึกไว้</span>
-                  <span style={{ fontWeight: 700, color: "#0f172a" }}>{bookmarks.length || 0} รายการ</span>
+                  <span style={{ fontWeight: 700, color: "#0f172a" }}>{savedTrips.length + savedPlaces.length} รายการ</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#475569" }}>
                   <span>เรื่องเล่า</span>
@@ -247,15 +248,65 @@ export default function DashboardPage() {
             <div className="dp-card main-card">
               <div className="tab-bar">
                 <div className="tabs">
-                  {(["my-stories", "saved"] as const).map(id => (
-                    <button key={id} className={`tab-btn${activeTab === id ? " active" : ""}`} onClick={() => setActiveTab(id)}>
-                      {id === "my-stories" ? `เรื่องเล่าของฉัน (${myTrips.length})` : `บันทึกไว้ (${savedTrips.length})`}
+                  {([
+                    ["my-stories", `✍️ เรื่องเล่าของฉัน (${myTrips.length})`],
+                    ["saved",        `🗺️ ทริปที่บันทึก (${savedTrips.length})`],
+                    ["saved-places", `📍 สถานที่บันทึก (${savedPlaces.length})`],
+                  ] as [string, string][]).map(([id, label]) => (
+                    <button key={id} className={`tab-btn${activeTab === id ? " active" : ""}`} onClick={() => setActiveTab(id as any)}>
+                      {label}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {isLoading ? (
+              {/* ── Tab: saved places ── */}
+              {activeTab === "saved-places" ? (
+                isLoading ? (
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                    <div style={{ fontSize: "32px", marginBottom: "12px" }}>⏳</div>
+                    <p style={{ margin: 0 }}>กำลังโหลด...</p>
+                  </div>
+                ) : savedPlaces.length > 0 ? (
+                  <>
+                    <p style={{ fontSize: "13px", color: "#94a3b8", margin: "0 0 20px" }}>
+                      บันทึกสถานที่ไว้ <strong style={{ color: "#1e293b" }}>{savedPlaces.length}</strong> แห่ง
+                    </p>
+                    <div className="story-grid">
+                      {savedPlaces.map((p: any) => (
+                        <Link key={p.slug} href={`/place/${p.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
+                          <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #f1f5f9", overflow: "hidden", boxShadow: "0 2px 10px rgba(15,23,42,0.05)", transition: "transform 0.2s, box-shadow 0.2s" }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 24px rgba(15,23,42,0.1)"; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ""; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 10px rgba(15,23,42,0.05)"; }}
+                          >
+                            <div style={{ height: 140, overflow: "hidden", background: "#e2e8f0", position: "relative" }}>
+                              {p.coverUrl
+                                ? <img src={p.coverUrl} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                                : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>📍</div>
+                              }
+                              <span style={{ position: "absolute", bottom: 8, left: 8, background: "rgba(15,23,42,0.65)", backdropFilter: "blur(6px)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>
+                                {p.category}
+                              </span>
+                            </div>
+                            <div style={{ padding: "12px 14px" }}>
+                              <div style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.title}</div>
+                              <div style={{ fontSize: 11, color: "#94a3b8" }}>📍 สถานที่บันทึก</div>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                    <div style={{ fontSize: "48px", marginBottom: "12px" }}>📍</div>
+                    <p style={{ color: "#94a3b8", fontSize: "15px", margin: "0 0 20px" }}>ยังไม่มีสถานที่ที่บันทึกไว้</p>
+                    <Link href="/place" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, background: "linear-gradient(135deg,#10b981,#06b6d4)", color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>
+                      🗺️ ค้นหาสถานที่
+                    </Link>
+                  </div>
+                )
+              ) : isLoading ? (
                 <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
                   <div style={{ fontSize: "32px", marginBottom: "12px" }}>⏳</div>
                   <p style={{ margin: 0 }}>กำลังโหลด...</p>
@@ -277,7 +328,7 @@ export default function DashboardPage() {
                     {activeTab === "my-stories" ? "📭" : "🔖"}
                   </div>
                   <p style={{ color: "#94a3b8", fontSize: "15px", margin: "0 0 20px" }}>
-                    {activeTab === "my-stories" ? "ยังไม่มีเรื่องเล่า · No stories yet" : "ยังไม่มีรายการที่บันทึกไว้ · Nothing saved"}
+                    {activeTab === "my-stories" ? "ยังไม่มีเรื่องเล่า · No stories yet" : "ยังไม่มีทริปที่บันทึกไว้"}
                   </p>
                   {activeTab === "my-stories" && (
                     <Link href="/trips/create" style={{

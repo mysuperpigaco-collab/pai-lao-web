@@ -247,8 +247,4 @@ export default async function PlacePreviewPage({ params }: Props) {
               )}
             </aside>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+      
