@@ -135,4 +135,16 @@ export async function POST(request: Request) {
         openHours:        openHours        ?? null,
         closedDays:       closedDays       ?? null,
         entryFee:         entryFee         ?? null,
-        phone:            phone       
+        phone:            phone            ?? null,
+        website:          website          ?? null,
+        lineId:           lineId           ?? null,
+        businessId:       business.id,
+      },
+    });
+
+    return NextResponse.json({ message: "เพิ่มสถานที่สำเร็จ", place }, { status: 201 });
+  } catch (error) {
+    console.error("POST /api/places:", error);
+    return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
+  }
+}

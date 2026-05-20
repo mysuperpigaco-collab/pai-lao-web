@@ -466,4 +466,10 @@ export default function EditPlacePage({ params }: Props) {
             <button type="submit" className="btn-save" disabled={isLoading}>
               {isLoading ? "⏳ กำลังบันทึก..." : "✓ บันทึกข้อมูล · Save"}
             </button>
-          </
+          </div>
+
+        </form>
+      </div>
+    </div>
+  );
+}

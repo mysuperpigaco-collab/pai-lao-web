@@ -346,4 +346,24 @@ export default async function TripDetailPage({ params }: Props) {
                 <div className="related-list">
                   {relatedTrips.map(t => (
                     <Link href={`/trips/${t.slug}`} className="related-item" key={t.slug}>
-                      <div className="related-th
+                      <div className="related-thumb">
+                        {t.coverUrl
+                          ? <img src={t.coverUrl} alt={t.title} />
+                          : <div style={{ width: "100%", height: "100%", background: "#e2e8f0" }} />
+                        }
+                      </div>
+                      <div className="related-info">
+                        <div className="related-title">{t.title}</div>
+                        <div className="related-meta">{t.author.displayName || t.author.firstName}</div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </aside>
+        </div>
+      </div>
+    </div>
+  );
+}
