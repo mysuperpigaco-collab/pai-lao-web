@@ -31,6 +31,7 @@ type Props = {
   reviews: Review[];
   avgRating: number;
   tripId: string;
+  currentUserId?: string | null;
 };
 
 function StarRow({ rating }: { rating: number }) {
@@ -47,12 +48,19 @@ function Avatar({ user, size = 36 }: { user: ReviewAuthor; size?: number }) {
   );
 }
 
-export default function TripComments({ reviews, avgRating, tripId }: Props) {
+export default function TripComments({ reviews, avgRating, tripId, currentUserId }: Props) {
   const { user } = useAuth();
   const isBusiness = user?.role === "BUSINESS";
+
+  // Check if current user already reviewed this trip
+  const meId = currentUserId ?? user?.id ?? null;
+  const myExistingReview = reviews.find(r => r.author.id === meId) ?? null;
+  const [alreadyReviewed, setAlreadyReviewed] = useState(!!myExistingReview);
+
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [localReviews, setLocalReviews] = useState<Review[]>(reviews);
 
   // Reply state per review
@@ -63,19 +71,28 @@ export default function TripComments({ reviews, avgRating, tripId }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setSubmitError("");
     try {
       const res = await fetch("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tripId, rating: newRating, text: newComment }),
       });
+      const data = await res.json();
       if (res.ok) {
-        const data = await res.json();
         setLocalReviews(prev => [{ ...data.review, replies: [] }, ...prev]);
         setNewComment("");
         setNewRating(5);
+        setAlreadyReviewed(true);
+      } else if (res.status === 409) {
+        setAlreadyReviewed(true);
+        setSubmitError("คุณได้รีวิวทริปนี้ไปแล้ว · You have already reviewed this trip");
+      } else {
+        setSubmitError(data.message ?? "เกิดข้อผิดพลาด");
       }
-    } catch {}
+    } catch {
+      setSubmitError("เกิดข้อผิดพลาด กรุณาลองใหม่");
+    }
     setSubmitting(false);
   };
 
@@ -142,8 +159,15 @@ export default function TripComments({ reviews, avgRating, tripId }: Props) {
         </div>
       )}
 
-      {/* Add review form */}
-      {!isBusiness && (
+      {/* Already reviewed notice */}
+      {!isBusiness && alreadyReviewed && (
+        <div style={{ background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: 12, padding: "14px 18px", marginBottom: 24, color: "#166534", fontSize: 13, display: "flex", alignItems: "center", gap: 8 }}>
+          ✅ คุณได้รีวิวทริปนี้แล้ว · You have already reviewed this trip
+        </div>
+      )}
+
+      {/* Add review form — only if logged in, not business, not already reviewed */}
+      {user && !isBusiness && !alreadyReviewed && (
         <form onSubmit={handleSubmit} style={{ background: "#f8fafc", borderRadius: 12, padding: 16, marginBottom: 24 }}>
           <div style={{ fontWeight: 700, marginBottom: 12 }}>✍️ เขียนรีวิว</div>
           <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
@@ -155,14 +179,26 @@ export default function TripComments({ reviews, avgRating, tripId }: Props) {
           </div>
           <textarea value={newComment} onChange={e => setNewComment(e.target.value)}
             placeholder="แบ่งปันประสบการณ์ของคุณ..."
+            required
             style={{ width: "100%", borderRadius: 8, border: "1px solid #e2e8f0", padding: "10px 12px",
               fontSize: 14, resize: "vertical", minHeight: 80, boxSizing: "border-box" }} />
-          <button type="submit" disabled={submitting}
+          {submitError && (
+            <p style={{ color: "#dc2626", fontSize: 13, marginTop: 6 }}>{submitError}</p>
+          )}
+          <button type="submit" disabled={submitting || !newComment.trim()}
             style={{ marginTop: 10, padding: "8px 20px", borderRadius: 8, border: "none",
-              background: "#3b82f6", color: "white", fontWeight: 700, cursor: "pointer" }}>
+              background: "#3b82f6", color: "white", fontWeight: 700, cursor: "pointer",
+              opacity: (!newComment.trim() || submitting) ? 0.6 : 1 }}>
             {submitting ? "⏳ กำลังส่ง..." : "ส่งรีวิว"}
           </button>
         </form>
+      )}
+
+      {/* Not logged in prompt */}
+      {!user && (
+        <div style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "14px 18px", marginBottom: 24, color: "#64748b", fontSize: 13, textAlign: "center" }}>
+          <a href="/login" style={{ color: "#2563eb", fontWeight: 700 }}>เข้าสู่ระบบ</a> เพื่อเขียนรีวิว · <a href="/login" style={{ color: "#2563eb", fontWeight: 700 }}>Login</a> to write a review
+        </div>
       )}
 
       {/* Review list */}

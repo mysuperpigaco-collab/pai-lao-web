@@ -14,7 +14,8 @@ interface Trip {
   province?: string | null;
   author?: { displayName?: string | null; firstName?: string } | null;
   createdAt: string;
-  _count?: { reviews: number; bookmarks: number };
+  avgRating?: number | null;
+  _count?: { reviews: number; bookmarks: number; likes: number };
 }
 
 const IconArrow = () => (
@@ -122,9 +123,17 @@ export default function HomePage() {
                             {trip.province && <span>📍 {trip.province}</span>}
                             {trip.author && <span>โดย {trip.author.displayName || trip.author.firstName}</span>}
                           </div>
-                          {(trip._count?.reviews ?? 0) > 0 && (
-                            <div className="hp-top-reviews">💬 {trip._count!.reviews} รีวิว · reviews</div>
-                          )}
+                          <div className="hp-top-stats">
+                            {trip.avgRating != null && trip.avgRating > 0 && (
+                              <span className="hp-stat-pill hp-stat-gold">⭐ {trip.avgRating.toFixed(1)}</span>
+                            )}
+                            {(trip._count?.likes ?? 0) > 0 && (
+                              <span className="hp-stat-pill hp-stat-red">❤️ {trip._count!.likes}</span>
+                            )}
+                            {(trip._count?.reviews ?? 0) > 0 && (
+                              <span className="hp-stat-pill hp-stat-blue">💬 {trip._count!.reviews}</span>
+                            )}
+                          </div>
                         </div>
                       </Link>
                     );
@@ -149,6 +158,8 @@ export default function HomePage() {
                           <h4>{trip.title}</h4>
                           <div className="hp-acard-meta">
                             {trip.province && <span>📍 {trip.province}</span>}
+                            {trip.avgRating != null && trip.avgRating > 0 && <span>⭐ {trip.avgRating.toFixed(1)}</span>}
+                            {(trip._count?.likes ?? 0) > 0 && <span>❤️ {trip._count!.likes}</span>}
                             {(trip._count?.reviews ?? 0) > 0 && <span>💬 {trip._count!.reviews}</span>}
                           </div>
                           {trip.author && <p className="hp-acard-author">โดย {trip.author.displayName || trip.author.firstName}</p>}
@@ -252,6 +263,13 @@ export default function HomePage() {
         .hp-acard-body h4 { font-size: 13px; font-weight: 700; color: #1e293b; margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .hp-acard-meta { display: flex; gap: 8px; flex-wrap: wrap; font-size: 11px; color: #94a3b8; margin-bottom: 3px; }
         .hp-acard-author { font-size: 11px; color: #64748b; margin: 0; font-style: italic; }
+
+        /* Stat pills */
+        .hp-top-stats { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+        .hp-stat-pill { font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 999px; }
+        .hp-stat-gold { background: #fef3c7; color: #92400e; }
+        .hp-stat-red  { background: #fee2e2; color: #991b1b; }
+        .hp-stat-blue { background: #dbeafe; color: #1e40af; }
 
         .fade-in { animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }

@@ -20,6 +20,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "คะแนนต้องอยู่ระหว่าง 1-5" }, { status: 400 });
     }
 
+    // ── ตรวจสอบว่าเคยรีวิวแล้วหรือยัง (1 user = 1 review per trip/place) ──
+    const existing = await prisma.review.findFirst({
+      where: {
+        authorId: session.userId,
+        ...(tripId  ? { tripId }  : {}),
+        ...(placeId ? { placeId } : {}),
+      },
+    });
+    if (existing) {
+      return NextResponse.json(
+        { message: "คุณได้รีวิวแล้ว · You have already reviewed this", alreadyReviewed: true },
+        { status: 409 }
+      );
+    }
+
     const review = await prisma.review.create({
       data: {
         authorId: session.userId,
