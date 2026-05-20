@@ -36,7 +36,7 @@ export default function LoginPage() {
 
     // role ถูกส่งกลับจาก login() โดยตรง ไม่ต้อง fetch /api/auth/me อีกรอบ
     const role = result.role;
-    router.push(role === "BUSINESS" ? "/business/dashboard" : "/dashboard");
+    router.push(role === "SUPERADMIN" || role === "ADMIN" ? "/admin" : role === "BUSINESS" ? "/business/dashboard" : "/dashboard");
   };
 
   return (
