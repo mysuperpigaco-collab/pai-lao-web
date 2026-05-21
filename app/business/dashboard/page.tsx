@@ -28,6 +28,8 @@ type BusinessData = {
     avgRating: number | null;
     reviewCount: number;
     bookmarkCount: number;
+    approvalStatus?: string;
+    rejectionReason?: string | null;
   }[];
   stats: {
     totalPlaces: number;
