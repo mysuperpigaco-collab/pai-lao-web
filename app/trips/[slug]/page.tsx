@@ -395,7 +395,7 @@ export default async function TripDetailPage({ params }: Props) {
                   <div className="info-row">
                     <span className="info-icon">👥</span>
                     <div><div className="info-label">รูปแบบ · Type</div><div className="info-val">
-                      {{"SOLO":"🧍 คนเดียว","COUPLE":"💑 คู่รัก","FAMILY":"👨‍👩‍👧 ครอบครัว","FRIENDS":"👫 กลุ่มเพื่อน"}[(trip as any).tripStyle] ?? (trip as any).tripStyle}
+                      {({"SOLO":"🧍 คนเดียว","COUPLE":"💑 คู่รัก","FAMILY":"👨‍👩‍👧 ครอบครัว","FRIENDS":"👫 กลุ่มเพื่อน"} as Record<string,string>)[(trip as any).tripStyle as string] ?? (trip as any).tripStyle}
                     </div></div>
                   </div>
                 )}
