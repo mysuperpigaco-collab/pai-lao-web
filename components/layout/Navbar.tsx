@@ -100,17 +100,17 @@ export default function Navbar() {
           <Link href="/" style={{ textDecoration: "none", color: "#475569", fontWeight: 700, fontSize: "13px", padding: "7px 12px", borderRadius: "10px", transition: "0.15s" }}
             onMouseEnter={e => (e.currentTarget.style.background = "#f0fdf4")}
             onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-            🏠 หน้าแรก
+            🏠 หน้าแรก · Home
           </Link>
           <Link href="/place" style={{ textDecoration: "none", color: "#475569", fontWeight: 700, fontSize: "13px", padding: "7px 12px", borderRadius: "10px", transition: "0.15s" }}
             onMouseEnter={e => (e.currentTarget.style.background = "#f0fdf4")}
             onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-            🗺️ สถานที่
+            🗺️ สถานที่ · Places
           </Link>
           <Link href="/trips" style={{ textDecoration: "none", color: "#475569", fontWeight: 700, fontSize: "13px", padding: "7px 12px", borderRadius: "10px", transition: "0.15s" }}
             onMouseEnter={e => (e.currentTarget.style.background = "#f0fdf4")}
             onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-            ✈️ ทริป
+            ✈️ ทริป · Trips
           </Link>
         </div>
 
@@ -130,16 +130,16 @@ export default function Navbar() {
               outline: "none", fontSize: "13px", color: "#059669", fontWeight: 700,
               borderRight: "1.5px solid #a7f3d0", cursor: "pointer", height: "100%",
             }}>
-            <option value="all">ทั้งหมด</option>
-            <option value="trip">ทริป</option>
-            <option value="place">ที่เที่ยว</option>
+            <option value="all">ทั้งหมด · All</option>
+            <option value="trip">ทริป · Trips</option>
+            <option value="place">สถานที่ · Places</option>
           </select>
           <input
             ref={inputRef}
             type="text"
             value={searchQ}
             onChange={e => setSearchQ(e.target.value)}
-            placeholder="ค้นหาทริปหรือสถานที่..."
+            placeholder="ค้นหาทริปหรือสถานที่... · Search trips & places"
             style={{
               background: "none", border: "none", flex: 1,
               outline: "none", fontSize: "13.5px", color: "#1e293b",
@@ -183,7 +183,7 @@ export default function Navbar() {
                   boxShadow: "0 3px 10px rgba(16,185,129,0.3)",
                   whiteSpace: "nowrap",
                 }}>
-                  <IconPlus /> เพิ่มสถานที่
+                  <IconPlus /> เพิ่มสถานที่ · Add Place
                 </Link>
               ) : (
                 <Link href="/trips/create" style={{
@@ -195,7 +195,7 @@ export default function Navbar() {
                   boxShadow: "0 3px 10px rgba(16,185,129,0.3)",
                   whiteSpace: "nowrap",
                 }}>
-                  <IconPencil /> เขียนทริป
+                  <IconPencil /> เขียนทริป · Write Trip
                 </Link>
               )}
 
@@ -230,7 +230,7 @@ export default function Navbar() {
                 onMouseEnter={e => { (e.target as HTMLButtonElement).style.borderColor = "#fca5a5"; (e.target as HTMLButtonElement).style.color = "#ef4444"; }}
                 onMouseLeave={e => { (e.target as HTMLButtonElement).style.borderColor = "#e2e8f0"; (e.target as HTMLButtonElement).style.color = "#94a3b8"; }}
               >
-                ออก
+                ออก · Logout
               </button>
             </>
           ) : (
@@ -241,7 +241,7 @@ export default function Navbar() {
                 border: "1.5px solid #a5f3fc", borderRadius: "10px",
                 background: "#f0fdfe",
               }}>
-                เข้าสู่ระบบ
+                เข้าสู่ระบบ · Login
               </Link>
               <Link href="/signup" style={{
                 textDecoration: "none",
@@ -251,7 +251,7 @@ export default function Navbar() {
                 boxShadow: "0 4px 12px rgba(16,185,129,0.3)",
                 whiteSpace: "nowrap",
               }}>
-                สมัครสมาชิก
+                สมัครสมาชิก · Sign Up
               </Link>
             </>
           )}
