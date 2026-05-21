@@ -19,8 +19,9 @@ const NAV_ADMIN = [
     { href: "/admin/analytics", icon: "📊", label: "Analytics" },
   ]},
   { group: "จัดการเนื้อหา", items: [
-    { href: "/admin/trips",  icon: "🗺️", label: "ทริป" },
-    { href: "/admin/places", icon: "📍", label: "สถานที่" },
+    { href: "/admin/approvals", icon: "📝", label: "อนุมัติทริป", approval: true },
+    { href: "/admin/trips",     icon: "🗺️", label: "ทริปทั้งหมด" },
+    { href: "/admin/places",    icon: "📍", label: "สถานที่" },
   ]},
   { group: "ชุมชน", items: [
     { href: "/admin/users",   icon: "👥", label: "ผู้ใช้งาน" },
@@ -39,9 +40,10 @@ const NAV_SUPER = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router   = useRouter();
-  const [me, setMe]             = useState<MeUser | null>(null);
-  const [pendingReports, set]   = useState(0);
-  const [loading, setLoading]   = useState(true);
+  const [me, setMe]               = useState<MeUser | null>(null);
+  const [pendingReports, set]     = useState(0);
+  const [pendingApprovals, setPA] = useState(0);
+  const [loading, setLoading]     = useState(true);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -63,6 +65,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     fetch("/api/admin/reports?status=PENDING&limit=1")
       .then(r => r.json())
       .then(d => set(d.total || 0));
+    fetch("/api/admin/trips?approval=PENDING&limit=1")
+      .then(r => r.json())
+      .then(d => setPA(d.total || 0));
   }, [me]);
 
   if (loading) {
@@ -106,6 +111,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <span>{item.label}</span>
                   {item.alert && pendingReports > 0 && (
                     <span className="adm-nav-badge">{pendingReports > 99 ? "99+" : pendingReports}</span>
+                  )}
+                  {(item as any).approval && pendingApprovals > 0 && (
+                    <span className="adm-nav-badge" style={{ background: "#f59e0b", color: "#000" }}>{pendingApprovals > 99 ? "99+" : pendingApprovals}</span>
                   )}
                 </Link>
               ))}

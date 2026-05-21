@@ -12,6 +12,8 @@ type TripItem = {
   coverUrl: string | null;
   createdAt: string;
   isPublished: boolean;
+  approvalStatus?: string;   // PENDING | APPROVED | REJECTED
+  rejectionReason?: string | null;
   avgRating?: number | null;
   _count?: { reviews: number; bookmarks: number; likes: number };
 };

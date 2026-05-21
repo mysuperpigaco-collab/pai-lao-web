@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     }
 
     const where: any = {
-      ...(!includeUnpublished ? { isPublished: true } : {}),
+      ...(!includeUnpublished ? { isPublished: true, approvalStatus: "APPROVED" } : {}),
       ...(mood             ? { mood }                       : {}),
       ...(resolvedAuthorId ? { authorId: resolvedAuthorId } : {}),
       ...(province ? { timeline: { some: { province: { contains: province, mode: "insensitive" } } } } : {}),
@@ -54,6 +54,7 @@ export async function GET(request: Request) {
           id: true, slug: true, title: true, subtitle: true,
           coverUrl: true, mood: true, budget: true, location: true,
           tags: true, createdAt: true, isPublished: true,
+          approvalStatus: true, rejectionReason: true,
           author: { select: { id: true, username: true, displayName: true, firstName: true, avatarUrl: true } },
           _count: { select: { reviews: true, bookmarks: true, likes: true } },
           reviews: { select: { rating: true } },
@@ -111,8 +112,9 @@ export async function POST(request: Request) {
         tags:        tags        ?? [],
         youtubeUrl:  youtubeUrl  ?? null,
         tiktokUrl:   tiktokUrl   ?? null,
-        isPublished: true,
-        authorId:    session.userId,
+        isPublished:     false,
+        approvalStatus:  "PENDING",
+        authorId:        session.userId,
         timeline: timeline?.length ? {
           create: (timeline as any[]).map((stop: any, index: number) => ({
             order:       index,

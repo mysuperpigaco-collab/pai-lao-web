@@ -27,6 +27,16 @@ export async function GET(_req: Request, { params }: Params) {
 
     if (!trip) return NextResponse.json({ message: "ไม่พบทริปนี้" }, { status: 404 });
 
+    // ถ้าทริปยังไม่ได้รับการอนุมัติ ให้ดูได้เฉพาะเจ้าของและแอดมิน
+    if (trip.approvalStatus !== "APPROVED") {
+      const session = await getCurrentUser();
+      const isOwner = session?.userId === trip.author.id;
+      const isAdmin = session?.role === "ADMIN" || session?.role === "SUPERADMIN";
+      if (!isOwner && !isAdmin) {
+        return NextResponse.json({ message: "ทริปนี้อยู่ระหว่างการตรวจสอบ" }, { status: 403 });
+      }
+    }
+
     const avgRating = trip.reviews.length
       ? trip.reviews.reduce((sum, r) => sum + r.rating, 0) / trip.reviews.length
       : 0;

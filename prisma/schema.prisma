@@ -180,8 +180,10 @@ model Trip {
   shareCount  Int      @default(0)
   viewCount   Int      @default(0)
 
-  isPublished Boolean  @default(true)
-  authorId    String
+  isPublished      Boolean  @default(false)
+  approvalStatus   String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  rejectionReason  String?
+  authorId         String
   author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   createdAt   DateTime @default(now())
