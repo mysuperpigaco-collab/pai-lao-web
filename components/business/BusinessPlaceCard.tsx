@@ -106,6 +106,11 @@ export default function BusinessPlaceCard({
             ⏳ รอตรวจสอบ
           </span>
         )}
+        {approvalStatus === "APPROVED" && (
+          <span style={{ position: "absolute", top: isVerified ? 36 : 10, right: 10, background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 999, border: "1px solid #bbf7d0" }}>
+            ✓ อนุมัติแล้ว
+          </span>
+        )}
         {approvalStatus === "REJECTED" && (
           <span style={{ position: "absolute", top: isVerified ? 36 : 10, right: 10, background: "#fee2e2", color: "#991b1b", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 999, border: "1px solid #fecaca" }}>
             ✗ ไม่อนุมัติ
