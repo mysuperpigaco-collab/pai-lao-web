@@ -6,6 +6,7 @@ import PlaceReviews from "@/components/places/PlaceReviews";
 import PlaceLikeButton from "@/components/places/PlaceLikeButton";
 import PlaceBookmarkButton from "@/components/places/PlaceBookmarkButton";
 import ShareButton from "@/components/common/ShareButton";
+import ReportButton from "@/components/common/ReportButton";
 import "./place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -211,6 +212,17 @@ export default async function PlaceDetailPage({ params }: Props) {
               placeId={place.id}
               initialShareCount={place.shareCount}
             />
+
+            {session && !isOwner && (
+              <div style={{ marginTop: 8 }}>
+                <ReportButton
+                  targetId={place.id}
+                  targetType="PLACE"
+                  currentUserId={session?.userId ?? null}
+                  ownerId={place.business?.userId ?? null}
+                />
+              </div>
+            )}
 
             {place.googleMapsUrl && (
               <a href={place.googleMapsUrl} target="_blank" rel="noreferrer" className="pd-maps-btn">

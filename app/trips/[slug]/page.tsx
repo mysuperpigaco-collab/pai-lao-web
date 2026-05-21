@@ -8,6 +8,7 @@ import BookmarkButton from "@/components/trips/BookmarkButton";
 import LikeButton from "@/components/trips/LikeButton";
 import FollowButton from "@/components/trips/FollowButton";
 import ShareButton from "@/components/common/ShareButton";
+import ReportButton from "@/components/common/ReportButton";
 import Link from "next/link";
 import "./trip-detail.css";
 
@@ -351,6 +352,16 @@ export default async function TripDetailPage({ params }: Props) {
                   initialShareCount={trip.shareCount}
                 />
               </div>
+              {session && !isOwner && (
+                <div style={{ marginTop: 8 }}>
+                  <ReportButton
+                    targetId={trip.id}
+                    targetType="TRIP"
+                    currentUserId={session?.userId ?? null}
+                    ownerId={trip.author.id}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Info */}
