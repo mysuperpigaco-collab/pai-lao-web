@@ -45,6 +45,7 @@ export default function CreateStoryPage() {
   ]);
   const [placeSuggestions, setPlaceSuggestions] = useState<Record<number, any[]>>({});
   const [placeSearchLoading, setPlaceSearchLoading] = useState<Record<number, boolean>>({});
+  const [suggestForm, setSuggestForm] = useState<Record<number, { open: boolean; cat: string; saving: boolean }>>({});
   const placeSearchTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
 
   const [showPreview, setShowPreview] = useState(false);
@@ -113,6 +114,32 @@ export default function CreateStoryPage() {
     updated[idx].placeId  = null;
     updated[idx].placeSlug = null;
     setTimeline(updated);
+  };
+
+  const openSuggest = (idx: number) => setSuggestForm(f => ({ ...f, [idx]: { open: true, cat: "NATURE", saving: false } }));
+  const closeSuggest = (idx: number) => setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], open: false } }));
+  const suggestPlace = async (idx: number) => {
+    const item = timeline[idx];
+    const form = suggestForm[idx];
+    if (!item.place.trim()) return;
+    setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], saving: true } }));
+    try {
+      const res = await fetch("/api/places/suggest", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: item.place, province: item.province, district: item.district, category: form?.cat ?? "NATURE" }),
+      });
+      const data = await res.json();
+      if (res.ok && data.place) {
+        const updated = [...timeline];
+        updated[idx].placeId   = data.place.id;
+        updated[idx].placeSlug = data.place.slug;
+        setTimeline(updated);
+        closeSuggest(idx);
+      } else {
+        alert(data.message ?? "เกิดข้อผิดพลาด");
+      }
+    } catch { alert("ไม่สามารถเชื่อมต่อระบบได้"); }
+    setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], saving: false } }));
   };
 
   // ── Submit ────────────────────────────────────────────────
@@ -418,6 +445,49 @@ export default function CreateStoryPage() {
                   </div>
                   <button type="button" className="btn-remove-circle" onClick={() => removeTimeline(idx)}>×</button>
                 </div>
+
+                {/* Suggest new place button */}
+                {item.place.trim().length >= 2 && !item.placeId && (
+                  <div style={{ marginBottom: 12 }}>
+                    {!suggestForm[idx]?.open ? (
+                      <button type="button" onClick={() => openSuggest(idx)}
+                        style={{ padding: "7px 14px", borderRadius: 10, border: "1.5px dashed #10b981", background: "#f0fdf4", color: "#10b981", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}>
+                        📍 สร้าง &ldquo;{item.place}&rdquo; เป็นสถานที่แนะนำ
+                      </button>
+                    ) : (
+                      <div style={{ background: "#f0fdf4", border: "1.5px solid #6ee7b7", borderRadius: 14, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+                        <div style={{ fontWeight: 800, fontSize: 13, color: "#065f46" }}>📍 สร้างสถานที่แนะนำ: <span style={{ color: "#10b981" }}>{item.place}</span></div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                          <label style={{ fontSize: 12, color: "#374151", fontWeight: 700, flexShrink: 0 }}>ประเภท:</label>
+                          <select value={suggestForm[idx]?.cat ?? "NATURE"}
+                            onChange={e => setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], cat: e.target.value } }))}
+                            style={{ flex: 1, minWidth: 140, padding: "7px 10px", borderRadius: 8, border: "1.5px solid #d1fae5", fontSize: 12, fontFamily: "inherit", background: "#fff" }}>
+                            <option value="NATURE">🌿 ธรรมชาติ</option>
+                            <option value="TEMPLE">🛕 วัด/ศาสนสถาน</option>
+                            <option value="CAFE">☕ คาเฟ่</option>
+                            <option value="FOOD">🍲 อาหาร</option>
+                            <option value="BEACH">🏖️ ชายหาด</option>
+                            <option value="MARKET">🛍️ ตลาด/ช้อปปิ้ง</option>
+                            <option value="ADVENTURE">🧗 กีฬา/ผจญภัย</option>
+                            <option value="MUSEUM">🏛️ พิพิธภัณฑ์</option>
+                            <option value="ACCOMMODATION">🏨 ที่พัก</option>
+                            <option value="CAMPING">⛺ แคมปิ้ง</option>
+                          </select>
+                          <button type="button" onClick={() => suggestPlace(idx)} disabled={suggestForm[idx]?.saving}
+                            style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#10b981", color: "#fff", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, opacity: suggestForm[idx]?.saving ? 0.7 : 1 }}>
+                            {suggestForm[idx]?.saving ? "⏳..." : "✓ สร้าง"}
+                          </button>
+                          <button type="button" onClick={() => closeSuggest(idx)}
+                            style={{ padding: "7px 12px", borderRadius: 8, border: "1.5px solid #d1fae5", background: "#fff", color: "#64748b", fontSize: 12, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}>
+                            ยกเลิก
+                          </button>
+                        </div>
+                        <p style={{ margin: 0, fontSize: 11, color: "#6b7280" }}>สถานที่จะขึ้นในหน้าค้นหา และรอเจ้าของมา claim ภายหลัง</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="timeline-location-row">
                   <select className="form-control" value={item.province}
                     onChange={(e) => updateTimeline(idx, "province", e.target.value)}>
