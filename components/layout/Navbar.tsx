@@ -186,17 +186,29 @@ export default function Navbar() {
                   <IconPlus /> เพิ่มสถานที่ · Add Place
                 </Link>
               ) : (
-                <Link href="/trips/create" style={{
-                  display: "flex", alignItems: "center", gap: "6px",
-                  textDecoration: "none", color: "#fff",
-                  background: "linear-gradient(135deg, #10b981, #06b6d4)",
-                  padding: "9px 16px", borderRadius: "12px",
-                  fontWeight: 700, fontSize: "13px",
-                  boxShadow: "0 3px 10px rgba(16,185,129,0.3)",
-                  whiteSpace: "nowrap",
-                }}>
-                  <IconPencil /> เขียนทริป · Write Trip
-                </Link>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <Link href="/planner" style={{
+                    display: "flex", alignItems: "center", gap: "6px",
+                    textDecoration: "none", color: "#0f766e",
+                    background: "#f0fdfa", border: "1.5px solid #99f6e4",
+                    padding: "8px 14px", borderRadius: "12px",
+                    fontWeight: 700, fontSize: "13px",
+                    whiteSpace: "nowrap",
+                  }}>
+                    📅 วางแผน · Planner
+                  </Link>
+                  <Link href="/trips/create" style={{
+                    display: "flex", alignItems: "center", gap: "6px",
+                    textDecoration: "none", color: "#fff",
+                    background: "linear-gradient(135deg, #10b981, #06b6d4)",
+                    padding: "8px 14px", borderRadius: "12px",
+                    fontWeight: 700, fontSize: "13px",
+                    boxShadow: "0 3px 10px rgba(16,185,129,0.3)",
+                    whiteSpace: "nowrap",
+                  }}>
+                    <IconPencil /> เขียนทริป · Write Trip
+                  </Link>
+                </div>
               )}
 
               <Link href={dashboardHref} style={{

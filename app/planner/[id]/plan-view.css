@@ -1,0 +1,66 @@
+body { margin: 0; font-family: "Sarabun", "Noto Sans Thai", sans-serif; background: #f1f5f9; }
+.pv-root { min-height: 100vh; }
+
+/* Controls */
+.pv-controls {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: #1e293b; color: #fff;
+  display: flex; align-items: center; gap: 16px; padding: 12px 24px;
+}
+.pv-back { color: #94a3b8; text-decoration: none; font-size: 14px; font-weight: 700; }
+.pv-back:hover { color: #fff; }
+.pv-print-btn {
+  padding: 8px 20px; border-radius: 10px; border: none;
+  background: #3b82f6; color: #fff; font-weight: 800; font-size: 14px;
+  cursor: pointer; font-family: inherit;
+}
+.pv-share-url { font-size: 12px; color: #64748b; margin-left: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Printable page */
+.pv-page {
+  max-width: 800px; margin: 80px auto 40px;
+  background: #fff; border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+  overflow: hidden; padding: 0 0 40px;
+}
+
+/* Header */
+.pv-header { padding: 32px 36px 24px; border-bottom: 2px solid #f1f5f9; }
+.pv-badge {
+  display: inline-block; padding: 4px 14px; border-radius: 20px;
+  background: #3b82f6; color: #fff; font-size: 12px; font-weight: 800;
+  margin-bottom: 14px; letter-spacing: 0.5px;
+}
+.pv-title { font-size: 30px; font-weight: 900; color: #1e293b; margin: 0 0 8px; }
+.pv-desc { font-size: 15px; color: #64748b; margin: 0 0 14px; }
+.pv-meta { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: #64748b; font-weight: 600; }
+
+/* Stops section */
+.pv-stops { padding: 28px 36px 0; }
+.pv-section-title { font-size: 18px; font-weight: 800; color: #1e293b; margin: 0 0 20px; border-left: 4px solid #3b82f6; padding-left: 12px; }
+.pv-stop { display: flex; gap: 14px; margin-bottom: 18px; break-inside: avoid; }
+.pv-stop-num {
+  width: 34px; height: 34px; border-radius: 50%; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 15px; flex-shrink: 0;
+}
+.pv-stop-body { flex: 1; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 16px; }
+.pv-stop-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.pv-stop-name { font-weight: 800; font-size: 16px; color: #1e293b; }
+.pv-stop-type { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 700; }
+.pv-stop-loc { font-size: 12px; color: #64748b; margin-bottom: 8px; }
+.pv-stop-notes { font-size: 14px; color: #374151; line-height: 1.75; margin: 8px 0; }
+.pv-maps-row { font-size: 12px; color: #3b82f6; word-break: break-all; }
+.pv-maps-url { font-style: italic; }
+
+/* Footer */
+.pv-footer { text-align: center; font-size: 12px; color: #94a3b8; margin-top: 32px; padding-top: 16px; border-top: 1px solid #f1f5f9; }
+
+/* Print */
+@media print {
+  body { background: #fff; }
+  .no-print { display: none !important; }
+  .pv-page { max-width: 100%; margin: 0; border-radius: 0; box-shadow: none; }
+  .pv-stop { break-inside: avoid; }
+  @page { size: A4; margin: 15mm 12mm; }
+}

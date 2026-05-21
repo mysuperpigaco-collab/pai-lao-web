@@ -118,6 +118,7 @@ model Business {
 
   places       Place[]
   claims       PlaceClaim[]
+  planStops    TripPlanStop[]
 }
 
 // ── Place ─────────────────────────────────────────────────────
@@ -206,6 +207,7 @@ model Trip {
   timeline    TimelineStop[]
   reviews     Review[]
   bookmarks   Bookmark[]
+  tripPlans   TripPlan[]
   likes       TripLike[]
 }
 
@@ -393,6 +395,43 @@ model AdminLog {
   @@index([adminId])
   @@index([createdAt])
 }
+
+// ── TripPlan ──────────────────────────────────────────────
+
+model TripPlan {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  startDate   String?
+  endDate     String?
+  province    String?
+  isPublic    Boolean  @default(false)
+  stops       TripPlanStop[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model TripPlanStop {
+  id            String   @id @default(uuid())
+  planId        String
+  plan          TripPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  order         Int
+  name          String
+  province      String?
+  district      String?
+  notes         String?
+  googleMapsUrl String?
+  stopType      String?  // ATTRACTION | EAT | SLEEP | ACTIVITY | TRANSPORT
+  placeId       String?
+  place         Place?   @relation(fields: [placeId], references: [id], onDelete: SetNull)
+
+  @@index([planId])
+}
+
 
 // ── PlaceClaim ─────────────────────────────────────────────
 model PlaceClaim {
