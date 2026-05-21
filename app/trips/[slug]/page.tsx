@@ -57,10 +57,19 @@ export default async function TripDetailPage({ params }: Props) {
     },
   });
 
-  if (!trip || !trip.isPublished) return notFound();
+  if (!trip) return notFound();
+
+  // ── อนุญาตให้เจ้าของและแอดมินดูทริปที่ยังไม่ได้รับการอนุมัติ ──
+  const session = await getCurrentUser();
+  const approvalStatus: string = (trip as any).approvalStatus ?? "APPROVED";
+
+  if (!trip.isPublished || approvalStatus !== "APPROVED") {
+    const isOwner = session?.userId === trip.author.id;
+    const isAdmin = session?.role === "ADMIN" || session?.role === "SUPERADMIN";
+    if (!isOwner && !isAdmin) return notFound();
+  }
 
   // Check if logged-in user has bookmarked / liked this trip, and follow status
-  const session = await getCurrentUser();
   let initialSaved = false;
   let initialLiked = false;
   let initialFollowing = false;
@@ -100,8 +109,52 @@ export default async function TripDetailPage({ params }: Props) {
     select: { slug: true, title: true, coverUrl: true, author: { select: { firstName: true, displayName: true } } },
   });
 
+  const isOwner = session?.userId === trip.author.id;
+  const isAdmin = session?.role === "ADMIN" || session?.role === "SUPERADMIN";
+
   return (
     <div className="place-page">
+
+      {/* ─── Approval Status Banner ─── */}
+      {approvalStatus !== "APPROVED" && (isOwner || isAdmin) && (
+        <div style={{
+          position: "sticky", top: 0, zIndex: 50,
+          background: approvalStatus === "REJECTED" ? "#7f1d1d" : "#78350f",
+          borderBottom: `2px solid ${approvalStatus === "REJECTED" ? "#ef4444" : "#f59e0b"}`,
+          padding: "12px 24px",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: 12, flexWrap: "wrap",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: "1.2rem" }}>
+              {approvalStatus === "REJECTED" ? "❌" : "⏳"}
+            </span>
+            <div>
+              <div style={{ color: "#fff", fontWeight: 700, fontSize: "0.9rem" }}>
+                {approvalStatus === "REJECTED"
+                  ? "ทริปนี้ถูกปฏิเสธ — ไม่แสดงต่อสาธารณะ"
+                  : "ทริปนี้กำลังรอการตรวจสอบจากแอดมิน — ยังไม่แสดงต่อสาธารณะ"}
+              </div>
+              {approvalStatus === "REJECTED" && (trip as any).rejectionReason && (
+                <div style={{ color: "#fca5a5", fontSize: "0.8rem", marginTop: 2 }}>
+                  เหตุผล: {(trip as any).rejectionReason}
+                </div>
+              )}
+            </div>
+          </div>
+          {isAdmin && (
+            <a href="/admin/approvals"
+              style={{
+                background: "rgba(255,255,255,0.15)", color: "#fff",
+                borderRadius: 8, padding: "6px 14px", fontSize: "0.8rem",
+                fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap",
+                border: "1px solid rgba(255,255,255,0.3)",
+              }}>
+              🛡️ ไปหน้าอนุมัติ
+            </a>
+          )}
+        </div>
+      )}
 
       {/* ─── HERO ─── */}
       <div className="hero-wrapper">
