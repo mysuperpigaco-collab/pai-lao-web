@@ -464,3 +464,15 @@
   .adm-main    { margin-left: 0; }
   .adm-stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ── Sidebar Footer Profile Link ── */
+.adm-footer-profile {
+  background: transparent;
+}
+.adm-footer-profile:hover {
+  background: #0f172a;
+}
+.adm-footer-profile.active-profile {
+  background: #162032;
+  border-left: 3px solid #4facfe;
+}

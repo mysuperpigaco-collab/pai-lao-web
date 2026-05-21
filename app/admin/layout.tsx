@@ -129,12 +129,40 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ))}
         </nav>
 
-        <div className="adm-sidebar-footer">
-          <div style={{ color:"#94a3b8", fontWeight:600 }}>{displayName}</div>
-          <div style={{ marginTop:2 }}>@{me.username}</div>
-          <Link href="/" style={{ color:"#4facfe", textDecoration:"none", marginTop:8, display:"block", fontSize:"0.75rem" }}>
-            ← กลับหน้าหลัก
+        <div className="adm-sidebar-footer" style={{ padding:0 }}>
+          <Link
+            href="/admin/profile"
+            style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 20px", textDecoration:"none",
+                     borderTop:"1px solid #334155", transition:"background 0.15s",
+                     borderRadius:"0 0 0 0" }}
+            className={`adm-footer-profile${isActive("/admin/profile") ? " active-profile" : ""}`}
+          >
+            {/* mini avatar */}
+            <div style={{
+              width:34, height:34, borderRadius:"50%", flexShrink:0,
+              background: me.avatarUrl ? "transparent" : "linear-gradient(135deg,#2563eb,#4facfe)",
+              overflow:"hidden", border:"2px solid #334155",
+              display:"flex", alignItems:"center", justifyContent:"center",
+              fontSize:"0.85rem", fontWeight:800, color:"#fff",
+            }}>
+              {me.avatarUrl
+                ? <img src={me.avatarUrl} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                : (displayName[0] || me.username[0] || "A").toUpperCase()
+              }
+            </div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ color:"#cbd5e1", fontWeight:600, fontSize:"0.82rem",
+                            overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                {displayName}
+              </div>
+              <div style={{ color:"#475569", fontSize:"0.7rem", marginTop:1 }}>แก้ไขโปรไฟล์ →</div>
+            </div>
           </Link>
+          <div style={{ padding:"10px 20px", borderTop:"1px solid #1e293b" }}>
+            <Link href="/" style={{ color:"#4facfe", textDecoration:"none", fontSize:"0.72rem" }}>
+              ← กลับหน้าหลัก
+            </Link>
+          </div>
         </div>
       </aside>
 
