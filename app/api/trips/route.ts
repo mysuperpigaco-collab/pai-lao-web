@@ -89,6 +89,19 @@ export async function POST(request: Request) {
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 
+    // เช็คว่าถูกแบนโพสอยู่หรือไม่
+    const userCheck = await prisma.user.findUnique({ where: { id: session.userId }, select: { postBannedUntil: true, bannedUntil: true } });
+    const now = new Date();
+    if (userCheck?.bannedUntil && userCheck.bannedUntil > now) {
+      return NextResponse.json({ message: "บัญชีของคุณถูกระงับ ไม่สามารถดำเนินการได้" }, { status: 403 });
+    }
+    if (userCheck?.postBannedUntil && userCheck.postBannedUntil > now) {
+      const until = new Date(userCheck.postBannedUntil);
+      const isPermanent = until.getFullYear() >= 2099;
+      const dateStr = isPermanent ? "ถาวร" : until.toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" });
+      return NextResponse.json({ message: `คุณถูกห้ามโพสจนถึงวันที่ ${dateStr}` }, { status: 403 });
+    }
+
     const body = await request.json();
     const { title, subtitle, description, coverUrl, gallery, mood, budget, location, tags, timeline, youtubeUrl, tiktokUrl } = body;
 

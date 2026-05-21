@@ -30,6 +30,8 @@ export async function POST(request: Request) {
         avatarUrl: true,
         role: true,
         password: true,
+        bannedUntil: true,
+        banReason: true,
         business: {
           select: { id: true, businessName: true, logoUrl: true, isVerified: true },
         },
@@ -50,6 +52,18 @@ export async function POST(request: Request) {
         { message: "รหัสผ่านไม่ถูกต้อง" },
         { status: 401 }
       );
+    }
+
+    // ── เช็คว่าบัญชีถูกแบนอยู่หรือไม่ ──────────────────────────
+    if (user.bannedUntil && new Date(user.bannedUntil) > new Date()) {
+      const until = new Date(user.bannedUntil);
+      const isPermanent = until.getFullYear() >= 2099;
+      const dateStr = isPermanent
+        ? "ถาวร"
+        : until.toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" });
+      return NextResponse.json({
+        message: `บัญชีนี้ถูกระงับ${isPermanent ? "อย่างถาวร" : `ถึงวันที่ ${dateStr}`}${user.banReason ? ` เหตุผล: ${user.banReason}` : ""}`,
+      }, { status: 403 });
     }
 
     // ── ออก JWT ───────────────────────────────────────────────

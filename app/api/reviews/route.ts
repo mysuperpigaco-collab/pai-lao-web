@@ -8,6 +8,16 @@ export async function POST(request: Request) {
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 
+    // เช็ค ban
+    const userCheck = await prisma.user.findUnique({ where: { id: session.userId }, select: { postBannedUntil: true, bannedUntil: true } });
+    const now = new Date();
+    if (userCheck?.bannedUntil && userCheck.bannedUntil > now)
+      return NextResponse.json({ message: "บัญชีของคุณถูกระงับ" }, { status: 403 });
+    if (userCheck?.postBannedUntil && userCheck.postBannedUntil > now) {
+      const until = new Date(userCheck.postBannedUntil);
+      return NextResponse.json({ message: `คุณถูกห้ามโพสจนถึงวันที่ ${until.toLocaleDateString("th-TH")}` }, { status: 403 });
+    }
+
     const { tripId, placeId, rating, text } = await request.json();
 
     if (!rating || !text) {

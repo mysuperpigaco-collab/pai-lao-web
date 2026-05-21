@@ -7,6 +7,14 @@ export async function POST(request: Request) {
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 
+    // เช็ค ban
+    const userCheck = await prisma.user.findUnique({ where: { id: session.userId }, select: { postBannedUntil: true, bannedUntil: true } });
+    const now = new Date();
+    if (userCheck?.bannedUntil && userCheck.bannedUntil > now)
+      return NextResponse.json({ message: "บัญชีของคุณถูกระงับ" }, { status: 403 });
+    if (userCheck?.postBannedUntil && userCheck.postBannedUntil > now)
+      return NextResponse.json({ message: `คุณถูกห้ามโพส` }, { status: 403 });
+
     const { reviewId, text } = await request.json();
     if (!reviewId || !text) {
       return NextResponse.json({ message: "กรุณากรอกข้อมูลให้ครบ" }, { status: 400 });

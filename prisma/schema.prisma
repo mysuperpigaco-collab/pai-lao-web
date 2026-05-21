@@ -66,6 +66,11 @@ model User {
   tiktok      String?
 
   role        Role      @default(TRAVELER)
+
+  postBannedUntil DateTime?  // ห้ามโพสจนถึงวันที่นี้ (null = ไม่ถูกแบน)
+  bannedUntil     DateTime?  // บัญชีถูกระงับจนถึงวันที่นี้ (null = ไม่ถูกแบน)
+  banReason       String?    // เหตุผลที่ถูกแบน
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
