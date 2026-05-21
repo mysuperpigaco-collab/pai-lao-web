@@ -109,7 +109,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 >
                   <span>{item.icon}</span>
                   <span>{item.label}</span>
-                  {item.alert && pendingReports > 0 && (
+                  {(item as any).alert && pendingReports > 0 && (
                     <span className="adm-nav-badge">{pendingReports > 99 ? "99+" : pendingReports}</span>
                   )}
                   {(item as any).approval && pendingApprovals > 0 && (
