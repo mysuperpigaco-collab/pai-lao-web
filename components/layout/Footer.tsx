@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -40,9 +41,9 @@ export default function Footer() {
           <div className="link-col">
             <h4>กฎกติกา</h4>
             <ul>
-              <li>เงื่อนไขการใช้งาน</li>
-              <li>นโยบายความเป็นส่วนตัว</li>
-              <li>มาตรฐานชุมชน</li>
+              <li><Link href="/policy?tab=terms" style={{ color:"inherit", textDecoration:"none" }}>เงื่อนไขการใช้งาน</Link></li>
+              <li><Link href="/policy?tab=privacy" style={{ color:"inherit", textDecoration:"none" }}>นโยบายความเป็นส่วนตัว</Link></li>
+              <li><Link href="/policy?tab=community" style={{ color:"inherit", textDecoration:"none" }}>มาตรฐานชุมชน</Link></li>
             </ul>
           </div>
         </div>
