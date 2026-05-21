@@ -39,6 +39,7 @@ const ST = (v?: string) => STOP_TYPES.find(t => t.v === v) ?? STOP_TYPES[0];
 export default function PlannerPage() {
   const { user } = useAuth();
   const router   = useRouter();
+  const todayStr = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     if (user === null) router.replace("/login");
@@ -222,15 +223,15 @@ export default function PlannerPage() {
   if (!user) return null;
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #f0f9ff 0%, #f1f5f9 50%, #f0fdf4 100%)" }}>
+    <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
 
       {/* ════ HEADER ════ */}
       <div style={{
-        background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)",
+        background: "#fff",
         borderBottom: "1px solid #e2e8f0",
-        padding: "0 28px", display: "flex", alignItems: "center", gap: 16,
-        height: 64, position: "sticky", top: 0, zIndex: 100,
-        boxShadow: "0 2px 16px rgba(0,0,0,0.06)"
+        padding: "0 24px", display: "flex", alignItems: "center", gap: 16,
+        height: 56, position: "sticky", top: 0, zIndex: 100,
+        boxShadow: "0 1px 4px rgba(0,0,0,0.06)"
       }}>
         <Link href="/dashboard" style={{ color: "#64748b", textDecoration: "none", fontSize: 20, lineHeight: 1, padding: "4px 8px", borderRadius: 8, background: "#f8fafc", border: "1px solid #e2e8f0" }}>←</Link>
         <div>
@@ -271,7 +272,7 @@ export default function PlannerPage() {
       </div>
 
       {/* ════ 3-COLUMN LAYOUT ════ */}
-      <div style={{ display: "grid", gridTemplateColumns: "260px 1fr 320px", height: "calc(100vh - 64px)", overflow: "hidden" }}>
+      <div style={{ maxWidth: 1400, margin: "0 auto", width: "100%", display: "grid", gridTemplateColumns: "260px 1fr 320px", height: "calc(100vh - 56px)", overflow: "hidden", borderLeft: "1px solid #e2e8f0", borderRight: "1px solid #e2e8f0" }}>
 
         {/* ── COL 1: Plans sidebar ── */}
         <div style={{ borderRight: "1px solid #e2e8f0", background: "#fff", display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -305,11 +306,11 @@ export default function PlannerPage() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 8 }}>
                 <div>
                   <label style={lbl}>วันเริ่ม · From</label>
-                  <input type="date" value={nStart} onChange={e => setNStart(e.target.value)} style={inp} />
+                  <input type="date" value={nStart} min={todayStr} onChange={e => { setNStart(e.target.value); if (nEnd && e.target.value > nEnd) setNEnd(""); }} style={inp} />
                 </div>
                 <div>
                   <label style={lbl}>วันสิ้นสุด · To</label>
-                  <input type="date" value={nEnd} onChange={e => setNEnd(e.target.value)} style={inp} />
+                  <input type="date" value={nEnd} min={nStart || todayStr} onChange={e => setNEnd(e.target.value)} style={inp} />
                 </div>
               </div>
               <div style={{ marginBottom: 12 }}>
