@@ -12,6 +12,7 @@ interface ReviewReply {
 }
 interface Review {
   id: string; rating: number; text: string; createdAt: string;
+  isAnonymous?: boolean;
   author: ReviewAuthor; replies: ReviewReply[]; likes?: number;
 }
 type Props = {
@@ -105,6 +106,7 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
   const [newRating, setNewRating] = useState(5);
   const [newText, setNewText] = useState("");
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -169,7 +171,7 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
       const res = await fetch("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ placeId, rating: newRating, text: newText }),
+        body: JSON.stringify({ placeId, rating: newRating, text: newText, isAnonymous }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -288,6 +290,11 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
           <textarea value={newText} onChange={e => setNewText(e.target.value)}
             placeholder="แบ่งปันประสบการณ์ของคุณ... Share your experience..."
             className="pr-textarea" required />
+          <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13, color: "#475569", userSelect: "none", margin: "8px 0 4px" }}>
+            <input type="checkbox" checked={isAnonymous} onChange={e => setIsAnonymous(e.target.checked)}
+              style={{ accentColor: "#64748b", width: 15, height: 15 }} />
+            <span>ไม่แสดงชื่อ · Post anonymously</span>
+          </label>
           {submitError && <p style={{ color: "#dc2626", fontSize: 13, margin: "6px 0 0" }}>{submitError}</p>}
           <button type="submit" disabled={submitting || !newText.trim()} className="pr-submit-btn">
             {submitting ? "⏳ กำลังส่ง..." : "📤 ส่งรีวิว · Submit"}
@@ -325,11 +332,17 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
           {reviews.map(review => (
             <div key={review.id} className="pr-review">
               <div className="pr-review-head">
-                <Avatar user={review.author} />
+                {review.isAnonymous
+                  ? <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#e2e8f0", color: "#94a3b8", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, flexShrink: 0 }}>?</div>
+                  : <Avatar user={review.author} />}
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <div>
-                      <div className="pr-reviewer-name">{review.author.displayName || review.author.firstName}</div>
+                      <div className="pr-reviewer-name">
+                        {review.isAnonymous
+                          ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>ผู้ใช้นิรนาม · Anonymous</span>
+                          : (review.author.displayName || review.author.firstName)}
+                      </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <Stars rating={review.rating} size={13} />
                         <span className="pr-date">{new Date(review.createdAt).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })}</span>

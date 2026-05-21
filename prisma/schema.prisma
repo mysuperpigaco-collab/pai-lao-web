@@ -245,9 +245,10 @@ model Review {
   placeId   String?
   place     Place?   @relation(fields: [placeId], references: [id], onDelete: Cascade)
 
-  rating    Int
-  text      String
-  likes     Int      @default(0)
+  rating      Int
+  text        String
+  isAnonymous Boolean  @default(false)
+  likes       Int      @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

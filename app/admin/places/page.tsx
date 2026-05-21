@@ -17,7 +17,7 @@ export default function AdminPlacesPage() {
   const [category, setCategory] = useState("");
   const [verified, setVerified] = useState("");
   const [loading, setLoading] = useState(false);
-  const [confirm, setConfirm] = useState<{ id: string; title: string; action: "verify" | "delete"; isVerified?: boolean } | null>(null);
+  const [confirm, setConfirm] = useState<{ id: string; title: string; action: "verify" | "delete" | "revoke"; isVerified?: boolean; hasOwner?: boolean } | null>(null);
   const [msg, setMsg]         = useState("");
 
   const load = useCallback(() => {
@@ -40,6 +40,19 @@ export default function AdminPlacesPage() {
     });
     const d = await res.json();
     setMsg(d.message || "อัปเดตแล้ว");
+    setConfirm(null); load();
+    setTimeout(() => setMsg(""), 3000);
+  };
+
+  const handleRevoke = async () => {
+    if (!confirm || confirm.action !== "revoke") return;
+    const res = await fetch("/api/admin/places", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ placeId: confirm.id, action: "revoke-ownership" }),
+    });
+    const d = await res.json();
+    setMsg(d.message || "ยกเลิกความเป็นเจ้าของแล้ว");
     setConfirm(null); load();
     setTimeout(() => setMsg(""), 3000);
   };
@@ -146,6 +159,12 @@ export default function AdminPlacesPage() {
                         >
                           {p.isVerified ? "⛔ ยกเลิก" : "✅ ยืนยัน"}
                         </button>
+                        {p.business && (
+                          <button className="adm-btn sm" style={{ background: "#7c3aed" }}
+                            onClick={() => setConfirm({ id: p.id, title: p.title, action:"revoke", hasOwner: true })}>
+                            🔓 ถอนสิทธิ์
+                          </button>
+                        )}
                         <button className="adm-btn danger sm"
                           onClick={() => setConfirm({ id: p.id, title: p.title, action:"delete" })}>
                           🗑️ ลบ
@@ -176,21 +195,24 @@ export default function AdminPlacesPage() {
         <div className="adm-overlay" onClick={() => setConfirm(null)}>
           <div className="adm-modal" onClick={e => e.stopPropagation()}>
             <div className="adm-modal-title">
-              {confirm.action === "delete" ? "🗑️ ยืนยันการลบ" : confirm.isVerified ? "⛔ ยกเลิกยืนยัน" : "✅ ยืนยันสถานที่"}
+              {confirm.action === "delete" ? "🗑️ ยืนยันการลบ" : confirm.action === "revoke" ? "🔓 ถอนความเป็นเจ้าของ" : confirm.isVerified ? "⛔ ยกเลิกยืนยัน" : "✅ ยืนยันสถานที่"}
             </div>
             <div className="adm-modal-body">
               {confirm.action === "delete"
                 ? <>ลบสถานที่ <strong style={{color:"#e2e8f0"}}>"{confirm.title}"</strong> ถาวร?</>
-                : confirm.isVerified
-                  ? <>ยกเลิกการยืนยัน <strong style={{color:"#e2e8f0"}}>"{confirm.title}"</strong>?</>
-                  : <>ยืนยันสถานที่ <strong style={{color:"#e2e8f0"}}>"{confirm.title}"</strong>?</>
+                : confirm.action === "revoke"
+                  ? <><strong style={{color:"#e2e8f0"}}>"{confirm.title}"</strong> จะไม่มีเจ้าของอีกต่อไป เจ้าของเดิมจะสูญเสียสิทธิ์การจัดการสถานที่นี้ ยืนยันหรือไม่?</>
+                  : confirm.isVerified
+                    ? <>ยกเลิกการยืนยัน <strong style={{color:"#e2e8f0"}}>"{confirm.title}"</strong>?</>
+                    : <>ยืนยันสถานที่ <strong style={{color:"#e2e8f0"}}>"{confirm.title}"</strong>?</>
               }
             </div>
             <div className="adm-modal-actions">
               <button className="adm-btn ghost" onClick={() => setConfirm(null)}>ยกเลิก</button>
               <button
-                className={`adm-btn ${confirm.action === "delete" ? "danger" : "primary"}`}
-                onClick={confirm.action === "delete" ? handleDelete : handleVerify}
+                className={`adm-btn ${confirm.action === "delete" ? "danger" : confirm.action === "revoke" ? "" : "primary"}`}
+                style={confirm.action === "revoke" ? { background: "#7c3aed" } : {}}
+                onClick={confirm.action === "delete" ? handleDelete : confirm.action === "revoke" ? handleRevoke : handleVerify}
               >ยืนยัน</button>
             </div>
           </div>

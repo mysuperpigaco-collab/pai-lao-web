@@ -78,5 +78,22 @@ export async function PUT(request: Request) {
     return NextResponse.json({ message: "ปฏิเสธสถานที่แล้ว" });
   }
 
+  if (action === "revoke-ownership") {
+    const fullPlace = await prisma.place.findUnique({ where: { id: placeId }, select: { businessId: true, title: true } });
+    if (!fullPlace?.businessId) return NextResponse.json({ message: "สถานที่นี้ไม่มีเจ้าของอยู่แล้ว" }, { status: 400 });
+    await prisma.place.update({ where: { id: placeId }, data: { businessId: null } });
+    // Also reject any pending claims for this place
+    await (prisma as any).placeClaim.updateMany({
+      where: { placeId, status: "PENDING" },
+      data: { status: "REJECTED", adminNote: "แอดมินยกเลิกความเป็นเจ้าของ" },
+    }).catch(() => {});
+    await prisma.adminLog.create({ data: {
+      adminId: session.userId, action: "REVOKE_OWNERSHIP",
+      targetId: placeId, targetType: "PLACE",
+      detail: `Revoked ownership of: ${fullPlace.title}`,
+    }});
+    return NextResponse.json({ message: "ยกเลิกความเป็นเจ้าของสำเร็จ" });
+  }
+
   return NextResponse.json({ message: "action ไม่ถูกต้อง" }, { status: 400 });
 }

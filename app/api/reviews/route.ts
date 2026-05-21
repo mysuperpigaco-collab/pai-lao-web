@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: `คุณถูกห้ามโพสจนถึงวันที่ ${until.toLocaleDateString("th-TH")}` }, { status: 403 });
     }
 
-    const { tripId, placeId, rating, text } = await request.json();
+    const { tripId, placeId, rating, text, isAnonymous } = await request.json();
 
     if (!rating || !text) {
       return NextResponse.json({ message: "กรุณากรอกคะแนนและความคิดเห็น" }, { status: 400 });
@@ -55,8 +55,9 @@ export async function POST(request: Request) {
         authorId: session.userId,
         tripId:   tripId  ?? null,
         placeId:  placeId ?? null,
-        rating:   Number(rating),
+        rating:      Number(rating),
         text,
+        isAnonymous: !!isAnonymous,
       },
       include: {
         author: { select: { id: true, username: true, displayName: true, firstName: true, avatarUrl: true } },

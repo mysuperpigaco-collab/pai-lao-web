@@ -23,6 +23,7 @@ interface Review {
   rating: number;
   text?: string | null;
   createdAt: string;
+  isAnonymous?: boolean;
   author: ReviewAuthor;
   replies: ReviewReply[];
   likes?: number;
@@ -134,6 +135,7 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
   // Review form state
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState("");
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [localReviews, setLocalReviews] = useState<Review[]>(reviews);
@@ -160,7 +162,7 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
       const res = await fetch("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tripId, rating: newRating, text: newComment }),
+        body: JSON.stringify({ tripId, rating: newRating, text: newComment, isAnonymous }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -363,11 +365,17 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
         localReviews.map(review => (
           <div key={review.id} style={{ borderBottom: "1px solid #f1f5f9", paddingBottom: 20, marginBottom: 20 }}>
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-              <Avatar user={review.author} />
+              {review.isAnonymous
+                ? <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#e2e8f0", color: "#94a3b8", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, flexShrink: 0 }}>?</div>
+                : <Avatar user={review.author} />}
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: 14 }}>{review.author.displayName || review.author.firstName}</div>
+                    <div style={{ fontWeight: 700, fontSize: 14 }}>
+                      {review.isAnonymous
+                        ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>ผู้ใช้นิรนาม · Anonymous</span>
+                        : (review.author.displayName || review.author.firstName)}
+                    </div>
                     <StarRow rating={review.rating} />
                   </div>
                   {/* Report button */}
