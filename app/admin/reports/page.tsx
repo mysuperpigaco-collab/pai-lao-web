@@ -181,7 +181,7 @@ function EnforcementModal({ report, onClose, onDone }: {
                     type="button"
                     onClick={() => setDuration(opt.value)}
                     style={{
-                      padding:"5px 12px", borderRadius:8, border:"none", cursor:"pointer",
+                      padding:"5px 12px", borderRadius:8, cursor:"pointer",
                       fontSize:"0.78rem", fontWeight:700, transition:"all 0.15s",
                       background: duration === opt.value
                         ? (opt.value === null ? "#7f1d1d" : "#1e3a5f")
@@ -189,7 +189,8 @@ function EnforcementModal({ report, onClose, onDone }: {
                       color: duration === opt.value
                         ? (opt.value === null ? "#fca5a5" : "#93c5fd")
                         : "#64748b",
-                      border: `1px solid ${duration === opt.value ? (opt.value === null ? "#ef4444" : "#4facfe") : "#334155"}`,
+                      outline: "none",
+                      boxShadow: `inset 0 0 0 1px ${duration === opt.value ? (opt.value === null ? "#ef4444" : "#4facfe") : "#334155"}`,
                     }}
                   >
                     {opt.label}
