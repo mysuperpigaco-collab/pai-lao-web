@@ -25,6 +25,18 @@ const ENUM_TO_THAI: Record<string, PlaceCategory> = {
   FOOD: "อาหาร", TEMPLE: "วัด / ศาสนสถาน", BEACH: "ชายหาด",
   MARKET: "ตลาด / ช้อปปิ้ง", ADVENTURE: "กีฬา / ผจญภัย", MUSEUM: "พิพิธภัณฑ์ / ประวัติศาสตร์",
 };
+const DAYS = [
+  { th: "จันทร์",    en: "Mon" },
+  { th: "อังคาร",   en: "Tue" },
+  { th: "พุธ",      en: "Wed" },
+  { th: "พฤหัสบดี", en: "Thu" },
+  { th: "ศุกร์",    en: "Fri" },
+  { th: "เสาร์",    en: "Sat" },
+  { th: "อาทิตย์",  en: "Sun" },
+];
+const HOURS   = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+const MINUTES = ["00", "15", "30", "45"];
+
 const CATEGORY_ICON: Record<string, string> = {
   "ธรรมชาติ":"🌿","คาเฟ่":"☕","ที่พัก":"🏨","แคมปิ้ง":"⛺","อาหาร":"🍲",
   "วัด / ศาสนสถาน":"🛕","ชายหาด":"🏖️","ตลาด / ช้อปปิ้ง":"🛍️",
@@ -80,8 +92,14 @@ export default function EditPlacePage({ params }: Props) {
   const [descShort, setDescShort]       = useState("");
 
   // ── Operating ──
-  const [openHours, setOpenHours]   = useState("");
-  const [closedDays, setClosedDays] = useState("");
+  const [openTime, setOpenTime]       = useState("08:00");
+  const [closeTime, setCloseTime]     = useState("17:00");
+  const [openAll, setOpenAll]         = useState(false);
+  const [closedDaysList, setClosedDaysList] = useState<string[]>([]);
+  const toggleDay = (day: string) =>
+    setClosedDaysList(prev =>
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+    );
   const [entryFee, setEntryFee]     = useState("");
   const [phone, setPhone]           = useState("");
   const handlePhone = (v: string) => setPhone(v.replace(/[^0-9+\-() ]/g, ""));
@@ -107,8 +125,19 @@ export default function EditPlacePage({ params }: Props) {
         setTags(p.tags ?? []);
         setDescription(p.description ?? "");
         setDescShort(p.descriptionShort ?? "");
-        setOpenHours(p.openHours ?? "");
-        setClosedDays(p.closedDays ?? "");
+        // Parse openHours string → openTime/closeTime
+        const oh = p.openHours ?? "";
+        if (oh === "เปิด 24 ชั่วโมง" || oh.toLowerCase().includes("24")) {
+          setOpenAll(true);
+        } else {
+          const m = oh.match(/(\d{1,2}:\d{2})\s*[–-]\s*(\d{1,2}:\d{2})/);
+          if (m) { setOpenTime(m[1]); setCloseTime(m[2]); }
+          else if (oh) setOpenTime(oh);
+        }
+        // Parse closedDays string → closedDaysList array
+        const cd = p.closedDays ?? "";
+        const matched = ["จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์","อาทิตย์"].filter(d => cd.includes(d));
+        setClosedDaysList(matched);
         setEntryFee(p.entryFee ?? "");
         setPhone(p.phone ?? "");
         setWebsite(p.website ?? "");
@@ -182,8 +211,14 @@ export default function EditPlacePage({ params }: Props) {
           gallery,
           description,
           descriptionShort: descShort     || undefined,
-          openHours:        openHours     || undefined,
-          closedDays:       closedDays    || undefined,
+          openHours: openAll
+            ? "เปิด 24 ชั่วโมง"
+            : (openTime && closeTime ? `${openTime} – ${closeTime}` : openTime || undefined),
+          closedDays: closedDaysList.length === 0
+            ? undefined
+            : closedDaysList.length === 7
+              ? "ปิดทุกวัน"
+              : `ปิดทุกวัน${closedDaysList.join(", ")}`,
           entryFee:         entryFee      || undefined,
           phone:            phone         || undefined,
           website:          website       || undefined,
@@ -385,15 +420,120 @@ export default function EditPlacePage({ params }: Props) {
                 <p>ข้อมูลสำคัญที่นักท่องเที่ยวต้องการก่อนเดินทาง</p>
               </div>
             </div>
+            {/* ── Opening Hours ── */}
+            <div style={{
+              background:"#f8fafc", borderRadius:14, padding:"18px 20px",
+              border:"1px solid #e2e8f0", marginBottom:16,
+            }}>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
+                marginBottom:12, flexWrap:"wrap", gap:8 }}>
+                <div>
+                  <div style={{ fontWeight:800, fontSize:14, color:"#0f172a" }}>
+                    🕐 เวลาเปิด-ปิด · Opening Hours
+                  </div>
+                  <div style={{ fontSize:12, color:"#64748b", marginTop:2 }}>เลือกช่วงเวลาที่เปิดให้บริการ</div>
+                </div>
+                <label style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer",
+                  background: openAll ? "#dcfce7" : "#fff",
+                  border: `1.5px solid ${openAll ? "#22c55e" : "#e2e8f0"}`,
+                  borderRadius:10, padding:"6px 12px", transition:"all 0.15s" }}>
+                  <input type="checkbox" checked={openAll} onChange={e => setOpenAll(e.target.checked)}
+                    style={{ accentColor:"#22c55e", width:16, height:16 }} />
+                  <span style={{ fontSize:13, fontWeight:700, color: openAll ? "#16a34a" : "#475569" }}>
+                    เปิดตลอด 24 ชม. · Open 24 hrs
+                  </span>
+                </label>
+              </div>
+              {!openAll && (
+                <div style={{ display:"grid", gridTemplateColumns:"1fr auto 1fr", gap:8, alignItems:"end" }}>
+                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                    <label style={{ fontSize:13, fontWeight:700, color:"#334155" }}>เปิด · Opens</label>
+                    <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+                      <select className="form-control" value={openTime.split(":")[0] || ""}
+                        onChange={e => setOpenTime(`${e.target.value}:${openTime.split(":")[1] || "00"}`)}
+                        style={{ flex:1 }}>
+                        <option value="">ชั่วโมง</option>
+                        {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
+                      </select>
+                      <span style={{ color:"#94a3b8", fontWeight:800, fontSize:18 }}>:</span>
+                      <select className="form-control" value={openTime.split(":")[1] || ""}
+                        onChange={e => setOpenTime(`${openTime.split(":")[0] || "00"}:${e.target.value}`)}
+                        style={{ flex:1 }}>
+                        <option value="">นาที</option>
+                        {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div style={{ paddingBottom:10, color:"#94a3b8", fontWeight:800, fontSize:20, textAlign:"center" }}>—</div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                    <label style={{ fontSize:13, fontWeight:700, color:"#334155" }}>ปิด · Closes</label>
+                    <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+                      <select className="form-control" value={closeTime.split(":")[0] || ""}
+                        onChange={e => setCloseTime(`${e.target.value}:${closeTime.split(":")[1] || "00"}`)}
+                        style={{ flex:1 }}>
+                        <option value="">ชั่วโมง</option>
+                        {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
+                      </select>
+                      <span style={{ color:"#94a3b8", fontWeight:800, fontSize:18 }}>:</span>
+                      <select className="form-control" value={closeTime.split(":")[1] || ""}
+                        onChange={e => setCloseTime(`${closeTime.split(":")[0] || "00"}:${e.target.value}`)}
+                        style={{ flex:1 }}>
+                        <option value="">นาที</option>
+                        {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div style={{ marginTop:12, padding:"8px 12px", background:"#eff6ff",
+                borderRadius:8, fontSize:13, color:"#1d4ed8", fontWeight:600 }}>
+                🕐 {openAll ? "เปิด 24 ชั่วโมง · Open 24 hours"
+                           : (openTime && closeTime ? `${openTime} – ${closeTime} น.` : "ยังไม่ได้ระบุเวลา")}
+              </div>
+            </div>
+
+            {/* ── Closed Days ── */}
+            <div style={{
+              background:"#f8fafc", borderRadius:14, padding:"18px 20px",
+              border:"1px solid #e2e8f0", marginBottom:16,
+            }}>
+              <div style={{ marginBottom:14 }}>
+                <div style={{ fontWeight:800, fontSize:14, color:"#0f172a" }}>
+                  📅 วันหยุด / วันปิดทำการ · Closed Days
+                </div>
+                <div style={{ fontSize:12, color:"#64748b", marginTop:2 }}>
+                  เลือกวันที่ปิดให้บริการ · Select days when closed
+                </div>
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:6 }}>
+                {DAYS.map(day => {
+                  const active = closedDaysList.includes(day.th);
+                  return (
+                    <button key={day.th} type="button" onClick={() => toggleDay(day.th)} style={{
+                      padding:"10px 4px", borderRadius:10,
+                      border: `2px solid ${active ? "#ef4444" : "#e2e8f0"}`,
+                      background: active ? "#fef2f2" : "#fff",
+                      cursor:"pointer", transition:"all 0.15s",
+                      display:"flex", flexDirection:"column", alignItems:"center", gap:3,
+                    }}>
+                      <span style={{ fontSize:11, fontWeight:800, color: active ? "#ef4444" : "#64748b" }}>{day.en}</span>
+                      <span style={{ fontSize:11, color: active ? "#ef4444" : "#94a3b8" }}>{day.th}</span>
+                      {active && <span style={{ fontSize:14 }}>✕</span>}
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ marginTop:12, padding:"8px 12px", background:"#fff7ed",
+                borderRadius:8, fontSize:13, fontWeight:600 }}>
+                {closedDaysList.length === 0
+                  ? <span style={{ color:"#16a34a" }}>✅ เปิดทุกวัน · Open every day</span>
+                  : closedDaysList.length === 7
+                    ? <span style={{ color:"#ef4444" }}>❌ ปิดทุกวัน</span>
+                    : <span style={{ color:"#b45309" }}>🚫 ปิดทุกวัน{closedDaysList.join(", ")}</span>}
+              </div>
+            </div>
+
             <div className="form-grid two-col">
-              <div className="field">
-                <label>เวลาเปิด–ปิด</label>
-                <input className="form-control" type="text" value={openHours} onChange={e => setOpenHours(e.target.value)} placeholder="เช่น 08:00 – 17:00" />
-              </div>
-              <div className="field">
-                <label>วันหยุด / วันปิดทำการ</label>
-                <input className="form-control" type="text" value={closedDays} onChange={e => setClosedDays(e.target.value)} placeholder="เช่น ปิดวันจันทร์, เปิดทุกวัน" />
-              </div>
               <div className="field">
                 <label>ค่าเข้าชม</label>
                 <input className="form-control" type="text" value={entryFee} onChange={e => setEntryFee(e.target.value)} placeholder="เช่น ฟรี หรือ 50 ฿/คน" />

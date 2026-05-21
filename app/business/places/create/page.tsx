@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -25,6 +25,20 @@ const CATEGORY_ICON: Record<string, string> = {
   "วัด / ศาสนสถาน":"🛕","ชายหาด":"🏖️","ตลาด / ช้อปปิ้ง":"🛍️",
   "กีฬา / ผจญภัย":"🧗","พิพิธภัณฑ์ / ประวัติศาสตร์":"🏛️",
 };
+
+const DAYS = [
+  { th: "จันทร์",    en: "Mon" },
+  { th: "อังคาร",   en: "Tue" },
+  { th: "พุธ",      en: "Wed" },
+  { th: "พฤหัสบดี", en: "Thu" },
+  { th: "ศุกร์",    en: "Fri" },
+  { th: "เสาร์",    en: "Sat" },
+  { th: "อาทิตย์",  en: "Sun" },
+];
+
+const HOURS   = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+const MINUTES = ["00", "15", "30", "45"];
+
 const MAX_PHOTOS = 20;
 
 async function uploadImage(file: File, folder = "places"): Promise<string> {
@@ -37,44 +51,87 @@ async function uploadImage(file: File, folder = "places"): Promise<string> {
   return data.url as string;
 }
 
+/* ── Time picker sub-component ── */
+function TimePicker({
+  label, value, onChange,
+}: { label: string; value: string; onChange: (v: string) => void }) {
+  const [h, m] = value ? value.split(":") : ["", ""];
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <label style={{ fontSize: 13, fontWeight: 700, color: "#334155" }}>{label}</label>
+      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+        <select
+          className="ui-input"
+          value={h}
+          onChange={e => onChange(`${e.target.value}:${m || "00"}`)}
+          style={{ flex: 1, minWidth: 0 }}
+        >
+          <option value="">ชั่วโมง</option>
+          {HOURS.map(hh => <option key={hh} value={hh}>{hh}</option>)}
+        </select>
+        <span style={{ color: "#94a3b8", fontWeight: 800, fontSize: 18 }}>:</span>
+        <select
+          className="ui-input"
+          value={m}
+          onChange={e => onChange(`${h || "00"}:${e.target.value}`)}
+          style={{ flex: 1, minWidth: 0 }}
+        >
+          <option value="">นาที</option>
+          {MINUTES.map(mm => <option key={mm} value={mm}>{mm}</option>)}
+        </select>
+      </div>
+    </div>
+  );
+}
+
 export default function CreatePlacePage() {
   const router = useRouter();
   const { user } = useAuth();
 
   // cover
-  const [coverFile, setCoverFile]     = useState<File | null>(null);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [coverFile, setCoverFile]         = useState<File | null>(null);
+  const [coverPreview, setCoverPreview]   = useState<string | null>(null);
 
   // gallery
-  const [galleryFiles, setGalleryFiles]     = useState<File[]>([]);
+  const [galleryFiles, setGalleryFiles]       = useState<File[]>([]);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
 
   // basic info
-  const [title, setTitle]             = useState("");
-  const [titleEn, setTitleEn]         = useState("");
-  const [category, setCategory]       = useState<PlaceCategory>("ธรรมชาติ");
-  const [province, setProvince]       = useState("");
-  const [district, setDistrict]       = useState("");
-  const [address, setAddress]         = useState("");
-  const [googleMaps, setGoogleMaps]   = useState("");
+  const [title, setTitle]       = useState("");
+  const [titleEn, setTitleEn]   = useState("");
+  const [category, setCategory] = useState<PlaceCategory>("ธรรมชาติ");
+  const [province, setProvince] = useState("");
+  const [district, setDistrict] = useState("");
+  const [address, setAddress]   = useState("");
+  const [googleMaps, setGoogleMaps] = useState("");
 
   // description
-  const [description, setDescription]     = useState("");
-  const [descShort, setDescShort]         = useState("");
-  const [tagInput, setTagInput]           = useState("");
-  const [tags, setTags]                   = useState<string[]>([]);
+  const [description, setDescription] = useState("");
+  const [descShort, setDescShort]     = useState("");
+  const [tagInput, setTagInput]       = useState("");
+  const [tags, setTags]               = useState<string[]>([]);
 
-  // operating
-  const [openHours, setOpenHours]     = useState("");
-  const [closedDays, setClosedDays]   = useState("");
-  const [entryFee, setEntryFee]       = useState("");
-  const [phone, setPhone]             = useState("");
+  // operating hours — two separate time pickers
+  const [openTime, setOpenTime]   = useState("08:00");
+  const [closeTime, setCloseTime] = useState("17:00");
+  const [openAll, setOpenAll]     = useState(false);   // ตลอด 24 ชั่วโมง
+
+  // closed days — checkbox array
+  const [closedDaysList, setClosedDaysList] = useState<string[]>([]);
+  const toggleDay = (day: string) =>
+    setClosedDaysList(prev =>
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+    );
+
+  // contact
+  const [entryFee, setEntryFee] = useState("");
+  const [phone, setPhone]       = useState("");
   const handlePhone = (v: string) => setPhone(v.replace(/[^0-9+\-() ]/g, ""));
-  const [website, setWebsite]         = useState("");
-  const [lineId, setLineId]           = useState("");
+  const [website, setWebsite]   = useState("");
+  const [lineId, setLineId]     = useState("");
 
-  const [isLoading, setIsLoading]     = useState(false);
-  const [apiError, setApiError]       = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError]   = useState("");
 
   const districts = getDistricts(province);
 
@@ -112,7 +169,6 @@ export default function CreatePlacePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // ตรวจสอบสิทธิ์ก่อน
     if (!user || user.role !== "BUSINESS") {
       setApiError("เฉพาะเจ้าของธุรกิจเท่านั้น กรุณาเข้าสู่ระบบด้วยบัญชีเจ้าของสถานที่");
       return;
@@ -129,40 +185,46 @@ export default function CreatePlacePage() {
     setApiError("");
     setIsLoading(true);
 
-    try {
-      // 1) upload cover
-      const coverUrl = await uploadImage(coverFile);
+    // Build openHours string
+    const openHoursStr = openAll
+      ? "เปิด 24 ชั่วโมง"
+      : (openTime && closeTime ? `${openTime} – ${closeTime}` : openTime || closeTime || undefined);
 
-      // 2) upload gallery
+    // Build closedDays string
+    const closedDaysStr = closedDaysList.length === 0
+      ? undefined
+      : closedDaysList.length === 7
+        ? "ปิดทุกวัน"
+        : `ปิดทุกวัน${closedDaysList.join(", ")}`;
+
+    try {
+      const coverUrl    = await uploadImage(coverFile);
       const galleryUrls = await Promise.all(galleryFiles.map(f => uploadImage(f)));
 
-      // 3) POST to API
       const res = await fetch("/api/places", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title, titleEn: titleEn || undefined,
+          title,
+          titleEn:          titleEn     || undefined,
           province, district,
-          address:          address       || undefined,
-          googleMapsUrl:    googleMaps    || undefined,
-          category,
-          tags,
-          coverUrl,
-          gallery:          galleryUrls,
+          address:          address     || undefined,
+          googleMapsUrl:    googleMaps  || undefined,
+          category, tags,
+          coverUrl, gallery: galleryUrls,
           description,
-          descriptionShort: descShort     || undefined,
-          openHours:        openHours     || undefined,
-          closedDays:       closedDays    || undefined,
-          entryFee:         entryFee      || undefined,
-          phone:            phone         || undefined,
-          website:          website       || undefined,
-          lineId:           lineId        || undefined,
+          descriptionShort: descShort   || undefined,
+          openHours:        openHoursStr,
+          closedDays:       closedDaysStr,
+          entryFee:         entryFee    || undefined,
+          phone:            phone       || undefined,
+          website:          website     || undefined,
+          lineId:           lineId      || undefined,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) { setApiError(data.message || "เกิดข้อผิดพลาด"); setIsLoading(false); return; }
-
       router.push("/business/dashboard");
     } catch (err: any) {
       setApiError(err.message || "ไม่สามารถเชื่อมต่อระบบได้ กรุณาลองใหม่");
@@ -170,7 +232,7 @@ export default function CreatePlacePage() {
     }
   };
 
-  const usedPct = Math.round((galleryFiles.length / MAX_PHOTOS) * 100);
+  const usedPct    = Math.round((galleryFiles.length / MAX_PHOTOS) * 100);
   const countState = galleryFiles.length >= MAX_PHOTOS ? "full" : galleryFiles.length >= 15 ? "warn" : "ok";
 
   return (
@@ -182,28 +244,28 @@ export default function CreatePlacePage() {
           <PageTag label="CREATE PLACE" />
         </div>
 
-        <div style={{ marginBottom: "28px" }}>
-          <h1 style={{ fontSize: "32px", fontWeight: 900, color: "var(--pl-text-primary)", marginBottom: "6px" }}>
+        <div style={{ marginBottom: 28 }}>
+          <h1 style={{ fontSize: 32, fontWeight: 900, color: "var(--pl-text-primary)", marginBottom: 6 }}>
             เพิ่มสถานที่ใหม่
-            <span style={{ fontSize: "12px", fontWeight: 700, background: "var(--pl-blue-soft)",
-              color: "var(--pl-blue-dark)", padding: "3px 10px", borderRadius: "6px",
-              marginLeft: "12px", verticalAlign: "middle" }}>Create New Place</span>
+            <span style={{ fontSize: 12, fontWeight: 700, background: "var(--pl-blue-soft)",
+              color: "var(--pl-blue-dark)", padding: "3px 10px", borderRadius: 6,
+              marginLeft: 12, verticalAlign: "middle" }}>Create New Place</span>
           </h1>
-          <p style={{ color: "var(--pl-text-secondary)", fontSize: "15px", margin: 0 }}>
+          <p style={{ color: "var(--pl-text-secondary)", fontSize: 15, margin: 0 }}>
             เพิ่มสถานที่ท่องเที่ยวใหม่เข้าสู่ระบบ · Add a new destination for travelers
           </p>
         </div>
 
         {apiError && (
-          <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "12px",
-            padding: "12px 16px", marginBottom: "20px", color: "#b91c1c", fontSize: "14px" }}>
+          <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 12,
+            padding: "12px 16px", marginBottom: 20, color: "#b91c1c", fontSize: 14 }}>
             ⚠️ {apiError}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
 
-          {/* COVER */}
+          {/* ── COVER ── */}
           <div className="ui-section-card">
             <div className="ui-section-hdr">
               <div>
@@ -213,39 +275,41 @@ export default function CreatePlacePage() {
             </div>
             <label className="cp-cover-upload">
               <input type="file" hidden accept="image/*" onChange={handleCoverUpload} />
-              {coverPreview ? (
-                <img src={coverPreview} alt="cover" className="cp-cover-img" />
-              ) : (
-                <div className="cp-cover-placeholder">
-                  <span className="cp-cover-icon">🖼️</span>
-                  <h3>คลิกเพื่ออัปโหลดรูปปก</h3>
-                  <p>PNG, JPG ขนาดไม่เกิน 5MB · Click to upload cover image</p>
-                </div>
-              )}
+              {coverPreview
+                ? <img src={coverPreview} alt="cover" className="cp-cover-img" />
+                : (
+                  <div className="cp-cover-placeholder">
+                    <span className="cp-cover-icon">🖼️</span>
+                    <h3>คลิกเพื่ออัปโหลดรูปปก · Click to upload cover</h3>
+                    <p>PNG, JPG ขนาดไม่เกิน 5MB</p>
+                  </div>
+                )}
               <div className="cp-cover-overlay"><span>เปลี่ยนรูปปก · Change cover</span></div>
             </label>
           </div>
 
-          {/* BASIC INFO */}
+          {/* ── BASIC INFO ── */}
           <div className="ui-section-card">
             <div className="ui-section-hdr">
               <div>
-                <h2>ข้อมูลพื้นฐาน <span className="ui-en-tag">Basic Info</span></h2>
-                <p>ชื่อ ประเภท สถานที่ · Name and category</p>
+                <h2>ข้อมูลพื้นฐาน <span className="ui-en-tag">Basic Information</span></h2>
+                <p>ชื่อและประเภทสถานที่ · Place name &amp; category</p>
               </div>
             </div>
             <div className="ui-form-grid two-col">
               <div className="ui-field">
                 <label>ชื่อสถานที่ (ภาษาไทย) <span style={{color:"red"}}>*</span></label>
-                <input className="ui-input" type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="เช่น น้ำตกเอราวัณ" required />
+                <input className="ui-input" type="text" value={title} onChange={e => setTitle(e.target.value)}
+                  placeholder="เช่น น้ำตกเอราวัณ" required />
               </div>
               <div className="ui-field">
-                <label>ชื่อภาษาอังกฤษ <span className="ui-hint">English name</span></label>
-                <input className="ui-input" type="text" value={titleEn} onChange={e => setTitleEn(e.target.value)} placeholder="e.g. Erawan Waterfall" />
+                <label>ชื่อภาษาอังกฤษ <span className="ui-hint">English Name</span></label>
+                <input className="ui-input" type="text" value={titleEn} onChange={e => setTitleEn(e.target.value)}
+                  placeholder="e.g. Erawan Waterfall" />
               </div>
             </div>
-            <div className="ui-field" style={{marginTop:"16px"}}>
-              <label>ประเภทสถานที่ <span style={{color:"red"}}>*</span></label>
+            <div className="ui-field" style={{marginTop:16}}>
+              <label>ประเภทสถานที่ · Category <span style={{color:"red"}}>*</span></label>
               <div className="cat-grid">
                 {CATEGORIES.map(c => (
                   <button key={c} type="button"
@@ -258,83 +322,89 @@ export default function CreatePlacePage() {
             </div>
           </div>
 
-          {/* LOCATION */}
+          {/* ── LOCATION ── */}
           <div className="ui-section-card">
             <div className="ui-section-hdr">
               <div>
-                <h2>ที่ตั้งสถานที่ <span className="ui-en-tag">Location</span></h2>
-                <p>ข้อมูลนี้ใช้สำหรับการค้นหาตามจังหวัดและอำเภอ</p>
+                <h2>ที่ตั้งสถานที่ <span className="ui-en-tag">Location &amp; Address</span></h2>
+                <p>ใช้สำหรับการค้นหาตามจังหวัดและอำเภอ · Used for province &amp; district search</p>
               </div>
             </div>
             <div className="ui-form-grid two-col">
               <div className="ui-field">
-                <label>จังหวัด <span style={{color:"red"}}>*</span></label>
+                <label>จังหวัด · Province <span style={{color:"red"}}>*</span></label>
                 <select className="ui-input" value={province} onChange={e => handleProvinceChange(e.target.value)} required>
-                  <option value="">— เลือกจังหวัด —</option>
+                  <option value="">— เลือกจังหวัด / Select Province —</option>
                   {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
               </div>
               <div className="ui-field">
-                <label>อำเภอ / เขต <span style={{color:"red"}}>*</span></label>
-                <select className="ui-input" value={district} onChange={e => setDistrict(e.target.value)} disabled={!province} required>
-                  <option value="">— เลือกอำเภอ —</option>
+                <label>อำเภอ / เขต · District <span style={{color:"red"}}>*</span></label>
+                <select className="ui-input" value={district} onChange={e => setDistrict(e.target.value)}
+                  disabled={!province} required>
+                  <option value="">— เลือกอำเภอ / Select District —</option>
                   {districts.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
-                {!province && <span className="ui-hint" style={{fontSize:"12px",color:"#94a3b8"}}>เลือกจังหวัดก่อน</span>}
+                {!province && <span className="ui-hint" style={{fontSize:12,color:"#94a3b8"}}>เลือกจังหวัดก่อน</span>}
               </div>
             </div>
-            <div className="ui-field" style={{marginTop:"16px"}}>
-              <label>ที่อยู่เพิ่มเติม <span className="ui-hint">รายละเอียดที่อยู่</span></label>
-              <input className="ui-input" type="text" value={address} onChange={e => setAddress(e.target.value)} placeholder="เช่น 123 ถ.เพชรเกษม ต.ท่ากระดาน" />
+            <div className="ui-field" style={{marginTop:16}}>
+              <label>ที่อยู่เพิ่มเติม · Full Address</label>
+              <input className="ui-input" type="text" value={address} onChange={e => setAddress(e.target.value)}
+                placeholder="เช่น 123 ถ.เพชรเกษม ต.ท่ากระดาน" />
             </div>
-            <div className="ui-field" style={{marginTop:"16px"}}>
+            <div className="ui-field" style={{marginTop:16}}>
               <label>Google Maps URL</label>
-              <input className="ui-input" type="url" value={googleMaps} onChange={e => setGoogleMaps(e.target.value)} placeholder="https://maps.google.com/?q=..." />
+              <input className="ui-input" type="url" value={googleMaps} onChange={e => setGoogleMaps(e.target.value)}
+                placeholder="https://maps.google.com/?q=..." />
               {googleMaps && (
-                <a href={googleMaps} target="_blank" rel="noreferrer" style={{color:"#3b82f6",fontSize:"13px",marginTop:"6px",display:"block"}}>
+                <a href={googleMaps} target="_blank" rel="noreferrer"
+                  style={{color:"#3b82f6",fontSize:13,marginTop:6,display:"block"}}>
                   🗺️ ดูบน Google Maps
                 </a>
               )}
             </div>
           </div>
 
-          {/* DESCRIPTION */}
+          {/* ── DESCRIPTION ── */}
           <div className="ui-section-card">
             <div className="ui-section-hdr">
               <div>
-                <h2>คำอธิบายสถานที่ <span className="ui-en-tag">Description</span></h2>
-                <p>อธิบายให้นักท่องเที่ยวเข้าใจและสนใจมาเที่ยว</p>
+                <h2>คำอธิบายสถานที่ <span className="ui-en-tag">Description &amp; Tags</span></h2>
+                <p>อธิบายให้นักท่องเที่ยวเข้าใจและสนใจมาเที่ยว · Help travelers understand your place</p>
               </div>
             </div>
             <div className="ui-field">
-              <label>คำอธิบายสั้น <span className="ui-hint">แสดงในการ์ดค้นหา ไม่เกิน 80 ตัวอักษร</span></label>
+              <label>คำอธิบายสั้น · Short Description <span className="ui-hint">แสดงในการ์ดค้นหา ไม่เกิน 80 ตัวอักษร</span></label>
               <input className="ui-input" type="text" value={descShort} onChange={e => setDescShort(e.target.value)}
                 placeholder="เช่น น้ำตก 7 ชั้น น้ำสีมรกต ในอุทยานแห่งชาติ" maxLength={80} />
-              <span style={{fontSize:"12px",color:"#94a3b8"}}>{descShort.length}/80</span>
+              <span style={{fontSize:12,color:"#94a3b8"}}>{descShort.length}/80</span>
             </div>
-            <div className="ui-field" style={{marginTop:"16px"}}>
-              <label>คำอธิบายเต็ม <span style={{color:"red"}}>*</span> <span className="ui-hint">แสดงในหน้ารายละเอียด</span></label>
+            <div className="ui-field" style={{marginTop:16}}>
+              <label>คำอธิบายเต็ม · Full Description <span style={{color:"red"}}>*</span></label>
               <textarea className="ui-input textarea" value={description} onChange={e => setDescription(e.target.value)}
                 placeholder="อธิบายรายละเอียด บรรยากาศ จุดเด่น และเคล็ดลับการเที่ยวชม..." rows={5} required />
             </div>
-            <div className="ui-field" style={{marginTop:"16px"}}>
-              <label>แท็ก <span className="ui-hint">ช่วยให้ค้นหาเจอง่ายขึ้น</span></label>
-              <div style={{display:"flex",gap:"8px"}}>
+            <div className="ui-field" style={{marginTop:16}}>
+              <label>แท็ก · Tags <span className="ui-hint">ช่วยให้ค้นหาเจอง่ายขึ้น · Helps with search</span></label>
+              <div style={{display:"flex",gap:8}}>
                 <input className="ui-input" type="text" value={tagInput} onChange={e => setTagInput(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addTag())}
                   placeholder="พิมพ์แท็กแล้วกด Enter หรือปุ่ม +" style={{flex:1}} />
                 <button type="button" onClick={addTag}
-                  style={{padding:"10px 16px",borderRadius:"10px",border:"1px solid #e2e8f0",background:"#f8fafc",cursor:"pointer",fontWeight:700,whiteSpace:"nowrap"}}>
+                  style={{padding:"10px 16px",borderRadius:10,border:"1px solid #e2e8f0",
+                    background:"#f8fafc",cursor:"pointer",fontWeight:700,whiteSpace:"nowrap"}}>
                   + เพิ่ม
                 </button>
               </div>
               {tags.length > 0 && (
-                <div style={{display:"flex",flexWrap:"wrap",gap:"8px",marginTop:"10px"}}>
+                <div style={{display:"flex",flexWrap:"wrap",gap:8,marginTop:10}}>
                   {tags.map(t => (
-                    <span key={t} style={{background:"#eff6ff",color:"#3b82f6",padding:"4px 12px",borderRadius:"999px",fontSize:"13px",fontWeight:600,display:"flex",alignItems:"center",gap:"6px"}}>
+                    <span key={t} style={{background:"#eff6ff",color:"#3b82f6",padding:"4px 12px",
+                      borderRadius:999,fontSize:13,fontWeight:600,display:"flex",alignItems:"center",gap:6}}>
                       {t}
                       <button type="button" onClick={() => setTags(prev => prev.filter(x => x !== t))}
-                        style={{background:"none",border:"none",cursor:"pointer",color:"#94a3b8",fontSize:"14px",lineHeight:1,padding:0}}>✕</button>
+                        style={{background:"none",border:"none",cursor:"pointer",color:"#94a3b8",fontSize:14,lineHeight:1,padding:0}}>✕</button>
                     </span>
                   ))}
                 </div>
@@ -342,57 +412,153 @@ export default function CreatePlacePage() {
             </div>
           </div>
 
-          {/* OPERATING */}
+          {/* ── OPERATING HOURS & CONTACT ── */}
           <div className="ui-section-card">
             <div className="ui-section-hdr">
               <div>
-                <h2>ข้อมูลการเปิด-ปิด และติดต่อ <span className="ui-en-tag">Contact & Hours</span></h2>
-                <p>ข้อมูลสำคัญที่นักท่องเที่ยวต้องการก่อนเดินทาง</p>
+                <h2>เวลาทำการและการติดต่อ <span className="ui-en-tag">Hours &amp; Contact</span></h2>
+                <p>ข้อมูลสำคัญที่นักท่องเที่ยวต้องการก่อนเดินทาง · Key info travelers need before visiting</p>
               </div>
             </div>
+
+            {/* ── Opening Hours ── */}
+            <div style={{
+              background: "#f8fafc", borderRadius: 14, padding: "18px 20px",
+              border: "1px solid #e2e8f0", marginBottom: 20,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+                marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: 14, color: "#0f172a" }}>
+                    🕐 เวลาเปิด-ปิด · Opening Hours
+                  </div>
+                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
+                    เลือกช่วงเวลาที่เปิดให้บริการ
+                  </div>
+                </div>
+                {/* 24hr toggle */}
+                <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
+                  background: openAll ? "#dcfce7" : "#fff", border: `1.5px solid ${openAll ? "#22c55e" : "#e2e8f0"}`,
+                  borderRadius: 10, padding: "6px 12px", transition: "all 0.15s" }}>
+                  <input type="checkbox" checked={openAll} onChange={e => setOpenAll(e.target.checked)}
+                    style={{ accentColor: "#22c55e", width: 16, height: 16 }} />
+                  <span style={{ fontSize: 13, fontWeight: 700, color: openAll ? "#16a34a" : "#475569" }}>
+                    เปิดตลอด 24 ชม. · Open 24 hrs
+                  </span>
+                </label>
+              </div>
+
+              {!openAll && (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 8, alignItems: "end" }}>
+                  <TimePicker label="เปิด · Opens" value={openTime} onChange={setOpenTime} />
+                  <div style={{ paddingBottom: 10, color: "#94a3b8", fontWeight: 800, fontSize: 20, textAlign: "center" }}>—</div>
+                  <TimePicker label="ปิด · Closes" value={closeTime} onChange={setCloseTime} />
+                </div>
+              )}
+
+              {/* Preview */}
+              <div style={{ marginTop: 12, padding: "8px 12px", background: "#eff6ff",
+                borderRadius: 8, fontSize: 13, color: "#1d4ed8", fontWeight: 600 }}>
+                🕐 {openAll ? "เปิด 24 ชั่วโมง · Open 24 hours"
+                           : (openTime && closeTime
+                               ? `${openTime} – ${closeTime} น.`
+                               : "ยังไม่ได้ระบุเวลา")}
+              </div>
+            </div>
+
+            {/* ── Closed Days ── */}
+            <div style={{
+              background: "#f8fafc", borderRadius: 14, padding: "18px 20px",
+              border: "1px solid #e2e8f0", marginBottom: 20,
+            }}>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontWeight: 800, fontSize: 14, color: "#0f172a" }}>
+                  📅 วันหยุด / วันปิดทำการ · Closed Days
+                </div>
+                <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
+                  เลือกวันที่ปิดให้บริการ · Select days when your place is closed
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
+                {DAYS.map(day => {
+                  const active = closedDaysList.includes(day.th);
+                  return (
+                    <button
+                      key={day.th}
+                      type="button"
+                      onClick={() => toggleDay(day.th)}
+                      style={{
+                        padding: "10px 4px",
+                        borderRadius: 10,
+                        border: `2px solid ${active ? "#ef4444" : "#e2e8f0"}`,
+                        background: active ? "#fef2f2" : "#fff",
+                        cursor: "pointer",
+                        transition: "all 0.15s",
+                        display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
+                      }}
+                    >
+                      <span style={{ fontSize: 11, fontWeight: 800,
+                        color: active ? "#ef4444" : "#64748b" }}>{day.en}</span>
+                      <span style={{ fontSize: 11, color: active ? "#ef4444" : "#94a3b8" }}>{day.th}</span>
+                      {active && <span style={{ fontSize: 14 }}>✕</span>}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div style={{ marginTop: 12, padding: "8px 12px", background: "#fff7ed",
+                borderRadius: 8, fontSize: 13, fontWeight: 600 }}>
+                {closedDaysList.length === 0
+                  ? <span style={{ color: "#16a34a" }}>✅ เปิดทุกวัน · Open every day</span>
+                  : closedDaysList.length === 7
+                    ? <span style={{ color: "#ef4444" }}>❌ ปิดทุกวัน</span>
+                    : <span style={{ color: "#b45309" }}>
+                        🚫 ปิดทุกวัน{closedDaysList.join(", ")}
+                      </span>}
+              </div>
+            </div>
+
+            {/* ── Other contact info ── */}
             <div className="ui-form-grid two-col">
               <div className="ui-field">
-                <label>เวลาเปิด–ปิด</label>
-                <input className="ui-input" type="text" value={openHours} onChange={e => setOpenHours(e.target.value)} placeholder="เช่น 08:00 – 17:00" />
+                <label>ค่าเข้าชม · Entry Fee</label>
+                <input className="ui-input" type="text" value={entryFee} onChange={e => setEntryFee(e.target.value)}
+                  placeholder="เช่น ฟรี / 50 ฿/คน / Free" />
               </div>
               <div className="ui-field">
-                <label>วันหยุด / วันปิดทำการ</label>
-                <input className="ui-input" type="text" value={closedDays} onChange={e => setClosedDays(e.target.value)} placeholder="เช่น ปิดวันจันทร์" />
-              </div>
-              <div className="ui-field">
-                <label>ค่าเข้าชม</label>
-                <input className="ui-input" type="text" value={entryFee} onChange={e => setEntryFee(e.target.value)} placeholder="เช่น ฟรี หรือ 50 ฿/คน" />
-              </div>
-              <div className="ui-field">
-                <label>เบอร์โทรศัพท์</label>
+                <label>เบอร์โทรศัพท์ · Phone Number</label>
                 <input className="ui-input" type="tel" inputMode="numeric" value={phone}
                   onChange={e => handlePhone(e.target.value)} placeholder="เช่น 034-574222"
                   pattern="[0-9+\-() ]*" />
               </div>
               <div className="ui-field">
-                <label>เว็บไซต์</label>
-                <input className="ui-input" type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://..." />
+                <label>เว็บไซต์ · Website</label>
+                <input className="ui-input" type="url" value={website} onChange={e => setWebsite(e.target.value)}
+                  placeholder="https://..." />
               </div>
               <div className="ui-field">
                 <label>Line ID</label>
-                <input className="ui-input" type="text" value={lineId} onChange={e => setLineId(e.target.value)} placeholder="@yourlineid" />
+                <input className="ui-input" type="text" value={lineId} onChange={e => setLineId(e.target.value)}
+                  placeholder="@yourlineid" />
               </div>
             </div>
           </div>
 
-          {/* GALLERY */}
+          {/* ── GALLERY ── */}
           <div className="ui-section-card">
             <div className="ui-section-hdr">
               <div>
-                <h2>รูปภาพเพิ่มเติม <span className="ui-en-tag">Gallery</span></h2>
-                <p>เพิ่มรูปภาพได้สูงสุด {MAX_PHOTOS} รูป</p>
+                <h2>รูปภาพเพิ่มเติม <span className="ui-en-tag">Photo Gallery</span></h2>
+                <p>เพิ่มรูปภาพได้สูงสุด {MAX_PHOTOS} รูป · Up to {MAX_PHOTOS} photos</p>
               </div>
             </div>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
               <span className={`count-pill ${countState}`}>{galleryFiles.length} / {MAX_PHOTOS}</span>
               <label className={`add-photo-btn ${galleryFiles.length >= MAX_PHOTOS ? "disabled" : ""}`}>
-                + เพิ่มรูป
-                <input type="file" hidden multiple accept="image/*" onChange={handleGalleryUpload} disabled={galleryFiles.length >= MAX_PHOTOS} />
+                + เพิ่มรูป · Add Photos
+                <input type="file" hidden multiple accept="image/*" onChange={handleGalleryUpload}
+                  disabled={galleryFiles.length >= MAX_PHOTOS} />
               </label>
             </div>
             {galleryPreviews.length === 0
@@ -430,7 +596,7 @@ export default function CreatePlacePage() {
         .cp-cover-img { width: 100%; height: 100%; object-fit: cover; }
         .cp-cover-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px; color: #64748b; }
         .cp-cover-icon { font-size: 56px; }
-        .cp-cover-placeholder h3 { font-size: 18px; font-weight: 800; color: #334155; margin: 0; }
+        .cp-cover-placeholder h3 { font-size: 16px; font-weight: 800; color: #334155; margin: 0; text-align: center; padding: 0 20px; }
         .cp-cover-placeholder p { font-size: 13px; color: #94a3b8; margin: 0; }
         .cp-cover-overlay { position: absolute; inset: 0; background: rgba(15,23,42,0.45); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.2s; }
         .cp-cover-upload:hover .cp-cover-overlay { opacity: 1; }
