@@ -122,6 +122,7 @@ function ReportModal({ targetId, targetType, onClose }: { targetId: string; targ
 export default function TripComments({ reviews, avgRating, tripId, currentUserId, tripAuthorId }: Props) {
   const { user } = useAuth();
   const isBusiness = user?.role === "BUSINESS";
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
   const meId = currentUserId ?? user?.id ?? null;
   const isOwner = meId != null && meId === tripAuthorId;
 
@@ -221,7 +222,7 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
     count: localReviews.filter(r => r.rating === star).length,
   }));
 
-  const canInteract = !!user && !isBusiness;
+  const canInteract = !!user && !isBusiness && !isAdmin;
 
   return (
     <div>
@@ -254,6 +255,11 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
       </div>
 
       {/* Business block */}
+      {isAdmin && (
+        <div style={{ textAlign:"center", color:"#64748b", fontSize:13, padding:"12px 0" }}>
+          🛡️ แอดมินไม่สามารถให้คะแนนหรือรีวิวเนื้อหาได้
+        </div>
+      )}
       {isBusiness && (
         <div style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "14px 18px", marginBottom: 24, color: "#64748b", fontSize: 13 }}>
           🏢 บัญชีธุรกิจไม่สามารถรีวิวทริปได้ · Business accounts cannot review trips

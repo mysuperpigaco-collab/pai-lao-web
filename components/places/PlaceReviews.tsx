@@ -117,6 +117,7 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
   const [reportTarget, setReportTarget] = useState<{ id: string; type: string } | null>(null);
 
   const isBusiness = user?.role === "BUSINESS";
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
   const isOwner = isBusiness && (user?.id === businessOwnerId);
 
   // Check if already reviewed
@@ -124,7 +125,7 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
   const myExistingReview = reviews.find(r => r.author.id === meId) ?? null;
   const [alreadyRated, setAlreadyRated] = useState(!!myExistingReview);
 
-  const canInteract = !!user && !isBusiness;
+  const canInteract = !!user && !isBusiness && !isAdmin;
 
   const currentAvg = reviews.length
     ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
@@ -229,6 +230,11 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
       )}
 
       {/* ── Notices ── */}
+      {isAdmin && (
+        <div style={{ textAlign:"center", color:"#64748b", fontSize:13, padding:"12px 0" }}>
+          🛡️ แอดมินไม่สามารถให้คะแนนหรือรีวิวเนื้อหาได้
+        </div>
+      )}
       {isBusiness && !isOwner && (
         <div className="pr-notice">🏢 บัญชีธุรกิจไม่สามารถรีวิวสถานที่ได้ · Business accounts cannot leave reviews</div>
       )}

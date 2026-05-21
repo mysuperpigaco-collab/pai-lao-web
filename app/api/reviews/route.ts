@@ -8,6 +8,11 @@ export async function POST(request: Request) {
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 
+    // เช็ค role — แอดมินห้ามรีวิว
+    if (session.role === "ADMIN" || session.role === "SUPERADMIN") {
+      return NextResponse.json({ message: "แอดมินไม่สามารถให้คะแนนหรือรีวิวเนื้อหาได้" }, { status: 403 });
+    }
+
     // เช็ค ban
     const userCheck = await prisma.user.findUnique({ where: { id: session.userId }, select: { postBannedUntil: true, bannedUntil: true } });
     const now = new Date();
