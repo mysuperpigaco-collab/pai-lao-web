@@ -10,7 +10,7 @@ type AuthUser = {
   lastName: string;
   displayName?: string;
   avatarUrl?: string | null;
-  role: "TRAVELER" | "BUSINESS" | "ADMIN";
+  role: "TRAVELER" | "BUSINESS" | "ADMIN" | "SUPERADMIN";
   business?: {
     id: string;
     businessName: string;
