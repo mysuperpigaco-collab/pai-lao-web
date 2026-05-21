@@ -103,7 +103,8 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title, subtitle, description, coverUrl, gallery, mood, budget, location, tags, timeline, youtubeUrl, tiktokUrl } = body;
+    const { title, subtitle, description, coverUrl, gallery, mood, budget, location, tags, timeline,
+            youtubeUrl, tiktokUrl, durationDays, tripStyle, transportMode } = body;
 
     if (!title || !description || !coverUrl) {
       return NextResponse.json({ message: "กรุณากรอก ชื่อ คำอธิบาย และรูปปก" }, { status: 400 });
@@ -123,8 +124,11 @@ export async function POST(request: Request) {
         budget:      budget      ? Number(budget) : null,
         location:    location    ?? "",
         tags:        tags        ?? [],
-        youtubeUrl:  youtubeUrl  ?? null,
-        tiktokUrl:   tiktokUrl   ?? null,
+        youtubeUrl:    youtubeUrl    ?? null,
+        tiktokUrl:     tiktokUrl     ?? null,
+        durationDays:  durationDays  ? Number(durationDays) : null,
+        tripStyle:     tripStyle     ?? null,
+        transportMode: transportMode ?? null,
         isPublished:     false,
         approvalStatus:  "PENDING",
         authorId:        session.userId,
@@ -139,8 +143,11 @@ export async function POST(request: Request) {
             description: stop.description ?? "",
             transport:   stop.transport   ?? null,
             duration:    stop.duration    ?? null,
-            cost:        stop.cost        ?? null,
-            images:      stop.images      ?? (stop.image ? [stop.image] : []),
+            cost:        stop.cost          ?? null,
+            images:      stop.images        ?? (stop.image ? [stop.image] : []),
+            stopType:      stop.stopType      ?? null,
+            googleMapsUrl: stop.googleMapsUrl ?? null,
+            tips:          stop.tips          ?? null,
           })),
         } : undefined,
       },

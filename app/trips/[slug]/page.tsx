@@ -8,6 +8,7 @@ import BookmarkButton from "@/components/trips/BookmarkButton";
 import LikeButton from "@/components/trips/LikeButton";
 import FollowButton from "@/components/trips/FollowButton";
 import ShareButton from "@/components/common/ShareButton";
+import PrintTripButton from "@/components/trips/PrintTripButton";
 import ReportButton from "@/components/common/ReportButton";
 import Link from "next/link";
 import "./trip-detail.css";
@@ -353,6 +354,9 @@ export default async function TripDetailPage({ params }: Props) {
                   initialShareCount={trip.shareCount}
                 />
               </div>
+              <div style={{ marginTop: 8 }}>
+                <PrintTripButton slug={trip.slug} title={trip.title} />
+              </div>
               {session && !isOwner && (
                 <div style={{ marginTop: 8 }}>
                   <ReportButton
@@ -381,10 +385,30 @@ export default async function TripDetailPage({ params }: Props) {
                     <div><div className="info-label">งบประมาณ</div><div className="info-val">~{Number(trip.budget).toLocaleString()} ฿/คน</div></div>
                   </div>
                 )}
+                {(trip as any).durationDays && (
+                  <div className="info-row">
+                    <span className="info-icon">📅</span>
+                    <div><div className="info-label">ระยะเวลา · Duration</div><div className="info-val">{(trip as any).durationDays} วัน</div></div>
+                  </div>
+                )}
+                {(trip as any).tripStyle && (
+                  <div className="info-row">
+                    <span className="info-icon">👥</span>
+                    <div><div className="info-label">รูปแบบ · Type</div><div className="info-val">
+                      {{"SOLO":"🧍 คนเดียว","COUPLE":"💑 คู่รัก","FAMILY":"👨‍👩‍👧 ครอบครัว","FRIENDS":"👫 กลุ่มเพื่อน"}[(trip as any).tripStyle] ?? (trip as any).tripStyle}
+                    </div></div>
+                  </div>
+                )}
+                {(trip as any).transportMode && (
+                  <div className="info-row">
+                    <span className="info-icon">🚗</span>
+                    <div><div className="info-label">ยานพาหนะ · Transport</div><div className="info-val">{(trip as any).transportMode}</div></div>
+                  </div>
+                )}
                 {trip.mood && (
                   <div className="info-row">
                     <span className="info-icon">🎯</span>
-                    <div><div className="info-label">สไตล์ทริป</div><div className="info-val">{trip.mood}</div></div>
+                    <div><div className="info-label">สไตล์ทริป · Mood</div><div className="info-val">{trip.mood}</div></div>
                   </div>
                 )}
                 {trip.timeline.length > 0 && (

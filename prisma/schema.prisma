@@ -185,10 +185,14 @@ model Trip {
   location    String?
   tags        String[]
 
-  youtubeUrl  String?
-  tiktokUrl   String?
-  shareCount  Int      @default(0)
-  viewCount   Int      @default(0)
+  youtubeUrl    String?
+  tiktokUrl     String?
+  shareCount    Int      @default(0)
+  viewCount     Int      @default(0)
+
+  durationDays  Int?     // จำนวนวัน
+  tripStyle     String?  // SOLO | COUPLE | FAMILY | FRIENDS
+  transportMode String?  // รถยนต์ | รถทัวร์ | เครื่องบิน | รถไฟ | เรือ | มอเตอร์ไซค์ | ผสม
 
   isPublished      Boolean  @default(false)
   approvalStatus   String   @default("PENDING") // PENDING | APPROVED | REJECTED
@@ -225,6 +229,10 @@ model TimelineStop {
   duration    String?
   cost        String?
   images      String[]
+
+  stopType      String?  // ATTRACTION | EAT | SLEEP | ACTIVITY | TRANSPORT
+  googleMapsUrl String?  // Google Maps URL
+  tips          String?  // เคล็ดลับ/ข้อควรรู้
 
   placeId     String?
   place       Place?  @relation(fields: [placeId], references: [id], onDelete: SetNull)

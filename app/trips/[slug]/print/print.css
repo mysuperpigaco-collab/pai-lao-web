@@ -1,0 +1,99 @@
+/* ══ Print page styles ══════════════════════════════════════ */
+
+body { margin: 0; font-family: "Sarabun", "Noto Sans Thai", sans-serif; background: #f1f5f9; }
+
+.print-root { min-height: 100vh; }
+
+/* Controls (screen only) */
+.print-controls {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: #1e293b; color: #fff; padding: 12px 24px;
+  display: flex; align-items: center; gap: 16;
+}
+.print-btn {
+  padding: 9px 22px; border-radius: 10px; border: none;
+  background: #3b82f6; color: #fff; font-weight: 800; font-size: 14px;
+  cursor: pointer; font-family: inherit;
+}
+.back-link { color: #94a3b8; text-decoration: none; font-size: 14px; font-weight: 600; }
+.back-link:hover { color: #fff; }
+.print-hint { font-size: 12px; color: #64748b; margin-left: auto; }
+
+/* The printable page */
+.print-page {
+  max-width: 800px;
+  margin: 80px auto 40px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  overflow: hidden;
+  padding: 0 0 40px;
+}
+
+/* Header */
+.print-header { position: relative; }
+.print-cover { width: 100%; height: 280px; overflow: hidden; }
+.print-cover-img { width: 100%; height: 100%; object-fit: cover; }
+.print-title-block { padding: 28px 36px 8px; border-bottom: 2px solid #f1f5f9; }
+.print-site-badge {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  background: #3b82f6; color: #fff; font-size: 11px; font-weight: 800;
+  margin-bottom: 12px; letter-spacing: 0.5px;
+}
+.print-title { font-size: 30px; font-weight: 900; color: #1e293b; margin: 0 0 6px; line-height: 1.2; }
+.print-subtitle { font-size: 16px; color: #64748b; margin: 0 0 14px; }
+.print-meta {
+  display: flex; flex-wrap: wrap; gap: 14px;
+  font-size: 13px; color: #64748b; font-weight: 600; padding-bottom: 8px;
+}
+
+/* Sections */
+.print-section { padding: 24px 36px 0; }
+.print-section-title { font-size: 18px; font-weight: 800; color: #1e293b; margin: 0 0 16px; border-left: 4px solid #3b82f6; padding-left: 12px; }
+.print-story { color: #374151; line-height: 1.85; font-size: 15px; white-space: pre-wrap; }
+
+/* Day groups */
+.print-day { margin-bottom: 20px; }
+.print-day-header { font-weight: 800; font-size: 14px; color: #475569; margin-bottom: 12px; padding: 6px 12px; background: #f8fafc; border-radius: 8px; }
+
+/* Stops */
+.print-stop { display: flex; gap: 14px; margin-bottom: 16px; }
+.print-stop-num {
+  width: 32px; height: 32px; border-radius: 50%; background: #3b82f6; color: #fff;
+  display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0;
+}
+.print-stop-body { flex: 1; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; }
+.print-stop-header { display: flex; align-items: center; gap: 8; flex-wrap: wrap; margin-bottom: 4px; }
+.print-stop-name { font-weight: 800; font-size: 15px; color: #1e293b; }
+.print-stop-type { font-size: 11px; padding: 2px 8px; border-radius: 20px; background: #eff6ff; color: #1d4ed8; font-weight: 700; }
+.print-stop-time { font-size: 12px; color: #64748b; }
+.print-stop-location { font-size: 12px; color: #64748b; margin-bottom: 8px; }
+.print-stop-desc { font-size: 13px; color: #374151; line-height: 1.7; margin: 0 0 8px; }
+.print-tips { font-size: 12px; color: #92400e; background: #fffbeb; padding: 6px 10px; border-radius: 8px; margin-bottom: 8px; }
+.print-maps { font-size: 11px; color: #3b82f6; margin-bottom: 8px; word-break: break-all; }
+.print-maps-url { font-style: italic; }
+.print-stop-images { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.print-stop-img { width: 100px; height: 75px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; }
+
+/* Tags */
+.print-tags-section { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-top: 20px; }
+.print-tags-label { font-size: 13px; color: #64748b; font-weight: 700; }
+.print-tag { padding: 4px 12px; border-radius: 20px; background: #f1f5f9; color: #475569; font-size: 12px; font-weight: 600; }
+
+/* Footer */
+.print-footer { text-align: center; font-size: 12px; color: #94a3b8; margin-top: 32px; padding-top: 16px; border-top: 1px solid #f1f5f9; }
+
+/* ══ @media print ═══════════════════════════════════════════ */
+@media print {
+  body { background: #fff; }
+  .no-print { display: none !important; }
+  .print-page {
+    max-width: 100%; margin: 0; border-radius: 0; box-shadow: none;
+    padding-bottom: 0;
+  }
+  .print-cover { height: 220px; }
+  .print-stop { break-inside: avoid; }
+  .print-day { break-inside: avoid; }
+  .print-section { break-inside: avoid; }
+  @page { size: A4; margin: 15mm 12mm; }
+}
