@@ -431,11 +431,15 @@ function PlaceCard({ place }: { place: Place }) {
         {/* Gradient overlay */}
         <div className="plc-overlay" />
 
-        {/* Top row: verified + rating */}
+        {/* Top row: verified + owner badge + rating */}
         <div className="plc-top-row">
           {place.business?.isVerified && (
             <span className="plc-verified">✓ Verified</span>
           )}
+          {place.business
+            ? <span className="plc-owner-badge">🏢 มีเจ้าของ</span>
+            : <span className="plc-unowned-badge">⭕ ยังไม่มีเจ้าของ</span>
+          }
           {avg != null && avg > 0 && (
             <span className="plc-rating-pill">
               <span style={{ color: "#fbbf24", fontSize: 13 }}>★</span>
@@ -522,6 +526,18 @@ function PlaceCard({ place }: { place: Place }) {
           font-size: 10px; font-weight: 800;
           padding: 4px 10px; border-radius: 999px;
           border: 1px solid #a7f3d0; backdrop-filter: blur(4px);
+        }
+        .plc-owner-badge {
+          background: rgba(16,185,129,0.85); color: #fff;
+          font-size: 10px; font-weight: 800;
+          padding: 4px 10px; border-radius: 999px;
+          border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(4px);
+        }
+        .plc-unowned-badge {
+          background: rgba(100,116,139,0.75); color: #fff;
+          font-size: 10px; font-weight: 700;
+          padding: 4px 10px; border-radius: 999px;
+          border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(4px);
         }
         .plc-rating-pill {
           display: flex; align-items: center; gap: 4px;

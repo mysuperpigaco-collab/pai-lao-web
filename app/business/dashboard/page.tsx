@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import BusinessProfileCard from "@/components/business/BusinessProfileCard";
 import BusinessPlaceCard from "@/components/business/BusinessPlaceCard";
@@ -54,6 +54,12 @@ export default function BusinessDashboardPage() {
   const [data, setData] = useState<BusinessData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  // Claim place search state
+  const [claimQuery, setClaimQuery] = useState("");
+  const [claimResults, setClaimResults] = useState<any[]>([]);
+  const [claimLoading, setClaimLoading] = useState(false);
+  const [claimingSlug, setClaimingSlug] = useState<string | null>(null);
+  const [claimMessage, setClaimMessage] = useState("");
 
   const fetchData = () => {
     setLoading(true);
@@ -75,6 +81,36 @@ export default function BusinessDashboardPage() {
       const places = prev.places.filter(p => p.slug !== slug);
       return { ...prev, places, stats: { ...prev.stats, totalPlaces: places.length } };
     });
+  };
+
+  const claimTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchUnclaimedPlaces = (q: string) => {
+    setClaimQuery(q);
+    if (claimTimerRef.current) clearTimeout(claimTimerRef.current);
+    if (!q.trim() || q.length < 2) { setClaimResults([]); return; }
+    claimTimerRef.current = setTimeout(async () => {
+      setClaimLoading(true);
+      try {
+        const res = await fetch(`/api/places?q=${encodeURIComponent(q)}&limit=8`);
+        const data = await res.json();
+        setClaimResults((data.places ?? []).filter((p: any) => !p.business));
+      } catch {}
+      setClaimLoading(false);
+    }, 400);
+  };
+  const claimPlace = async (slug: string) => {
+    setClaimingSlug(slug);
+    setClaimMessage("");
+    try {
+      const res = await fetch(`/api/places/${slug}/claim`, { method: "POST" });
+      const d = await res.json();
+      setClaimMessage(res.ok ? `✅ ${d.message}` : `❌ ${d.message}`);
+      if (res.ok) {
+        setClaimResults(prev => prev.filter(p => p.slug !== slug));
+        fetchData(); // refresh dashboard
+      }
+    } catch { setClaimMessage("❌ เกิดข้อผิดพลาด"); }
+    setClaimingSlug(null);
   };
 
   if (loading) return (
@@ -191,6 +227,77 @@ export default function BusinessDashboardPage() {
           ))}
         </section>
       )}
+
+      {/* ── Claim unclaimed places ───────────────────────────── */}
+      <section style={{ marginTop: 48 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+          <div>
+            <h2 style={{ fontSize: "22px", fontWeight: 900, margin: 0 }}>ค้นหาและยืนยันความเป็นเจ้าของสถานที่</h2>
+            <p style={{ fontSize: "13px", color: "#64748b", margin: "4px 0 0" }}>
+              Claim Place · สถานที่ที่นักท่องเที่ยวเพิ่มไว้ที่ยังไม่มีเจ้าของ
+            </p>
+          </div>
+        </div>
+        <div style={{ position: "relative", maxWidth: 520 }}>
+          <input
+            type="text"
+            value={claimQuery}
+            onChange={e => searchUnclaimedPlaces(e.target.value)}
+            placeholder="🔍 ค้นหาชื่อสถานที่..."
+            style={{
+              width: "100%", padding: "12px 16px", fontSize: 14, borderRadius: 12,
+              border: "1.5px solid #e2e8f0", outline: "none", fontFamily: "inherit",
+              boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+            }}
+          />
+          {claimLoading && (
+            <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: "#94a3b8" }}>🔍...</span>
+          )}
+        </div>
+        {claimMessage && (
+          <p style={{ marginTop: 10, fontSize: 13, fontWeight: 700,
+            color: claimMessage.startsWith("✅") ? "#15803d" : "#dc2626" }}>
+            {claimMessage}
+          </p>
+        )}
+        {claimResults.length > 0 && (
+          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10, maxWidth: 640 }}>
+            {claimResults.map(p => (
+              <div key={p.slug} style={{
+                display: "flex", alignItems: "center", gap: 14, background: "#fff",
+                border: "1.5px solid #e2e8f0", borderRadius: 14, padding: "12px 16px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+              }}>
+                {p.coverUrl && (
+                  <img src={p.coverUrl} alt="" style={{ width: 56, height: 56, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 800, fontSize: 14, color: "#1e293b" }}>{p.title}</div>
+                  <div style={{ fontSize: 12, color: "#64748b" }}>📍 {p.district}, {p.province}</div>
+                  <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>⭕ ยังไม่มีเจ้าของ</div>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                  <a href={`/place/${p.slug}`} target="_blank" rel="noreferrer"
+                    style={{ padding: "7px 12px", borderRadius: 8, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
+                    ดู
+                  </a>
+                  <button
+                    onClick={() => claimPlace(p.slug)}
+                    disabled={claimingSlug === p.slug}
+                    style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#10b981", color: "#fff", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", opacity: claimingSlug === p.slug ? 0.7 : 1 }}>
+                    {claimingSlug === p.slug ? "⏳..." : "🏢 เป็นเจ้าของ"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {!claimLoading && claimQuery.length >= 2 && claimResults.length === 0 && (
+          <p style={{ marginTop: 12, fontSize: 13, color: "#94a3b8" }}>
+            ไม่พบสถานที่ที่ยังไม่มีเจ้าของ หรือสถานที่นั้นมีเจ้าของแล้ว
+          </p>
+        )}
+      </section>
 
       <style jsx>{`
         .dashboard-page { width: 100%; max-width: 1440px; margin: 0 auto; padding: 40px 24px 80px; }

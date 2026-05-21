@@ -102,8 +102,12 @@ export default async function PlaceDetailPage({ params }: Props) {
               <div className="pd-hero-badges">
                 <span className="pd-badge">{catIcon} {catLabel}</span>
                 {place.business?.isVerified && (
-                  <span className="pd-badge pd-badge-green">Verified Business</span>
+                  <span className="pd-badge pd-badge-green">✓ Verified Business</span>
                 )}
+                {place.business
+                  ? <span className="pd-badge" style={{ background: "rgba(16,185,129,0.75)" }}>🏢 มีเจ้าของ</span>
+                  : <span className="pd-badge" style={{ background: "rgba(100,116,139,0.7)" }}>⭕ ยังไม่มีเจ้าของ</span>
+                }
                 {isOwner && (
                   <span className="pd-badge" style={{ background: "rgba(245,158,11,0.7)" }}>
                     Your Place

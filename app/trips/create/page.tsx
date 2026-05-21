@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, LayoutDashboard } from "lucide-react";
@@ -40,8 +40,12 @@ export default function CreateStoryPage() {
 
   const [timeline, setTimeline] = useState([
     { date: today, time: "", place: "", province: "", district: "", description: "",
-      imageFile: null as File | null, imagePreview: null as string | null }
+      imageFile: null as File | null, imagePreview: null as string | null,
+      placeId: null as string | null, placeSlug: null as string | null }
   ]);
+  const [placeSuggestions, setPlaceSuggestions] = useState<Record<number, any[]>>({});
+  const [placeSearchLoading, setPlaceSearchLoading] = useState<Record<number, boolean>>({});
+  const placeSearchTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
 
   const [showPreview, setShowPreview] = useState(false);
   const [isBackHover, setIsBackHover] = useState(false);
@@ -77,8 +81,39 @@ export default function CreateStoryPage() {
   };
 
   const addTimeline    = () => setTimeline([...timeline,
-    { date: today, time: "", place: "", province: "", district: "", description: "", imageFile: null, imagePreview: null }]);
+    { date: today, time: "", place: "", province: "", district: "", description: "", imageFile: null, imagePreview: null, placeId: null, placeSlug: null }]);
   const removeTimeline = (i: number) => setTimeline(timeline.filter((_, idx) => idx !== i));
+
+  // ── Place search for timeline stops ──────────────────────
+  const searchPlaces = (idx: number, q: string) => {
+    clearTimeout(placeSearchTimers.current[idx]);
+    if (!q.trim() || q.length < 2) { setPlaceSuggestions(p => ({ ...p, [idx]: [] })); return; }
+    placeSearchTimers.current[idx] = setTimeout(async () => {
+      setPlaceSearchLoading(l => ({ ...l, [idx]: true }));
+      try {
+        const res = await fetch(`/api/places?q=${encodeURIComponent(q)}&limit=6`);
+        const data = await res.json();
+        setPlaceSuggestions(p => ({ ...p, [idx]: data.places ?? [] }));
+      } catch {}
+      setPlaceSearchLoading(l => ({ ...l, [idx]: false }));
+    }, 350);
+  };
+  const selectPlace = (idx: number, p: any) => {
+    const updated = [...timeline];
+    updated[idx].place    = p.title;
+    updated[idx].province = p.province;
+    updated[idx].district = p.district;
+    updated[idx].placeId  = p.id;
+    updated[idx].placeSlug = p.slug;
+    setTimeline(updated);
+    setPlaceSuggestions(prev => ({ ...prev, [idx]: [] }));
+  };
+  const clearPlaceLink = (idx: number) => {
+    const updated = [...timeline];
+    updated[idx].placeId  = null;
+    updated[idx].placeSlug = null;
+    setTimeline(updated);
+  };
 
   // ── Submit ────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
@@ -103,6 +138,7 @@ export default function CreateStoryPage() {
       // 3. อัปโหลดรูป timeline แต่ละจุด
       const timelineData = await Promise.all(
         timeline.map(async (stop, i) => ({
+          placeId: stop.placeId ?? undefined,
           date:        stop.date,
           time:        stop.time,
           place:       stop.place,
@@ -338,8 +374,48 @@ export default function CreateStoryPage() {
                     onChange={(e) => updateTimeline(idx, "date", e.target.value)} />
                   <input type="time" className="form-control" value={item.time}
                     onChange={(e) => updateTimeline(idx, "time", e.target.value)} />
-                  <input type="text" className="form-control flex-1" placeholder="ชื่อสถานที่ / จุดเช็คอิน"
-                    value={item.place} onChange={(e) => updateTimeline(idx, "place", e.target.value)} />
+                  <div style={{ position: "relative", flex: 1 }}>
+                    <input type="text" className="form-control" placeholder="🔍 ชื่อสถานที่ / จุดเช็คอิน"
+                      value={item.place}
+                      onChange={(e) => { updateTimeline(idx, "place", e.target.value); clearPlaceLink(idx); searchPlaces(idx, e.target.value); }}
+                      style={{ width: "100%", boxSizing: "border-box" }} />
+                    {item.placeId && (
+                      <div style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 11, color: "#10b981", fontWeight: 700 }}>🔗 เชื่อมสถานที่แล้ว</span>
+                        <button type="button" onClick={() => clearPlaceLink(idx)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 14, lineHeight: 1 }}>×</button>
+                      </div>
+                    )}
+                    {(placeSuggestions[idx]?.length > 0) && (
+                      <div style={{ position: "absolute", top: "110%", left: 0, right: 0, background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.1)", zIndex: 50, maxHeight: 240, overflowY: "auto" }}>
+                        {placeSuggestions[idx].map((p: any) => (
+                          <button key={p.id} type="button"
+                            onClick={() => selectPlace(idx, p)}
+                            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none", background: "none", cursor: "pointer", textAlign: "left", borderBottom: "1px solid #f1f5f9", fontFamily: "inherit" }}
+                            onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
+                            onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+                            {p.coverUrl && <img src={p.coverUrl} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />}
+                            <div>
+                              <div style={{ fontWeight: 700, fontSize: 13, color: "#1e293b" }}>{p.title}</div>
+                              <div style={{ fontSize: 11, color: "#64748b" }}>📍 {p.district}, {p.province}</div>
+                              <div style={{ fontSize: 10, color: p.business ? "#10b981" : "#94a3b8", fontWeight: 600 }}>
+                                {p.business ? "🏢 มีเจ้าของ" : "⭕ ยังไม่มีเจ้าของ"}
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                        <button type="button"
+                          onClick={() => setPlaceSuggestions(prev => ({ ...prev, [idx]: [] }))}
+                          style={{ display: "block", width: "100%", padding: "8px", border: "none", background: "#f8fafc", color: "#94a3b8", fontSize: 12, cursor: "pointer", fontFamily: "inherit", borderRadius: "0 0 12px 12px" }}>
+                          ปิด
+                        </button>
+                      </div>
+                    )}
+                    {placeSearchLoading[idx] && (
+                      <div style={{ position: "absolute", top: "110%", left: 0, padding: "10px 14px", background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 12, fontSize: 12, color: "#94a3b8" }}>
+                        🔍 กำลังค้นหา...
+                      </div>
+                    )}
+                  </div>
                   <button type="button" className="btn-remove-circle" onClick={() => removeTimeline(idx)}>×</button>
                 </div>
                 <div className="timeline-location-row">
