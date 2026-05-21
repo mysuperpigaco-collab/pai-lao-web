@@ -396,23 +396,33 @@ export default function CreateStoryPage() {
             <h3 className="section-label">🕘 เส้นทางเดินทาง | <small>TIMELINE</small></h3>
             {timeline.map((item, idx) => (
               <div key={idx} className="timeline-card">
-                <div className="timeline-top-row">
+                {/* Row 1: Date + Time + Remove */}
+                <div style={{ display: "flex", gap: 12, marginBottom: 12, alignItems: "center" }}>
                   <input type="date" className="form-control" value={item.date} max={today}
-                    onChange={(e) => updateTimeline(idx, "date", e.target.value)} />
+                    onChange={(e) => updateTimeline(idx, "date", e.target.value)}
+                    style={{ flex: "0 0 180px" }} />
                   <input type="time" className="form-control" value={item.time}
-                    onChange={(e) => updateTimeline(idx, "time", e.target.value)} />
-                  <div style={{ position: "relative", flex: 1 }}>
-                    <input type="text" className="form-control" placeholder="🔍 ชื่อสถานที่ / จุดเช็คอิน"
-                      value={item.place}
-                      onChange={(e) => { updateTimeline(idx, "place", e.target.value); clearPlaceLink(idx); searchPlaces(idx, e.target.value); }}
-                      style={{ width: "100%", boxSizing: "border-box" }} />
-                    {item.placeId && (
-                      <div style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontSize: 11, color: "#10b981", fontWeight: 700 }}>🔗 เชื่อมสถานที่แล้ว</span>
-                        <button type="button" onClick={() => clearPlaceLink(idx)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 14, lineHeight: 1 }}>×</button>
-                      </div>
-                    )}
-                    {(placeSuggestions[idx]?.length > 0) && (
+                    onChange={(e) => updateTimeline(idx, "time", e.target.value)}
+                    style={{ flex: "0 0 140px" }} />
+                  <div style={{ flex: 1 }} />
+                  <button type="button" className="btn-remove-circle" onClick={() => removeTimeline(idx)}>×</button>
+                </div>
+
+                {/* Row 2: Place name search (full width) */}
+                <div style={{ position: "relative", marginBottom: 12 }}>
+                  <input type="text" className="form-control" placeholder="🔍 ค้นหาสถานที่ หรือพิมพ์ชื่อจุดแวะ"
+                    value={item.place}
+                    onChange={(e) => { updateTimeline(idx, "place", e.target.value); clearPlaceLink(idx); searchPlaces(idx, e.target.value); }}
+                    style={{ width: "100%", boxSizing: "border-box",
+                      borderColor: item.placeId ? "#10b981" : undefined,
+                      background: item.placeId ? "#f0fdf4" : undefined }} />
+                  {item.placeId && (
+                    <div style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: 12, color: "#10b981", fontWeight: 700 }}>🔗 เชื่อมสถานที่แล้ว</span>
+                      <button type="button" onClick={() => clearPlaceLink(idx)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 16, lineHeight: 1, padding: 0 }}>×</button>
+                    </div>
+                  )}
+                  {(placeSuggestions[idx]?.length > 0) && (
                       <div style={{ position: "absolute", top: "110%", left: 0, right: 0, background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.1)", zIndex: 50, maxHeight: 240, overflowY: "auto" }}>
                         {placeSuggestions[idx].map((p: any) => (
                           <button key={p.id} type="button"
@@ -442,8 +452,6 @@ export default function CreateStoryPage() {
                         🔍 กำลังค้นหา...
                       </div>
                     )}
-                  </div>
-                  <button type="button" className="btn-remove-circle" onClick={() => removeTimeline(idx)}>×</button>
                 </div>
 
                 {/* Suggest new place button */}
