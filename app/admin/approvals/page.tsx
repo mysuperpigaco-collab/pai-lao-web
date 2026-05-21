@@ -518,7 +518,7 @@ export default function AdminApprovalsPage() {
             </div>
 
           /* ════ TAB: แก้ไขทริป / แก้ไขสถานที่ ════ */
-          ) : (
+          ) : (tab === "edit-trips" || tab === "edit-places") ? (
             <div>
               {currentEdits.length === 0
                 ? <div className="adm-card" style={{ textAlign: "center", padding: 60, color: "#64748b" }}>🎉 ไม่มีการแก้ไขรออนุมัติ</div>
