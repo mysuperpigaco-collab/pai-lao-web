@@ -84,6 +84,8 @@ export async function PUT(request: Request) {
             where: { id: edit.targetId },
             data: {
               ...rest,
+              approvalStatus: "APPROVED",
+              rejectionReason: null,
               timeline: {
                 create: (timeline as any[]).map((stop: any, i: number) => ({
                   order: i, date: stop.date ?? "", time: stop.time ?? "",
@@ -98,11 +100,14 @@ export async function PUT(request: Request) {
             },
           });
         } else {
-          await prisma.trip.update({ where: { id: edit.targetId }, data });
+          await prisma.trip.update({ where: { id: edit.targetId }, data: { ...data, approvalStatus: "APPROVED", rejectionReason: null } });
         }
       }
     } else if (edit.targetType === "PLACE") {
-      await prisma.place.update({ where: { id: edit.targetId }, data }).catch(() => {});
+      await prisma.place.update({
+        where: { id: edit.targetId },
+        data: { ...data, approvalStatus: "APPROVED", rejectionReason: null },
+      }).catch(() => {});
     }
 
     await (prisma as any).pendingEdit.update({
