@@ -117,6 +117,7 @@ model Business {
   updatedAt    DateTime @updatedAt
 
   places       Place[]
+  claims       PlaceClaim[]
 }
 
 // ── Place ─────────────────────────────────────────────────────
@@ -165,6 +166,7 @@ model Place {
   bookmarks        Bookmark[]
   timelineStops    TimelineStop[]
   likes            PlaceLike[]
+  claims           PlaceClaim[]
 }
 
 // ── Trip ──────────────────────────────────────────────────────
@@ -381,4 +383,21 @@ model AdminLog {
 
   @@index([adminId])
   @@index([createdAt])
+}
+
+// ── PlaceClaim ─────────────────────────────────────────────
+model PlaceClaim {
+  id          String   @id @default(uuid())
+  placeId     String
+  place       Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  status      String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  message     String?  // ข้อความยืนยันจากเจ้าของ
+  adminNote   String?  // หมายเหตุจากแอดมิน
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([placeId, businessId])
+  @@index([status])
 }

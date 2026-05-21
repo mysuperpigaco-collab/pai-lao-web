@@ -232,13 +232,14 @@ function EditDetailModal({ edit, onClose, onApprove, onReject }: {
 /* ═══════════════════════════════════════════════════════════
    Main Page
    ═══════════════════════════════════════════════════════════ */
-type TabKey = "trips" | "places" | "edit-trips" | "edit-places";
+type TabKey = "trips" | "places" | "edit-trips" | "edit-places" | "claims";
 
 const TABS: { key: TabKey; label: string; icon: string }[] = [
   { key: "trips",       label: "ทริปใหม่",      icon: "🗺️" },
   { key: "places",      label: "สถานที่ใหม่",   icon: "📍" },
   { key: "edit-trips",  label: "แก้ไขทริป",    icon: "✏️" },
   { key: "edit-places", label: "แก้ไขสถานที่", icon: "🏢" },
+  { key: "claims",       label: "ยืนยันเจ้าของ",  icon: "🔑" },
 ];
 
 export default function AdminApprovalsPage() {
@@ -247,7 +248,8 @@ export default function AdminApprovalsPage() {
   const [places, setPlaces]       = useState<PlaceItem[]>([]);
   const [editTrips, setEditTrips] = useState<EditItem[]>([]);
   const [editPlaces, setEditPlaces] = useState<EditItem[]>([]);
-  const [counts, setCounts]       = useState({ trips: 0, places: 0, editTrips: 0, editPlaces: 0 });
+  const [claims, setClaims]         = useState<any[]>([]);
+  const [counts, setCounts]       = useState({ trips: 0, places: 0, editTrips: 0, editPlaces: 0, claims: 0 });
   const [loading, setLoading]     = useState(false);
   const [msg, setMsg]             = useState("");
 
@@ -255,17 +257,20 @@ export default function AdminApprovalsPage() {
   const [rejectTarget, setRejectTarget]   = useState<{ id: string; title: string; type: "trip"|"place"|"edit" } | null>(null);
   const [detailEdit, setDetailEdit]       = useState<EditItem | null>(null);
   const [pendingApproveEdit, setPendingApproveEdit] = useState<EditItem | null>(null);
+  const [claimActionTarget, setClaimActionTarget] = useState<{ id: string; action: "APPROVE"|"REJECT"; title: string } | null>(null);
+  const [claimNote, setClaimNote] = useState("");
 
   const showMsg = (m: string) => { setMsg(m); setTimeout(() => setMsg(""), 4000); };
 
   const loadCounts = useCallback(async () => {
-    const [t, p, et, ep] = await Promise.all([
+    const [t, p, et, ep, cl] = await Promise.all([
       fetch("/api/admin/trips?approval=PENDING&limit=1").then(r => r.json()).then(d => d.total ?? 0).catch(() => 0),
       fetch("/api/admin/places?approval=PENDING&limit=1").then(r => r.json()).then(d => d.total ?? 0).catch(() => 0),
       fetch("/api/admin/pending-edits?type=TRIP&limit=1").then(r => r.json()).then(d => d.total ?? 0).catch(() => 0),
       fetch("/api/admin/pending-edits?type=PLACE&limit=1").then(r => r.json()).then(d => d.total ?? 0).catch(() => 0),
+      fetch("/api/admin/place-claims?status=PENDING").then(r => r.json()).then(d => (d.claims ?? []).length).catch(() => 0),
     ]);
-    setCounts({ trips: t, places: p, editTrips: et, editPlaces: ep });
+    setCounts({ trips: t, places: p, editTrips: et, editPlaces: ep, claims: cl });
   }, []);
 
   const loadTab = useCallback(async () => {
@@ -283,6 +288,9 @@ export default function AdminApprovalsPage() {
       } else if (tab === "edit-places") {
         const d = await fetch("/api/admin/pending-edits?type=PLACE&limit=50").then(r => r.json());
         setEditPlaces(d.edits || []);
+      } else if (tab === "claims") {
+        const d = await fetch("/api/admin/place-claims?status=PENDING").then(r => r.json());
+        setClaims(d.claims || []);
       }
     } finally { setLoading(false); }
   }, [tab]);
@@ -349,8 +357,20 @@ export default function AdminApprovalsPage() {
     loadTab(); loadCounts();
   }
 
+  /* ── Claim actions ── */
+  async function actionClaim(claimId: string, action: "APPROVE"|"REJECT", note: string) {
+    const res = await fetch("/api/admin/place-claims", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ claimId, action, adminNote: note }),
+    });
+    const d = await res.json();
+    showMsg(res.ok ? "✅ " + d.message : "❌ " + d.message);
+    setClaimActionTarget(null); setClaimNote("");
+    loadTab(); loadCounts();
+  }
+
   const currentEdits = tab === "edit-trips" ? editTrips : editPlaces;
-  const totalPending = counts.trips + counts.places + counts.editTrips + counts.editPlaces;
+  const totalPending = counts.trips + counts.places + counts.editTrips + counts.editPlaces + counts.claims;
 
   return (
     <>
@@ -375,7 +395,7 @@ export default function AdminApprovalsPage() {
         {/* ── Tabs ── */}
         <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
           {TABS.map(t => {
-            const count = counts[t.key === "edit-trips" ? "editTrips" : t.key === "edit-places" ? "editPlaces" : t.key as keyof typeof counts];
+            const count = counts[t.key === "edit-trips" ? "editTrips" : t.key === "edit-places" ? "editPlaces" : t.key as keyof typeof counts] ?? 0;
             return (
               <button key={t.key} onClick={() => setTab(t.key)}
                 className={`adm-btn ${tab === t.key ? "primary" : "ghost"}`}
@@ -588,9 +608,105 @@ export default function AdminApprovalsPage() {
                     </table>
                   </div>}
             </div>
-          )
+          ) : tab === "claims" ? (
+            /* ════ TAB: ยืนยันเจ้าของ ════ */
+            <div>
+              {claims.length === 0
+                ? <div className="adm-card" style={{ textAlign: "center", padding: 60, color: "#64748b" }}>🎉 ไม่มีคำขอยืนยันเจ้าของ</div>
+                : <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                    {claims.map((claim: any) => (
+                      <div key={claim.id} className="adm-card" style={{ padding: 20 }}>
+                        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                          {/* Place info */}
+                          <div style={{ flex: "0 0 120px" }}>
+                            {claim.place.coverUrl
+                              ? <img src={claim.place.coverUrl} alt="" style={{ width: 120, height: 80, objectFit: "cover", borderRadius: 10 }} />
+                              : <div style={{ width: 120, height: 80, borderRadius: 10, background: "#1e293b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>📍</div>
+                            }
+                          </div>
+                          <div style={{ flex: 1, minWidth: 200 }}>
+                            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 6 }}>
+                              <a href={`/place/${claim.place.slug}`} target="_blank" rel="noreferrer"
+                                style={{ fontWeight: 800, fontSize: 16, color: "#38bdf8", textDecoration: "none" }}>
+                                {claim.place.title}
+                              </a>
+                              <span style={{ fontSize: 11, color: "#64748b" }}>{claim.place.province} · {claim.place.district}</span>
+                            </div>
+
+                            {/* Business info */}
+                            <div style={{ background: "#0f172a", borderRadius: 10, padding: "12px 14px", marginBottom: 10 }}>
+                              <div style={{ fontWeight: 700, fontSize: 13, color: "#f1f5f9", marginBottom: 4 }}>
+                                🏢 {claim.business.businessName}
+                                {claim.business.isVerified && (
+                                  <span style={{ marginLeft: 8, background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "2px 7px", borderRadius: 99 }}>✓ Verified</span>
+                                )}
+                              </div>
+                              <div style={{ fontSize: 12, color: "#94a3b8", display: "flex", flexDirection: "column", gap: 2 }}>
+                                <span>👤 {claim.business.user?.displayName || claim.business.user?.username}</span>
+                                {claim.business.phone && <span>📞 {claim.business.phone}</span>}
+                                {claim.business.email && <span>📧 {claim.business.email}</span>}
+                                {claim.business.lineId && <span>💬 Line: {claim.business.lineId}</span>}
+                                {claim.business.user?.email && <span>✉️ {claim.business.user.email}</span>}
+                              </div>
+                            </div>
+
+                            {claim.message && (
+                              <div style={{ background: "#1e293b", borderLeft: "3px solid #38bdf8", borderRadius: "0 8px 8px 0", padding: "8px 12px", fontSize: 13, color: "#cbd5e1", marginBottom: 10, fontStyle: "italic" }}>
+                                "{claim.message}"
+                              </div>
+                            )}
+
+                            <div style={{ fontSize: 11, color: "#64748b", marginBottom: 12 }}>{fmt(claim.createdAt)}</div>
+
+                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                              <button className="adm-btn primary sm"
+                                onClick={() => setClaimActionTarget({ id: claim.id, action: "APPROVE", title: claim.place.title })}>
+                                ✅ อนุมัติ
+                              </button>
+                              <button className="adm-btn sm" style={{ background: "#7f1d1d" }}
+                                onClick={() => setClaimActionTarget({ id: claim.id, action: "REJECT", title: claim.place.title })}>
+                                ❌ ปฏิเสธ
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+              }
+            </div>
+          ) : null
         )}
       </div>
+
+      {/* ── Claim Action Modal ── */}
+      {claimActionTarget && (
+        <div className="adm-modal-backdrop" onClick={() => { setClaimActionTarget(null); setClaimNote(""); }}>
+          <div className="adm-modal" style={{ maxWidth: 480 }} onClick={e => e.stopPropagation()}>
+            <div className="adm-modal-title">
+              {claimActionTarget.action === "APPROVE" ? "✅ อนุมัติคำขอ" : "❌ ปฏิเสธคำขอ"}
+            </div>
+            <div className="adm-modal-body">
+              <p style={{ color: "#94a3b8", marginBottom: 12 }}>
+                สถานที่: <strong style={{ color: "#f1f5f9" }}>{claimActionTarget.title}</strong>
+              </p>
+              <textarea value={claimNote} onChange={e => setClaimNote(e.target.value)}
+                placeholder={claimActionTarget.action === "APPROVE" ? "หมายเหตุ (ไม่บังคับ)" : "ระบุเหตุผลที่ปฏิเสธ..."}
+                rows={3}
+                style={{ width: "100%", boxSizing: "border-box", background: "#0f172a", border: "1px solid #334155",
+                  borderRadius: 8, padding: "8px 12px", color: "#f1f5f9", fontFamily: "inherit", resize: "none", outline: "none" }} />
+            </div>
+            <div className="adm-modal-actions">
+              <button className="adm-btn ghost" onClick={() => { setClaimActionTarget(null); setClaimNote(""); }}>ยกเลิก</button>
+              <button className="adm-btn"
+                style={{ background: claimActionTarget.action === "APPROVE" ? "#16a34a" : "#dc2626" }}
+                onClick={() => actionClaim(claimActionTarget.id, claimActionTarget.action, claimNote)}>
+                {claimActionTarget.action === "APPROVE" ? "✅ ยืนยันอนุมัติ" : "❌ ยืนยันปฏิเสธ"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Diff Detail Modal ── */}
       {detailEdit && !rejectTarget && (

@@ -7,6 +7,7 @@ import PlaceLikeButton from "@/components/places/PlaceLikeButton";
 import PlaceBookmarkButton from "@/components/places/PlaceBookmarkButton";
 import ShareButton from "@/components/common/ShareButton";
 import ReportButton from "@/components/common/ReportButton";
+import ClaimPlaceButton from "@/components/places/ClaimPlaceButton";
 import "./place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -60,7 +61,8 @@ export default async function PlaceDetailPage({ params }: Props) {
     : 0;
   const catLabel = CAT_LABEL[place.category] ?? place.category;
   const catIcon  = CAT_ICON[place.category]  ?? "📍";
-  const isOwner  = session?.userId === place.business?.userId;
+  const isOwner    = session?.userId === place.business?.userId;
+  const isBusiness = session?.role === "BUSINESS";
 
   let initialLiked = false;
   let initialSaved = false;
@@ -338,6 +340,13 @@ export default async function PlaceDetailPage({ params }: Props) {
                 )}
               </div>
             )}
+
+            <ClaimPlaceButton
+              placeSlug={slug}
+              placeTitle={place.title}
+              isBusiness={isBusiness}
+              hasOwner={!!place.business}
+            />
 
             {isOwner && (
               <Link href={`/business/places/${slug}/edit`} className="pd-edit-btn">
