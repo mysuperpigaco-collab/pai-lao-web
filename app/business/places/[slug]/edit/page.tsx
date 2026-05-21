@@ -312,7 +312,7 @@ export default function EditPlacePage({ params }: Props) {
             <div className="section-hdr">
               <div>
                 <h2>รูปปกหลัก <span className="en-tag sm">Cover Photo</span></h2>
-                <p>ภาพที่จะแสดงในหน้าหลักและการค้นหา</p>
+                <p>ภาพที่จะแสดงในหน้าหลักและการค้นหา · Main image shown in listings</p>
               </div>
             </div>
             <label className="cover-upload">
@@ -330,21 +330,21 @@ export default function EditPlacePage({ params }: Props) {
             <div className="section-hdr">
               <div>
                 <h2>ข้อมูลพื้นฐาน <span className="en-tag sm">Basic Info</span></h2>
-                <p>ชื่อ ประเภท และที่ตั้งของสถานที่</p>
+                <p>ชื่อ ประเภท และที่ตั้งของสถานที่ · Name, category &amp; location</p>
               </div>
             </div>
             <div className="form-grid two-col">
               <div className="field">
-                <label>ชื่อสถานที่ (ภาษาไทย) <span className="req">*</span></label>
+                <label>ชื่อสถานที่ (ภาษาไทย) · Thai Name <span className="req">*</span></label>
                 <input className="form-control" type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="เช่น น้ำตกเอราวัณ" required />
               </div>
               <div className="field">
-                <label>ชื่อภาษาอังกฤษ <span className="hint">English name</span></label>
+                <label>ชื่อภาษาอังกฤษ · English Name</label>
                 <input className="form-control" type="text" value={titleEn} onChange={e => setTitleEn(e.target.value)} placeholder="e.g. Erawan Waterfall" />
               </div>
             </div>
             <div className="field mt16">
-              <label>ประเภทสถานที่ <span className="req">*</span></label>
+              <label>ประเภทสถานที่ · Category <span className="req">*</span></label>
               <div className="cat-grid">
                 {CATEGORIES.map(c => (
                   <button key={c} type="button"
@@ -367,24 +367,24 @@ export default function EditPlacePage({ params }: Props) {
             </div>
             <div className="form-grid two-col">
               <div className="field">
-                <label>จังหวัด <span className="req">*</span></label>
+                <label>จังหวัด · Province <span className="req">*</span></label>
                 <select className="form-control" value={province} onChange={e => handleProvinceChange(e.target.value)} required>
-                  <option value="">— เลือกจังหวัด —</option>
+                  <option value="">— เลือกจังหวัด / Select Province —</option>
                   {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
               </div>
               <div className="field">
-                <label>อำเภอ / เขต <span className="req">*</span></label>
+                <label>อำเภอ / เขต · District <span className="req">*</span></label>
                 <select className="form-control" value={district} onChange={e => setDistrict(e.target.value)} disabled={!province} required>
-                  <option value="">— เลือกอำเภอ —</option>
+                  <option value="">— เลือกอำเภอ / Select District —</option>
                   {districts.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
                 {!province && <span className="field-hint">เลือกจังหวัดก่อน</span>}
               </div>
             </div>
             <div className="field mt16">
-              <label>ที่อยู่เพิ่มเติม <span className="hint">รายละเอียดที่อยู่</span></label>
-              <input className="form-control" type="text" value={address} onChange={e => setAddress(e.target.value)} placeholder="เช่น 123 ถ.เพชรเกษม ต.ท่ากระดาน" />
+              <label>ที่อยู่เพิ่มเติม · Full Address</label>
+              <input className="form-control" type="text" value={address} onChange={e => setAddress(e.target.value)} placeholder="เช่น 123 ถ.เพชรเกษม ต.ท่ากระดาน · Full street address" />
             </div>
             <div className="field mt16">
               <label>Google Maps URL</label>
@@ -404,18 +404,18 @@ export default function EditPlacePage({ params }: Props) {
               </div>
             </div>
             <div className="field">
-              <label>คำอธิบายสั้น <span className="hint">แสดงในการ์ดค้นหา ไม่เกิน 80 ตัวอักษร</span></label>
+              <label>คำอธิบายสั้น · Short Description <span className="hint">แสดงในการ์ดค้นหา · max 80 chars</span></label>
               <input className="form-control" type="text" value={descShort} onChange={e => setDescShort(e.target.value)}
-                placeholder="เช่น น้ำตก 7 ชั้น น้ำสีมรกต ในอุทยานแห่งชาติ" maxLength={80} />
+                placeholder="เช่น น้ำตก 7 ชั้น น้ำสีมรกต ในอุทยานแห่งชาติ · Emerald waterfall in national park" maxLength={80} />
               <span className="char-count">{descShort.length}/80</span>
             </div>
             <div className="field mt16">
-              <label>คำอธิบายเต็ม <span className="req">*</span> <span className="hint">แสดงในหน้ารายละเอียด</span></label>
+              <label>คำอธิบายเต็ม · Full Description <span className="req">*</span></label>
               <textarea className="form-control textarea" value={description} onChange={e => setDescription(e.target.value)}
                 placeholder="อธิบายรายละเอียด บรรยากาศ จุดเด่น และเคล็ดลับการเที่ยวชม..." rows={5} required />
             </div>
             <div className="field mt16">
-              <label>แท็ก <span className="hint">ช่วยให้ค้นหาเจอง่ายขึ้น</span></label>
+              <label>แท็ก · Tags <span className="hint">ช่วยให้ค้นหาเจอง่ายขึ้น · Helps with search</span></label>
               <div className="tag-input-row">
                 <input className="form-control" type="text" value={tagInput} onChange={e => setTagInput(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addTag())}
@@ -558,17 +558,17 @@ export default function EditPlacePage({ params }: Props) {
 
             <div className="form-grid two-col">
               <div className="field">
-                <label>ค่าเข้าชม</label>
-                <input className="form-control" type="text" value={entryFee} onChange={e => setEntryFee(e.target.value)} placeholder="เช่น ฟรี หรือ 50 ฿/คน" />
+                <label>ค่าเข้าชม · Entry Fee</label>
+                <input className="form-control" type="text" value={entryFee} onChange={e => setEntryFee(e.target.value)} placeholder="เช่น ฟรี / Free หรือ 50 ฿/คน" />
               </div>
               <div className="field">
-                <label>เบอร์โทรศัพท์ <span className="hint">Phone number</span></label>
+                <label>เบอร์โทรศัพท์ · Phone Number</label>
                 <input className="form-control" type="tel" inputMode="numeric"
                   value={phone} onChange={e => handlePhone(e.target.value)}
                   placeholder="เช่น 034-574222" pattern="[0-9+\-() ]*" />
               </div>
               <div className="field">
-                <label>เว็บไซต์</label>
+                <label>เว็บไซต์ · Website</label>
                 <input className="form-control" type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://..." />
               </div>
               <div className="field">
@@ -583,7 +583,7 @@ export default function EditPlacePage({ params }: Props) {
             <div className="section-hdr">
               <div>
                 <h2>รูปภาพเพิ่มเติม <span className="en-tag sm">Gallery</span></h2>
-                <p>เพิ่มรูปภาพได้สูงสุด {MAX_PHOTOS} รูป</p>
+                <p>เพิ่มรูปภาพได้สูงสุด {MAX_PHOTOS} รูป · Up to {MAX_PHOTOS} photos</p>
               </div>
             </div>
 
