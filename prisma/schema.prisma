@@ -84,6 +84,7 @@ model User {
   following     Follow[]      @relation("Follower")
   followers     Follow[]      @relation("Following")
   reports       Report[]
+  pendingEdits  PendingEdit[]
 }
 
 // ── Business ─────────────────────────────────────────────────
@@ -151,6 +152,8 @@ model Place {
   shareCount       Int       @default(0)
   viewCount        Int       @default(0)
 
+  approvalStatus   String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  rejectionReason  String?
   isVerified       Boolean   @default(false)
   businessId       String?
   business         Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
@@ -350,6 +353,23 @@ model Report {
 }
 
 // ── AdminLog ─────────────────────────────────────────────────
+model PendingEdit {
+  id              String   @id @default(uuid())
+  targetType      String   // "TRIP" | "PLACE"
+  targetId        String
+  originalData    Json     // snapshot ของข้อมูลเดิม
+  pendingData     Json     // ข้อมูลใหม่ที่รอตรวจสอบ
+  status          String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  rejectionReason String?
+  submittedById   String
+  submittedBy     User     @relation(fields: [submittedById], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([targetId])
+}
+
 model AdminLog {
   id         String   @id @default(uuid())
   adminId    String

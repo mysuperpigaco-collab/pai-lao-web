@@ -40,7 +40,7 @@ export async function GET(_req: Request, { params }: Params) {
   }
 }
 
-// ── PUT /api/places/[slug] — แก้ไข ───────────────────────
+// ── PUT /api/places/[slug] — แก้ไข (ต้องรอ admin อนุมัติ) ───
 export async function PUT(request: Request, { params }: Params) {
   try {
     const { slug: rawSlug } = await params;
@@ -50,10 +50,20 @@ export async function PUT(request: Request, { params }: Params) {
 
     const place = await prisma.place.findUnique({
       where: { slug },
-      select: { business: { select: { userId: true } } },
+      select: {
+        id: true, title: true, titleEn: true, province: true, district: true,
+        address: true, googleMapsUrl: true, category: true, tags: true,
+        coverUrl: true, gallery: true, description: true, descriptionShort: true,
+        openHours: true, closedDays: true, entryFee: true, phone: true,
+        website: true, lineId: true, approvalStatus: true,
+        business: { select: { userId: true } },
+      },
     });
     if (!place) return NextResponse.json({ message: "ไม่พบสถานที่" }, { status: 404 });
-    if (place.business?.userId !== session.userId && session.role !== "ADMIN") {
+
+    const isOwner = place.business?.userId === session.userId;
+    const isAdmin = session.role === "ADMIN" || session.role === "SUPERADMIN";
+    if (!isOwner && !isAdmin) {
       return NextResponse.json({ message: "ไม่มีสิทธิ์แก้ไข" }, { status: 403 });
     }
 
@@ -62,7 +72,6 @@ export async function PUT(request: Request, { params }: Params) {
             category: categoryRaw, tags, coverUrl, gallery, description, descriptionShort,
             openHours, closedDays, entryFee, phone, website, lineId } = body;
 
-    // Map Thai UI label → Prisma PlaceCategory enum (same as POST handler)
     const CATEGORY_MAP: Record<string, string> = {
       "ธรรมชาติ": "NATURE", "คาเฟ่": "CAFE", "ที่พัก": "ACCOMMODATION",
       "แคมปิ้ง": "CAMPING", "อาหาร": "FOOD", "วัด / ศาสนสถาน": "TEMPLE",
@@ -73,33 +82,88 @@ export async function PUT(request: Request, { params }: Params) {
       ? (CATEGORY_MAP[categoryRaw] ?? categoryRaw) as any
       : undefined;
 
-    const updated = await prisma.place.update({
-      where: { slug },
+    // ── แอดมินแก้ไขตรง (ไม่ต้องรออนุมัติ) ──────────────────
+    if (isAdmin) {
+      const updated = await prisma.place.update({
+        where: { slug },
+        data: {
+          ...(title            !== undefined && { title }),
+          ...(titleEn          !== undefined && { titleEn }),
+          ...(province         !== undefined && { province }),
+          ...(district         !== undefined && { district }),
+          ...(address          !== undefined && { address }),
+          ...(googleMapsUrl    !== undefined && { googleMapsUrl }),
+          ...(lat              !== undefined && { lat: lat ? Number(lat) : null }),
+          ...(lng              !== undefined && { lng: lng ? Number(lng) : null }),
+          ...(category         !== undefined && { category }),
+          ...(tags             !== undefined && { tags }),
+          ...(coverUrl         !== undefined && { coverUrl }),
+          ...(gallery          !== undefined && { gallery }),
+          ...(description      !== undefined && { description }),
+          ...(descriptionShort !== undefined && { descriptionShort }),
+          ...(openHours        !== undefined && { openHours }),
+          ...(closedDays       !== undefined && { closedDays }),
+          ...(entryFee         !== undefined && { entryFee }),
+          ...(phone            !== undefined && { phone }),
+          ...(website          !== undefined && { website }),
+          ...(lineId           !== undefined && { lineId }),
+        },
+      });
+      return NextResponse.json({ message: "อัปเดตสำเร็จ", place: updated });
+    }
+
+    // ── เจ้าของ: สร้าง PendingEdit รอตรวจสอบ ───────────────
+    // Original snapshot
+    const originalData = {
+      title: place.title, titleEn: place.titleEn,
+      province: place.province, district: place.district,
+      address: place.address, googleMapsUrl: place.googleMapsUrl,
+      category: place.category, tags: place.tags,
+      coverUrl: place.coverUrl, gallery: place.gallery,
+      description: place.description, descriptionShort: place.descriptionShort,
+      openHours: place.openHours, closedDays: place.closedDays,
+      entryFee: place.entryFee, phone: place.phone,
+      website: place.website, lineId: place.lineId,
+    };
+
+    const pendingData: Record<string, any> = {};
+    if (title            !== undefined) pendingData.title            = title;
+    if (titleEn          !== undefined) pendingData.titleEn          = titleEn;
+    if (province         !== undefined) pendingData.province         = province;
+    if (district         !== undefined) pendingData.district         = district;
+    if (address          !== undefined) pendingData.address          = address;
+    if (googleMapsUrl    !== undefined) pendingData.googleMapsUrl    = googleMapsUrl;
+    if (lat              !== undefined) pendingData.lat              = lat ? Number(lat) : null;
+    if (lng              !== undefined) pendingData.lng              = lng ? Number(lng) : null;
+    if (category         !== undefined) pendingData.category         = category;
+    if (tags             !== undefined) pendingData.tags             = tags;
+    if (coverUrl         !== undefined) pendingData.coverUrl         = coverUrl;
+    if (gallery          !== undefined) pendingData.gallery          = gallery;
+    if (description      !== undefined) pendingData.description      = description;
+    if (descriptionShort !== undefined) pendingData.descriptionShort = descriptionShort;
+    if (openHours        !== undefined) pendingData.openHours        = openHours;
+    if (closedDays       !== undefined) pendingData.closedDays       = closedDays;
+    if (entryFee         !== undefined) pendingData.entryFee         = entryFee;
+    if (phone            !== undefined) pendingData.phone            = phone;
+    if (website          !== undefined) pendingData.website          = website;
+    if (lineId           !== undefined) pendingData.lineId           = lineId;
+
+    // ยกเลิก PendingEdit เก่าที่ยังรออยู่ (ถ้ามี)
+    await (prisma as any).pendingEdit.deleteMany({
+      where: { targetId: place.id, targetType: "PLACE", status: "PENDING" },
+    });
+
+    await (prisma as any).pendingEdit.create({
       data: {
-        ...(title            !== undefined && { title }),
-        ...(titleEn          !== undefined && { titleEn }),
-        ...(province         !== undefined && { province }),
-        ...(district         !== undefined && { district }),
-        ...(address          !== undefined && { address }),
-        ...(googleMapsUrl    !== undefined && { googleMapsUrl }),
-        ...(lat              !== undefined && { lat: lat ? Number(lat) : null }),
-        ...(lng              !== undefined && { lng: lng ? Number(lng) : null }),
-        ...(category         !== undefined && { category }),
-        ...(tags             !== undefined && { tags }),
-        ...(coverUrl         !== undefined && { coverUrl }),
-        ...(gallery          !== undefined && { gallery }),
-        ...(description      !== undefined && { description }),
-        ...(descriptionShort !== undefined && { descriptionShort }),
-        ...(openHours        !== undefined && { openHours }),
-        ...(closedDays       !== undefined && { closedDays }),
-        ...(entryFee         !== undefined && { entryFee }),
-        ...(phone            !== undefined && { phone }),
-        ...(website          !== undefined && { website }),
-        ...(lineId           !== undefined && { lineId }),
+        targetType:    "PLACE",
+        targetId:      place.id,
+        originalData,
+        pendingData,
+        submittedById: session.userId,
       },
     });
 
-    return NextResponse.json({ message: "อัปเดตสำเร็จ", place: updated });
+    return NextResponse.json({ message: "ส่งการแก้ไขสำเร็จ รอการตรวจสอบจากแอดมิน", pending: true });
   } catch (error) {
     console.error("PUT /api/places/[slug]:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });

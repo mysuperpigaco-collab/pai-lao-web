@@ -66,6 +66,7 @@ export default function EditPlacePage({ params }: Props) {
   const [notFound, setNotFound]       = useState(false);
   const [isLoading, setIsLoading]     = useState(false);
   const [apiError, setApiError]       = useState("");
+  const [submitted, setSubmitted]     = useState(false);
 
   // ── Cover ──
   const [coverFile, setCoverFile]       = useState<File | null>(null);
@@ -229,7 +230,11 @@ export default function EditPlacePage({ params }: Props) {
       const data = await res.json();
       if (!res.ok) { setApiError(data.message || "เกิดข้อผิดพลาด"); setIsLoading(false); return; }
 
-      router.push("/business/dashboard");
+      if (data.pending) {
+        setSubmitted(true);
+      } else {
+        router.push("/business/dashboard");
+      }
     } catch (err: any) {
       setApiError(err.message || "ไม่สามารถเชื่อมต่อระบบได้ กรุณาลองใหม่");
       setIsLoading(false);
@@ -243,6 +248,24 @@ export default function EditPlacePage({ params }: Props) {
   if (pageLoading) return (
     <div className="edit-page" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
       <p style={{color:"#94a3b8",fontSize:"16px"}}>⏳ กำลังโหลดข้อมูล...</p>
+    </div>
+  );
+
+  if (submitted) return (
+    <div className="edit-page" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"24px",minHeight:"60vh"}}>
+      <div style={{fontSize:"56px"}}>⏳</div>
+      <div style={{textAlign:"center"}}>
+        <h2 style={{fontSize:"22px",fontWeight:700,color:"#1e293b",marginBottom:"8px"}}>ส่งคำขอแก้ไขแล้ว!</h2>
+        <p style={{color:"#64748b",fontSize:"15px",maxWidth:"360px"}}>
+          การแก้ไขข้อมูลสถานที่จะถูกตรวจสอบโดยแอดมินก่อนที่จะมีผล<br/>
+          โดยปกติใช้เวลา 1–2 วันทำการ
+        </p>
+      </div>
+      <div style={{display:"flex",gap:"12px"}}>
+        <Link href="/business/dashboard" style={{padding:"10px 20px",background:"#10b981",color:"#fff",borderRadius:"8px",textDecoration:"none",fontWeight:600,fontSize:"14px"}}>
+          กลับหน้าแดชบอร์ด
+        </Link>
+      </div>
     </div>
   );
 

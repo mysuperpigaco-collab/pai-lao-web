@@ -16,6 +16,7 @@ export async function GET(request: Request) {
     const skip     = (page - 1) * limit;
 
     const where: any = {
+      approvalStatus: "APPROVED",
       ...(category ? { category: category as any }                              : {}),
       ...(province ? { province: { contains: province, mode: "insensitive" } } : {}),
       ...(district ? { district: { contains: district, mode: "insensitive" } } : {}),
@@ -139,10 +140,11 @@ export async function POST(request: Request) {
         website:          website          ?? null,
         lineId:           lineId           ?? null,
         businessId:       business.id,
+        approvalStatus:   "PENDING",
       },
     });
 
-    return NextResponse.json({ message: "เพิ่มสถานที่สำเร็จ", place }, { status: 201 });
+    return NextResponse.json({ message: "เพิ่มสถานที่สำเร็จ รอการตรวจสอบจากแอดมิน", place, pending: true }, { status: 201 });
   } catch (error) {
     console.error("POST /api/places:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });

@@ -65,9 +65,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     fetch("/api/admin/reports?status=PENDING&limit=1")
       .then(r => r.json())
       .then(d => set(d.total || 0));
-    fetch("/api/admin/trips?approval=PENDING&limit=1")
-      .then(r => r.json())
-      .then(d => setPA(d.total || 0));
+    Promise.all([
+      fetch("/api/admin/trips?approval=PENDING&limit=1").then(r => r.json()).then(d => d.total || 0).catch(() => 0),
+      fetch("/api/admin/places?approval=PENDING&limit=1").then(r => r.json()).then(d => d.total || 0).catch(() => 0),
+      fetch("/api/admin/pending-edits?limit=1").then(r => r.json()).then(d => d.total || 0).catch(() => 0),
+    ]).then(([t, p, e]) => setPA(t + p + e));
   }, [me]);
 
   if (loading) {

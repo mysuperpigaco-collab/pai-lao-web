@@ -26,6 +26,7 @@ export default function EditTripPage({ params }: Props) {
   const [isLoadingTrip, setIsLoadingTrip] = useState(true);
   const [isLoading,     setIsLoading    ] = useState(false);
   const [error,         setError        ] = useState("");
+  const [submitted,     setSubmitted    ] = useState(false);
   const [notFound,      setNotFound     ] = useState(false);
 
   // ── Form state ─────────────────────────────────────────
@@ -181,7 +182,11 @@ export default function EditTripPage({ params }: Props) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "เกิดข้อผิดพลาด");
 
-      router.push("/dashboard");
+      if (data.pending) {
+        setSubmitted(true);
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err: any) {
       setError(err.message || "เกิดข้อผิดพลาด");
     } finally {
@@ -190,6 +195,24 @@ export default function EditTripPage({ params }: Props) {
   };
 
   // ── Loading / Not Found ────────────────────────────────
+  if (submitted) {
+    return (
+      <div className="create-container" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"24px",minHeight:"60vh"}}>
+        <div style={{fontSize:"56px"}}>⏳</div>
+        <div style={{textAlign:"center"}}>
+          <h2 style={{fontSize:"22px",fontWeight:700,color:"#1e293b",marginBottom:"8px"}}>ส่งคำขอแก้ไขแล้ว!</h2>
+          <p style={{color:"#64748b",fontSize:"15px",maxWidth:"360px"}}>
+            การแก้ไขทริปจะถูกตรวจสอบโดยแอดมินก่อนที่จะมีผล<br/>
+            โดยปกติใช้เวลา 1–2 วันทำการ
+          </p>
+        </div>
+        <Link href="/dashboard" style={{padding:"10px 20px",background:"#10b981",color:"#fff",borderRadius:"8px",textDecoration:"none",fontWeight:600,fontSize:"14px"}}>
+          กลับหน้าแดชบอร์ด
+        </Link>
+      </div>
+    );
+  }
+
   if (isLoadingTrip) {
     return (
       <div className="create-container">

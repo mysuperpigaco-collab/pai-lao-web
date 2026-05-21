@@ -48,63 +48,113 @@ export async function GET(_req: Request, { params }: Params) {
   }
 }
 
-// ── PUT /api/trips/[slug] — แก้ไขทริป ────────────────────
+// ── PUT /api/trips/[slug] — แก้ไขทริป (ต้องรอ admin อนุมัติ) ─
 export async function PUT(request: Request, { params }: Params) {
   try {
     const { slug } = await params;
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 
-    const trip = await prisma.trip.findUnique({ where: { slug }, select: { authorId: true } });
+    const trip = await prisma.trip.findUnique({
+      where: { slug },
+      select: {
+        id: true, authorId: true, title: true, subtitle: true,
+        description: true, coverUrl: true, gallery: true, mood: true,
+        budget: true, location: true, tags: true, youtubeUrl: true,
+        tiktokUrl: true, isPublished: true, approvalStatus: true,
+      },
+    });
     if (!trip) return NextResponse.json({ message: "ไม่พบทริป" }, { status: 404 });
-    if (trip.authorId !== session.userId && session.role !== "ADMIN") {
+
+    const isOwner = trip.authorId === session.userId;
+    const isAdmin = session.role === "ADMIN" || session.role === "SUPERADMIN";
+    if (!isOwner && !isAdmin) {
       return NextResponse.json({ message: "ไม่มีสิทธิ์แก้ไข" }, { status: 403 });
     }
 
     const body = await request.json();
-    const { title, subtitle, description, coverUrl, gallery, mood, budget, location, tags, isPublished, timeline, youtubeUrl, tiktokUrl } = body;
+    const { title, subtitle, description, coverUrl, gallery, mood, budget,
+            location, tags, isPublished, timeline, youtubeUrl, tiktokUrl } = body;
 
-    if (timeline) {
-      await prisma.timelineStop.deleteMany({ where: { trip: { slug } } });
+    // ── แอดมินแก้ไขตรง ──────────────────────────────────────
+    if (isAdmin) {
+      if (timeline) {
+        await prisma.timelineStop.deleteMany({ where: { trip: { slug } } });
+      }
+      const updated = await prisma.trip.update({
+        where: { slug },
+        data: {
+          ...(title       !== undefined && { title }),
+          ...(subtitle    !== undefined && { subtitle }),
+          ...(description !== undefined && { description }),
+          ...(coverUrl    !== undefined && { coverUrl }),
+          ...(gallery     !== undefined && { gallery }),
+          ...(mood        !== undefined && { mood }),
+          ...(budget      !== undefined && { budget: budget ? Number(budget) : null }),
+          ...(location    !== undefined && { location }),
+          ...(tags        !== undefined && { tags }),
+          ...(youtubeUrl  !== undefined && { youtubeUrl: youtubeUrl || null }),
+          ...(tiktokUrl   !== undefined && { tiktokUrl:  tiktokUrl  || null }),
+          ...(isPublished !== undefined && { isPublished }),
+          ...(timeline?.length && {
+            timeline: {
+              create: (timeline as any[]).map((stop: any, index: number) => ({
+                order: index, date: stop.date ?? "", time: stop.time ?? "",
+                placeName: stop.place ?? stop.placeName ?? "",
+                province: stop.province ?? "", district: stop.district ?? "",
+                description: stop.description ?? "",
+                transport: stop.transport ?? null, duration: stop.duration ?? null,
+                cost: stop.cost ?? null,
+                images: stop.images ?? (stop.image ? [stop.image] : []),
+              })),
+            },
+          }),
+        },
+        include: { timeline: { orderBy: { order: "asc" } } },
+      });
+      return NextResponse.json({ message: "อัปเดตสำเร็จ", trip: updated });
     }
 
-    const updated = await prisma.trip.update({
-      where: { slug },
-      data: {
-        ...(title       !== undefined && { title }),
-        ...(subtitle    !== undefined && { subtitle }),
-        ...(description !== undefined && { description }),
-        ...(coverUrl    !== undefined && { coverUrl }),
-        ...(gallery     !== undefined && { gallery }),
-        ...(mood        !== undefined && { mood }),
-        ...(budget      !== undefined && { budget: budget ? Number(budget) : null }),
-        ...(location    !== undefined && { location }),
-        ...(tags        !== undefined && { tags }),
-        ...(youtubeUrl  !== undefined && { youtubeUrl: youtubeUrl || null }),
-        ...(tiktokUrl   !== undefined && { tiktokUrl:  tiktokUrl  || null }),
-        ...(isPublished !== undefined && { isPublished }),
-        ...(timeline?.length && {
-          timeline: {
-            create: (timeline as any[]).map((stop: any, index: number) => ({
-              order:       index,
-              date:        stop.date        ?? "",
-              time:        stop.time        ?? "",
-              placeName:   stop.place       ?? stop.placeName ?? "",
-              province:    stop.province    ?? "",
-              district:    stop.district    ?? "",
-              description: stop.description ?? "",
-              transport:   stop.transport   ?? null,
-              duration:    stop.duration    ?? null,
-              cost:        stop.cost        ?? null,
-              images:      stop.images      ?? (stop.image ? [stop.image] : []),
-            })),
-          },
-        }),
-      },
-      include: { timeline: { orderBy: { order: "asc" } } },
+    // ── เจ้าของ: สร้าง PendingEdit รอตรวจสอบ ─────────────────
+    const originalData = {
+      title: trip.title, subtitle: trip.subtitle,
+      description: trip.description, coverUrl: trip.coverUrl,
+      gallery: trip.gallery, mood: trip.mood,
+      budget: trip.budget ? Number(trip.budget) : null,
+      location: trip.location, tags: trip.tags,
+      youtubeUrl: trip.youtubeUrl, tiktokUrl: trip.tiktokUrl,
+    };
+
+    const pendingData: Record<string, any> = {};
+    if (title       !== undefined) pendingData.title       = title;
+    if (subtitle    !== undefined) pendingData.subtitle    = subtitle;
+    if (description !== undefined) pendingData.description = description;
+    if (coverUrl    !== undefined) pendingData.coverUrl    = coverUrl;
+    if (gallery     !== undefined) pendingData.gallery     = gallery;
+    if (mood        !== undefined) pendingData.mood        = mood;
+    if (budget      !== undefined) pendingData.budget      = budget ? Number(budget) : null;
+    if (location    !== undefined) pendingData.location    = location;
+    if (tags        !== undefined) pendingData.tags        = tags;
+    if (youtubeUrl  !== undefined) pendingData.youtubeUrl  = youtubeUrl || null;
+    if (tiktokUrl   !== undefined) pendingData.tiktokUrl   = tiktokUrl  || null;
+    if (timeline    !== undefined) pendingData.timeline    = timeline;
+
+    // ยกเลิก PendingEdit เก่า
+    await (prisma as any).pendingEdit.deleteMany({
+      where: { targetId: trip.id, targetType: "TRIP", status: "PENDING" },
     });
 
-    return NextResponse.json({ message: "อัปเดตสำเร็จ", trip: updated });
+    await (prisma as any).pendingEdit.create({
+      data: {
+        targetType:    "TRIP",
+        targetId:      trip.id,
+        originalData,
+        pendingData,
+        submittedById: session.userId,
+      },
+    });
+
+    return NextResponse.json({ message: "ส่งการแก้ไขสำเร็จ รอการตรวจสอบจากแอดมิน", pending: true });
   } catch (error) {
     console.error("PUT /api/trips/[slug]:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
