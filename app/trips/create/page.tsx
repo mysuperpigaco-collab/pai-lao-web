@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, LayoutDashboard } from "lucide-react";
@@ -11,6 +11,17 @@ import { PROVINCES, getDistricts } from "@/data/thailand";
 export default function CreateStoryPage() {
   const router   = useRouter();
   const { user } = useAuth();
+
+  // ── Guard: ADMIN/SUPERADMIN ไม่สามารถสร้างทริปได้ ──────────
+  useEffect(() => {
+    if (user && (user.role === "ADMIN" || user.role === "SUPERADMIN")) {
+      router.replace("/admin");
+    }
+  }, [user, router]);
+
+  if (user && (user.role === "ADMIN" || user.role === "SUPERADMIN")) {
+    return null;
+  }
   const today    = new Date().toISOString().split("T")[0];
 
   // ── State ────────────────────────────────────────────────

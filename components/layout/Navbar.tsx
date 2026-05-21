@@ -29,7 +29,10 @@ export default function Navbar() {
   const [searchType, setSearchType] = useState("all");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const dashboardHref = user?.role === "BUSINESS" ? "/business/dashboard" : "/dashboard";
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
+  const dashboardHref = isAdmin ? "/admin"
+    : user?.role === "BUSINESS" ? "/business/dashboard"
+    : "/dashboard";
   const avatarInitial = user ? (user.displayName || user.firstName).charAt(0).toUpperCase() : "";
 
   const handleSearch = (e?: React.FormEvent) => {
@@ -158,7 +161,19 @@ export default function Navbar() {
             <div style={{ width: "80px", height: "38px", background: "#f0fdf4", borderRadius: "12px" }} />
           ) : user ? (
             <>
-              {user.role === "BUSINESS" ? (
+              {isAdmin ? (
+                <Link href="/admin" style={{
+                  display: "flex", alignItems: "center", gap: "6px",
+                  textDecoration: "none", color: "#fff",
+                  background: "linear-gradient(135deg, #1e40af, #4facfe)",
+                  padding: "9px 16px", borderRadius: "12px",
+                  fontWeight: 700, fontSize: "13px",
+                  boxShadow: "0 3px 10px rgba(79,172,254,0.3)",
+                  whiteSpace: "nowrap",
+                }}>
+                  🛡️ Admin Panel
+                </Link>
+              ) : user.role === "BUSINESS" ? (
                 <Link href="/business/places/create" style={{
                   display: "flex", alignItems: "center", gap: "6px",
                   textDecoration: "none", color: "#fff",

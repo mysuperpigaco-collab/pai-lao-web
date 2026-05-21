@@ -14,6 +14,15 @@ const PROTECTED_ROUTES = [
 // Route ที่ถ้า login แล้วไม่ควรเข้า (redirect ออก)
 const AUTH_ROUTES = ["/login", "/signup"];
 
+// Admin roles
+const ADMIN_ROLES = ["ADMIN", "SUPERADMIN"];
+
+function getHomeForRole(role: string) {
+  if (ADMIN_ROLES.includes(role)) return "/admin";
+  if (role === "BUSINESS") return "/business/dashboard";
+  return "/dashboard";
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -32,9 +41,17 @@ export async function middleware(request: NextRequest) {
   // ── ถ้า login แล้วพยายามเข้า /login หรือ /signup ──────────
   const isAuthRoute = AUTH_ROUTES.some((r) => pathname.startsWith(r));
   if (isAuthRoute && session) {
-    const redirectTo =
-      session.role === "BUSINESS" ? "/business/dashboard" : "/dashboard";
-    return NextResponse.redirect(new URL(redirectTo, request.url));
+    return NextResponse.redirect(new URL(getHomeForRole(session.role), request.url));
+  }
+
+  // ── ADMIN/SUPERADMIN ห้ามสร้างทริป ──────────────────────
+  if (pathname.startsWith("/trips/create") && session && ADMIN_ROLES.includes(session.role)) {
+    return NextResponse.redirect(new URL("/admin", request.url));
+  }
+
+  // ── ADMIN/SUPERADMIN ห้ามเข้า /dashboard (user dashboard) ─
+  if (pathname.startsWith("/dashboard") && session && ADMIN_ROLES.includes(session.role)) {
+    return NextResponse.redirect(new URL("/admin", request.url));
   }
 
   // ── ป้องกัน Business route จาก Traveler ──────────────────
