@@ -47,6 +47,7 @@ export default function CreateStoryPage() {
   const [isBackHover, setIsBackHover] = useState(false);
   const [isLoading,   setIsLoading  ] = useState(false);
   const [error,       setError      ] = useState("");
+  const [submitted,   setSubmitted  ] = useState(false);
 
   // ── Handlers ─────────────────────────────────────────────
   const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,8 +138,9 @@ export default function CreateStoryPage() {
       const data = await res.json();
       if (!res.ok) { setError(data.message || "เกิดข้อผิดพลาด"); setIsLoading(false); return; }
 
-      // 5. redirect ไปหน้า dashboard หลังสร้างสำเร็จ
-      router.push("/dashboard");
+      // 5. แสดงหน้า "รอการตรวจสอบ" แทน redirect ทันที
+      setSubmitted(true);
+      setIsLoading(false);
     } catch (err: any) {
       setError(err.message || "เกิดข้อผิดพลาด กรุณาลองใหม่");
       setIsLoading(false);
@@ -146,6 +148,57 @@ export default function CreateStoryPage() {
   };
 
   // ── Render ────────────────────────────────────────────────
+
+  // หน้าสำเร็จ — รอการตรวจสอบ
+  if (submitted) {
+    return (
+      <div style={{
+        minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
+        background: "linear-gradient(135deg,#f0fdf4,#ecfdf5)", padding: 24,
+      }}>
+        <div style={{
+          maxWidth: 480, width: "100%", background: "#fff", borderRadius: 24,
+          padding: "48px 40px", textAlign: "center",
+          boxShadow: "0 8px 40px rgba(0,0,0,0.1)", border: "1.5px solid #d1fae5",
+        }}>
+          <div style={{ fontSize: "4rem", marginBottom: 16 }}>📋</div>
+          <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#065f46", margin: "0 0 12px" }}>
+            ส่งทริปสำเร็จแล้ว!
+          </h2>
+          <p style={{ fontSize: "0.9rem", color: "#6b7280", lineHeight: 1.7, margin: "0 0 8px" }}>
+            ทริปของคุณอยู่ระหว่าง<strong style={{ color: "#d97706" }}> รอแอดมินตรวจสอบ</strong>
+          </p>
+          <p style={{ fontSize: "0.85rem", color: "#9ca3af", lineHeight: 1.6, margin: "0 0 32px" }}>
+            เมื่อผ่านการตรวจสอบแล้ว ทริปจะถูกเผยแพร่บนแพลตฟอร์มโดยอัตโนมัติ
+            คุณสามารถดูสถานะได้ที่หน้า Dashboard
+          </p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            <button
+              onClick={() => router.push("/dashboard")}
+              style={{
+                background: "linear-gradient(135deg,#10b981,#06b6d4)", color: "#fff",
+                border: "none", borderRadius: 12, padding: "12px 28px",
+                fontWeight: 700, fontSize: "0.9rem", cursor: "pointer",
+              }}
+            >
+              ดูสถานะใน Dashboard
+            </button>
+            <button
+              onClick={() => { setSubmitted(false); setTitle(""); setContent(""); setCoverFile(null); setCoverPreview(null); setGalleryFiles([]); setGalleryPreviews([]); }}
+              style={{
+                background: "#f1f5f9", color: "#475569",
+                border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "12px 28px",
+                fontWeight: 700, fontSize: "0.9rem", cursor: "pointer",
+              }}
+            >
+              เขียนทริปใหม่
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="create-container">
       <div className="create-card">

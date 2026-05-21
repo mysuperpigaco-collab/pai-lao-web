@@ -35,7 +35,38 @@ export async function GET(request: Request) {
     prisma.report.count({ where }),
   ]);
 
-  return NextResponse.json({ reports, total, page, pages: Math.ceil(total / limit) });
+  // Enrich with slug for TRIP / PLACE targets (for direct links)
+  const enriched = await Promise.all(
+    reports.map(async (r) => {
+      let targetSlug: string | null = null;
+      let targetTitle: string | null = null;
+
+      if (r.targetType === "TRIP") {
+        const trip = await prisma.trip.findUnique({ where: { id: r.targetId }, select: { slug: true, title: true } });
+        targetSlug = trip?.slug ?? null;
+        targetTitle = trip?.title ?? null;
+      } else if (r.targetType === "PLACE") {
+        const place = await prisma.place.findUnique({ where: { id: r.targetId }, select: { slug: true, title: true } });
+        targetSlug = place?.slug ?? null;
+        targetTitle = place?.title ?? null;
+      } else if (r.targetType === "REVIEW" || r.targetType === "REPLY") {
+        // Find which trip/place this review belongs to
+        const review = await prisma.review.findUnique({
+          where: { id: r.targetId },
+          select: {
+            trip:  { select: { slug: true, title: true } },
+            place: { select: { slug: true, title: true } },
+          },
+        }).catch(() => null);
+        if (review?.trip)  { targetSlug = review.trip.slug;  targetTitle = review.trip.title; }
+        if (review?.place) { targetSlug = review.place.slug; targetTitle = review.place.title; }
+      }
+
+      return { ...r, targetSlug, targetTitle };
+    })
+  );
+
+  return NextResponse.json({ reports: enriched, total, page, pages: Math.ceil(total / limit) });
 }
 
 // PUT /api/admin/reports — resolve or dismiss

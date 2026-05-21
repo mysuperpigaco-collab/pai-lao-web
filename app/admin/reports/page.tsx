@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 
 const TARGET_TYPES = ["","REVIEW","REPLY","TRIP","PLACE","USER"];
 const REASONS = ["SPAM","INAPPROPRIATE","FAKE","HARASSMENT","OTHER"];
@@ -41,6 +42,14 @@ export default function AdminReportsPage() {
     setDetail(null);
     load();
     setTimeout(() => setMsg(""), 3000);
+  };
+
+  const getContentUrl = (r: any): string | null => {
+    if (!r.targetSlug) return null;
+    if (r.targetType === "TRIP")    return `/trips/${r.targetSlug}`;
+    if (r.targetType === "PLACE")   return `/place/${r.targetSlug}`;
+    if (r.targetType === "REVIEW")  return r.targetSlug ? (r.targetTitle ? `/trips/${r.targetSlug}` : `/place/${r.targetSlug}`) : null;
+    return null;
   };
 
   const targetTypeIcon = (t: string) => {
@@ -142,6 +151,11 @@ export default function AdminReportsPage() {
                     <td>
                       <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                         <button className="adm-btn ghost sm" onClick={() => setDetail(r)}>🔍 ดู</button>
+                        {getContentUrl(r) && (
+                          <Link href={getContentUrl(r)!} target="_blank" className="adm-btn ghost sm" style={{ color:"#4facfe" }}>
+                            🔗 เปิด
+                          </Link>
+                        )}
                         {r.status === "PENDING" && (
                           <>
                             <button className="adm-btn success sm" onClick={() => handleAction(r.id, "REVIEWED")}>✅ ดำเนินการ</button>
@@ -178,7 +192,17 @@ export default function AdminReportsPage() {
             <div className="adm-modal-body">
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"10px 20px", marginBottom:12 }}>
                 <div><span style={{color:"#64748b",fontSize:"0.72rem"}}>ประเภทเป้าหมาย</span><br /><span style={{color:"#e2e8f0",fontWeight:600}}>{targetTypeIcon(detail.targetType)} {detail.targetType}</span></div>
-                <div><span style={{color:"#64748b",fontSize:"0.72rem"}}>ID เป้าหมาย</span><br /><span style={{color:"#94a3b8",fontSize:"0.72rem",wordBreak:"break-all"}}>{detail.targetId}</span></div>
+                <div>
+                  <span style={{color:"#64748b",fontSize:"0.72rem"}}>เนื้อหาที่ถูกรายงาน</span><br />
+                  {getContentUrl(detail) ? (
+                    <Link href={getContentUrl(detail)!} target="_blank"
+                      style={{ color:"#4facfe", fontWeight:600, fontSize:"0.82rem", textDecoration:"none" }}>
+                      🔗 {detail.targetTitle || detail.targetType} ↗
+                    </Link>
+                  ) : (
+                    <span style={{color:"#94a3b8",fontSize:"0.72rem",wordBreak:"break-all"}}>{detail.targetId}</span>
+                  )}
+                </div>
                 <div><span style={{color:"#64748b",fontSize:"0.72rem"}}>เหตุผล</span><br /><span style={{color:"#fca5a5",fontWeight:600}}>{REASON_LABELS[detail.reason] || detail.reason}</span></div>
                 <div><span style={{color:"#64748b",fontSize:"0.72rem"}}>สถานะ</span><br /><span className={`adm-pill ${STATUS_COLORS[detail.status]}`}>{detail.status}</span></div>
                 <div><span style={{color:"#64748b",fontSize:"0.72rem"}}>ผู้รายงาน</span><br /><span style={{color:"#e2e8f0"}}>@{detail.reporter.username}</span></div>
