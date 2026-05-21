@@ -116,7 +116,7 @@ export default function CreateStoryPage() {
     setTimeline(updated);
   };
 
-  const openSuggest = (idx: number) => setSuggestForm(f => ({ ...f, [idx]: { open: true, cat: "NATURE", saving: false } }));
+  const openSuggest = (idx: number) => setSuggestForm(f => ({ ...f, [idx]: { open: true, cat: "NATURE", saving: false, mapsUrl: "" } }));
   const closeSuggest = (idx: number) => setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], open: false } }));
   const suggestPlace = async (idx: number) => {
     const item = timeline[idx];
