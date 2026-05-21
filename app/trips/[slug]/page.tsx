@@ -303,6 +303,7 @@ export default async function TripDetailPage({ params }: Props) {
                   text: r.text,
                   createdAt: r.createdAt.toISOString(),
                   author: r.author,
+                  likes: r.likes ?? 0,
                   replies: r.replies.map(rep => ({
                     id: rep.id,
                     text: rep.text,

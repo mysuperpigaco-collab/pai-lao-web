@@ -25,6 +25,7 @@ interface Review {
   createdAt: string;
   author: ReviewAuthor;
   replies: ReviewReply[];
+  likes?: number;
 }
 
 type Props = {
@@ -141,6 +142,11 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
   const [replyOpen, setReplyOpen] = useState<Record<string, boolean>>({});
   const [replyText, setReplyText] = useState<Record<string, string>>({});
   const [replySubmitting, setReplySubmitting] = useState<Record<string, boolean>>({});
+  const [likedReviews, setLikedReviews] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try { return new Set(JSON.parse(localStorage.getItem("liked_reviews") || "[]")); }
+    catch { return new Set(); }
+  });
 
   // Report modal state
   const [reportTarget, setReportTarget] = useState<{ id: string; type: string } | null>(null);
@@ -216,6 +222,30 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
     } catch {}
     setReplySubmitting(r => ({ ...r, [reviewId]: false }));
   };
+
+  async function handleLike(reviewId: string) {
+    if (!user) return;
+    const alreadyLiked = likedReviews.has(reviewId);
+    const action = alreadyLiked ? "unlike" : "like";
+    // Optimistic update
+    setLocalReviews(prev => prev.map(r =>
+      r.id === reviewId ? { ...r, likes: Math.max(0, (r.likes ?? 0) + (alreadyLiked ? -1 : 1)) } : r
+    ));
+    const newSet = new Set(likedReviews);
+    if (alreadyLiked) newSet.delete(reviewId); else newSet.add(reviewId);
+    setLikedReviews(newSet);
+    try { localStorage.setItem("liked_reviews", JSON.stringify([...newSet])); } catch {}
+    try {
+      const res = await fetch(`/api/reviews/${reviewId}/like`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLocalReviews(prev => prev.map(r => r.id === reviewId ? { ...r, likes: data.likes } : r));
+      }
+    } catch {}
+  }
 
   const ratingBreakdown = [5, 4, 3, 2, 1].map(star => ({
     star,
@@ -353,14 +383,30 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
                   {new Date(review.createdAt).toLocaleDateString("th-TH")}
                 </div>
 
-                {/* Reply button */}
-                {user && (
+                {/* Like + Reply buttons */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
                   <button
-                    onClick={() => setReplyOpen(o => ({ ...o, [review.id]: !o[review.id] }))}
-                    style={{ marginTop: 8, padding: "4px 12px", borderRadius: 999, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-                    💬 {replyOpen[review.id] ? "ยกเลิก" : "ตอบกลับ"}
+                    onClick={() => handleLike(review.id)}
+                    disabled={!user || user.role === "ADMIN" || user.role === "SUPERADMIN"}
+                    style={{
+                      padding: "4px 12px", borderRadius: 999,
+                      border: `1px solid ${likedReviews.has(review.id) ? "#fda4af" : "#e2e8f0"}`,
+                      background: likedReviews.has(review.id) ? "#fff1f2" : "#f8fafc",
+                      color: likedReviews.has(review.id) ? "#e11d48" : "#64748b",
+                      fontSize: 12, fontWeight: 700, cursor: user ? "pointer" : "default",
+                      fontFamily: "inherit", transition: "all 0.15s",
+                      opacity: (!user || user.role === "ADMIN" || user.role === "SUPERADMIN") ? 0.5 : 1,
+                    }}>
+                    {likedReviews.has(review.id) ? "❤️" : "🤍"} {review.likes ?? 0}
                   </button>
-                )}
+                  {user && (
+                    <button
+                      onClick={() => setReplyOpen(o => ({ ...o, [review.id]: !o[review.id] }))}
+                      style={{ padding: "4px 12px", borderRadius: 999, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                      💬 {replyOpen[review.id] ? "ยกเลิก" : "ตอบกลับ"}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 

@@ -35,6 +35,8 @@ export async function GET() {
         province: p.province, district: p.district, category: p.category,
         coverUrl: p.coverUrl, isVerified: p.isVerified, avgRating,
         reviewCount: p._count.reviews, bookmarkCount: p._count.bookmarks, createdAt: p.createdAt,
+        approvalStatus: (p as any).approvalStatus ?? "APPROVED",
+        rejectionReason: (p as any).rejectionReason ?? null,
       };
     });
 

@@ -183,6 +183,8 @@ export default function BusinessDashboardPage() {
               reviewCount={p.reviewCount}
               bookmarkCount={p.bookmarkCount}
               onDeleted={handlePlaceDeleted}
+              approvalStatus={p.approvalStatus}
+              rejectionReason={p.rejectionReason}
             />
           ))}
         </section>

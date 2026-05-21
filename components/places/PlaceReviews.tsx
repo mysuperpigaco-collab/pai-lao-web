@@ -12,7 +12,7 @@ interface ReviewReply {
 }
 interface Review {
   id: string; rating: number; text: string; createdAt: string;
-  author: ReviewAuthor; replies: ReviewReply[];
+  author: ReviewAuthor; replies: ReviewReply[]; likes?: number;
 }
 type Props = {
   placeId: string;
@@ -112,9 +112,37 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
   const [replyOpen, setReplyOpen] = useState<Record<string, boolean>>({});
   const [replyText, setReplyText] = useState<Record<string, string>>({});
   const [replySubmitting, setReplySubmitting] = useState<Record<string, boolean>>({});
+  const [likedReviews, setLikedReviews] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try { return new Set(JSON.parse(localStorage.getItem("liked_reviews") || "[]")); }
+    catch { return new Set(); }
+  });
 
   // Report modal
   const [reportTarget, setReportTarget] = useState<{ id: string; type: string } | null>(null);
+
+  async function handleLike(reviewId: string) {
+    if (!user || user.role === "ADMIN" || user.role === "SUPERADMIN") return;
+    const alreadyLiked = likedReviews.has(reviewId);
+    const action = alreadyLiked ? "unlike" : "like";
+    setReviews(prev => prev.map(r =>
+      r.id === reviewId ? { ...r, likes: Math.max(0, (r.likes ?? 0) + (alreadyLiked ? -1 : 1)) } : r
+    ));
+    const newSet = new Set(likedReviews);
+    if (alreadyLiked) newSet.delete(reviewId); else newSet.add(reviewId);
+    setLikedReviews(newSet);
+    try { localStorage.setItem("liked_reviews", JSON.stringify([...newSet])); } catch {}
+    try {
+      const res = await fetch(`/api/reviews/${reviewId}/like`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, likes: data.likes } : r));
+      }
+    } catch {}
+  }
 
   const isBusiness = user?.role === "BUSINESS";
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
@@ -349,27 +377,44 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
                 </div>
               )}
 
-              {/* Reply zone */}
-              {user && (
-                <div className="pr-reply-zone">
-                  {replyOpen[review.id] ? (
-                    <div className="pr-reply-form">
-                      <textarea value={replyText[review.id] ?? ""} onChange={e => setReplyText(t => ({ ...t, [review.id]: e.target.value }))}
-                        placeholder={isOwner ? "ตอบกลับในฐานะเจ้าของสถานที่..." : "ตอบกลับความคิดเห็น..."} className="pr-reply-textarea" />
-                      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                        <button onClick={() => handleReply(review.id)} disabled={replySubmitting[review.id] || !replyText[review.id]?.trim()} className="pr-reply-submit">
-                          {replySubmitting[review.id] ? "⏳" : isOwner ? "🏢 ตอบกลับ" : "💬 ตอบกลับ"}
-                        </button>
-                        <button onClick={() => setReplyOpen(o => ({ ...o, [review.id]: false }))} className="pr-reply-cancel">ยกเลิก</button>
+              {/* Like + Reply zone */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+                <button
+                  onClick={() => handleLike(review.id)}
+                  disabled={!user || isAdmin || isBusiness}
+                  style={{
+                    padding: "4px 12px", borderRadius: 999,
+                    border: `1px solid ${likedReviews.has(review.id) ? "#fda4af" : "#e2e8f0"}`,
+                    background: likedReviews.has(review.id) ? "#fff1f2" : "#f8fafc",
+                    color: likedReviews.has(review.id) ? "#e11d48" : "#64748b",
+                    fontSize: 12, fontWeight: 700,
+                    cursor: (user && !isAdmin && !isBusiness) ? "pointer" : "default",
+                    fontFamily: "inherit", transition: "all 0.15s",
+                    opacity: (!user || isAdmin || isBusiness) ? 0.5 : 1,
+                  }}>
+                  {likedReviews.has(review.id) ? "❤️" : "🤍"} {review.likes ?? 0}
+                </button>
+                {user && (
+                  <div className="pr-reply-zone" style={{ flex: 1 }}>
+                    {replyOpen[review.id] ? (
+                      <div className="pr-reply-form">
+                        <textarea value={replyText[review.id] ?? ""} onChange={e => setReplyText(t => ({ ...t, [review.id]: e.target.value }))}
+                          placeholder={isOwner ? "ตอบกลับในฐานะเจ้าของสถานที่..." : "ตอบกลับความคิดเห็น..."} className="pr-reply-textarea" />
+                        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                          <button onClick={() => handleReply(review.id)} disabled={replySubmitting[review.id] || !replyText[review.id]?.trim()} className="pr-reply-submit">
+                            {replySubmitting[review.id] ? "⏳" : isOwner ? "🏢 ตอบกลับ" : "💬 ตอบกลับ"}
+                          </button>
+                          <button onClick={() => setReplyOpen(o => ({ ...o, [review.id]: false }))} className="pr-reply-cancel">ยกเลิก</button>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <button onClick={() => setReplyOpen(o => ({ ...o, [review.id]: true }))} className="pr-reply-open-btn">
-                      {isOwner ? "🏢 ตอบกลับในฐานะเจ้าของ" : "💬 ตอบกลับ · Reply"}
-                    </button>
-                  )}
-                </div>
-              )}
+                    ) : (
+                      <button onClick={() => setReplyOpen(o => ({ ...o, [review.id]: true }))} className="pr-reply-open-btn">
+                        {isOwner ? "🏢 ตอบกลับในฐานะเจ้าของ" : "💬 ตอบกลับ · Reply"}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
