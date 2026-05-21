@@ -45,7 +45,7 @@ export default function CreateStoryPage() {
   ]);
   const [placeSuggestions, setPlaceSuggestions] = useState<Record<number, any[]>>({});
   const [placeSearchLoading, setPlaceSearchLoading] = useState<Record<number, boolean>>({});
-  const [suggestForm, setSuggestForm] = useState<Record<number, { open: boolean; cat: string; saving: boolean }>>({});
+  const [suggestForm, setSuggestForm] = useState<Record<number, { open: boolean; cat: string; saving: boolean; mapsUrl: string }>>({});
   const placeSearchTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
 
   const [showPreview, setShowPreview] = useState(false);
@@ -126,7 +126,7 @@ export default function CreateStoryPage() {
     try {
       const res = await fetch("/api/places/suggest", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: item.place, province: item.province, district: item.district, category: form?.cat ?? "NATURE" }),
+        body: JSON.stringify({ title: item.place, province: item.province, district: item.district, category: form?.cat ?? "NATURE", googleMapsUrl: form?.mapsUrl || undefined }),
       });
       const data = await res.json();
       if (res.ok && data.place) {
@@ -490,7 +490,12 @@ export default function CreateStoryPage() {
                             ยกเลิก
                           </button>
                         </div>
-                        <p style={{ margin: 0, fontSize: 11, color: "#6b7280" }}>สถานที่จะขึ้นในหน้าค้นหา และรอเจ้าของมา claim ภายหลัง</p>
+                        <input type="url"
+                          value={suggestForm[idx]?.mapsUrl ?? ""}
+                          onChange={e => setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], mapsUrl: e.target.value } }))}
+                          placeholder="https://maps.google.com/?q=... (ไม่บังคับ)"
+                          style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #d1fae5", fontSize: 12, fontFamily: "inherit", background: "#fff", boxSizing: "border-box" as const }} />
+                        <p style={{ margin: 0, fontSize: 11, color: "#6b7280" }}>สถานที่จะแสดงต่อเมื่อได้รับการอนุมัติ และรอเจ้าของมา claim ภายหลัง</p>
                       </div>
                     )}
                   </div>

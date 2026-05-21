@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "เจ้าของธุรกิจกรุณาเพิ่มสถานที่ผ่านหน้าแดชบอร์ด" }, { status: 403 });
     }
 
-    const { title, province, district, category } = await request.json();
+    const { title, province, district, category, googleMapsUrl } = await request.json();
     if (!title?.trim()) return NextResponse.json({ message: "กรุณาระบุชื่อสถานที่" }, { status: 400 });
     if (!province)      return NextResponse.json({ message: "กรุณาระบุจังหวัด" }, { status: 400 });
 
@@ -41,8 +41,9 @@ export async function POST(request: Request) {
         category:       catEnum as any,
         coverUrl:       "",          // ยังไม่มีรูป — จะถูกอัปเดตเมื่อมีเจ้าของ
         description:    "สถานที่แนะนำโดยนักท่องเที่ยว ยังไม่มีเจ้าของ",
-        approvalStatus: "APPROVED",  // ขึ้นบนเว็บได้เลย แต่ไม่มีเจ้าของ
+        approvalStatus: "PENDING",   // รอแอดมินตรวจสอบก่อนแสดง
         businessId:     null,
+        ...(googleMapsUrl?.trim() ? { googleMapsUrl: googleMapsUrl.trim() } : {}),
       },
     });
 
