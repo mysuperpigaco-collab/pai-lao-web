@@ -41,34 +41,54 @@ export async function GET(request: Request) {
       let reportedUserId: string | null = null;
       let reportedUser: { id: string; username: string; displayName: string | null; avatarUrl: string | null; postBannedUntil: Date | null; bannedUntil: Date | null } | null = null;
 
+      let reportedContent: string | null = null;
+      let reportedContentType: string | null = null;
+
       if (r.targetType === "TRIP") {
-        const trip = await prisma.trip.findUnique({ where: { id: r.targetId }, select: { slug: true, title: true, authorId: true } });
+        const trip = await prisma.trip.findUnique({ where: { id: r.targetId }, select: { slug: true, title: true, description: true, authorId: true } });
         targetSlug = trip?.slug ?? null;
         targetTitle = trip?.title ?? null;
         reportedUserId = trip?.authorId ?? null;
+        if (trip?.description) {
+          reportedContent = `📖 ${trip.title}\n${trip.description.slice(0, 300)}${trip.description.length > 300 ? "…" : ""}`;
+          reportedContentType = "ทริป";
+        }
       } else if (r.targetType === "PLACE") {
-        const place = await prisma.place.findUnique({ where: { id: r.targetId }, select: { slug: true, title: true, business: { select: { userId: true } } } });
+        const place = await prisma.place.findUnique({ where: { id: r.targetId }, select: { slug: true, title: true, description: true, business: { select: { userId: true } } } });
         targetSlug = place?.slug ?? null;
         targetTitle = place?.title ?? null;
         reportedUserId = place?.business?.userId ?? null;
+        if (place?.description) {
+          reportedContent = `📍 ${place.title}\n${place.description.slice(0, 300)}${place.description.length > 300 ? "…" : ""}`;
+          reportedContentType = "สถานที่";
+        }
       } else if (r.targetType === "REVIEW") {
         const review = await prisma.review.findUnique({
           where: { id: r.targetId },
-          select: { authorId: true, trip: { select: { slug: true, title: true } }, place: { select: { slug: true, title: true } } },
+          select: { text: true, rating: true, authorId: true, author: { select: { username: true, displayName: true } }, trip: { select: { slug: true, title: true } }, place: { select: { slug: true, title: true } } },
         }).catch(() => null);
         if (review?.trip)  { targetSlug = review.trip.slug;  targetTitle = review.trip.title; }
         if (review?.place) { targetSlug = review.place.slug; targetTitle = review.place.title; }
         reportedUserId = review?.authorId ?? null;
+        if (review?.text) {
+          reportedContent = `⭐ ${review.rating}/5 — "${review.text}"`;
+          reportedContentType = "รีวิว";
+        }
       } else if (r.targetType === "REPLY") {
         const reply = await prisma.reviewReply.findUnique({
           where: { id: r.targetId },
-          select: { authorId: true, review: { select: { trip: { select: { slug: true, title: true } }, place: { select: { slug: true, title: true } } } } },
+          select: { text: true, authorId: true, author: { select: { username: true, displayName: true } }, review: { select: { trip: { select: { slug: true, title: true } }, place: { select: { slug: true, title: true } } } } },
         }).catch(() => null);
         if (reply?.review?.trip)  { targetSlug = reply.review.trip.slug;  targetTitle = reply.review.trip.title; }
         if (reply?.review?.place) { targetSlug = reply.review.place.slug; targetTitle = reply.review.place.title; }
         reportedUserId = reply?.authorId ?? null;
+        if (reply?.text) {
+          reportedContent = `💬 "${reply.text}"`;
+          reportedContentType = "ความคิดเห็น";
+        }
       } else if (r.targetType === "USER") {
         reportedUserId = r.targetId;
+        reportedContentType = "ผู้ใช้";
       }
 
       if (reportedUserId) {
@@ -78,7 +98,7 @@ export async function GET(request: Request) {
         }) ?? null;
       }
 
-      return { ...r, targetSlug, targetTitle, reportedUserId, reportedUser };
+      return { ...r, targetSlug, targetTitle, reportedUserId, reportedUser, reportedContent, reportedContentType };
     })
   );
 
