@@ -120,6 +120,22 @@ function EnforcementModal({ report, onClose, onDone }: {
           </div>
         )}
 
+        {/* Reported content preview */}
+        {report.reportedContent && (
+          <div style={{
+            background:"#0f172a", borderRadius:10, padding:"10px 14px", marginBottom:16,
+            borderLeft:"3px solid #ef4444",
+          }}>
+            <div style={{ fontSize:"0.68rem", color:"#64748b", marginBottom:4 }}>
+              📋 เนื้อหาที่ถูกรายงาน
+              {report.reportedContentType && <span style={{ marginLeft:6, background:"#1e293b", color:"#94a3b8", padding:"1px 6px", borderRadius:4 }}>{report.reportedContentType}</span>}
+            </div>
+            <div style={{ fontSize:"0.8rem", color:"#e2e8f0", lineHeight:1.6, whiteSpace:"pre-wrap", wordBreak:"break-word" }}>
+              {report.reportedContent.slice(0, 300)}{report.reportedContent.length > 300 ? "…" : ""}
+            </div>
+          </div>
+        )}
+
         {/* Step 1: Remove content */}
         {canRemove && (
           <div style={{ marginBottom:16 }}>
@@ -337,15 +353,30 @@ export default function AdminReportsPage() {
                       <td><span className="adm-pill cyan">{typeIcon(r.targetType)} {r.targetType}</span></td>
                       <td><span className="adm-pill red">{REASON_LABELS[r.reason] || r.reason}</span></td>
                       <td>
-                        <div style={{ maxWidth:180 }}>
+                        <div style={{ maxWidth:220 }}>
                           {url ? (
                             <Link href={url} target="_blank" style={{ color:"#4facfe", fontSize:"0.78rem", textDecoration:"none", display:"block", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                               🔗 {r.targetTitle || r.targetType}
                             </Link>
                           ) : <span style={{ color:"#475569", fontSize:"0.75rem" }}>—</span>}
+                          {r.reportedContent && (
+                            <div style={{
+                              marginTop:4, padding:"5px 8px",
+                              background:"#1e293b", borderLeft:"2px solid #475569",
+                              borderRadius:"0 6px 6px 0", fontSize:"0.68rem",
+                              color:"#94a3b8", lineHeight:1.4,
+                              overflow:"hidden", display:"-webkit-box",
+                              WebkitLineClamp:2, WebkitBoxOrient:"vertical" as any,
+                              maxHeight:48,
+                            }}>
+                              {r.reportedContent.slice(0, 120)}{r.reportedContent.length > 120 ? "…" : ""}
+                            </div>
+                          )}
                           {r.reportedUser && (
-                            <div style={{ fontSize:"0.68rem", color:"#64748b", marginTop:2, display:"flex", gap:4, alignItems:"center" }}>
-                              @{r.reportedUser.username}
+                            <div style={{ fontSize:"0.68rem", color:"#64748b", marginTop:3, display:"flex", gap:4, alignItems:"center" }}>
+                              <span style={{ color:"#94a3b8" }}>เจ้าของ:</span>
+                              <span>{r.reportedUser.displayName || r.reportedUser.username}</span>
+                              <span>@{r.reportedUser.username}</span>
                               {isBanned    && <span style={{ color:"#ef4444" }}>🚫</span>}
                               {isPostBanned && <span style={{ color:"#f59e0b" }}>🔇</span>}
                             </div>
@@ -428,9 +459,29 @@ export default function AdminReportsPage() {
                   </div>
                 )}
               </div>
+              {/* Reported content quote */}
+              {detail.reportedContent && (
+                <div style={{ background:"#0f172a", borderRadius:8, padding:"12px 14px", marginBottom:12 }}>
+                  <div style={{ color:"#64748b", fontSize:"0.7rem", marginBottom:6, display:"flex", alignItems:"center", gap:6 }}>
+                    📋 เนื้อหาที่ถูกรายงาน
+                    {detail.reportedContentType && (
+                      <span style={{ background:"#1e293b", color:"#94a3b8", padding:"1px 7px", borderRadius:4, fontSize:"0.65rem" }}>
+                        {detail.reportedContentType}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{
+                    borderLeft:"3px solid #ef4444", paddingLeft:10,
+                    fontSize:"0.82rem", color:"#e2e8f0", lineHeight:1.7,
+                    whiteSpace:"pre-wrap", wordBreak:"break-word",
+                  }}>
+                    {detail.reportedContent}
+                  </div>
+                </div>
+              )}
               {detail.detail && (
                 <div style={{ background:"#0f172a", borderRadius:8, padding:"10px 14px", fontSize:"0.82rem", color:"#cbd5e1", lineHeight:1.6 }}>
-                  <div style={{ color:"#64748b", fontSize:"0.7rem", marginBottom:4 }}>รายละเอียดเพิ่มเติม:</div>
+                  <div style={{ color:"#64748b", fontSize:"0.7rem", marginBottom:4 }}>รายละเอียดจากผู้รายงาน:</div>
                   {detail.detail}
                 </div>
               )}
