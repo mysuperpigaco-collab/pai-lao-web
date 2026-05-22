@@ -275,7 +275,7 @@ export default function SearchPageClient() {
                 ✈️ ทริป · Trips
                 <span style={{ fontSize: 12, fontWeight: 700, background: "#eff6ff", color: "#2563eb", padding: "2px 8px", borderRadius: 999 }}>{totalTrips}</span>
               </h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+              <div className="search-result-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
                 {trips.map(trip => (
                   <Link key={trip.slug} href={`/trips/${trip.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
                     <div style={{ background: "white", borderRadius: 16, overflow: "hidden", border: "1.5px solid #f1f5f9", boxShadow: "0 2px 10px rgba(15,23,42,0.04)", transition: "all 0.2s", cursor: "pointer" }}
@@ -322,7 +322,7 @@ export default function SearchPageClient() {
                 🗺️ สถานที่ · Places
                 <span style={{ fontSize: 12, fontWeight: 700, background: "#f0fdf4", color: "#15803d", padding: "2px 8px", borderRadius: 999 }}>{totalPlaces}</span>
               </h2>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+              <div className="search-result-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
                 {places.map(place => (
                   <Link key={place.slug} href={`/place/${place.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
                     <div style={{ background: "white", borderRadius: 16, overflow: "hidden", border: "1.5px solid #f1f5f9", boxShadow: "0 2px 10px rgba(15,23,42,0.04)", transition: "all 0.2s", cursor: "pointer" }}
@@ -360,10 +360,10 @@ export default function SearchPageClient() {
       {/* Responsive */}
       <style jsx>{`
         @media (max-width: 900px) {
-          div[style*="repeat(4, 1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
+          :global(.search-result-grid) { grid-template-columns: repeat(2, 1fr) !important; }
         }
-        @media (max-width: 600px) {
-          div[style*="repeat(4, 1fr)"] { grid-template-columns: repeat(1, 1fr) !important; }
+        @media (max-width: 520px) {
+          :global(.search-result-grid) { grid-template-columns: repeat(1, 1fr) !important; }
         }
       `}</style>
     </div>

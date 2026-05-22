@@ -419,10 +419,23 @@ export default function PlannerPage() {
       </div>
 
       {/* ════ 3-COLUMN LAYOUT ════ */}
-      <div style={{ maxWidth: 1400, margin: "0 auto", width: "100%", display: "grid", gridTemplateColumns: "260px 1fr 320px", height: "calc(100vh - 56px)", overflow: "hidden", borderLeft: "1px solid #e2e8f0", borderRight: "1px solid #e2e8f0" }}>
+      <style>{`
+        .planner-grid { display:grid; grid-template-columns:260px 1fr 320px; height:calc(100vh - 56px); overflow:hidden; }
+        .planner-sidebar { display:flex; flex-direction:column; overflow:hidden; }
+        .planner-right { overflow-y:auto; }
+        @media (max-width: 900px) {
+          .planner-grid { grid-template-columns:1fr; height:auto; overflow:visible; }
+          .planner-sidebar { height:auto; max-height:40vh; overflow-y:auto; border-right:none !important; border-bottom:1px solid #e2e8f0; }
+          .planner-right { max-height:none; border-left:none !important; }
+        }
+        @media (max-width: 640px) {
+          .planner-sidebar { max-height:50vh; }
+        }
+      `}</style>
+      <div className="planner-grid" style={{ maxWidth: 1400, margin: "0 auto", width: "100%", borderLeft: "1px solid #e2e8f0", borderRight: "1px solid #e2e8f0" }}>
 
         {/* ── COL 1: Plans sidebar ── */}
-        <div style={{ borderRight: "1px solid #e2e8f0", background: "#fff", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div className="planner-sidebar" style={{ borderRight: "1px solid #e2e8f0", background: "#fff", display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <div style={{ padding: "16px 14px", borderBottom: "1px solid #f1f5f9" }}>
             <button onClick={() => setShowNew(!showNew)} style={{
               width: "100%", padding: "11px 14px", borderRadius: 14,
@@ -533,7 +546,7 @@ export default function PlannerPage() {
         </div>
 
         {/* ── COL 2: Itinerary ── */}
-        <div style={{ overflowY: "auto", padding: "24px 20px" }}>
+        <div className="planner-right" style={{ overflowY: "auto", padding: "24px 20px" }}>
           {!activePlan ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 20, textAlign: "center" }}>
               <div style={{ width: 100, height: 100, borderRadius: "50%", background: "linear-gradient(135deg,#3b82f6,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, boxShadow: "0 20px 40px rgba(59,130,246,0.2)" }}>
@@ -762,7 +775,7 @@ export default function PlannerPage() {
         </div>
 
         {/* ── COL 3: Search + Bookmarks ── */}
-        <div style={{ borderLeft: "1px solid #e2e8f0", background: "#fff", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div className="planner-right" style={{ borderLeft: "1px solid #e2e8f0", background: "#fff", display: "flex", flexDirection: "column", overflow: "hidden" }}>
           {/* Tabs */}
           <div style={{ display: "flex", padding: "0 8px", borderBottom: "2px solid #f1f5f9" }}>
             {([["search","🔍","ค้นหาสถานที่","Find Places"],["bookmarks","🔖","ทริปบุ๊คมาร์ค","Bookmarked"]] as const).map(([key, icon, th, en]) => (

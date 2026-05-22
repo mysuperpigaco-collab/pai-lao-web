@@ -705,7 +705,7 @@ export default function CreateStoryPage() {
         .pv-info h4{margin:0;font-size:24px;color:#1e293b;font-weight:800}
         .pv-desc{color:#64748b;line-height:1.8;margin:15px 0;font-size:16px}
         .pv-checkpoint-img{width:100%;max-width:500px;border-radius:30px;margin-top:20px;box-shadow:0 20px 40px rgba(0,0,0,0.1)}
-        @media(max-width:768px){.info-grid{grid-template-columns:1fr}.timeline-detail-row{grid-template-columns:1fr}.main-actions{flex-direction:column}.create-card{padding:30px}}
+        @media(max-width:768px){.info-grid{grid-template-columns:1fr}.timeline-detail-row{grid-template-columns:1fr}.main-actions{flex-direction:column}.create-card{padding:30px}}@media(max-width:480px){.create-card{padding:20px;border-radius:24px}.create-container{padding:20px 12px}.timeline-card{padding:18px;border-radius:20px}.btn-action-publish{font-size:15px;padding:16px}}
       `}</style>
     </div>
   );

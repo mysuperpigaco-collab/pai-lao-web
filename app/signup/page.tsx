@@ -250,6 +250,17 @@ export default function SignupPage() {
           .banner-side { display: none; }
           .form-side { padding: 40px 25px; }
         }
+        @media (max-width: 640px) {
+          .main-wrapper { padding: 0; align-items: stretch; }
+          .signup-container-box { border-radius: 0; box-shadow: none; }
+          .form-side { padding: 24px 16px 40px; }
+          .form-grid { grid-template-columns: 1fr; }
+          .full-width { grid-column: span 1; }
+          .section-divider { grid-column: span 1; }
+          .form-header h2 { font-size: 20px; }
+          .btn-submit { margin-top: 20px; padding: 14px; font-size: 15px; }
+          .traveler-box { padding: 12px; border-radius: 16px; }
+        }
       `}</style>
     </div>
   );

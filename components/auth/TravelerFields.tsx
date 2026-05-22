@@ -92,6 +92,19 @@ export default function TravelerFields() {
         @media (max-width: 600px) {
           .interest-grid {
             grid-template-columns: 1fr;
+            padding: 12px;
+            gap: 8px;
+          }
+          .check-item {
+            padding: 8px 10px;
+          }
+          .check-item input {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+          }
+          .check-text {
+            font-size: 12px;
           }
         }
       `}</style>

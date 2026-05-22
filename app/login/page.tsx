@@ -99,6 +99,10 @@ export default function LoginPage() {
         .auth-footer { margin-top: 30px; }
         .link-signup { color: #3b82f6; font-weight: 700; text-decoration: none; }
         .link-signup:hover { text-decoration: underline; }
+        @media (max-width: 640px) {
+          .auth-container { padding: 20px 12px; align-items: flex-start; min-height: 100svh; }
+          .auth-card { padding: 28px 20px; border-radius: 24px; }
+        }
       `}</style>
     </div>
   );

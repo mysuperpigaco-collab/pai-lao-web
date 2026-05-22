@@ -457,3 +457,14 @@
   line-height: 1;
   flex-shrink: 0;
 }
+
+
+@media (max-width: 480px) {
+  .pd-container { padding: 16px 12px 60px; }
+  .pd-hero { height: 260px; border-radius: 18px; }
+  .pd-hero-content h1 { font-size: 24px; }
+  .pd-hero-content { padding: 20px 16px; }
+  .pd-card { padding: 16px 14px; border-radius: 18px; }
+  .pd-gallery { grid-template-columns: repeat(2, 1fr); }
+  .pd-gal-item { height: 120px; }
+}
