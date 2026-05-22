@@ -87,6 +87,7 @@ export default function DashboardPage() {
   const [replyNotifs, setReplyNotifs]   = useState<ReplyNotif[]>([]);
   const [tripReviews, setTripReviews]   = useState<TripOwnerNotif[]>([]);
   const [loadingNotifs, setLoadingNotifs] = useState(true);
+  const [draftTrip, setDraftTrip] = useState<{ id: string; slug: string; title: string; updatedAt?: string; timeline?: { id: string }[] } | null>(null);
 
   // ── Read/unread tracking via localStorage ──
   const [seenIds, setSeenIds] = useState<Set<string>>(() => {
@@ -126,6 +127,15 @@ export default function DashboardPage() {
       .then(d => { setReplyNotifs(d.reviews ?? []); setTripReviews(d.tripReviews ?? []); setLoadingNotifs(false); })
       .catch(() => setLoadingNotifs(false));
   }, []);
+
+  // ── โหลด draft trip ──────────────────────────────────────
+  useEffect(() => {
+    if (!user) return;
+    fetch("/api/trips/draft")
+      .then(r => r.json())
+      .then(d => { if (d.draft) setDraftTrip(d.draft); })
+      .catch(() => {});
+  }, [user]);
 
   // Auto-mark all as seen after 4s of being visible
   useEffect(() => {
@@ -239,6 +249,54 @@ export default function DashboardPage() {
             </Link>
           </div>
         </div>
+
+        {/* ─── Draft trip banner ─── */}
+        {draftTrip && (
+          <div style={{
+            background: "linear-gradient(135deg, #fefce8, #fffbeb)",
+            border: "2px solid #fde68a", borderRadius: 20,
+            padding: "18px 20px", marginBottom: 20,
+            display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap",
+            boxShadow: "0 4px 16px rgba(245,158,11,0.12)",
+          }}>
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,#f59e0b,#fbbf24)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
+              📝
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 900, color: "#78350f", marginBottom: 2 }}>
+                บันทึกทริปที่ยังไม่เสร็จ
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#92400e", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                📍 {draftTrip.title}
+              </div>
+              {draftTrip.timeline && draftTrip.timeline.length > 0 && (
+                <div style={{ fontSize: 11, color: "#a16207", marginTop: 2 }}>
+                  {draftTrip.timeline.length} จุดแวะที่บันทึกไว้
+                </div>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+              <Link href={`/trips/${draftTrip.slug}/edit`} style={{
+                padding: "9px 18px", borderRadius: 12, background: "linear-gradient(135deg,#f59e0b,#d97706)",
+                color: "#fff", fontWeight: 800, fontSize: 13, textDecoration: "none",
+                display: "flex", alignItems: "center", gap: 6,
+              }}>
+                ✏️ แก้ไขและเผยแพร่
+              </Link>
+              <button
+                onClick={() => {
+                  if (!confirm("ลบบันทึกชั่วคราวนี้ออกใช่ไหม?")) return;
+                  fetch("/api/trips/draft", { method: "DELETE" })
+                    .then(() => setDraftTrip(null))
+                    .catch(() => {});
+                }}
+                style={{ padding: "9px 12px", borderRadius: 12, background: "#fef3c7", border: "1.5px solid #fde68a", color: "#92400e", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+              >
+                🗑️ ลบ
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ─── Notification boxes ─── */}
         {visibleNotices.length > 0 && (

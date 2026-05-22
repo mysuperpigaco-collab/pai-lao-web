@@ -196,8 +196,9 @@ model Trip {
   tripStyle     String?  // SOLO | COUPLE | FAMILY | FRIENDS
   transportMode String?  // รถยนต์ | รถทัวร์ | เครื่องบิน | รถไฟ | เรือ | มอเตอร์ไซค์ | ผสม
 
+  isDraft          Boolean  @default(false)  // บันทึกชั่วคราวขณะท่องเที่ยว
   isPublished      Boolean  @default(false)
-  approvalStatus   String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  approvalStatus   String?  // PENDING | APPROVED | REJECTED (null when isDraft)
   rejectionReason  String?
   authorId         String
   author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)

@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     }
 
     const where: any = {
-      ...(!includeUnpublished ? { isPublished: true, approvalStatus: "APPROVED" } : {}),
+      ...(!includeUnpublished ? { isPublished: true, approvalStatus: "APPROVED", isDraft: false } : { isDraft: false }),
       ...(mood             ? { mood }                       : {}),
       ...(resolvedAuthorId ? { authorId: resolvedAuthorId } : {}),
       ...(province ? { timeline: { some: { province: { contains: province, mode: "insensitive" } } } } : {}),
@@ -104,21 +104,33 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const { title, subtitle, description, coverUrl, gallery, mood, budget, location, tags, timeline,
-            youtubeUrl, tiktokUrl, durationDays, tripStyle, transportMode } = body;
+            youtubeUrl, tiktokUrl, durationDays, tripStyle, transportMode, isDraft } = body;
 
-    if (!title || !description || !coverUrl) {
-      return NextResponse.json({ message: "กรุณากรอก ชื่อ คำอธิบาย และรูปปก" }, { status: 400 });
+    if (isDraft) {
+      // Draft: ต้องการแค่ชื่อ
+      if (!title?.trim()) {
+        return NextResponse.json({ message: "กรุณากรอกชื่อทริป" }, { status: 400 });
+      }
+      // จำกัด 1 draft ต่อคน
+      const existingDraft = await (prisma as any).trip.findFirst({ where: { authorId: session.userId, isDraft: true } });
+      if (existingDraft) {
+        return NextResponse.json({ message: "คุณมีบันทึกทริปที่ยังไม่เสร็จอยู่แล้ว กรุณาทำให้เสร็จก่อน", draftId: existingDraft.id, draftSlug: existingDraft.slug }, { status: 409 });
+      }
+    } else {
+      if (!title || !description || !coverUrl) {
+        return NextResponse.json({ message: "กรุณากรอก ชื่อ คำอธิบาย และรูปปก" }, { status: 400 });
+      }
     }
 
     const slug = `${title.replace(/[^a-zA-Z0-9]/g, "-").replace(/-+/g, "-").toLowerCase()}-${Date.now()}`;
 
-    const trip = await prisma.trip.create({
+    const trip = await (prisma as any).trip.create({
       data: {
         slug,
         title,
         subtitle:    subtitle    ?? "",
-        description,
-        coverUrl,
+        description: description ?? "",
+        coverUrl:    coverUrl    ?? "",
         gallery:     gallery     ?? [],
         mood:        mood        ?? "ทั่วไป",
         budget:      budget      ? Number(budget) : null,
@@ -129,8 +141,9 @@ export async function POST(request: Request) {
         durationDays:  durationDays  ? Number(durationDays) : null,
         tripStyle:     tripStyle     ?? null,
         transportMode: transportMode ?? null,
+        isDraft:         isDraft ? true : false,
         isPublished:     false,
-        approvalStatus:  "PENDING",
+        approvalStatus:  isDraft ? null : "PENDING",
         authorId:        session.userId,
         timeline: timeline?.length ? {
           create: (timeline as any[]).map((stop: any, index: number) => ({

@@ -19,6 +19,15 @@ export default function CreateStoryPage() {
     }
   }, [user, router]);
 
+  // ── โหลด draft ที่มีอยู่ ──────────────────────────────────
+  useEffect(() => {
+    if (!user) return;
+    fetch("/api/trips/draft")
+      .then(r => r.json())
+      .then(d => { if (d.draft) setExistingDraft(d.draft); })
+      .catch(() => {});
+  }, [user]);
+
   if (user && (user.role === "ADMIN" || user.role === "SUPERADMIN")) {
     return null;
   }
@@ -48,11 +57,14 @@ export default function CreateStoryPage() {
   const [suggestForm, setSuggestForm] = useState<Record<number, { open: boolean; cat: string; saving: boolean; mapsUrl: string }>>({});
   const placeSearchTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
 
-  const [showPreview, setShowPreview] = useState(false);
-  const [isBackHover, setIsBackHover] = useState(false);
-  const [isLoading,   setIsLoading  ] = useState(false);
-  const [error,       setError      ] = useState("");
-  const [submitted,   setSubmitted  ] = useState(false);
+  const [showPreview,  setShowPreview ] = useState(false);
+  const [isBackHover,  setIsBackHover ] = useState(false);
+  const [isLoading,    setIsLoading   ] = useState(false);
+  const [isSavingDraft,setIsSavingDraft] = useState(false);
+  const [error,        setError       ] = useState("");
+  const [submitted,    setSubmitted   ] = useState(false);
+  const [draftSaved,   setDraftSaved  ] = useState(false);
+  const [existingDraft, setExistingDraft] = useState<{ id: string; slug: string; title: string; _count?: { timeline: number } } | null>(null);
 
   // ── Handlers ─────────────────────────────────────────────
   const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,6 +152,34 @@ export default function CreateStoryPage() {
       }
     } catch { alert("ไม่สามารถเชื่อมต่อระบบได้"); }
     setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], saving: false } }));
+  };
+
+  // ── Save Draft ───────────────────────────────────────────
+  const saveDraft = async () => {
+    if (!user)  { setError("กรุณาเข้าสู่ระบบก่อน"); return; }
+    if (!title) { setError("กรุณาใส่ชื่อทริปก่อนบันทึก"); return; }
+    setError("");
+    setIsSavingDraft(true);
+    try {
+      const res = await fetch("/api/trips", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, isDraft: true }),
+      });
+      const data = await res.json();
+      if (res.status === 409) {
+        // มี draft อยู่แล้ว → แสดงให้รู้
+        setExistingDraft({ id: data.draftId, slug: data.draftSlug, title });
+        setError("");
+      } else if (!res.ok) {
+        setError(data.message || "เกิดข้อผิดพลาด");
+      } else {
+        setExistingDraft({ id: data.trip.id, slug: data.trip.slug, title: data.trip.title });
+        setDraftSaved(true);
+        setTimeout(() => setDraftSaved(false), 3000);
+      }
+    } catch { setError("ไม่สามารถเชื่อมต่อระบบได้"); }
+    setIsSavingDraft(false);
   };
 
   // ── Submit ────────────────────────────────────────────────
@@ -539,10 +579,33 @@ export default function CreateStoryPage() {
           </div>
 
           {/* 5. Actions */}
+          {existingDraft && (
+            <div style={{ background: "#fffbeb", border: "1.5px solid #fde68a", borderRadius: 14, padding: "12px 16px", marginBottom: 12, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 18 }}>📝</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#92400e" }}>คุณมีบันทึกทริปที่ยังไม่เสร็จ</div>
+                <div style={{ fontSize: 12, color: "#78350f" }}>ชื่อ: {existingDraft.title}</div>
+              </div>
+              <Link href={} style={{ padding: "7px 14px", background: "#f59e0b", color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: 12, textDecoration: "none" }}>
+                ✏️ แก้ไขต่อ
+              </Link>
+            </div>
+          )}
+          {draftSaved && (
+            <div style={{ background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: 14, padding: "10px 16px", marginBottom: 12, fontSize: 13, fontWeight: 700, color: "#15803d", display: "flex", alignItems: "center", gap: 8 }}>
+              ✅ บันทึกแบบร่างแล้ว — คุณสามารถกลับมาเพิ่มข้อมูลได้ภายหลัง
+            </div>
+          )}
           <div className="main-actions">
             <button type="button" className="btn-action-preview" onClick={() => setShowPreview(true)}>
               👁️ ดูตัวอย่าง | Preview
             </button>
+            {!existingDraft && (
+              <button type="button" onClick={saveDraft} disabled={isSavingDraft}
+                style={{ padding: "13px 20px", borderRadius: 14, border: "2px solid #f59e0b", background: isSavingDraft ? "#fef3c7" : "#fffbeb", color: "#92400e", fontWeight: 800, fontSize: 14, cursor: isSavingDraft ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8 }}>
+                {isSavingDraft ? "⏳ กำลังบันทึก..." : "📌 บันทึกชั่วคราว"}
+              </button>
+            )}
             <button type="submit" className="btn-action-publish" disabled={isLoading}>
               {isLoading ? "⏳ กำลังโพสต์..." : "🚀 ลงเรื่องเล่าเลย! | Publish Now"}
             </button>

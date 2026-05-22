@@ -61,7 +61,7 @@ export async function PUT(request: Request, { params }: Params) {
         id: true, authorId: true, title: true, subtitle: true,
         description: true, coverUrl: true, gallery: true, mood: true,
         budget: true, location: true, tags: true, youtubeUrl: true,
-        tiktokUrl: true, isPublished: true, approvalStatus: true,
+        tiktokUrl: true, isPublished: true, approvalStatus: true, isDraft: true,
       },
     });
     if (!trip) return NextResponse.json({ message: "ไม่พบทริป" }, { status: 404 });
@@ -113,6 +113,53 @@ export async function PUT(request: Request, { params }: Params) {
         include: { timeline: { orderBy: { order: "asc" } } },
       });
       return NextResponse.json({ message: "อัปเดตสำเร็จ", trip: updated });
+    }
+
+    // ── ถ้าเป็น draft + ส่ง finalize → เปลี่ยนเป็น PENDING ──────
+    if ((trip as any).isDraft) {
+      const { finalize } = body;
+      if (finalize) {
+        if (!trip.title || !trip.description || !trip.coverUrl) {
+          return NextResponse.json({ message: "กรุณากรอกข้อมูลให้ครบก่อนเผยแพร่ (ชื่อ คำอธิบาย รูปปก)" }, { status: 400 });
+        }
+        const updated = await (prisma as any).trip.update({
+          where: { slug },
+          data: {
+            isDraft: false, approvalStatus: "PENDING",
+            ...(title       !== undefined && { title }),
+            ...(subtitle    !== undefined && { subtitle }),
+            ...(description !== undefined && { description }),
+            ...(coverUrl    !== undefined && { coverUrl }),
+            ...(gallery     !== undefined && { gallery }),
+            ...(mood        !== undefined && { mood }),
+            ...(budget      !== undefined && { budget: budget ? Number(budget) : null }),
+            ...(location    !== undefined && { location }),
+            ...(tags        !== undefined && { tags }),
+            ...(youtubeUrl  !== undefined && { youtubeUrl: youtubeUrl || null }),
+            ...(tiktokUrl   !== undefined && { tiktokUrl: tiktokUrl  || null }),
+          },
+        });
+        return NextResponse.json({ message: "ส่งทริปเพื่อรอการอนุมัติแล้ว", trip: updated, pending: true });
+      }
+      // ไม่ finalize — แค่ update draft ตรง ๆ
+      const updated = await (prisma as any).trip.update({
+        where: { slug },
+        data: {
+          ...(title       !== undefined && { title }),
+          ...(subtitle    !== undefined && { subtitle }),
+          ...(description !== undefined && { description }),
+          ...(coverUrl    !== undefined && { coverUrl }),
+          ...(gallery     !== undefined && { gallery }),
+          ...(mood        !== undefined && { mood }),
+          ...(budget      !== undefined && { budget: budget ? Number(budget) : null }),
+          ...(location    !== undefined && { location }),
+          ...(tags        !== undefined && { tags }),
+          ...(youtubeUrl  !== undefined && { youtubeUrl: youtubeUrl || null }),
+          ...(tiktokUrl   !== undefined && { tiktokUrl: tiktokUrl  || null }),
+        },
+        include: { timeline: { orderBy: { order: "asc" } } },
+      });
+      return NextResponse.json({ message: "บันทึกแบบร่างแล้ว", trip: updated });
     }
 
     // ── เจ้าของ: สร้าง PendingEdit รอตรวจสอบ ─────────────────

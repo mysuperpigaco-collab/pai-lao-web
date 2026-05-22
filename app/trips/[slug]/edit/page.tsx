@@ -28,6 +28,8 @@ export default function EditTripPage({ params }: Props) {
   const [error,         setError        ] = useState("");
   const [submitted,     setSubmitted    ] = useState(false);
   const [notFound,      setNotFound     ] = useState(false);
+  const [isDraft,       setIsDraft      ] = useState(false);
+  const [draftSubmitted, setDraftSubmitted] = useState(false);
 
   // ── Form state ─────────────────────────────────────────
   const [coverFile,        setCoverFile       ] = useState<File | null>(null);
@@ -68,6 +70,7 @@ export default function EditTripPage({ params }: Props) {
         setExistingCoverUrl(t.coverUrl ?? "");
         setCoverPreview(t.coverUrl ?? null);
         setExistingGallery(t.gallery ?? []);
+        setIsDraft(t.isDraft ?? false);
         setTimeline((t.timeline ?? []).map((stop: any) => ({
           date:          stop.date        ?? today,
           time:          stop.time        ?? "",
@@ -176,13 +179,16 @@ export default function EditTripPage({ params }: Props) {
           youtubeUrl:  youtubeUrl.trim() || null,
           tiktokUrl:   tiktokUrl.trim()  || null,
           timeline:    timelineData,
+          ...(isDraft ? { finalize: true } : {}),
         }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "เกิดข้อผิดพลาด");
 
-      if (data.pending) {
+      if (isDraft && data.pending) {
+        setDraftSubmitted(true);
+      } else if (data.pending) {
         setSubmitted(true);
       } else {
         router.push("/dashboard");
@@ -207,6 +213,24 @@ export default function EditTripPage({ params }: Props) {
           </p>
         </div>
         <Link href="/dashboard" style={{padding:"10px 20px",background:"#10b981",color:"#fff",borderRadius:"8px",textDecoration:"none",fontWeight:600,fontSize:"14px"}}>
+          กลับหน้าแดชบอร์ด
+        </Link>
+      </div>
+    );
+  }
+
+  if (draftSubmitted) {
+    return (
+      <div className="create-container" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"24px",minHeight:"60vh"}}>
+        <div style={{fontSize:"64px"}}>🎉</div>
+        <div style={{textAlign:"center"}}>
+          <h2 style={{fontSize:"22px",fontWeight:800,color:"#1e293b",marginBottom:"8px"}}>ส่งทริปเพื่อรอการอนุมัติแล้ว!</h2>
+          <p style={{color:"#64748b",fontSize:"15px",maxWidth:"380px",lineHeight:1.7}}>
+            บันทึกทริปของคุณถูกส่งเพื่อรอการตรวจสอบจากแอดมิน<br/>
+            โดยปกติใช้เวลา 1–2 วันทำการ
+          </p>
+        </div>
+        <Link href="/dashboard" style={{padding:"12px 28px",background:"linear-gradient(135deg,#10b981,#06b6d4)",color:"#fff",borderRadius:"12px",textDecoration:"none",fontWeight:700,fontSize:"15px",boxShadow:"0 6px 18px rgba(16,185,129,0.3)"}}>
           กลับหน้าแดชบอร์ด
         </Link>
       </div>
@@ -251,6 +275,22 @@ export default function EditTripPage({ params }: Props) {
           <p>EDIT TRIP STORY</p>
         </div>
 
+        {isDraft && (
+          <div style={{
+            background: "linear-gradient(135deg,#fefce8,#fffbeb)",
+            border: "2px solid #fde68a", borderRadius: 16,
+            padding: "14px 18px", marginBottom: 16,
+            display: "flex", alignItems: "center", gap: 12,
+          }}>
+            <span style={{ fontSize: 24 }}>📝</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 900, color: "#78350f" }}>โหมดบันทึกชั่วคราว</div>
+              <div style={{ fontSize: 12, color: "#92400e", lineHeight: 1.5 }}>
+                กรอกข้อมูลให้ครบ แล้วกด <strong>ส่งเพื่อเผยแพร่</strong> เมื่อทริปเสร็จสิ้น
+              </div>
+            </div>
+          </div>
+        )}
         {error && (
           <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 16, padding: "16px 20px", marginBottom: 24, color: "#dc2626", fontWeight: 700 }}>
             ⚠️ {error}
@@ -450,7 +490,7 @@ export default function EditTripPage({ params }: Props) {
           {/* Submit */}
           <ActionBar>
             <CancelButton href="/dashboard" label="ยกเลิก · Discard" />
-            <SaveButton label="💾 บันทึกการแก้ไข · Save Changes" loading={isLoading} />
+            <SaveButton label={isDraft ? "🚀 ส่งเพื่อเผยแพร่ · Submit" : "💾 บันทึกการแก้ไข · Save Changes"} loading={isLoading} />
           </ActionBar>
 
         </form>
