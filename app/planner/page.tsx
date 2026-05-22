@@ -1,3 +1,5 @@
+"use client";
+
 // ── Sortable stop card ──────────────────────────────────────────────────────
 function SortableStopCard({ stop, idx, total, onEdit, onRemove }: {
   stop: PlanStop; idx: number; total: number;
@@ -75,7 +77,6 @@ function SortableStopCard({ stop, idx, total, onEdit, onRemove }: {
   );
 }
 
-"use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
