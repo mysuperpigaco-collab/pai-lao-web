@@ -199,42 +199,46 @@ a { text-decoration: none; }
   /* Hide global navbar, footer, and any fixed UI */
   nav, header, footer, .no-print { display: none !important; }
   .print-only { display: block !important; }
-  /* Show print header */
+  /* Show print header — fixed so it repeats on every page */
   .pv-print-header {
     display: flex !important;
+    position: fixed;
+    top: 0; left: 0; right: 0;
     align-items: center;
-    gap: 12px;
-    padding: 0 0 14px;
-    margin-bottom: 0;
-    border-bottom: 2px solid #10b981;
+    gap: 10px;
+    padding: 5px 14mm 7px;
+    background: #fff !important;
+    print-color-adjust: exact; -webkit-print-color-adjust: exact;
+    border-bottom: 2.5px solid #10b981;
+    z-index: 9999;
   }
   .pv-print-logo-box {
-    width: 36px; height: 36px; border-radius: 10px;
+    width: 30px; height: 30px; border-radius: 8px;
     background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%) !important;
     print-color-adjust: exact; -webkit-print-color-adjust: exact;
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px; flex-shrink: 0;
+    font-size: 16px; flex-shrink: 0;
   }
   .pv-print-logo-text { display: flex; flex-direction: column; line-height: 1; }
   .pv-print-logo-name {
-    font-size: 22px; font-weight: 900; letter-spacing: -0.5px;
+    font-size: 18px; font-weight: 900; letter-spacing: -0.5px;
     color: #059669 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact;
   }
   .pv-print-logo-sub {
-    font-size: 8px; font-weight: 800; letter-spacing: 2px;
+    font-size: 7px; font-weight: 800; letter-spacing: 2px;
     color: #94a3b8; text-transform: uppercase; margin-top: 1px;
   }
   .pv-print-logo-right {
     margin-left: auto; text-align: right;
   }
-  .pv-print-logo-url { font-size: 9px; color: #94a3b8; }
-  /* Page layout */
-  .pv-page { max-width: 100%; margin: 0; border-radius: 0; box-shadow: none; }
+  .pv-print-logo-url { font-size: 8px; color: #94a3b8; }
+  /* Push page content down so it clears the fixed header (~14mm header height) */
+  .pv-page { max-width: 100%; margin: 14mm 0 0; border-radius: 0; box-shadow: none; }
   .pv-hero {
     background: #1e3a5f !important;
     print-color-adjust: exact; -webkit-print-color-adjust: exact;
     margin-top: 0;
-    border-radius: 10px !important;
+    border-radius: 6px !important;
   }
   .pv-hero * { color: #fff !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .pv-hero-badge { background: rgba(255,255,255,0.2) !important; print-color-adjust: exact; }
