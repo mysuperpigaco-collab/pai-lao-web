@@ -117,6 +117,18 @@ export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl
 
       {/* ── Printable page ── */}
       <div className="pv-page">
+        {/* Print-only branding header */}
+        <div className="pv-print-header">
+          <div className="pv-print-logo-box">🗺️</div>
+          <div className="pv-print-logo-text">
+            <span className="pv-print-logo-name">ไปเล่า</span>
+            <span className="pv-print-logo-sub">PAI · LAO · Trip Planner</span>
+          </div>
+          <div className="pv-print-logo-right">
+            <div className="pv-print-logo-url">{shareUrl}</div>
+          </div>
+        </div>
+
         {/* Hero header */}
         <div className="pv-hero">
           <div className="pv-hero-badge">

@@ -204,22 +204,40 @@ export default function DashboardPage() {
             </h1>
             <p className="dp-subheading">จัดการโปรไฟล์ เรื่องเล่า และกิจกรรมทั้งหมดของคุณ</p>
           </div>
-          <Link href="/trips/create" style={{
-            display: "inline-flex", alignItems: "center", gap: "10px",
-            padding: "11px 22px 11px 12px", borderRadius: "14px",
-            background: "linear-gradient(135deg, #10b981 0%, #06b6d4 100%)",
-            color: "#fff", textDecoration: "none",
-            boxShadow: "0 6px 18px rgba(16,185,129,0.30)",
-            flexShrink: 0,
-          }}>
-            <span style={{ width: "34px", height: "34px", borderRadius: "10px", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <IconWrite />
-            </span>
-            <span style={{ display: "flex", flexDirection: "column", gap: "1px", lineHeight: 1 }}>
-              <strong style={{ fontSize: "14px", fontWeight: 900, color: "#fff" }}>เขียนเรื่องใหม่</strong>
-              <small style={{ fontSize: "10px", fontWeight: 400, color: "rgba(255,255,255,0.85)" }}>แชร์ประสบการณ์</small>
-            </span>
-          </Link>
+          <div style={{ display: "flex", gap: 10, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
+            {/* Planner button */}
+            <Link href="/planner" style={{
+              display: "inline-flex", alignItems: "center", gap: "10px",
+              padding: "11px 22px 11px 12px", borderRadius: "14px",
+              background: "linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)",
+              color: "#fff", textDecoration: "none",
+              boxShadow: "0 6px 18px rgba(109,40,217,0.30)",
+            }}>
+              <span style={{ width: "34px", height: "34px", borderRadius: "10px", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 18 }}>
+                📅
+              </span>
+              <span style={{ display: "flex", flexDirection: "column", gap: "1px", lineHeight: 1 }}>
+                <strong style={{ fontSize: "14px", fontWeight: 900, color: "#fff" }}>วางแผนเที่ยว</strong>
+                <small style={{ fontSize: "10px", fontWeight: 400, color: "rgba(255,255,255,0.85)" }}>Trip Planner</small>
+              </span>
+            </Link>
+            {/* Write trip button */}
+            <Link href="/trips/create" style={{
+              display: "inline-flex", alignItems: "center", gap: "10px",
+              padding: "11px 22px 11px 12px", borderRadius: "14px",
+              background: "linear-gradient(135deg, #10b981 0%, #06b6d4 100%)",
+              color: "#fff", textDecoration: "none",
+              boxShadow: "0 6px 18px rgba(16,185,129,0.30)",
+            }}>
+              <span style={{ width: "34px", height: "34px", borderRadius: "10px", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <IconWrite />
+              </span>
+              <span style={{ display: "flex", flexDirection: "column", gap: "1px", lineHeight: 1 }}>
+                <strong style={{ fontSize: "14px", fontWeight: 900, color: "#fff" }}>เขียนเรื่องใหม่</strong>
+                <small style={{ fontSize: "10px", fontWeight: 400, color: "rgba(255,255,255,0.85)" }}>แชร์ประสบการณ์</small>
+              </span>
+            </Link>
+          </div>
         </div>
 
         {/* ─── Notification boxes ─── */}
