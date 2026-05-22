@@ -119,6 +119,7 @@ interface PlanStop {
 interface Plan {
   id: string; title: string; description?: string;
   startDate?: string; endDate?: string; province?: string; isPublic: boolean;
+  coverUrl?: string;
   stops: PlanStop[];
 }
 interface PlaceResult {
