@@ -264,26 +264,6 @@ export default function Navbar() {
             boxShadow: "0 8px 32px rgba(0,0,0,0.10)",
           }}>
 
-            {/* ── Search bar ── */}
-            <div style={{ padding: "14px 16px 0" }}>
-              <form onSubmit={handleSearch} style={{
-                display: "flex", alignItems: "center",
-                background: "#f8fafc", borderRadius: "14px",
-                border: "1.5px solid #e2e8f0", height: "46px",
-                padding: "0 8px 0 14px", gap: "8px",
-              }}>
-                <span style={{ color: "#94a3b8", flexShrink: 0 }}><IconSearch /></span>
-                <input type="text" value={searchQ} onChange={e => setSearchQ(e.target.value)}
-                  placeholder="ค้นหาทริปหรือสถานที่..."
-                  style={{ background: "none", border: "none", flex: 1, outline: "none", fontSize: "15px", color: "#1e293b" }} />
-                <button type="submit" style={{
-                  background: "linear-gradient(135deg, #10b981, #06b6d4)", border: "none",
-                  borderRadius: "10px", padding: "6px 14px", cursor: "pointer",
-                  color: "white", fontSize: "13px", fontWeight: 700, fontFamily: "inherit", flexShrink: 0,
-                }}>ค้นหา</button>
-              </form>
-            </div>
-
             {/* ── Nav links ── */}
             <div style={{ padding: "10px 10px 0" }}>
               {[
