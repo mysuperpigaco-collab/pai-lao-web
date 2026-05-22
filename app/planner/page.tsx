@@ -25,12 +25,25 @@ function SortableStopCard({ stop, idx, total, onEdit, onRemove }: {
         )}
       </div>
       {/* Card */}
-      <div style={{ flex: 1, background: "#fff", borderRadius: 18, padding: "14px 18px", border: `1.5px solid ${isDragging ? "#93c5fd" : "#e2e8f0"}`, boxShadow: isDragging ? "0 8px 24px rgba(59,130,246,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", transition: "border-color 0.2s,box-shadow 0.2s" }}>
+      <div style={{ flex: 1, background: "#fff", borderRadius: 18, border: `1.5px solid ${isDragging ? "#93c5fd" : "#e2e8f0"}`, boxShadow: isDragging ? "0 8px 24px rgba(59,130,246,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", transition: "border-color 0.2s,box-shadow 0.2s", overflow: "hidden" }}>
+        {/* Drag handle bar — full-width, easy to grab */}
+        <div {...attributes} {...listeners} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", background: isDragging ? "#eff6ff" : "#f8fafc", borderBottom: "1px solid #f1f5f9", cursor: isDragging ? "grabbing" : "grab", userSelect: "none", touchAction: "none" }}>
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="none" style={{ flexShrink: 0 }}>
+            {[0,3.5,7].map(y => (
+              <g key={y}>
+                <circle cx="3" cy={y+1.5} r="1.5" fill="#94a3b8"/>
+                <circle cx="8" cy={y+1.5} r="1.5" fill="#94a3b8"/>
+                <circle cx="13" cy={y+1.5} r="1.5" fill="#94a3b8"/>
+              </g>
+            ))}
+          </svg>
+          <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600, letterSpacing: "0.3px" }}>ลากเพื่อจัดลำดับ · Drag to reorder</span>
+        </div>
+        <div style={{ padding: "12px 16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            {/* Drag handle + name row */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const, marginBottom: 4 }}>
-              <span {...attributes} {...listeners} style={{ cursor: "grab", fontSize: 16, color: "#94a3b8", lineHeight: 1, userSelect: "none", touchAction: "none", padding: "2px 3px", borderRadius: 4 }} title="ลากเพื่อจัดลำดับ">⠿</span>
+            {/* Name row */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const, marginBottom: 4 }}>
               <span style={{ fontWeight: 800, fontSize: 15, color: "#1e293b" }}>{stop.name}</span>
               <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: meta.bg, color: meta.color, fontWeight: 700, flexShrink: 0 }}>
                 {meta.icon} {meta.label.split(" · ")[0]}
@@ -72,6 +85,7 @@ function SortableStopCard({ stop, idx, total, onEdit, onRemove }: {
               style={{ ...ab, background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }} title="ลบ">✕</button>
           </div>
         </div>
+        </div>{/* end padding wrapper */}
       </div>
     </div>
   );
