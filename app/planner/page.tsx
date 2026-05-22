@@ -228,6 +228,24 @@ export default function PlannerPage() {
 
   if (!user) return null;
 
+  // ── Day computation (derived from activePlan) ──────────────
+  const maxStopDay = activePlan ? activePlan.stops.reduce((m, s) => Math.max(m, s.day ?? 1), 1) : 1;
+  const totalDays = (() => {
+    if (activePlan?.startDate && activePlan?.endDate) {
+      const diff = Math.round((new Date(activePlan.endDate).getTime() - new Date(activePlan.startDate).getTime()) / 86400000) + 1;
+      return Math.max(diff, maxStopDay, 1);
+    }
+    return Math.max(maxStopDay, 1);
+  })();
+  const getDateLabel = (dayNum: number): string | null => {
+    if (!activePlan?.startDate) return null;
+    const d = new Date(activePlan.startDate);
+    d.setDate(d.getDate() + dayNum - 1);
+    return d.toLocaleDateString("th-TH", { day: "numeric", month: "short" });
+  };
+  const stopsForDay = activePlan ? activePlan.stops.filter(s => (s.day ?? 1) === selectedDay) : [];
+  const maxEditDay = activePlan ? Math.max(activePlan.stops.reduce((m, s) => Math.max(m, s.day ?? 1), 1), editDay) : editDay;
+
   return (
     <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
 
@@ -493,13 +511,11 @@ export default function PlannerPage() {
                       {getDistricts(customProv).map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                   </div>
-                  <div style={{ marginBottom: 8 }}>
-                    <select value={String(customDay)} onChange={e => setCustomDay(Number(e.target.value))} style={{ ...inp }}>
-                      {Array.from({ length: Math.max((activePlan.stops.reduce((m, s) => Math.max(m, s.day ?? 1), 1)), selectedDay) + 1 }, (_, i) => i + 1).map(d => (
-                        <option key={d} value={d}>📅 วันที่ {d}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <select value={String(customDay)} onChange={e => setCustomDay(Number(e.target.value))} style={{ ...inp, marginBottom: 8 }}>
+                    {Array.from({ length: totalDays + 1 }, (_, i) => i + 1).map(d => (
+                      <option key={d} value={d}>📅 วันที่ {d}</option>
+                    ))}
+                  </select>
                   <input value={customMaps} onChange={e => setCustomMaps(e.target.value)}
                     placeholder="🗺️ Google Maps URL (ไม่บังคับ)" style={{ ...inp, marginBottom: 12 }} />
                   <div style={{ display: "flex", gap: 8 }}>
@@ -519,77 +535,56 @@ export default function PlannerPage() {
               )}
 
               {/* ── Day Tabs ── */}
-              {(() => {
-                // Compute total days
-                const maxStopDay = activePlan.stops.reduce((m, s) => Math.max(m, s.day ?? 1), 1);
-                const totalDays = (() => {
-                  if (activePlan.startDate && activePlan.endDate) {
-                    const diff = Math.round((new Date(activePlan.endDate).getTime() - new Date(activePlan.startDate).getTime()) / 86400000) + 1;
-                    return Math.max(diff, maxStopDay, 1);
-                  }
-                  return Math.max(maxStopDay, 1);
-                })();
-                const getDateLabel = (dayNum: number) => {
-                  if (!activePlan.startDate) return null;
-                  const d = new Date(activePlan.startDate);
-                  d.setDate(d.getDate() + dayNum - 1);
-                  return d.toLocaleDateString("th-TH", { day: "numeric", month: "short" });
-                };
-                const stopsForDay = activePlan.stops.filter(s => (s.day ?? 1) === selectedDay);
-                return (
-                  <>
-                    {/* Day tab bar */}
-                    <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 12, scrollbarWidth: "none" }}>
-                      {Array.from({ length: totalDays }, (_, i) => i + 1).map(dayNum => {
-                        const cnt = activePlan.stops.filter(s => (s.day ?? 1) === dayNum).length;
-                        const isActive = selectedDay === dayNum;
-                        const dateLabel = getDateLabel(dayNum);
-                        return (
-                          <button key={dayNum} onClick={() => { setSelectedDay(dayNum); setCustomDay(dayNum); }} style={{
-                            flexShrink: 0, padding: "8px 14px", borderRadius: 14,
-                            border: `2px solid ${isActive ? "#3b82f6" : "#e2e8f0"}`,
-                            background: isActive ? "#eff6ff" : "#f8fafc",
-                            color: isActive ? "#1d4ed8" : "#64748b",
-                            fontWeight: isActive ? 800 : 600, fontSize: 12,
-                            cursor: "pointer", fontFamily: "inherit",
-                            display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 1,
-                          }}>
-                            <span style={{ fontSize: 11, letterSpacing: "0.3px" }}>วันที่ {dayNum}</span>
-                            {dateLabel && <span style={{ fontSize: 10, color: isActive ? "#3b82f6" : "#94a3b8" }}>{dateLabel}</span>}
-                            <span style={{ fontSize: 10, color: isActive ? "#3b82f6" : "#94a3b8" }}>{cnt} จุด</span>
-                          </button>
-                        );
-                      })}
-                      {/* Add day button */}
-                      <button onClick={() => { const nd = totalDays + 1; setSelectedDay(nd); setCustomDay(nd); }} style={{
-                        flexShrink: 0, padding: "8px 14px", borderRadius: 14,
-                        border: "2px dashed #c7d2fe", background: "#f5f3ff", color: "#7c3aed",
-                        fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit",
-                        display: "flex", flexDirection: "column" as const, alignItems: "center",
-                      }}>
-                        <span>+ เพิ่มวัน</span>
-                        <span style={{ fontSize: 9, color: "#a78bfa" }}>Add Day</span>
-                      </button>
-                    </div>
+              <div style={{ display:"flex", gap:6, overflowX:"auto", paddingBottom:8, marginBottom:12, scrollbarWidth:"none" }}>
+                {Array.from({ length: totalDays }, (_, i) => i + 1).map(dayNum => {
+                  const cnt = activePlan.stops.filter(s => (s.day ?? 1) === dayNum).length;
+                  const isActive = selectedDay === dayNum;
+                  const dl = getDateLabel(dayNum);
+                  return (
+                    <button key={dayNum} onClick={() => { setSelectedDay(dayNum); setCustomDay(dayNum); }} style={{
+                      flexShrink:0, padding:"7px 14px", borderRadius:14,
+                      border:`2px solid ${isActive ? "#3b82f6" : "#e2e8f0"}`,
+                      background: isActive ? "#eff6ff" : "#f8fafc",
+                      color: isActive ? "#1d4ed8" : "#64748b",
+                      fontWeight: isActive ? 800 : 600, fontSize:12,
+                      cursor:"pointer", fontFamily:"inherit",
+                      display:"flex", flexDirection:"column" as const, alignItems:"center", gap:1,
+                    }}>
+                      <span>วันที่ {dayNum}</span>
+                      {dl && <span style={{ fontSize:10, color: isActive ? "#3b82f6" : "#94a3b8" }}>{dl}</span>}
+                      <span style={{ fontSize:10, color: isActive ? "#3b82f6" : "#94a3b8" }}>{cnt} จุด</span>
+                    </button>
+                  );
+                })}
+                <button onClick={() => { const nd = totalDays + 1; setSelectedDay(nd); setCustomDay(nd); }} style={{
+                  flexShrink:0, padding:"7px 14px", borderRadius:14,
+                  border:"2px dashed #c7d2fe", background:"#f5f3ff", color:"#7c3aed",
+                  fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit",
+                  display:"flex", flexDirection:"column" as const, alignItems:"center",
+                }}>
+                  <span>+ เพิ่มวัน</span>
+                  <span style={{ fontSize:9, color:"#a78bfa" }}>Add Day</span>
+                </button>
+              </div>
 
-                    {/* Day header */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                      <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
-                      <div style={{ fontWeight: 800, fontSize: 13, color: "#3b82f6", background: "#eff6ff",
-                        borderRadius: 20, padding: "4px 16px", border: "1px solid #bfdbfe",
-                        display: "flex", alignItems: "center", gap: 6 }}>
-                        ☀️ วันที่ {selectedDay}
-                        {getDateLabel(selectedDay) && <span style={{ fontWeight: 600, color: "#60a5fa", fontSize: 11 }}>· {getDateLabel(selectedDay)}</span>}
-                      </div>
-                      <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
-                    </div>
+              {/* Day header divider */}
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
+                <div style={{ flex:1, height:1, background:"#e2e8f0" }} />
+                <div style={{ fontWeight:800, fontSize:13, color:"#3b82f6", background:"#eff6ff",
+                  borderRadius:20, padding:"4px 16px", border:"1px solid #bfdbfe",
+                  display:"flex", alignItems:"center", gap:6 }}>
+                  ☀️ วันที่ {selectedDay}
+                  {getDateLabel(selectedDay) && <span style={{ fontWeight:600, color:"#60a5fa", fontSize:11 }}>· {getDateLabel(selectedDay)}</span>}
+                </div>
+                <div style={{ flex:1, height:1, background:"#e2e8f0" }} />
+              </div>
 
-                    {/* Stops for selected day */}
+              {/* Stops for selected day */}
               {stopsForDay.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "36px 0", color: "#94a3b8" }}>
                   <div style={{ fontSize: 40, marginBottom: 10 }}>📅</div>
                   <div style={{ fontWeight: 700, fontSize: 14, color: "#64748b", marginBottom: 4 }}>ยังไม่มีจุดในวันที่ {selectedDay}</div>
-                  <div style={{ fontSize: 12, lineHeight: 1.8 }}>เพิ่มจุดแวะจากแผงขวา<br />หรือกด &ldquo;เพิ่มจุดแวะเอง&rdquo; ด้านบน</div>
+                  <div style={{ fontSize: 12, lineHeight: 1.7 }}>เพิ่มจุดแวะจากแผงขวา<br />หรือกด &ldquo;เพิ่มจุดแวะเอง&rdquo; ด้านบน</div>
                 </div>
               ) : (
                 <div>
@@ -662,12 +657,8 @@ export default function PlannerPage() {
                   })}
                 </div>
               )}
-                  </>
-                );
-              })()}
             </>
           )}
-        </div>
         </div>
 
         {/* ── COL 3: Search + Bookmarks ── */}
@@ -850,27 +841,21 @@ export default function PlannerPage() {
               </div>
             </div>
             {/* Day selector */}
-            {activePlan && (() => {
-              const maxDay = activePlan.stops.reduce((m, s) => Math.max(m, s.day ?? 1), 1);
-              const totalEditDays = Math.max(maxDay, editDay);
-              return (
-                <div style={{ marginBottom:14 }}>
-                  <label style={lbl}>📅 วันที่ในทริป · Trip Day</label>
-                  <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const }}>
-                    {Array.from({ length: totalEditDays + 1 }, (_, i) => i + 1).map(d => (
-                      <button key={d} type="button" onClick={() => setEditDay(d)} style={{
-                        padding:"6px 14px", borderRadius:20,
-                        border:`2px solid ${editDay === d ? "#3b82f6" : "#e2e8f0"}`,
-                        background: editDay === d ? "#eff6ff" : "#f8fafc",
-                        color: editDay === d ? "#1d4ed8" : "#64748b",
-                        fontWeight: editDay === d ? 800 : 600, fontSize:12,
-                        cursor:"pointer", fontFamily:"inherit"
-                      }}>วันที่ {d}</button>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
+            <div style={{ marginBottom:14 }}>
+              <label style={lbl}>📅 วันที่ในทริป · Trip Day</label>
+              <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const }}>
+                {Array.from({ length: maxEditDay + 1 }, (_, i) => i + 1).map(d => (
+                  <button key={d} type="button" onClick={() => setEditDay(d)} style={{
+                    padding:"5px 14px", borderRadius:20,
+                    border:`2px solid ${editDay === d ? "#3b82f6" : "#e2e8f0"}`,
+                    background: editDay === d ? "#eff6ff" : "#f8fafc",
+                    color: editDay === d ? "#1d4ed8" : "#64748b",
+                    fontWeight: editDay === d ? 800 : 600, fontSize:12,
+                    cursor:"pointer", fontFamily:"inherit"
+                  }}>วันที่ {d}</button>
+                ))}
+              </div>
+            </div>
             {/* Arrival time + duration row */}
             <div style={{ display:"flex", gap:12, marginBottom:14 }}>
               <div style={{ flex:1 }}>
