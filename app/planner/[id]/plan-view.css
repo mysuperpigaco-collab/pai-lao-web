@@ -293,16 +293,70 @@ a { text-decoration: none; }
   @page { size: A4; margin: 14mm; }
 }
 
-/* ── Responsive ──────────────────────────────────── */
+/* ── Responsive — Mobile ─────────────────────────── */
 @media (max-width: 640px) {
-  .pv-topbar { padding: 0 14px; gap: 10px; }
+  /* Topbar: hide LINE/FB (in share section below), icon-only copy+PDF */
+  .pv-topbar { padding: 0 12px; gap: 8px; height: 52px; }
   .pv-topbar-title { display: none; }
-  .pv-share-btn span, .pv-pdf-btn span { display: none; }
-  .pv-page { margin: 64px 10px 40px; border-radius: 18px; }
-  .pv-hero { padding: 28px 22px 24px; }
-  .pv-hero-title { font-size: 24px; }
-  .pv-itinerary { padding: 24px 20px 0; }
-  .pv-timeline { padding-left: 46px; }
-  .pv-share-section { margin: 16px 20px 0; padding: 22px 18px 18px; }
-  .pv-share-big-btn { padding: 11px 18px; font-size: 14px; }
+  .pv-line-btn, .pv-fb-btn { display: none !important; }
+  .pv-share-btn { padding: 7px 11px; font-size: 12px; border-radius: 16px; }
+  .pv-share-btn span { display: none; } /* icon-only on mobile */
+
+  /* Page: full-width edge-to-edge */
+  .pv-page { margin: 52px 0 0; border-radius: 0; box-shadow: none; min-height: calc(100vh - 52px); }
+
+  /* Hero */
+  .pv-hero { padding: 22px 18px 18px; }
+  .pv-hero-badge { font-size: 10px; padding: 4px 12px; margin-bottom: 12px; }
+  .pv-hero-title { font-size: 21px; line-height: 1.3; margin-bottom: 8px; }
+  .pv-hero-desc { font-size: 13px; margin-bottom: 14px; }
+  .pv-hero-meta { gap: 8px; }
+  .pv-hero-meta-chip { font-size: 11px; padding: 4px 10px; gap: 4px; }
+
+  /* Itinerary */
+  .pv-itinerary { padding: 18px 14px 0; }
+  .pv-day-section { margin-bottom: 28px; }
+  .pv-day-header { gap: 8px; margin-bottom: 14px; }
+  .pv-day-pill { font-size: 12px; padding: 5px 14px; }
+  .pv-day-date { font-size: 12px; }
+
+  /* Timeline */
+  .pv-timeline { padding-left: 40px; }
+  .pv-timeline-item { margin-bottom: 12px; }
+  .pv-timeline-dot { left: -40px; top: 11px; width: 26px; height: 26px; font-size: 13px; }
+  .pv-timeline-line { left: -28px; top: 41px; }
+
+  /* Stop card */
+  .pv-stop-card { padding: 12px 14px; border-radius: 12px; }
+  .pv-stop-card-header { gap: 8px; flex-wrap: wrap; }
+  .pv-stop-order { font-size: 10px; padding-top: 2px; }
+  .pv-stop-info { min-width: 0; }
+  .pv-stop-name { font-size: 14px; white-space: normal; word-break: break-word; }
+  .pv-stop-loc { font-size: 11px; }
+  .pv-stop-badge { font-size: 10px; padding: 3px 8px; border-radius: 10px; }
+  .pv-stop-timing { gap: 6px; margin-top: 8px; padding-top: 8px; }
+  .pv-timing-chip { font-size: 11px; padding: 3px 9px; gap: 4px; }
+  .pv-stop-notes { font-size: 13px; margin-top: 8px; }
+  .pv-maps-link { font-size: 11px; margin-top: 8px; }
+  .pv-maps-print { font-size: 10px; }
+
+  /* Share section */
+  .pv-share-section { margin: 12px 0 0; border-radius: 0; border-left: none; border-right: none; padding: 20px 16px 18px; }
+  .pv-share-title { font-size: 15px; margin-bottom: 14px; }
+  .pv-share-url-box { padding: 8px 8px 8px 14px; gap: 8px; margin-bottom: 14px; }
+  .pv-share-url-text { font-size: 11px; }
+  .pv-share-url-copy { font-size: 11px; padding: 6px 12px; border-radius: 8px; }
+  .pv-share-buttons { flex-direction: column; gap: 10px; }
+  .pv-share-big-btn { width: 100%; justify-content: center; padding: 13px 20px; font-size: 14px; border-radius: 14px; }
+
+  /* Wishes */
+  .pv-wishes { margin: 8px 0 0; border-radius: 0; border-left: none; border-right: none; padding: 20px 16px; }
+  .pv-wishes-icon { font-size: 24px; margin-bottom: 8px; }
+  .pv-wishes-th { font-size: 13px; }
+  .pv-wishes-en { font-size: 12px; }
+  .pv-wishes-sig { font-size: 11px; }
+
+  /* Footer */
+  .pv-footer { padding: 16px 18px; margin-top: 20px; }
+  .pv-footer-brand { font-size: 12px; }
 }
