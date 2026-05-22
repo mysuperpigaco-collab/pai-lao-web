@@ -39,7 +39,7 @@ export async function PUT(request: Request, { params }: Params) {
 
   // ── Add stop ──
   if (action === "add-stop") {
-    const { name, province, district, notes, googleMapsUrl, stopType, placeId, arrivalTime, duration } = body;
+    const { name, province, district, notes, googleMapsUrl, stopType, placeId, arrivalTime, duration, day } = body;
     const count = await (prisma as any).tripPlanStop.count({ where: { planId: id } });
     const stop = await (prisma as any).tripPlanStop.create({
       data: {
@@ -51,6 +51,7 @@ export async function PUT(request: Request, { params }: Params) {
         notes: notes?.trim() || null,
         googleMapsUrl: googleMapsUrl?.trim() || null,
         stopType: stopType || "ATTRACTION",
+        day: day ? Number(day) : 1,
         arrivalTime: arrivalTime?.trim() || null,
         duration: duration ? Number(duration) : null,
         placeId: placeId || null,
@@ -86,10 +87,10 @@ export async function PUT(request: Request, { params }: Params) {
 
   // ── Update stop notes ──
   if (action === "update-stop") {
-    const { stopId, notes, googleMapsUrl, arrivalTime, duration } = body;
+    const { stopId, notes, googleMapsUrl, arrivalTime, duration, day } = body;
     const stop = await (prisma as any).tripPlanStop.update({
       where: { id: stopId },
-      data: { notes: notes?.trim() || null, googleMapsUrl: googleMapsUrl?.trim() || null, arrivalTime: arrivalTime?.trim() || null, duration: duration !== undefined ? (duration ? Number(duration) : null) : undefined },
+      data: { notes: notes?.trim() || null, googleMapsUrl: googleMapsUrl?.trim() || null, arrivalTime: arrivalTime?.trim() || null, duration: duration !== undefined ? (duration ? Number(duration) : null) : undefined, ...(day !== undefined ? { day: Number(day) } : {}) },
     });
     return NextResponse.json({ stop });
   }

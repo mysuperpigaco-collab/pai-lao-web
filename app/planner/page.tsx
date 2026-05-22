@@ -7,9 +7,10 @@ import { useAuth } from "@/context/AuthContext";
 import { PROVINCES, getDistricts } from "@/data/thailand";
 
 interface PlanStop {
-  id: string; order: number; name: string;
+  id: string; order: number; name: string; day: number;
   province?: string; district?: string;
   notes?: string; googleMapsUrl?: string; stopType?: string;
+  arrivalTime?: string; duration?: number;
   placeId?: string;
   place?: { id: string; slug: string; title: string; coverUrl?: string; googleMapsUrl?: string };
 }
@@ -71,6 +72,9 @@ export default function PlannerPage() {
   const [editMaps,    setEditMaps   ] = useState("");
   const [editArrival, setEditArrival] = useState("");
   const [editDuration,setEditDuration] = useState("");
+  const [editDay,     setEditDay     ] = useState(1);
+  const [selectedDay, setSelectedDay ] = useState(1);
+  const [customDay,   setCustomDay   ] = useState(1);
   const [savingEdit, setSavingEdit] = useState(false);
   const [addingCustom, setAddingCustom] = useState(false);
   const [customName, setCustomName] = useState("");
@@ -146,7 +150,7 @@ export default function PlannerPage() {
     setAddingToStop(stop.name);
     const res = await fetch(`/api/planner/${activePlan.id}`, {
       method: "PUT", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "add-stop", ...stop }),
+      body: JSON.stringify({ action: "add-stop", day: selectedDay, ...stop }),
     });
     if (res.ok) await reloadPlan(activePlan.id);
     setAddingToStop(null);
@@ -175,7 +179,7 @@ export default function PlannerPage() {
     setSavingEdit(true);
     await fetch(`/api/planner/${activePlan.id}`, {
       method: "PUT", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "update-stop", stopId: editStop.id, notes: editNotes, googleMapsUrl: editMaps, arrivalTime: editArrival, duration: editDuration ? Number(editDuration) : null }),
+      body: JSON.stringify({ action: "update-stop", stopId: editStop.id, notes: editNotes, googleMapsUrl: editMaps, arrivalTime: editArrival, duration: editDuration ? Number(editDuration) : null, day: editDay }),
     });
     setSavingEdit(false); setEditStop(null);
     reloadPlan(activePlan.id);
@@ -183,7 +187,7 @@ export default function PlannerPage() {
 
   const addCustomStop = async () => {
     if (!customName.trim()) return;
-    await addStop({ name: customName, province: customProv, district: customDist, googleMapsUrl: customMaps, stopType: customType });
+    await addStop({ name: customName, province: customProv, district: customDist, googleMapsUrl: customMaps, stopType: customType, day: customDay });
     setCustomName(""); setCustomProv(""); setCustomDist(""); setCustomMaps(""); setCustomType("ATTRACTION");
     setAddingCustom(false);
   };
@@ -489,6 +493,13 @@ export default function PlannerPage() {
                       {getDistricts(customProv).map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                   </div>
+                  <div style={{ marginBottom: 8 }}>
+                    <select value={String(customDay)} onChange={e => setCustomDay(Number(e.target.value))} style={{ ...inp }}>
+                      {Array.from({ length: Math.max((activePlan.stops.reduce((m, s) => Math.max(m, s.day ?? 1), 1)), selectedDay) + 1 }, (_, i) => i + 1).map(d => (
+                        <option key={d} value={d}>📅 วันที่ {d}</option>
+                      ))}
+                    </select>
+                  </div>
                   <input value={customMaps} onChange={e => setCustomMaps(e.target.value)}
                     placeholder="🗺️ Google Maps URL (ไม่บังคับ)" style={{ ...inp, marginBottom: 12 }} />
                   <div style={{ display: "flex", gap: 8 }}>
@@ -507,16 +518,82 @@ export default function PlannerPage() {
                 </div>
               )}
 
-              {/* Stops */}
-              {activePlan.stops.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "48px 0", color: "#94a3b8" }}>
-                  <div style={{ fontSize: 48, marginBottom: 12 }}>🗺️</div>
-                  <div style={{ fontWeight: 700, fontSize: 16, color: "#64748b", marginBottom: 6 }}>ยังไม่มีจุดหมาย</div>
-                  <div style={{ fontSize: 13, lineHeight: 1.7 }}>ค้นหาสถานที่จากแผงขวา<br />หรือกด &ldquo;เพิ่มจุดแวะเอง&rdquo; ด้านบน</div>
+              {/* ── Day Tabs ── */}
+              {(() => {
+                // Compute total days
+                const maxStopDay = activePlan.stops.reduce((m, s) => Math.max(m, s.day ?? 1), 1);
+                const totalDays = (() => {
+                  if (activePlan.startDate && activePlan.endDate) {
+                    const diff = Math.round((new Date(activePlan.endDate).getTime() - new Date(activePlan.startDate).getTime()) / 86400000) + 1;
+                    return Math.max(diff, maxStopDay, 1);
+                  }
+                  return Math.max(maxStopDay, 1);
+                })();
+                const getDateLabel = (dayNum: number) => {
+                  if (!activePlan.startDate) return null;
+                  const d = new Date(activePlan.startDate);
+                  d.setDate(d.getDate() + dayNum - 1);
+                  return d.toLocaleDateString("th-TH", { day: "numeric", month: "short" });
+                };
+                const stopsForDay = activePlan.stops.filter(s => (s.day ?? 1) === selectedDay);
+                return (
+                  <>
+                    {/* Day tab bar */}
+                    <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 12, scrollbarWidth: "none" }}>
+                      {Array.from({ length: totalDays }, (_, i) => i + 1).map(dayNum => {
+                        const cnt = activePlan.stops.filter(s => (s.day ?? 1) === dayNum).length;
+                        const isActive = selectedDay === dayNum;
+                        const dateLabel = getDateLabel(dayNum);
+                        return (
+                          <button key={dayNum} onClick={() => { setSelectedDay(dayNum); setCustomDay(dayNum); }} style={{
+                            flexShrink: 0, padding: "8px 14px", borderRadius: 14,
+                            border: `2px solid ${isActive ? "#3b82f6" : "#e2e8f0"}`,
+                            background: isActive ? "#eff6ff" : "#f8fafc",
+                            color: isActive ? "#1d4ed8" : "#64748b",
+                            fontWeight: isActive ? 800 : 600, fontSize: 12,
+                            cursor: "pointer", fontFamily: "inherit",
+                            display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 1,
+                          }}>
+                            <span style={{ fontSize: 11, letterSpacing: "0.3px" }}>วันที่ {dayNum}</span>
+                            {dateLabel && <span style={{ fontSize: 10, color: isActive ? "#3b82f6" : "#94a3b8" }}>{dateLabel}</span>}
+                            <span style={{ fontSize: 10, color: isActive ? "#3b82f6" : "#94a3b8" }}>{cnt} จุด</span>
+                          </button>
+                        );
+                      })}
+                      {/* Add day button */}
+                      <button onClick={() => { const nd = totalDays + 1; setSelectedDay(nd); setCustomDay(nd); }} style={{
+                        flexShrink: 0, padding: "8px 14px", borderRadius: 14,
+                        border: "2px dashed #c7d2fe", background: "#f5f3ff", color: "#7c3aed",
+                        fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit",
+                        display: "flex", flexDirection: "column" as const, alignItems: "center",
+                      }}>
+                        <span>+ เพิ่มวัน</span>
+                        <span style={{ fontSize: 9, color: "#a78bfa" }}>Add Day</span>
+                      </button>
+                    </div>
+
+                    {/* Day header */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                      <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
+                      <div style={{ fontWeight: 800, fontSize: 13, color: "#3b82f6", background: "#eff6ff",
+                        borderRadius: 20, padding: "4px 16px", border: "1px solid #bfdbfe",
+                        display: "flex", alignItems: "center", gap: 6 }}>
+                        ☀️ วันที่ {selectedDay}
+                        {getDateLabel(selectedDay) && <span style={{ fontWeight: 600, color: "#60a5fa", fontSize: 11 }}>· {getDateLabel(selectedDay)}</span>}
+                      </div>
+                      <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
+                    </div>
+
+                    {/* Stops for selected day */}
+              {stopsForDay.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "36px 0", color: "#94a3b8" }}>
+                  <div style={{ fontSize: 40, marginBottom: 10 }}>📅</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: "#64748b", marginBottom: 4 }}>ยังไม่มีจุดในวันที่ {selectedDay}</div>
+                  <div style={{ fontSize: 12, lineHeight: 1.8 }}>เพิ่มจุดแวะจากแผงขวา<br />หรือกด &ldquo;เพิ่มจุดแวะเอง&rdquo; ด้านบน</div>
                 </div>
               ) : (
                 <div>
-                  {activePlan.stops.map((stop, idx) => {
+                  {stopsForDay.map((stop, idx) => {
                     const meta = ST(stop.stopType);
                     return (
                       <div key={stop.id} style={{ display: "flex", gap: 12, marginBottom: 12 }}>
@@ -525,7 +602,7 @@ export default function PlannerPage() {
                           <div style={{ width: 38, height: 38, borderRadius: "50%", background: meta.bg, border: `2px solid ${meta.color}`, color: meta.color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, flexShrink: 0 }}>
                             {meta.icon}
                           </div>
-                          {idx < activePlan.stops.length - 1 && (
+                          {idx < stopsForDay.length - 1 && (
                             <div style={{ width: 2, flex: 1, minHeight: 16, background: "linear-gradient(to bottom,#e2e8f0,transparent)", margin: "4px 0" }} />
                           )}
                         </div>
@@ -571,9 +648,9 @@ export default function PlannerPage() {
                             <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
                               <button onClick={() => moveStop(stop.id, "up")} disabled={idx === 0}
                                 style={{ ...ab, opacity: idx === 0 ? 0.25 : 1 }} title="ขึ้น">▲</button>
-                              <button onClick={() => moveStop(stop.id, "down")} disabled={idx === activePlan.stops.length - 1}
-                                style={{ ...ab, opacity: idx === activePlan.stops.length - 1 ? 0.25 : 1 }} title="ลง">▼</button>
-                              <button onClick={() => { setEditStop(stop); setEditNotes(stop.notes ?? ""); setEditMaps(stop.googleMapsUrl ?? ""); setEditArrival((stop as any).arrivalTime ?? ""); setEditDuration((stop as any).duration ? String((stop as any).duration) : ""); }}
+                              <button onClick={() => moveStop(stop.id, "down")} disabled={idx === stopsForDay.length - 1}
+                                style={{ ...ab, opacity: idx === stopsForDay.length - 1 ? 0.25 : 1 }} title="ลง">▼</button>
+                              <button onClick={() => { setEditStop(stop); setEditNotes(stop.notes ?? ""); setEditMaps(stop.googleMapsUrl ?? ""); setEditArrival((stop as any).arrivalTime ?? ""); setEditDuration((stop as any).duration ? String((stop as any).duration) : ""); setEditDay(stop.day ?? 1); }}
                                 style={{ ...ab, background: "#eff6ff", color: "#3b82f6", border: "1px solid #bfdbfe" }} title="แก้ไข">✏️</button>
                               <button onClick={() => removeStop(stop.id)}
                                 style={{ ...ab, background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }} title="ลบ">✕</button>
@@ -585,9 +662,9 @@ export default function PlannerPage() {
                   })}
                 </div>
               )}
-            </>
-          )}
-        </div>
+                  </>
+                );
+              })()}
 
         {/* ── COL 3: Search + Bookmarks ── */}
         <div style={{ borderLeft: "1px solid #e2e8f0", background: "#fff", display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -768,6 +845,28 @@ export default function PlannerPage() {
                 <div style={{ fontSize: 12, color: "#64748b" }}>{editStop.name}</div>
               </div>
             </div>
+            {/* Day selector */}
+            {activePlan && (() => {
+              const maxDay = activePlan.stops.reduce((m, s) => Math.max(m, s.day ?? 1), 1);
+              const totalEditDays = Math.max(maxDay, editDay);
+              return (
+                <div style={{ marginBottom:14 }}>
+                  <label style={lbl}>📅 วันที่ในทริป · Trip Day</label>
+                  <div style={{ display:"flex", gap:6, flexWrap:"wrap" as const }}>
+                    {Array.from({ length: totalEditDays + 1 }, (_, i) => i + 1).map(d => (
+                      <button key={d} type="button" onClick={() => setEditDay(d)} style={{
+                        padding:"6px 14px", borderRadius:20,
+                        border:`2px solid ${editDay === d ? "#3b82f6" : "#e2e8f0"}`,
+                        background: editDay === d ? "#eff6ff" : "#f8fafc",
+                        color: editDay === d ? "#1d4ed8" : "#64748b",
+                        fontWeight: editDay === d ? 800 : 600, fontSize:12,
+                        cursor:"pointer", fontFamily:"inherit"
+                      }}>วันที่ {d}</button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
             {/* Arrival time + duration row */}
             <div style={{ display:"flex", gap:12, marginBottom:14 }}>
               <div style={{ flex:1 }}>
