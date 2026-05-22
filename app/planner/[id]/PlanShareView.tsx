@@ -117,27 +117,18 @@ export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl
 
       {/* ── Printable page ── */}
       <div className="pv-page">
-        {/* Real HTML table so Chrome repeats thead on every printed page */}
-        <table className="pv-print-table">
-          <thead>
-            <tr>
-              <th className="pv-print-th">
-                <div className="pv-print-header">
-                  <div className="pv-print-logo-box">🗺️</div>
-                  <div className="pv-print-logo-text">
-                    <span className="pv-print-logo-name">ไปเล่า</span>
-                    <span className="pv-print-logo-sub">PAI · LAO · Trip Planner</span>
-                  </div>
-                  <div className="pv-print-logo-right">
-                    <div className="pv-print-logo-url">{shareUrl}</div>
-                  </div>
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="pv-print-td">
+        {/* Brand header — position:fixed in print, repeats every page */}
+        <div className="pv-print-header">
+          <div className="pv-print-logo-box">🗺️</div>
+          <div className="pv-print-logo-text">
+            <span className="pv-print-logo-name">ไปเล่า</span>
+            <span className="pv-print-logo-sub">PAI · LAO · Trip Planner</span>
+          </div>
+          <div className="pv-print-logo-right">
+            <div className="pv-print-logo-url">{shareUrl}</div>
+          </div>
+        </div>
+        <div className="pv-print-content">
 
         {/* Hero header */}
         <div className="pv-hero">
@@ -287,10 +278,7 @@ export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl
           <span className="pv-footer-brand">ไปเล่า · Pai Lao</span>
           <span className="pv-footer-url">{shareUrl}</span>
         </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        </div>
       </div>
     </div>
   );

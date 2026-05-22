@@ -210,12 +210,9 @@ a { text-decoration: none; }
 .pv-footer-brand { font-size: 13px; font-weight: 800; color: #94a3b8; }
 .pv-footer-url   { font-size: 11px; color: #cbd5e1; }
 
-/* ── Print-only header (hidden on screen) ────────── */
+/* ── Print header — hidden on screen, fixed+repeating on print ── */
 .pv-print-header { display: none; }
-/* pv-print-table is a real <table> — on screen, render as block */
-.pv-print-table { display: block; width: 100%; border: none; border-spacing: 0; }
-.pv-print-table thead { display: none; }  /* hidden on screen */
-.pv-print-th, .pv-print-td { display: block; padding: 0; border: none; }
+.pv-print-content { /* no special screen styling needed */ }
 
 /* ── Print ───────────────────────────────────────── */
 .print-only { display: none; }
@@ -226,38 +223,26 @@ a { text-decoration: none; }
   nav, header, footer, .no-print, .pv-topbar { display: none !important; }
   .print-only { display: block !important; }
 
-  /* ── Real HTML <table> makes thead repeat on every printed page ── */
+  /* ── Print page & content ── */
   .pv-page { max-width: 100%; margin: 0; padding: 0; border-radius: 0; box-shadow: none; }
-  .pv-print-table {
-    display: table;
-    width: 100%;
-    border-collapse: collapse;
-    border-spacing: 0;
-  }
-  .pv-print-table thead { display: table-header-group; }
-  .pv-print-table tbody { display: table-row-group; }
-  .pv-print-th {
-    display: table-cell;
-    padding: 0;
-    width: 100%;
-  }
-  .pv-print-td {
-    display: table-cell;
-    padding-top: 10px;
-    vertical-align: top;
-    width: 100%;
-  }
+  .pv-print-content { padding-top: 4px; }
 
-  /* ── Print header — shows inside <thead> which repeats every page ── */
+  /* ── Fixed brand header — position:fixed repeats on EVERY printed page ── */
+  /* body padding-top ensures content never overlaps the fixed header */
+  body { padding-top: 54px !important; }
   .pv-print-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
     display: flex !important;
     align-items: center;
     gap: 10px;
-    padding: 6px 0 8px;
+    padding: 8px 0 9px;
     background: #fff !important;
     print-color-adjust: exact; -webkit-print-color-adjust: exact;
     border-bottom: 2.5px solid #10b981;
-    width: 100%;
+    z-index: 9999;
     box-sizing: border-box;
   }
   .pv-print-logo-box {
@@ -278,9 +263,6 @@ a { text-decoration: none; }
   }
   .pv-print-logo-right { margin-left: auto; text-align: right; }
   .pv-print-logo-url { font-size: 8px; color: #94a3b8; }
-
-  /* ── Body content inside the table cell ── */
-  .pv-print-td { padding-top: 10px; vertical-align: top; }
 
   /* ── Hero ── */
   .pv-hero {
