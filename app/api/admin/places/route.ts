@@ -97,3 +97,75 @@ export async function PUT(request: Request) {
 
   return NextResponse.json({ message: "action ไม่ถูกต้อง" }, { status: 400 });
 }
+
+// POST /api/admin/places — admin สร้างสถานที่โดยตรง (APPROVED + verified ทันที)
+export async function POST(request: Request) {
+  const session = await getCurrentUser();
+  if (!session || (session.role !== "ADMIN" && session.role !== "SUPERADMIN")) {
+    return NextResponse.json({ message: "ไม่มีสิทธิ์" }, { status: 403 });
+  }
+
+  try {
+    const body = await request.json();
+    const {
+      title, titleEn, province, district, address, googleMapsUrl,
+      category: categoryRaw, tags, coverUrl, gallery,
+      description, descriptionShort, openHours, closedDays,
+      entryFee, phone, website, lineId,
+    } = body;
+
+    if (!title || !province || !district || !categoryRaw || !description) {
+      return NextResponse.json({ message: "กรุณากรอกข้อมูลที่จำเป็นให้ครบ (ชื่อ, จังหวัด, อำเภอ, หมวดหมู่, คำอธิบาย)" }, { status: 400 });
+    }
+
+    const CATEGORY_MAP: Record<string, string> = {
+      "ธรรมชาติ": "NATURE", "คาเฟ่": "CAFE", "ที่พัก": "ACCOMMODATION",
+      "แคมปิ้ง": "CAMPING", "อาหาร": "FOOD", "วัด / ศาสนสถาน": "TEMPLE",
+      "ชายหาด": "BEACH", "ตลาด / ช้อปปิ้ง": "MARKET",
+      "กีฬา / ผจญภัย": "ADVENTURE", "พิพิธภัณฑ์ / ประวัติศาสตร์": "MUSEUM",
+    };
+    const category = (CATEGORY_MAP[categoryRaw] ?? categoryRaw) as any;
+
+    const slug = `${title.replace(/[^a-zA-Z0-9ก-๙]/g, "-").replace(/-+/g, "-").toLowerCase()}-${Date.now()}`;
+
+    const place = await prisma.place.create({
+      data: {
+        slug, title,
+        titleEn:          titleEn          ?? null,
+        province, district,
+        address:          address          ?? null,
+        googleMapsUrl:    googleMapsUrl    ?? null,
+        category,
+        tags:             tags             ?? [],
+        coverUrl:         coverUrl         ?? "",
+        gallery:          gallery          ?? [],
+        description,
+        descriptionShort: descriptionShort ?? null,
+        openHours:        openHours        ?? null,
+        closedDays:       closedDays       ?? null,
+        entryFee:         entryFee         ?? null,
+        phone:            phone            ?? null,
+        website:          website          ?? null,
+        lineId:           lineId           ?? null,
+        approvalStatus:   "APPROVED",
+        isVerified:       true,
+        businessId:       null,
+      },
+    });
+
+    await prisma.adminLog.create({
+      data: {
+        adminId:    session.userId,
+        action:     "CREATE_PLACE",
+        targetId:   place.id,
+        targetType: "PLACE",
+        detail:     `Admin created place: ${title}`,
+      },
+    });
+
+    return NextResponse.json({ message: "เพิ่มสถานที่สำเร็จ", place }, { status: 201 });
+  } catch (error) {
+    console.error("POST /api/admin/places:", error);
+    return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
+  }
+}
