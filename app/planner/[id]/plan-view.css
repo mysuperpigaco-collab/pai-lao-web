@@ -179,6 +179,28 @@ a { text-decoration: none; }
 .pv-pdf-big  { background: #f59e0b; color: #fff; }
 .pv-pdf-big:hover  { background: #d97706; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(245,158,11,0.35); }
 
+/* ── Travel wishes ──────────────────────────────── */
+.pv-wishes {
+  margin: 8px 36px 0;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f0f9ff 100%);
+  border: 1.5px solid #a7f3d0; border-radius: 18px;
+  padding: 24px 28px; text-align: center;
+  break-inside: avoid;
+}
+.pv-wishes-icon { font-size: 28px; margin-bottom: 10px; }
+.pv-wishes-th {
+  font-size: 15px; font-weight: 700; color: #065f46; line-height: 1.7;
+  margin-bottom: 8px;
+}
+.pv-wishes-en {
+  font-size: 13px; font-weight: 500; color: #047857; font-style: italic;
+  line-height: 1.6; margin-bottom: 10px;
+}
+.pv-wishes-sig {
+  font-size: 12px; font-weight: 800; color: #10b981;
+  letter-spacing: 0.3px;
+}
+
 /* ── Footer ──────────────────────────────────────── */
 .pv-footer {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -233,7 +255,7 @@ a { text-decoration: none; }
   }
   .pv-print-logo-url { font-size: 8px; color: #94a3b8; }
   /* Push page content down so it clears the fixed header (~14mm header height) */
-  .pv-page { max-width: 100%; margin: 14mm 0 0; border-radius: 0; box-shadow: none; }
+  .pv-page { max-width: 100%; margin: 0; border-radius: 0; box-shadow: none; }
   .pv-hero {
     background: #1e3a5f !important;
     print-color-adjust: exact; -webkit-print-color-adjust: exact;
@@ -256,7 +278,7 @@ a { text-decoration: none; }
   .pv-day-header { break-after: avoid; page-break-after: avoid; }
   .pv-stop-card { border: 1px solid #e2e8f0; background: #f8fafc !important; }
   .pv-share-section { display: none !important; }
-  @page { size: A4; margin: 10mm 14mm; }
+  @page { size: A4; margin: 18mm 14mm 12mm; }
 }
 
 /* ── Responsive ──────────────────────────────────── */

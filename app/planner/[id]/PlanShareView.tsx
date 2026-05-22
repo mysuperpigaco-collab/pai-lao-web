@@ -264,6 +264,14 @@ export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl
           </div>
         </div>
 
+        {/* Travel wishes closing */}
+        <div className="pv-wishes">
+          <div className="pv-wishes-icon">✈️</div>
+          <div className="pv-wishes-th">ขอให้เดินทางปลอดภัย พักผ่อนให้เต็มที่ และเก็บความทรงจำดีๆ ไว้มากมาย</div>
+          <div className="pv-wishes-en">Wishing you a safe journey, wonderful memories, and adventures that last a lifetime.</div>
+          <div className="pv-wishes-sig">— ทีมงาน ไปเล่า · PAI LAO Team 🗺️</div>
+        </div>
+
         {/* Footer */}
         <div className="pv-footer">
           <span className="pv-footer-brand">ไปเล่า · Pai Lao</span>
