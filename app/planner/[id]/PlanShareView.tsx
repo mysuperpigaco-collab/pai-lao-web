@@ -117,17 +117,31 @@ export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl
 
       {/* ── Printable page ── */}
       <div className="pv-page">
-        {/* Print-only branding header */}
-        <div className="pv-print-header">
-          <div className="pv-print-logo-box">🗺️</div>
-          <div className="pv-print-logo-text">
-            <span className="pv-print-logo-name">ไปเล่า</span>
-            <span className="pv-print-logo-sub">PAI · LAO · Trip Planner</span>
+        {/* CSS table structure so print header repeats every page WITHOUT overlapping content */}
+        <div className="pv-print-table">
+
+          {/* thead: repeats on every printed page via display:table-header-group */}
+          <div className="pv-print-thead">
+            <div className="pv-print-tr">
+              <div className="pv-print-th">
+                <div className="pv-print-header">
+                  <div className="pv-print-logo-box">🗺️</div>
+                  <div className="pv-print-logo-text">
+                    <span className="pv-print-logo-name">ไปเล่า</span>
+                    <span className="pv-print-logo-sub">PAI · LAO · Trip Planner</span>
+                  </div>
+                  <div className="pv-print-logo-right">
+                    <div className="pv-print-logo-url">{shareUrl}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="pv-print-logo-right">
-            <div className="pv-print-logo-url">{shareUrl}</div>
-          </div>
-        </div>
+
+          {/* tbody: all actual content */}
+          <div className="pv-print-tbody">
+            <div className="pv-print-tr">
+              <div className="pv-print-td">
 
         {/* Hero header */}
         <div className="pv-hero">
@@ -277,6 +291,10 @@ export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl
           <span className="pv-footer-brand">ไปเล่า · Pai Lao</span>
           <span className="pv-footer-url">{shareUrl}</span>
         </div>
+              </div>{/* pv-print-td */}
+            </div>{/* pv-print-tr */}
+          </div>{/* pv-print-tbody */}
+        </div>{/* pv-print-table */}
       </div>
     </div>
   );
