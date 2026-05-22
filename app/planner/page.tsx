@@ -569,42 +569,38 @@ export default function PlannerPage() {
               </div>
             ) : plans.map(plan => {
               const isActive = activePlan?.id === plan.id;
+              const past = isPastPlan(plan);
               return (
-                {(() => {
-                  const past = isPastPlan(plan);
-                  return (
-                    <div key={plan.id} onClick={() => setActivePlan(plan)} style={{
-                      padding: "12px 16px", cursor: "pointer", transition: "background 0.15s",
-                      borderLeft: `4px solid ${isActive ? (past ? "#f59e0b" : "#3b82f6") : (past ? "#fde68a" : "transparent")}`,
-                      background: isActive ? (past ? "linear-gradient(90deg,#fffbeb,#fef9c3)" : "linear-gradient(90deg,#eff6ff,#f8faff)") : "transparent",
-                      borderBottom: "1px solid #f8fafc",
-                      opacity: past && !isActive ? 0.75 : 1,
-                    }}>
-                      <div style={{ fontWeight: 700, fontSize: 14, color: isActive ? (past ? "#92400e" : "#1d4ed8") : "#1e293b", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontSize: 16 }}>{past ? "⏰" : plan.isPublic ? "🌐" : "📋"}</span>
-                        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{plan.title}</span>
-                        {past && <span style={{ fontSize: 9, fontWeight: 800, background: "#fef3c7", color: "#92400e", padding: "1px 6px", borderRadius: 999, flexShrink: 0 }}>ผ่านแล้ว</span>}
-                      </div>
-                      {(plan.startDate || plan.province) && (
-                        <div style={{ fontSize: 11, color: "#64748b", marginBottom: 3, display: "flex", gap: 8 }}>
-                          {plan.startDate && <span>📅 {plan.startDate}</span>}
-                          {plan.province && <span>📍 {plan.province}</span>}
-                        </div>
-                      )}
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600 }}>🚩 {plan.stops.length} จุดหมาย</span>
-                        {isActive && (
-                          <button onClick={e => { e.stopPropagation(); deletePlan(plan.id); }}
-                            style={{ marginLeft: "auto", padding: "2px 8px", borderRadius: 6, border: "1px solid #fecaca",
-                              background: "#fef2f2", color: "#dc2626", fontSize: 10, fontWeight: 700,
-                              cursor: "pointer", fontFamily: "inherit" }}>
-                            ลบ
-                          </button>
-                        )}
-                      </div>
+                <div key={plan.id} onClick={() => setActivePlan(plan)} style={{
+                  padding: "12px 16px", cursor: "pointer", transition: "background 0.15s",
+                  borderLeft: `4px solid ${isActive ? (past ? "#f59e0b" : "#3b82f6") : (past ? "#fde68a" : "transparent")}`,
+                  background: isActive ? (past ? "linear-gradient(90deg,#fffbeb,#fef9c3)" : "linear-gradient(90deg,#eff6ff,#f8faff)") : "transparent",
+                  borderBottom: "1px solid #f8fafc",
+                  opacity: past && !isActive ? 0.75 : 1,
+                }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: isActive ? (past ? "#92400e" : "#1d4ed8") : "#1e293b", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 16 }}>{past ? "⏰" : plan.isPublic ? "🌐" : "📋"}</span>
+                    <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{plan.title}</span>
+                    {past && <span style={{ fontSize: 9, fontWeight: 800, background: "#fef3c7", color: "#92400e", padding: "1px 6px", borderRadius: 999, flexShrink: 0 }}>ผ่านแล้ว</span>}
+                  </div>
+                  {(plan.startDate || plan.province) && (
+                    <div style={{ fontSize: 11, color: "#64748b", marginBottom: 3, display: "flex", gap: 8 }}>
+                      {plan.startDate && <span>📅 {plan.startDate}</span>}
+                      {plan.province && <span>📍 {plan.province}</span>}
                     </div>
-                  );
-                })()}
+                  )}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600 }}>🚩 {plan.stops.length} จุดหมาย</span>
+                    {isActive && (
+                      <button onClick={e => { e.stopPropagation(); deletePlan(plan.id); }}
+                        style={{ marginLeft: "auto", padding: "2px 8px", borderRadius: 6, border: "1px solid #fecaca",
+                          background: "#fef2f2", color: "#dc2626", fontSize: 10, fontWeight: 700,
+                          cursor: "pointer", fontFamily: "inherit" }}>
+                        ลบ
+                      </button>
+                    )}
+                  </div>
+                </div>
               );
             })}
           </div>
