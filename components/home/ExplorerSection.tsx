@@ -130,7 +130,7 @@ export default function ExplorerSection() {
                 <Link key={place.slug} href={`/place/${place.slug}`} className="ex-card" style={{ textDecoration: "none", color: "inherit" }}>
                   <div className="ex-img">
                     {place.coverUrl
-                      ? <img src={place.coverUrl} alt={place.title} loading="lazy" />
+                      ? <img src={place.coverUrl} alt={place.title} loading="lazy" onError={(e)=>{const i=e.currentTarget;i.onerror=null;i.src="/images/default-place.svg";}} />
                       : <div className="ex-img-ph">🏞️</div>
                     }
                     {/* Rank badge for top 3 */}

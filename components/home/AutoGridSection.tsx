@@ -136,7 +136,7 @@ export default function AutoGridSection() {
               {places.map(place => (
                 <Link key={place.slug} href={`/place/${place.slug}`} className="ag-card">
                   <div className="ag-img">
-                    <img src={place.coverUrl} alt={place.title} loading="lazy" />
+                    <img src={place.coverUrl} alt={place.title} loading="lazy" onError={(e)=>{const i=e.currentTarget;i.onerror=null;i.src="/images/default-place.svg";}} />
                     {place.business?.isVerified && (
                       <span className="ag-badge-green">✓ Verified</span>
                     )}

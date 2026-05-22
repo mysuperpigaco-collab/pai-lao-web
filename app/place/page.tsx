@@ -424,9 +424,19 @@ function PlaceCard({ place }: { place: Place }) {
       {/* ── Image area ── */}
       <div className="plc-img">
         {place.coverUrl
-          ? <img src={place.coverUrl} alt={place.title} loading="lazy" />
-          : <div className="plc-img-ph" style={{ background: `linear-gradient(135deg, ${color}22, ${color}44)` }}><span style={{ fontSize: 52 }}>{icon}</span></div>
+          ? <img src={place.coverUrl} alt={place.title} loading="lazy"
+              onError={(e) => {
+                const el = e.currentTarget;
+                el.style.display = "none";
+                const ph = el.nextElementSibling as HTMLElement | null;
+                if (ph) ph.style.display = "flex";
+              }}
+            />
+          : null
         }
+        <div className="plc-img-ph" style={{ background: `linear-gradient(135deg, ${color}22, ${color}44)`, display: place.coverUrl ? "none" : "flex" }}>
+          <span style={{ fontSize: 52 }}>{icon}</span>
+        </div>
 
         {/* Gradient overlay */}
         <div className="plc-overlay" />
