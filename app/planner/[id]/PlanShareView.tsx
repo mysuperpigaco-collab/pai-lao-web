@@ -117,13 +117,11 @@ export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl
 
       {/* ── Printable page ── */}
       <div className="pv-page">
-        {/* CSS table structure so print header repeats every page WITHOUT overlapping content */}
-        <div className="pv-print-table">
-
-          {/* thead: repeats on every printed page via display:table-header-group */}
-          <div className="pv-print-thead">
-            <div className="pv-print-tr">
-              <div className="pv-print-th">
+        {/* Real HTML table so Chrome repeats thead on every printed page */}
+        <table className="pv-print-table">
+          <thead>
+            <tr>
+              <th className="pv-print-th">
                 <div className="pv-print-header">
                   <div className="pv-print-logo-box">🗺️</div>
                   <div className="pv-print-logo-text">
@@ -134,14 +132,12 @@ export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl
                     <div className="pv-print-logo-url">{shareUrl}</div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* tbody: all actual content */}
-          <div className="pv-print-tbody">
-            <div className="pv-print-tr">
-              <div className="pv-print-td">
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="pv-print-td">
 
         {/* Hero header */}
         <div className="pv-hero">
@@ -291,10 +287,10 @@ export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl
           <span className="pv-footer-brand">ไปเล่า · Pai Lao</span>
           <span className="pv-footer-url">{shareUrl}</span>
         </div>
-              </div>{/* pv-print-td */}
-            </div>{/* pv-print-tr */}
-          </div>{/* pv-print-tbody */}
-        </div>{/* pv-print-table */}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   );

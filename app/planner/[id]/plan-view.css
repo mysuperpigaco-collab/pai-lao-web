@@ -212,13 +212,10 @@ a { text-decoration: none; }
 
 /* ── Print-only header (hidden on screen) ────────── */
 .pv-print-header { display: none; }
-/* Table structure for print — hidden on screen */
-.pv-print-table  { display: contents; }
-.pv-print-thead  { display: contents; }
-.pv-print-tbody  { display: contents; }
-.pv-print-tr     { display: contents; }
-.pv-print-th     { display: contents; }
-.pv-print-td     { display: contents; }
+/* pv-print-table is a real <table> — on screen, render as block */
+.pv-print-table { display: block; width: 100%; border: none; border-spacing: 0; }
+.pv-print-table thead { display: none; }  /* hidden on screen */
+.pv-print-th, .pv-print-td { display: block; padding: 0; border: none; }
 
 /* ── Print ───────────────────────────────────────── */
 .print-only { display: none; }
@@ -229,28 +226,29 @@ a { text-decoration: none; }
   nav, header, footer, .no-print, .pv-topbar { display: none !important; }
   .print-only { display: block !important; }
 
-  /* ── CSS table trick: header repeats on every page without overlapping content ── */
-  /* The browser natively handles spacing between thead and tbody rows */
+  /* ── Real HTML <table> makes thead repeat on every printed page ── */
   .pv-page { max-width: 100%; margin: 0; padding: 0; border-radius: 0; box-shadow: none; }
   .pv-print-table {
-    display: table !important;
+    display: table;
     width: 100%;
     border-collapse: collapse;
+    border-spacing: 0;
   }
-  .pv-print-thead {
-    display: table-header-group !important;
+  .pv-print-table thead { display: table-header-group; }
+  .pv-print-table tbody { display: table-row-group; }
+  .pv-print-th {
+    display: table-cell;
+    padding: 0;
+    width: 100%;
   }
-  .pv-print-tbody {
-    display: table-row-group !important;
-  }
-  .pv-print-tr {
-    display: table-row !important;
-  }
-  .pv-print-th, .pv-print-td {
-    display: table-cell !important;
+  .pv-print-td {
+    display: table-cell;
+    padding-top: 10px;
+    vertical-align: top;
+    width: 100%;
   }
 
-  /* ── Print header styling ── */
+  /* ── Print header — shows inside <thead> which repeats every page ── */
   .pv-print-header {
     display: flex !important;
     align-items: center;
