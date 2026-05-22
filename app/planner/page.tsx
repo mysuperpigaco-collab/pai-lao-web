@@ -66,9 +66,11 @@ export default function PlannerPage() {
   const [bmTrips,      setBmTrips     ] = useState<BmTrip[]>([]);
   const [loadingBm,    setLoadingBm   ] = useState(false);
   const [expandedTrip, setExpandedTrip] = useState<string | null>(null);
-  const [editStop,   setEditStop  ] = useState<PlanStop | null>(null);
-  const [editNotes,  setEditNotes ] = useState("");
-  const [editMaps,   setEditMaps  ] = useState("");
+  const [editStop,    setEditStop   ] = useState<PlanStop | null>(null);
+  const [editNotes,   setEditNotes  ] = useState("");
+  const [editMaps,    setEditMaps   ] = useState("");
+  const [editArrival, setEditArrival] = useState("");
+  const [editDuration,setEditDuration] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
   const [addingCustom, setAddingCustom] = useState(false);
   const [customName, setCustomName] = useState("");
@@ -173,7 +175,7 @@ export default function PlannerPage() {
     setSavingEdit(true);
     await fetch(`/api/planner/${activePlan.id}`, {
       method: "PUT", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "update-stop", stopId: editStop.id, notes: editNotes, googleMapsUrl: editMaps }),
+      body: JSON.stringify({ action: "update-stop", stopId: editStop.id, notes: editNotes, googleMapsUrl: editMaps, arrivalTime: editArrival, duration: editDuration ? Number(editDuration) : null }),
     });
     setSavingEdit(false); setEditStop(null);
     reloadPlan(activePlan.id);
@@ -537,6 +539,20 @@ export default function PlannerPage() {
                                   {meta.icon} {meta.label.split(" · ")[0]}
                                 </span>
                               </div>
+                              {((stop as any).arrivalTime || (stop as any).duration) && (
+                                <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:4, flexWrap:"wrap" as const }}>
+                                  {(stop as any).arrivalTime && (
+                                    <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:11, fontWeight:700, color:"#1d4ed8", background:"#dbeafe", borderRadius:20, padding:"2px 10px" }}>
+                                      🕐 ถึง {(stop as any).arrivalTime}
+                                    </span>
+                                  )}
+                                  {(stop as any).duration && (
+                                    <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:11, fontWeight:700, color:"#065f46", background:"#d1fae5", borderRadius:20, padding:"2px 10px" }}>
+                                      ⏱ {(stop as any).duration >= 60 ? `${Math.floor((stop as any).duration/60)}ชม.${(stop as any).duration%60 ? (stop as any).duration%60+"น." : ""}` : `${(stop as any).duration} น.`}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                               {(stop.province || stop.district) && (
                                 <div style={{ fontSize: 12, color: "#64748b", marginBottom: stop.notes ? 6 : 0 }}>
                                   📍 {[stop.province, stop.district].filter(Boolean).join(" · ")}
@@ -557,7 +573,7 @@ export default function PlannerPage() {
                                 style={{ ...ab, opacity: idx === 0 ? 0.25 : 1 }} title="ขึ้น">▲</button>
                               <button onClick={() => moveStop(stop.id, "down")} disabled={idx === activePlan.stops.length - 1}
                                 style={{ ...ab, opacity: idx === activePlan.stops.length - 1 ? 0.25 : 1 }} title="ลง">▼</button>
-                              <button onClick={() => { setEditStop(stop); setEditNotes(stop.notes ?? ""); setEditMaps(stop.googleMapsUrl ?? ""); }}
+                              <button onClick={() => { setEditStop(stop); setEditNotes(stop.notes ?? ""); setEditMaps(stop.googleMapsUrl ?? ""); setEditArrival((stop as any).arrivalTime ?? ""); setEditDuration((stop as any).duration ? String((stop as any).duration) : ""); }}
                                 style={{ ...ab, background: "#eff6ff", color: "#3b82f6", border: "1px solid #bfdbfe" }} title="แก้ไข">✏️</button>
                               <button onClick={() => removeStop(stop.id)}
                                 style={{ ...ab, background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }} title="ลบ">✕</button>
@@ -750,6 +766,21 @@ export default function PlannerPage() {
               <div>
                 <div style={{ fontWeight: 900, fontSize: 16, color: "#1e293b" }}>แก้ไขจุดแวะ · Edit Stop</div>
                 <div style={{ fontSize: 12, color: "#64748b" }}>{editStop.name}</div>
+              </div>
+            </div>
+            {/* Arrival time + duration row */}
+            <div style={{ display:"flex", gap:12, marginBottom:14 }}>
+              <div style={{ flex:1 }}>
+                <label style={lbl}>🕐 เวลาที่คาดว่าจะถึง · Arrival Time</label>
+                <input type="time" value={editArrival} onChange={e => setEditArrival(e.target.value)}
+                  style={{ ...inp, background:"#f0f9ff", border:"1.5px solid #bae6fd" }} />
+              </div>
+              <div style={{ flex:1 }}>
+                <label style={lbl}>⏱ เวลาที่ใช้ที่จุดนี้ · Duration (นาที)</label>
+                <input type="number" min="0" step="15" value={editDuration}
+                  onChange={e => setEditDuration(e.target.value)}
+                  placeholder="เช่น 60 = 1 ชั่วโมง"
+                  style={{ ...inp, background:"#f0fdf4", border:"1.5px solid #bbf7d0" }} />
               </div>
             </div>
             <label style={lbl}>📝 หมายเหตุ / Notes</label>

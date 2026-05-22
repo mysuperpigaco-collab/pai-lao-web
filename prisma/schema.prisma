@@ -426,6 +426,8 @@ model TripPlanStop {
   notes         String?
   googleMapsUrl String?
   stopType      String?  // ATTRACTION | EAT | SLEEP | ACTIVITY | TRANSPORT
+  arrivalTime   String?  // เวลาที่คาดว่าจะถึง เช่น "09:00"
+  duration      Int?     // ระยะเวลาที่ใช้ที่จุดนี้ (นาที)
   placeId       String?
   place         Place?   @relation(fields: [placeId], references: [id], onDelete: SetNull)
 

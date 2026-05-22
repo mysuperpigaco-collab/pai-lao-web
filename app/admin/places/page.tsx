@@ -44,6 +44,7 @@ export default function AdminPlacesPage() {
   const [form, setForm]             = useState(emptyForm());
   const [districts, setDistricts]   = useState<string[]>([]);
   const [creating, setCreating]     = useState(false);
+  const [createdSlug, setCreatedSlug] = useState("");
   const [createErr, setCreateErr]   = useState("");
 
   const load = useCallback(() => {
@@ -81,6 +82,7 @@ export default function AdminPlacesPage() {
     setCreating(false);
     if (!res.ok) { setCreateErr(d.message || "เกิดข้อผิดพลาด"); return; }
     setMsg(d.message || "เพิ่มสถานที่สำเร็จ");
+    setCreatedSlug(d.place?.slug || "");
     setShowCreate(false);
     setForm(emptyForm());
     load();
@@ -141,8 +143,19 @@ export default function AdminPlacesPage() {
         <div className="adm-topbar-title">📍 จัดการสถานที่</div>
         <div className="adm-topbar-right">
           <span style={{ color:"#64748b", fontSize:"0.8rem" }}>ทั้งหมด {total.toLocaleString()} สถานที่</span>
-          {msg && <span style={{ color:"#43e97b", fontSize:"0.8rem", fontWeight:600 }}>✓ {msg}</span>}
-          <button className="adm-btn primary sm" onClick={() => { setShowCreate(true); setCreateErr(""); setForm(emptyForm()); }}>
+          {msg && (
+            <span style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <span style={{ color:"#43e97b", fontSize:"0.8rem", fontWeight:600 }}>✓ {msg}</span>
+              {createdSlug && (
+                <a href={`/place/${createdSlug}`} target="_blank"
+                   style={{ fontSize:"0.78rem", background:"#1e3a5f", color:"#60a5fa", border:"1px solid #3b82f6",
+                            borderRadius:6, padding:"2px 10px", textDecoration:"none", fontWeight:600 }}>
+                  👁️ ดูสถานที่
+                </a>
+              )}
+            </span>
+          )}
+          <button className="adm-btn primary sm" onClick={() => { setShowCreate(true); setCreateErr(""); setForm(emptyForm()); setCreatedSlug(""); }}>
             ➕ เพิ่มสถานที่
           </button>
         </div>
