@@ -303,15 +303,13 @@ export default function PlannerPage() {
                 <input value={nDesc} onChange={e => setNDesc(e.target.value)}
                   placeholder="รายละเอียดเพิ่มเติม..." style={inp} />
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 8 }}>
-                <div>
-                  <label style={lbl}>วันเริ่ม · From</label>
-                  <input type="date" value={nStart} min={todayStr} onChange={e => { setNStart(e.target.value); if (nEnd && e.target.value > nEnd) setNEnd(""); }} style={inp} />
-                </div>
-                <div>
-                  <label style={lbl}>วันสิ้นสุด · To</label>
-                  <input type="date" value={nEnd} min={nStart || todayStr} onChange={e => setNEnd(e.target.value)} style={inp} />
-                </div>
+              <div style={{ marginBottom: 8 }}>
+                <label style={lbl}>วันเริ่ม · From</label>
+                <input type="date" value={nStart} min={todayStr} onChange={e => { setNStart(e.target.value); if (nEnd && e.target.value > nEnd) setNEnd(""); }} style={inp} />
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <label style={lbl}>วันสิ้นสุด · To</label>
+                <input type="date" value={nEnd} min={nStart || todayStr} onChange={e => setNEnd(e.target.value)} style={inp} />
               </div>
               <div style={{ marginBottom: 12 }}>
                 <label style={lbl}>จังหวัดหลัก · Province</label>
