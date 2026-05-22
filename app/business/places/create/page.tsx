@@ -15,16 +15,18 @@ type PlaceCategory =
   | "วัด / ศาสนสถาน" | "ชายหาด" | "ตลาด / ช้อปปิ้ง"
   | "กีฬา / ผจญภัย" | "พิพิธภัณฑ์ / ประวัติศาสตร์";
 
-const CATEGORIES: PlaceCategory[] = [
-  "ธรรมชาติ","คาเฟ่","ที่พัก","แคมปิ้ง","อาหาร",
-  "วัด / ศาสนสถาน","ชายหาด","ตลาด / ช้อปปิ้ง",
-  "กีฬา / ผจญภัย","พิพิธภัณฑ์ / ประวัติศาสตร์",
+const CATEGORIES: { th: PlaceCategory; en: string; icon: string }[] = [
+  { th: "ธรรมชาติ",                   en: "Nature",      icon: "🌿" },
+  { th: "คาเฟ่",                      en: "Café",        icon: "☕" },
+  { th: "ที่พัก",                     en: "Stay",        icon: "🏨" },
+  { th: "แคมปิ้ง",                    en: "Camping",     icon: "⛺" },
+  { th: "อาหาร",                      en: "Food",        icon: "🍲" },
+  { th: "วัด / ศาสนสถาน",             en: "Temple",      icon: "🛕" },
+  { th: "ชายหาด",                     en: "Beach",       icon: "🏖️" },
+  { th: "ตลาด / ช้อปปิ้ง",            en: "Market",      icon: "🛍️" },
+  { th: "กีฬา / ผจญภัย",              en: "Adventure",   icon: "🧗" },
+  { th: "พิพิธภัณฑ์ / ประวัติศาสตร์", en: "Museum",      icon: "🏛️" },
 ];
-const CATEGORY_ICON: Record<string, string> = {
-  "ธรรมชาติ":"🌿","คาเฟ่":"☕","ที่พัก":"🏨","แคมปิ้ง":"⛺","อาหาร":"🍲",
-  "วัด / ศาสนสถาน":"🛕","ชายหาด":"🏖️","ตลาด / ช้อปปิ้ง":"🛍️",
-  "กีฬา / ผจญภัย":"🧗","พิพิธภัณฑ์ / ประวัติศาสตร์":"🏛️",
-};
 
 const DAYS = [
   { th: "จันทร์",    en: "Mon" },
@@ -312,10 +314,14 @@ export default function CreatePlacePage() {
               <label>ประเภทสถานที่ · Category <span style={{color:"red"}}>*</span></label>
               <div className="cat-grid">
                 {CATEGORIES.map(c => (
-                  <button key={c} type="button"
-                    className={`cat-btn ${category === c ? "cat-active" : ""}`}
-                    onClick={() => setCategory(c)}>
-                    {CATEGORY_ICON[c]} {c}
+                  <button key={c.th} type="button"
+                    className={`cat-btn ${category === c.th ? "cat-active" : ""}`}
+                    onClick={() => setCategory(c.th)}>
+                    <span style={{fontSize:18}}>{c.icon}</span>
+                    <span style={{display:"flex",flexDirection:"column",alignItems:"flex-start",gap:1}}>
+                      <span style={{fontSize:12,fontWeight:700,lineHeight:1.2}}>{c.th}</span>
+                      <span style={{fontSize:10,color:"#94a3b8",fontWeight:500,lineHeight:1.2}}>{c.en}</span>
+                    </span>
                   </button>
                 ))}
               </div>

@@ -9,16 +9,16 @@ const CAT_LABELS: Record<string,string> = {
   FOOD:"อาหาร",TEMPLE:"วัด",BEACH:"ทะเล",MARKET:"ตลาด",ADVENTURE:"ผจญภัย",MUSEUM:"พิพิธภัณฑ์"
 };
 const CAT_OPTIONS = [
-  { value:"NATURE",      label:"ธรรมชาติ" },
-  { value:"CAFE",        label:"คาเฟ่" },
-  { value:"ACCOMMODATION",label:"ที่พัก" },
-  { value:"CAMPING",     label:"แคมปิ้ง" },
-  { value:"FOOD",        label:"อาหาร / ร้านอาหาร" },
-  { value:"TEMPLE",      label:"วัด / ศาสนสถาน" },
-  { value:"BEACH",       label:"ชายหาด / ทะเล" },
-  { value:"MARKET",      label:"ตลาด / ช้อปปิ้ง" },
-  { value:"ADVENTURE",   label:"กีฬา / ผจญภัย" },
-  { value:"MUSEUM",      label:"พิพิธภัณฑ์ / ประวัติศาสตร์" },
+  { value:"NATURE",       label:"🌿 ธรรมชาติ · Nature" },
+  { value:"CAFE",         label:"☕ คาเฟ่ · Café" },
+  { value:"ACCOMMODATION",label:"🏨 ที่พัก · Stay" },
+  { value:"CAMPING",      label:"⛺ แคมปิ้ง · Camping" },
+  { value:"FOOD",         label:"🍲 อาหาร · Food" },
+  { value:"TEMPLE",       label:"🛕 วัด / ศาสนสถาน · Temple" },
+  { value:"BEACH",        label:"🏖️ ชายหาด · Beach" },
+  { value:"MARKET",       label:"🛍️ ตลาด / ช้อปปิ้ง · Market" },
+  { value:"ADVENTURE",    label:"🧗 กีฬา / ผจญภัย · Adventure" },
+  { value:"MUSEUM",       label:"🏛️ พิพิธภัณฑ์ · Museum" },
 ];
 
 const emptyForm = () => ({
