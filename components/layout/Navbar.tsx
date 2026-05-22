@@ -259,99 +259,158 @@ export default function Navbar() {
         {/* ── Mobile dropdown menu ── */}
         {mobileOpen && (
           <div className="nav-mobile" style={{
-            borderTop: "1px solid #e8f5e9",
-            background: "#fff", padding: "14px 16px 20px",
+            borderTop: "2px solid #f0fdf4",
+            background: "#fff",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.10)",
           }}>
-            {/* Search */}
-            <form onSubmit={handleSearch} style={{
-              display: "flex", alignItems: "center", background: "#f0fdf4",
-              borderRadius: "12px", padding: "0 8px 0 12px", border: "1.5px solid #d1fae5",
-              height: "44px", gap: "8px", marginBottom: "14px",
-            }}>
-              <input type="text" value={searchQ} onChange={e => setSearchQ(e.target.value)}
-                placeholder="ค้นหาทริปหรือสถานที่..."
-                style={{ background: "none", border: "none", flex: 1, outline: "none", fontSize: "14px", color: "#1e293b" }} />
-              <button type="submit" style={{
-                background: "linear-gradient(135deg, #10b981, #06b6d4)", border: "none", borderRadius: 9,
-                width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer", color: "white",
-              }}><IconSearch /></button>
-            </form>
 
-            {/* Nav links */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "2px", marginBottom: "14px" }}>
+            {/* ── Search bar ── */}
+            <div style={{ padding: "14px 16px 0" }}>
+              <form onSubmit={handleSearch} style={{
+                display: "flex", alignItems: "center",
+                background: "#f8fafc", borderRadius: "14px",
+                border: "1.5px solid #e2e8f0", height: "46px",
+                padding: "0 8px 0 14px", gap: "8px",
+              }}>
+                <span style={{ color: "#94a3b8", flexShrink: 0 }}><IconSearch /></span>
+                <input type="text" value={searchQ} onChange={e => setSearchQ(e.target.value)}
+                  placeholder="ค้นหาทริปหรือสถานที่..."
+                  style={{ background: "none", border: "none", flex: 1, outline: "none", fontSize: "15px", color: "#1e293b" }} />
+                <button type="submit" style={{
+                  background: "linear-gradient(135deg, #10b981, #06b6d4)", border: "none",
+                  borderRadius: "10px", padding: "6px 14px", cursor: "pointer",
+                  color: "white", fontSize: "13px", fontWeight: 700, fontFamily: "inherit", flexShrink: 0,
+                }}>ค้นหา</button>
+              </form>
+            </div>
+
+            {/* ── Nav links ── */}
+            <div style={{ padding: "10px 10px 0" }}>
               {[
-                { href: "/", label: "🏠 หน้าแรก" },
-                { href: "/place", label: "🗺️ สถานที่ · Places" },
-                { href: "/trips", label: "✈️ ทริป · Trips" },
-              ].map(({ href, label }) => (
+                { href: "/", icon: "🏠", th: "หน้าแรก", en: "Home" },
+                { href: "/place", icon: "🗺️", th: "สถานที่", en: "Places" },
+                { href: "/trips", icon: "✈️", th: "ทริป", en: "Trips" },
+              ].map(({ href, icon, th, en }) => (
                 <Link key={href} href={href} style={{
-                  textDecoration: "none", color: "#374151", fontWeight: 700, fontSize: "15px",
-                  padding: "11px 14px", borderRadius: "12px", display: "block",
-                  background: "#f8fafc",
+                  display: "flex", alignItems: "center", gap: "12px",
+                  textDecoration: "none", padding: "13px 12px",
+                  borderRadius: "12px", transition: "background 0.15s",
                 }}>
-                  {label}
+                  <span style={{ fontSize: "20px", width: "28px", textAlign: "center", flexShrink: 0 }}>{icon}</span>
+                  <span style={{ flex: 1 }}>
+                    <span style={{ display: "block", fontSize: "15px", fontWeight: 700, color: "#1e293b" }}>{th}</span>
+                    <span style={{ display: "block", fontSize: "12px", color: "#94a3b8", fontWeight: 600, marginTop: "1px" }}>{en}</span>
+                  </span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </Link>
               ))}
             </div>
 
-            {/* Auth actions */}
+            {/* ── Divider ── */}
+            <div style={{ margin: "10px 16px", borderTop: "1px solid #f1f5f9" }} />
+
+            {/* ── Action buttons (logged in, normal user) ── */}
+            {!isLoading && user && !isAdmin && user.role !== "BUSINESS" && (
+              <div style={{ padding: "0 10px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                <Link href="/planner" style={{
+                  textDecoration: "none", display: "flex", flexDirection: "column",
+                  alignItems: "center", justifyContent: "center", gap: "6px",
+                  padding: "14px 10px", borderRadius: "14px",
+                  background: "#f0fdfa", border: "1.5px solid #99f6e4",
+                }}>
+                  <span style={{ fontSize: "22px" }}>📅</span>
+                  <span style={{ fontSize: "13px", fontWeight: 700, color: "#0f766e", textAlign: "center" }}>วางแผนเที่ยว</span>
+                </Link>
+                <Link href="/trips/create" style={{
+                  textDecoration: "none", display: "flex", flexDirection: "column",
+                  alignItems: "center", justifyContent: "center", gap: "6px",
+                  padding: "14px 10px", borderRadius: "14px",
+                  background: "linear-gradient(135deg, #10b981, #06b6d4)",
+                  boxShadow: "0 3px 10px rgba(16,185,129,0.25)",
+                }}>
+                  <span style={{ fontSize: "22px" }}>✏️</span>
+                  <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", textAlign: "center" }}>เขียนทริป</span>
+                </Link>
+              </div>
+            )}
+
+            {/* Admin action */}
+            {!isLoading && user && isAdmin && (
+              <div style={{ padding: "0 10px" }}>
+                <Link href="/admin" style={{
+                  textDecoration: "none", display: "flex", alignItems: "center", gap: "10px",
+                  padding: "13px 16px", borderRadius: "14px",
+                  background: "linear-gradient(135deg, #1e40af, #4facfe)",
+                  boxShadow: "0 3px 10px rgba(79,172,254,0.25)",
+                }}>
+                  <span style={{ fontSize: "20px" }}>🛡️</span>
+                  <span style={{ fontSize: "15px", fontWeight: 700, color: "#fff" }}>Admin Panel</span>
+                </Link>
+              </div>
+            )}
+
+            {/* Business action */}
+            {!isLoading && user && user.role === "BUSINESS" && (
+              <div style={{ padding: "0 10px" }}>
+                <Link href="/business/places/create" style={{
+                  textDecoration: "none", display: "flex", alignItems: "center", gap: "10px",
+                  padding: "13px 16px", borderRadius: "14px",
+                  background: "linear-gradient(135deg, #10b981, #06b6d4)",
+                  boxShadow: "0 3px 10px rgba(16,185,129,0.25)",
+                }}>
+                  <span style={{ fontSize: "20px" }}>➕</span>
+                  <span style={{ fontSize: "15px", fontWeight: 700, color: "#fff" }}>เพิ่มสถานที่</span>
+                </Link>
+              </div>
+            )}
+
+            {/* ── User profile row + logout (logged in) ── */}
             {!isLoading && user && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {!isAdmin && user.role !== "BUSINESS" && (
-                  <>
-                    <Link href="/planner" style={{
-                      textDecoration: "none", color: "#0f766e", background: "#f0fdfa",
-                      border: "1.5px solid #99f6e4", padding: "11px 16px", borderRadius: "12px",
-                      fontWeight: 700, fontSize: "14px", display: "flex", alignItems: "center", gap: "8px",
-                    }}>📅 วางแผนเที่ยว · Planner</Link>
-                    <Link href="/trips/create" style={{
-                      textDecoration: "none", color: "#fff",
-                      background: "linear-gradient(135deg, #10b981, #06b6d4)",
-                      padding: "11px 16px", borderRadius: "12px",
-                      fontWeight: 700, fontSize: "14px", display: "flex", alignItems: "center", gap: "8px",
-                      boxShadow: "0 3px 10px rgba(16,185,129,0.3)",
-                    }}><IconPencil /> เขียนทริป · Write Trip</Link>
-                  </>
-                )}
-                {isAdmin && (
-                  <Link href="/admin" style={{
-                    textDecoration: "none", color: "#fff",
-                    background: "linear-gradient(135deg, #1e40af, #4facfe)",
-                    padding: "11px 16px", borderRadius: "12px",
-                    fontWeight: 700, fontSize: "14px", display: "flex", alignItems: "center", gap: "8px",
-                  }}>🛡️ Admin Panel</Link>
-                )}
-                {user.role === "BUSINESS" && (
-                  <Link href="/business/places/create" style={{
-                    textDecoration: "none", color: "#fff",
-                    background: "linear-gradient(135deg, #10b981, #06b6d4)",
-                    padding: "11px 16px", borderRadius: "12px",
-                    fontWeight: 700, fontSize: "14px", display: "flex", alignItems: "center", gap: "8px",
-                  }}><IconPlus /> เพิ่มสถานที่</Link>
-                )}
-                <button onClick={() => { logout(); setMobileOpen(false); }} style={{
-                  background: "none", border: "1.5px solid #fca5a5", borderRadius: "12px",
-                  padding: "11px 16px", fontSize: "14px", color: "#ef4444", cursor: "pointer",
-                  fontWeight: 700, fontFamily: "inherit", textAlign: "left",
-                }}>ออกจากระบบ · Logout</button>
-              </div>
+              <>
+                <div style={{ margin: "10px 16px", borderTop: "1px solid #f1f5f9" }} />
+                <div style={{ padding: "0 10px 6px", display: "flex", alignItems: "center", gap: "12px" }}>
+                  <Link href={dashboardHref} style={{
+                    flex: 1, textDecoration: "none",
+                    display: "flex", alignItems: "center", gap: "12px",
+                    padding: "10px 12px", borderRadius: "14px", background: "#f8fafc",
+                  }}>
+                    <Avatar />
+                    <div>
+                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>
+                        {user.displayName || user.firstName}
+                      </div>
+                      <div style={{ fontSize: "12px", color: "#94a3b8", fontWeight: 600 }}>ดูโปรไฟล์</div>
+                    </div>
+                  </Link>
+                  <button onClick={() => { logout(); setMobileOpen(false); }} style={{
+                    background: "#fff5f5", border: "1.5px solid #fecaca", borderRadius: "12px",
+                    padding: "10px 14px", fontSize: "13px", color: "#ef4444",
+                    cursor: "pointer", fontWeight: 700, fontFamily: "inherit", whiteSpace: "nowrap",
+                  }}>ออก</button>
+                </div>
+              </>
             )}
+
+            {/* ── Login / Signup (logged out) ── */}
             {!isLoading && !user && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div style={{ padding: "0 10px 6px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
                 <Link href="/login" style={{
-                  textDecoration: "none", color: "#0891b2", fontWeight: 700, fontSize: "14px",
-                  padding: "11px 16px", border: "1.5px solid #a5f3fc", borderRadius: "12px",
-                  background: "#f0fdfe", display: "block", textAlign: "center",
-                }}>เข้าสู่ระบบ · Login</Link>
+                  textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center",
+                  padding: "13px", borderRadius: "14px",
+                  border: "1.5px solid #a5f3fc", background: "#f0fdfe",
+                  fontSize: "14px", fontWeight: 700, color: "#0891b2",
+                }}>เข้าสู่ระบบ</Link>
                 <Link href="/signup" style={{
-                  textDecoration: "none", background: "linear-gradient(135deg, #10b981, #06b6d4)",
-                  color: "#fff", padding: "11px 16px", borderRadius: "12px",
-                  fontWeight: 800, fontSize: "14px", display: "block", textAlign: "center",
-                  boxShadow: "0 4px 12px rgba(16,185,129,0.3)",
-                }}>สมัครสมาชิก · Sign Up</Link>
+                  textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center",
+                  padding: "13px", borderRadius: "14px",
+                  background: "linear-gradient(135deg, #10b981, #06b6d4)",
+                  fontSize: "14px", fontWeight: 800, color: "#fff",
+                  boxShadow: "0 3px 10px rgba(16,185,129,0.3)",
+                }}>สมัครสมาชิก</Link>
               </div>
             )}
+
+            <div style={{ height: "12px" }} />
           </div>
         )}
       </nav>
