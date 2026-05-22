@@ -586,7 +586,7 @@ export default function CreateStoryPage() {
                 <div style={{ fontSize: 13, fontWeight: 800, color: "#92400e" }}>คุณมีบันทึกทริปที่ยังไม่เสร็จ</div>
                 <div style={{ fontSize: 12, color: "#78350f" }}>ชื่อ: {existingDraft.title}</div>
               </div>
-              <Link href={} style={{ padding: "7px 14px", background: "#f59e0b", color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: 12, textDecoration: "none" }}>
+              <Link href={`/trips/${existingDraft.slug}/edit`} style={{ padding: "7px 14px", background: "#f59e0b", color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: 12, textDecoration: "none" }}>
                 ✏️ แก้ไขต่อ
               </Link>
             </div>
