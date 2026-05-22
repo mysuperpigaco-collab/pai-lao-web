@@ -258,139 +258,114 @@ export default function Navbar() {
 
         {/* ── Mobile dropdown menu ── */}
         {mobileOpen && (
-          <div className="nav-mobile" style={{
+          <div className="nav-mobile-menu" style={{
             borderTop: "2px solid #f0fdf4",
             background: "#fff",
             boxShadow: "0 8px 32px rgba(0,0,0,0.10)",
           }}>
 
             {/* ── Nav links ── */}
-            <div style={{ padding: "10px 10px 0" }}>
+            <div style={{ padding: "8px 12px" }}>
               {[
-                { href: "/", icon: "🏠", th: "หน้าแรก", en: "Home" },
-                { href: "/place", icon: "🗺️", th: "สถานที่", en: "Places" },
-                { href: "/trips", icon: "✈️", th: "ทริป", en: "Trips" },
-              ].map(({ href, icon, th, en }) => (
+                { href: "/", icon: "🏠", label: "หน้าแรก" },
+                { href: "/place", icon: "🗺️", label: "สถานที่ · Places" },
+                { href: "/trips", icon: "✈️", label: "ทริป · Trips" },
+              ].map(({ href, icon, label }) => (
                 <Link key={href} href={href} style={{
                   display: "flex", alignItems: "center", gap: "12px",
-                  textDecoration: "none", padding: "13px 12px",
-                  borderRadius: "12px", transition: "background 0.15s",
+                  textDecoration: "none", padding: "11px 10px",
+                  borderRadius: "10px", color: "#1e293b",
+                  fontSize: "15px", fontWeight: 700,
                 }}>
-                  <span style={{ fontSize: "20px", width: "28px", textAlign: "center", flexShrink: 0 }}>{icon}</span>
-                  <span style={{ flex: 1 }}>
-                    <span style={{ display: "block", fontSize: "15px", fontWeight: 700, color: "#1e293b" }}>{th}</span>
-                    <span style={{ display: "block", fontSize: "12px", color: "#94a3b8", fontWeight: 600, marginTop: "1px" }}>{en}</span>
-                  </span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                  <span style={{ fontSize: "18px", width: "24px", textAlign: "center", flexShrink: 0 }}>{icon}</span>
+                  <span style={{ flex: 1 }}>{label}</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </Link>
               ))}
-            </div>
 
-            {/* ── Divider ── */}
-            <div style={{ margin: "10px 16px", borderTop: "1px solid #f1f5f9" }} />
-
-            {/* ── Action buttons (logged in, normal user) ── */}
-            {!isLoading && user && !isAdmin && user.role !== "BUSINESS" && (
-              <div style={{ padding: "0 10px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+              {/* Extra links when logged in */}
+              {!isLoading && user && !isAdmin && user.role !== "BUSINESS" && (<>
                 <Link href="/planner" style={{
-                  textDecoration: "none", display: "flex", flexDirection: "column",
-                  alignItems: "center", justifyContent: "center", gap: "6px",
-                  padding: "14px 10px", borderRadius: "14px",
-                  background: "#f0fdfa", border: "1.5px solid #99f6e4",
+                  display: "flex", alignItems: "center", gap: "12px",
+                  textDecoration: "none", padding: "11px 10px",
+                  borderRadius: "10px", color: "#0f766e", fontSize: "15px", fontWeight: 700,
                 }}>
-                  <span style={{ fontSize: "22px" }}>📅</span>
-                  <span style={{ fontSize: "13px", fontWeight: 700, color: "#0f766e", textAlign: "center" }}>วางแผนเที่ยว</span>
+                  <span style={{ fontSize: "18px", width: "24px", textAlign: "center" }}>📅</span>
+                  <span style={{ flex: 1 }}>วางแผนเที่ยว · Planner</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </Link>
                 <Link href="/trips/create" style={{
-                  textDecoration: "none", display: "flex", flexDirection: "column",
-                  alignItems: "center", justifyContent: "center", gap: "6px",
-                  padding: "14px 10px", borderRadius: "14px",
-                  background: "linear-gradient(135deg, #10b981, #06b6d4)",
-                  boxShadow: "0 3px 10px rgba(16,185,129,0.25)",
+                  display: "flex", alignItems: "center", gap: "12px",
+                  textDecoration: "none", padding: "11px 10px",
+                  borderRadius: "10px", color: "#059669", fontSize: "15px", fontWeight: 700,
                 }}>
-                  <span style={{ fontSize: "22px" }}>✏️</span>
-                  <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", textAlign: "center" }}>เขียนทริป</span>
+                  <span style={{ fontSize: "18px", width: "24px", textAlign: "center" }}>✏️</span>
+                  <span style={{ flex: 1 }}>เขียนทริป · Write Trip</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </Link>
-              </div>
-            )}
-
-            {/* Admin action */}
-            {!isLoading && user && isAdmin && (
-              <div style={{ padding: "0 10px" }}>
+              </>)}
+              {!isLoading && user && isAdmin && (
                 <Link href="/admin" style={{
-                  textDecoration: "none", display: "flex", alignItems: "center", gap: "10px",
-                  padding: "13px 16px", borderRadius: "14px",
-                  background: "linear-gradient(135deg, #1e40af, #4facfe)",
-                  boxShadow: "0 3px 10px rgba(79,172,254,0.25)",
+                  display: "flex", alignItems: "center", gap: "12px",
+                  textDecoration: "none", padding: "11px 10px",
+                  borderRadius: "10px", color: "#1e40af", fontSize: "15px", fontWeight: 700,
                 }}>
-                  <span style={{ fontSize: "20px" }}>🛡️</span>
-                  <span style={{ fontSize: "15px", fontWeight: 700, color: "#fff" }}>Admin Panel</span>
+                  <span style={{ fontSize: "18px", width: "24px", textAlign: "center" }}>🛡️</span>
+                  <span style={{ flex: 1 }}>Admin Panel</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </Link>
-              </div>
-            )}
-
-            {/* Business action */}
-            {!isLoading && user && user.role === "BUSINESS" && (
-              <div style={{ padding: "0 10px" }}>
+              )}
+              {!isLoading && user && user.role === "BUSINESS" && (
                 <Link href="/business/places/create" style={{
-                  textDecoration: "none", display: "flex", alignItems: "center", gap: "10px",
-                  padding: "13px 16px", borderRadius: "14px",
-                  background: "linear-gradient(135deg, #10b981, #06b6d4)",
-                  boxShadow: "0 3px 10px rgba(16,185,129,0.25)",
+                  display: "flex", alignItems: "center", gap: "12px",
+                  textDecoration: "none", padding: "11px 10px",
+                  borderRadius: "10px", color: "#059669", fontSize: "15px", fontWeight: 700,
                 }}>
-                  <span style={{ fontSize: "20px" }}>➕</span>
-                  <span style={{ fontSize: "15px", fontWeight: 700, color: "#fff" }}>เพิ่มสถานที่</span>
+                  <span style={{ fontSize: "18px", width: "24px", textAlign: "center" }}>➕</span>
+                  <span style={{ flex: 1 }}>เพิ่มสถานที่</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                 </Link>
+              )}
+            </div>
+
+            {/* ── User / Auth row ── */}
+            <div style={{ borderTop: "1px solid #f1f5f9", margin: "0 12px" }} />
+
+            {!isLoading && user && (
+              <div style={{ padding: "10px 12px 14px", display: "flex", alignItems: "center", gap: "10px" }}>
+                <Link href={dashboardHref} style={{
+                  flex: 1, textDecoration: "none", display: "flex", alignItems: "center", gap: "10px",
+                }}>
+                  <Avatar />
+                  <div>
+                    <div style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>{user.displayName || user.firstName}</div>
+                    <div style={{ fontSize: "12px", color: "#94a3b8" }}>ดูโปรไฟล์</div>
+                  </div>
+                </Link>
+                <button onClick={() => { logout(); setMobileOpen(false); }} style={{
+                  background: "none", border: "1.5px solid #fca5a5", borderRadius: "10px",
+                  padding: "8px 14px", fontSize: "13px", color: "#ef4444",
+                  cursor: "pointer", fontWeight: 700, fontFamily: "inherit",
+                }}>ออก</button>
               </div>
             )}
 
-            {/* ── User profile row + logout (logged in) ── */}
-            {!isLoading && user && (
-              <>
-                <div style={{ margin: "10px 16px", borderTop: "1px solid #f1f5f9" }} />
-                <div style={{ padding: "0 10px 6px", display: "flex", alignItems: "center", gap: "12px" }}>
-                  <Link href={dashboardHref} style={{
-                    flex: 1, textDecoration: "none",
-                    display: "flex", alignItems: "center", gap: "12px",
-                    padding: "10px 12px", borderRadius: "14px", background: "#f8fafc",
-                  }}>
-                    <Avatar />
-                    <div>
-                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>
-                        {user.displayName || user.firstName}
-                      </div>
-                      <div style={{ fontSize: "12px", color: "#94a3b8", fontWeight: 600 }}>ดูโปรไฟล์</div>
-                    </div>
-                  </Link>
-                  <button onClick={() => { logout(); setMobileOpen(false); }} style={{
-                    background: "#fff5f5", border: "1.5px solid #fecaca", borderRadius: "12px",
-                    padding: "10px 14px", fontSize: "13px", color: "#ef4444",
-                    cursor: "pointer", fontWeight: 700, fontFamily: "inherit", whiteSpace: "nowrap",
-                  }}>ออก</button>
-                </div>
-              </>
-            )}
-
-            {/* ── Login / Signup (logged out) ── */}
             {!isLoading && !user && (
-              <div style={{ padding: "0 10px 6px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+              <div style={{ padding: "10px 12px 14px", display: "flex", gap: "8px" }}>
                 <Link href="/login" style={{
-                  textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center",
-                  padding: "13px", borderRadius: "14px",
+                  flex: 1, textDecoration: "none", textAlign: "center",
+                  padding: "10px", borderRadius: "10px",
                   border: "1.5px solid #a5f3fc", background: "#f0fdfe",
                   fontSize: "14px", fontWeight: 700, color: "#0891b2",
                 }}>เข้าสู่ระบบ</Link>
                 <Link href="/signup" style={{
-                  textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center",
-                  padding: "13px", borderRadius: "14px",
+                  flex: 1, textDecoration: "none", textAlign: "center",
+                  padding: "10px", borderRadius: "10px",
                   background: "linear-gradient(135deg, #10b981, #06b6d4)",
-                  fontSize: "14px", fontWeight: 800, color: "#fff",
-                  boxShadow: "0 3px 10px rgba(16,185,129,0.3)",
+                  fontSize: "14px", fontWeight: 700, color: "#fff",
                 }}>สมัครสมาชิก</Link>
               </div>
             )}
-
-            <div style={{ height: "12px" }} />
           </div>
         )}
       </nav>
