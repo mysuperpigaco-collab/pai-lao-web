@@ -145,7 +145,7 @@ export default function PlannerPage() {
     if (res.ok) { const d = await res.json(); setActivePlan(p => p ? { ...p, isPublic: d.plan.isPublic } : p); }
   };
 
-  const addStop = async (stop: { name: string; province?: string; district?: string; googleMapsUrl?: string; stopType?: string; placeId?: string }) => {
+  const addStop = async (stop: { name: string; province?: string; district?: string; googleMapsUrl?: string; stopType?: string; placeId?: string; day?: number }) => {
     if (!activePlan) return;
     setAddingToStop(stop.name);
     const res = await fetch(`/api/planner/${activePlan.id}`, {
