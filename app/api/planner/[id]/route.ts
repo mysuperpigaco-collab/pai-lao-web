@@ -116,10 +116,10 @@ export async function PUT(request: Request, { params }: Params) {
 
   // ── Update plan meta ──
   if (action === "update-meta") {
-    const { title, description, startDate, endDate, province } = body;
+    const { title, description, startDate, endDate, province, coverUrl } = body;
     const updated = await (prisma as any).tripPlan.update({
       where: { id },
-      data: { title: title?.trim() || plan.title, description: description?.trim() || null, startDate: startDate || null, endDate: endDate || null, province: province || null },
+      data: { title: title?.trim() || plan.title, description: description?.trim() || null, startDate: startDate || null, endDate: endDate || null, province: province || null, ...(coverUrl !== undefined ? { coverUrl: coverUrl || null } : {}) },
     });
     return NextResponse.json({ plan: updated });
   }

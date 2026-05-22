@@ -192,6 +192,8 @@ export default function PlannerPage() {
   const [customDuration, setCustomDuration] = useState("");
   const [addingToStop, setAddingToStop] = useState<string | null>(null);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   const loadPlans = useCallback(async () => {
     setLoadingPlans(true);
@@ -315,6 +317,59 @@ export default function PlannerPage() {
     });
   };
 
+  // ── Cover image upload ──────────────────────────────────────────────────
+  const uploadCover = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !activePlan) return;
+    setUploadingCover(true);
+    try {
+      // Client-side resize to max 1200px wide
+      const img = await createImageBitmap(file);
+      const MAX = 1200;
+      const scale = img.width > MAX ? MAX / img.width : 1;
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise<Blob>(res => canvas.toBlob(b => res(b!), "image/jpeg", 0.85));
+      const fd = new FormData();
+      fd.append("file", new File([blob], "cover.jpg", { type: "image/jpeg" }));
+      fd.append("folder", "plan-covers");
+      const uploadRes = await fetch("/api/upload", { method: "POST", body: fd });
+      if (!uploadRes.ok) throw new Error("Upload failed");
+      const { url } = await uploadRes.json();
+      // Save to plan
+      const saveRes = await fetch(`/api/planner/${activePlan.id}`, {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "update-meta", coverUrl: url }),
+      });
+      if (saveRes.ok) {
+        setActivePlan(prev => prev ? { ...prev, coverUrl: url } : prev);
+        setPlans(prev => prev.map(p => p.id === activePlan.id ? { ...p, coverUrl: url } : p));
+      }
+    } catch (err) { console.error(err); }
+    setUploadingCover(false);
+    if (coverInputRef.current) coverInputRef.current.value = "";
+  };
+
+  // ── Is plan expired? ─────────────────────────────────────────────────────
+  const isPastPlan = (plan: Plan): boolean => {
+    const today = new Date(); today.setHours(0,0,0,0);
+    if (plan.endDate) {
+      const end = new Date(plan.endDate); end.setHours(0,0,0,0);
+      return end < today;
+    }
+    // Fall back to latest stop date computed from startDate + max day
+    if (plan.startDate && plan.stops.length > 0) {
+      const maxDay = plan.stops.reduce((m, s) => Math.max(m, s.day ?? 1), 1);
+      const lastDate = new Date(plan.startDate);
+      lastDate.setDate(lastDate.getDate() + maxDay - 1);
+      lastDate.setHours(0,0,0,0);
+      return lastDate < today;
+    }
+    return false;
+  };
+
   const doSearch = useCallback(async () => {
     if (!sQ.trim() && !sProv) { setPlaceResults([]); return; }
     setSearching(true);
@@ -360,11 +415,14 @@ export default function PlannerPage() {
     }
     return Math.max(maxStopDay, 1);
   })();
-  const getDateLabel = (dayNum: number): string | null => {
+  const getDateLabel = (dayNum: number): { th: string; en: string } | null => {
     if (!activePlan?.startDate) return null;
     const d = new Date(activePlan.startDate);
     d.setDate(d.getDate() + dayNum - 1);
-    return d.toLocaleDateString("th-TH", { day: "numeric", month: "short" });
+    return {
+      th: d.toLocaleDateString("th-TH", { day: "numeric", month: "short" }),
+      en: d.toLocaleDateString("en-US", { day: "numeric", month: "short" }),
+    };
   };
   const stopsForDay = activePlan ? activePlan.stops.filter(s => (s.day ?? 1) === selectedDay) : [];
   const maxEditDay = activePlan ? Math.max(activePlan.stops.reduce((m, s) => Math.max(m, s.day ?? 1), 1), editDay) : editDay;
@@ -512,34 +570,41 @@ export default function PlannerPage() {
             ) : plans.map(plan => {
               const isActive = activePlan?.id === plan.id;
               return (
-                <div key={plan.id} onClick={() => setActivePlan(plan)} style={{
-                  padding: "12px 16px", cursor: "pointer", transition: "background 0.15s",
-                  borderLeft: `4px solid ${isActive ? "#3b82f6" : "transparent"}`,
-                  background: isActive ? "linear-gradient(90deg,#eff6ff,#f8faff)" : "transparent",
-                  borderBottom: "1px solid #f8fafc"
-                }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: isActive ? "#1d4ed8" : "#1e293b", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: 16 }}>{plan.isPublic ? "🌐" : "📋"}</span>
-                    <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{plan.title}</span>
-                  </div>
-                  {(plan.startDate || plan.province) && (
-                    <div style={{ fontSize: 11, color: "#64748b", marginBottom: 3, display: "flex", gap: 8 }}>
-                      {plan.startDate && <span>📅 {plan.startDate}</span>}
-                      {plan.province && <span>📍 {plan.province}</span>}
+                {(() => {
+                  const past = isPastPlan(plan);
+                  return (
+                    <div key={plan.id} onClick={() => setActivePlan(plan)} style={{
+                      padding: "12px 16px", cursor: "pointer", transition: "background 0.15s",
+                      borderLeft: `4px solid ${isActive ? (past ? "#f59e0b" : "#3b82f6") : (past ? "#fde68a" : "transparent")}`,
+                      background: isActive ? (past ? "linear-gradient(90deg,#fffbeb,#fef9c3)" : "linear-gradient(90deg,#eff6ff,#f8faff)") : "transparent",
+                      borderBottom: "1px solid #f8fafc",
+                      opacity: past && !isActive ? 0.75 : 1,
+                    }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: isActive ? (past ? "#92400e" : "#1d4ed8") : "#1e293b", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 16 }}>{past ? "⏰" : plan.isPublic ? "🌐" : "📋"}</span>
+                        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{plan.title}</span>
+                        {past && <span style={{ fontSize: 9, fontWeight: 800, background: "#fef3c7", color: "#92400e", padding: "1px 6px", borderRadius: 999, flexShrink: 0 }}>ผ่านแล้ว</span>}
+                      </div>
+                      {(plan.startDate || plan.province) && (
+                        <div style={{ fontSize: 11, color: "#64748b", marginBottom: 3, display: "flex", gap: 8 }}>
+                          {plan.startDate && <span>📅 {plan.startDate}</span>}
+                          {plan.province && <span>📍 {plan.province}</span>}
+                        </div>
+                      )}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600 }}>🚩 {plan.stops.length} จุดหมาย</span>
+                        {isActive && (
+                          <button onClick={e => { e.stopPropagation(); deletePlan(plan.id); }}
+                            style={{ marginLeft: "auto", padding: "2px 8px", borderRadius: 6, border: "1px solid #fecaca",
+                              background: "#fef2f2", color: "#dc2626", fontSize: 10, fontWeight: 700,
+                              cursor: "pointer", fontFamily: "inherit" }}>
+                            ลบ
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600 }}>🚩 {plan.stops.length} จุดหมาย</span>
-                    {isActive && (
-                      <button onClick={e => { e.stopPropagation(); deletePlan(plan.id); }}
-                        style={{ marginLeft: "auto", padding: "2px 8px", borderRadius: 6, border: "1px solid #fecaca",
-                          background: "#fef2f2", color: "#dc2626", fontSize: 10, fontWeight: 700,
-                          cursor: "pointer", fontFamily: "inherit" }}>
-                        ลบ
-                      </button>
-                    )}
-                  </div>
-                </div>
+                  );
+                })()}
               );
             })}
           </div>
@@ -573,36 +638,71 @@ export default function PlannerPage() {
           ) : (
             <>
               {/* Plan header card */}
-              <div style={{
-                background: "linear-gradient(135deg,#1e293b,#334155)",
-                borderRadius: 24, padding: "22px 24px", marginBottom: 20,
-                color: "#fff", boxShadow: "0 8px 32px rgba(30,41,59,0.2)"
-              }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", letterSpacing: "1px", marginBottom: 6 }}>
-                      {activePlan.isPublic ? "🌐 แชร์ได้สาธารณะ" : "🔒 ส่วนตัว"} · ITINERARY
-                    </div>
-                    <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: "#fff" }}>{activePlan.title}</h2>
-                    {activePlan.description && <p style={{ margin: "6px 0 0", fontSize: 13, color: "#94a3b8" }}>{activePlan.description}</p>}
-                    <div style={{ display: "flex", gap: 16, marginTop: 12, flexWrap: "wrap" as const }}>
-                      {activePlan.startDate && (
-                        <span style={{ fontSize: 12, color: "#cbd5e1", background: "rgba(255,255,255,0.08)", padding: "4px 10px", borderRadius: 20 }}>
-                          📅 {activePlan.startDate}{activePlan.endDate ? ` – ${activePlan.endDate}` : ""}
-                        </span>
-                      )}
-                      {activePlan.province && (
-                        <span style={{ fontSize: 12, color: "#cbd5e1", background: "rgba(255,255,255,0.08)", padding: "4px 10px", borderRadius: 20 }}>
-                          📍 {activePlan.province}
-                        </span>
-                      )}
-                      <span style={{ fontSize: 12, color: "#cbd5e1", background: "rgba(255,255,255,0.08)", padding: "4px 10px", borderRadius: 20 }}>
-                        🚩 {activePlan.stops.length} จุดหมาย · stops
-                      </span>
+              {(() => {
+                const past = isPastPlan(activePlan);
+                const gradient = past
+                  ? "linear-gradient(135deg,#78350f,#92400e)"
+                  : "linear-gradient(135deg,#1e293b,#334155)";
+                return (
+                  <div style={{
+                    borderRadius: 24, marginBottom: 20, overflow: "hidden",
+                    boxShadow: "0 8px 32px rgba(30,41,59,0.2)", position: "relative",
+                  }}>
+                    {/* Cover image */}
+                    {activePlan.coverUrl && (
+                      <div style={{ height: 140, overflow: "hidden", position: "relative" }}>
+                        <img src={activePlan.coverUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.35)" }} />
+                      </div>
+                    )}
+                    <div style={{ background: gradient, padding: "22px 24px", color: "#fff" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" as const }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: past ? "#fcd34d" : "#94a3b8", letterSpacing: "1px" }}>
+                              {activePlan.isPublic ? "🌐 สาธารณะ" : "🔒 ส่วนตัว"} · ITINERARY
+                            </span>
+                            {past && (
+                              <span style={{ fontSize: 11, fontWeight: 800, background: "#f59e0b", color: "#fff", padding: "2px 10px", borderRadius: 999 }}>
+                                ⏰ ผ่านมาแล้ว · Past Trip
+                              </span>
+                            )}
+                          </div>
+                          <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: "#fff" }}>{activePlan.title}</h2>
+                          {activePlan.description && <p style={{ margin: "6px 0 0", fontSize: 13, color: "#94a3b8" }}>{activePlan.description}</p>}
+                          <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" as const }}>
+                            {activePlan.startDate && (
+                              <span style={{ fontSize: 12, color: "#cbd5e1", background: "rgba(255,255,255,0.08)", padding: "4px 10px", borderRadius: 20 }}>
+                                📅 {activePlan.startDate}{activePlan.endDate ? ` – ${activePlan.endDate}` : ""}
+                              </span>
+                            )}
+                            {activePlan.province && (
+                              <span style={{ fontSize: 12, color: "#cbd5e1", background: "rgba(255,255,255,0.08)", padding: "4px 10px", borderRadius: 20 }}>
+                                📍 {activePlan.province}
+                              </span>
+                            )}
+                            <span style={{ fontSize: 12, color: "#cbd5e1", background: "rgba(255,255,255,0.08)", padding: "4px 10px", borderRadius: 20 }}>
+                              🚩 {activePlan.stops.length} จุดหมาย · stops
+                            </span>
+                          </div>
+                        </div>
+                        {/* Cover upload button */}
+                        <div>
+                          <input ref={coverInputRef} type="file" accept="image/*" onChange={uploadCover} style={{ display: "none" }} />
+                          <button onClick={() => coverInputRef.current?.click()} disabled={uploadingCover} title="เปลี่ยนรูปปก · Change cover" style={{
+                            width: 40, height: 40, borderRadius: 12, border: "1.5px solid rgba(255,255,255,0.25)",
+                            background: "rgba(255,255,255,0.12)", color: "#fff", fontSize: 18,
+                            cursor: uploadingCover ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                            backdropFilter: "blur(4px)", flexShrink: 0,
+                          }}>
+                            {uploadingCover ? "⏳" : "🖼️"}
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                );
+              })()}
 
               {/* Add custom stop */}
               {!addingCustom ? (
@@ -648,9 +748,14 @@ export default function PlannerPage() {
                     </select>
                   </div>
                   <select value={String(customDay)} onChange={e => setCustomDay(Number(e.target.value))} style={{ ...inp, marginBottom: 8 }}>
-                    {Array.from({ length: totalDays + 1 }, (_, i) => i + 1).map(d => (
-                      <option key={d} value={d}>📅 วันที่ {d}</option>
-                    ))}
+                    {Array.from({ length: totalDays + 1 }, (_, i) => i + 1).map(d => {
+                      const dl = getDateLabel(d);
+                      return (
+                        <option key={d} value={d}>
+                          📅 วันที่ {d} · Day {d}{dl ? ` (${dl.en})` : ""}
+                        </option>
+                      );
+                    })}
                   </select>
                   <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:8 }}>
                     <div>
@@ -684,35 +789,43 @@ export default function PlannerPage() {
               )}
 
               {/* ── Day Tabs ── */}
-              <div style={{ display:"flex", gap:6, overflowX:"auto", paddingBottom:8, marginBottom:12, scrollbarWidth:"none" }}>
+              <div style={{ display:"flex", gap:6, overflowX:"auto", paddingBottom:8, marginBottom:12, scrollbarWidth:"none" as const }}>
                 {Array.from({ length: totalDays }, (_, i) => i + 1).map(dayNum => {
                   const cnt = activePlan.stops.filter(s => (s.day ?? 1) === dayNum).length;
-                  const isActive = selectedDay === dayNum;
+                  const isAct = selectedDay === dayNum;
                   const dl = getDateLabel(dayNum);
                   return (
                     <button key={dayNum} onClick={() => { setSelectedDay(dayNum); setCustomDay(dayNum); }} style={{
-                      flexShrink:0, padding:"7px 14px", borderRadius:14,
-                      border:`2px solid ${isActive ? "#3b82f6" : "#e2e8f0"}`,
-                      background: isActive ? "#eff6ff" : "#f8fafc",
-                      color: isActive ? "#1d4ed8" : "#64748b",
-                      fontWeight: isActive ? 800 : 600, fontSize:12,
+                      flexShrink:0, padding:"8px 14px", borderRadius:14,
+                      border:`2px solid ${isAct ? "#3b82f6" : "#e2e8f0"}`,
+                      background: isAct ? "#eff6ff" : "#f8fafc",
+                      color: isAct ? "#1d4ed8" : "#64748b",
+                      fontWeight: isAct ? 800 : 600, fontSize:12,
                       cursor:"pointer", fontFamily:"inherit",
-                      display:"flex", flexDirection:"column" as const, alignItems:"center", gap:1,
+                      display:"flex", flexDirection:"column" as const, alignItems:"center", gap:2,
                     }}>
-                      <span>วันที่ {dayNum}</span>
-                      {dl && <span style={{ fontSize:10, color: isActive ? "#3b82f6" : "#94a3b8" }}>{dl}</span>}
-                      <span style={{ fontSize:10, color: isActive ? "#3b82f6" : "#94a3b8" }}>{cnt} จุด</span>
+                      <span style={{ fontSize:12, fontWeight:800 }}>วันที่ {dayNum}</span>
+                      <span style={{ fontSize:9, color: isAct ? "#93c5fd" : "#94a3b8", fontWeight:600 }}>Day {dayNum}</span>
+                      {dl && (
+                        <span style={{ fontSize:10, color: isAct ? "#3b82f6" : "#64748b", fontWeight:700 }}>
+                          {dl.th}
+                        </span>
+                      )}
+                      {dl && (
+                        <span style={{ fontSize:9, color: isAct ? "#93c5fd" : "#94a3b8" }}>{dl.en}</span>
+                      )}
+                      <span style={{ fontSize:10, color: isAct ? "#3b82f6" : "#94a3b8", marginTop:2 }}>🚩 {cnt} จุด</span>
                     </button>
                   );
                 })}
                 <button onClick={() => { const nd = totalDays + 1; setSelectedDay(nd); setCustomDay(nd); }} style={{
-                  flexShrink:0, padding:"7px 14px", borderRadius:14,
+                  flexShrink:0, padding:"8px 14px", borderRadius:14,
                   border:"2px dashed #c7d2fe", background:"#f5f3ff", color:"#7c3aed",
                   fontWeight:700, fontSize:12, cursor:"pointer", fontFamily:"inherit",
-                  display:"flex", flexDirection:"column" as const, alignItems:"center",
+                  display:"flex", flexDirection:"column" as const, alignItems:"center", gap:2,
                 }}>
                   <span>+ เพิ่มวัน</span>
-                  <span style={{ fontSize:9, color:"#a78bfa" }}>Add Day</span>
+                  <span style={{ fontSize:9, color:"#a78bfa" }}>+ Add Day</span>
                 </button>
               </div>
 
@@ -721,9 +834,17 @@ export default function PlannerPage() {
                 <div style={{ flex:1, height:1, background:"#e2e8f0" }} />
                 <div style={{ fontWeight:800, fontSize:13, color:"#3b82f6", background:"#eff6ff",
                   borderRadius:20, padding:"4px 16px", border:"1px solid #bfdbfe",
-                  display:"flex", alignItems:"center", gap:6 }}>
-                  ☀️ วันที่ {selectedDay}
-                  {getDateLabel(selectedDay) && <span style={{ fontWeight:600, color:"#60a5fa", fontSize:11 }}>· {getDateLabel(selectedDay)}</span>}
+                  display:"flex", alignItems:"center", gap:8, flexDirection:"column" as const }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                    <span>☀️</span>
+                    <span>วันที่ {selectedDay} · Day {selectedDay}</span>
+                    {getDateLabel(selectedDay) && (
+                      <span style={{ fontWeight:700, color:"#3b82f6", fontSize:12 }}>
+                        {getDateLabel(selectedDay)!.th}
+                        <span style={{ fontWeight:500, color:"#93c5fd", marginLeft:4 }}>({getDateLabel(selectedDay)!.en})</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div style={{ flex:1, height:1, background:"#e2e8f0" }} />
               </div>
@@ -732,7 +853,7 @@ export default function PlannerPage() {
               {stopsForDay.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "36px 0", color: "#94a3b8" }}>
                   <div style={{ fontSize: 40, marginBottom: 10 }}>📅</div>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: "#64748b", marginBottom: 4 }}>ยังไม่มีจุดในวันที่ {selectedDay}</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: "#64748b", marginBottom: 4 }}>ยังไม่มีจุดในวันที่ {selectedDay} · No stops for Day {selectedDay}</div>
                   <div style={{ fontSize: 12, lineHeight: 1.7 }}>เพิ่มจุดแวะจากแผงขวา<br />หรือกด &ldquo;เพิ่มจุดแวะเอง&rdquo; ด้านบน</div>
                 </div>
               ) : (
