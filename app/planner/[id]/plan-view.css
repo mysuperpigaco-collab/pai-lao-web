@@ -79,7 +79,7 @@ a { text-decoration: none; }
 .pv-itinerary { padding: 32px 36px 0; }
 
 /* Day section */
-.pv-day-section { margin-bottom: 40px; break-inside: avoid-page; }
+.pv-day-section { margin-bottom: 40px; }
 .pv-day-header  { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; break-after: avoid; }
 .pv-day-pill    {
   background: linear-gradient(135deg, #1d4ed8, #7c3aed);
@@ -273,12 +273,13 @@ a { text-decoration: none; }
   .pv-timeline-dot {
     print-color-adjust: exact; -webkit-print-color-adjust: exact;
   }
-  .pv-timeline-item { break-inside: avoid; }
-  .pv-day-section { break-inside: avoid-page; page-break-inside: avoid; }
+  /* Each individual stop avoids internal page break; but whole day section CAN break across pages */
+  .pv-timeline-item { break-inside: avoid; page-break-inside: avoid; }
+  .pv-day-section { } /* allow page break within day */
   .pv-day-header { break-after: avoid; page-break-after: avoid; }
   .pv-stop-card { border: 1px solid #e2e8f0; background: #f8fafc !important; }
   .pv-share-section { display: none !important; }
-  @page { size: A4; margin: 18mm 14mm 12mm; }
+  @page { size: A4; margin: 20mm 14mm 12mm; }
 }
 
 /* ── Responsive ──────────────────────────────────── */

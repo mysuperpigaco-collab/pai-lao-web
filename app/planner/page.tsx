@@ -1,3 +1,80 @@
+// ── Sortable stop card ──────────────────────────────────────────────────────
+function SortableStopCard({ stop, idx, total, onEdit, onRemove }: {
+  stop: PlanStop; idx: number; total: number;
+  onEdit: () => void; onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: stop.id });
+  const meta = ST(stop.stopType);
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+  return (
+    <div ref={setNodeRef} style={{ ...style, display: "flex", gap: 12, marginBottom: 12 }}>
+      {/* Timeline dot + line */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 4 }}>
+        <div style={{ width: 38, height: 38, borderRadius: "50%", background: meta.bg, border: `2px solid ${meta.color}`, color: meta.color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, flexShrink: 0 }}>
+          {meta.icon}
+        </div>
+        {idx < total - 1 && (
+          <div style={{ width: 2, flex: 1, minHeight: 16, background: "linear-gradient(to bottom,#e2e8f0,transparent)", margin: "4px 0" }} />
+        )}
+      </div>
+      {/* Card */}
+      <div style={{ flex: 1, background: "#fff", borderRadius: 18, padding: "14px 18px", border: `1.5px solid ${isDragging ? "#93c5fd" : "#e2e8f0"}`, boxShadow: isDragging ? "0 8px 24px rgba(59,130,246,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", transition: "border-color 0.2s,box-shadow 0.2s" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {/* Drag handle + name row */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const, marginBottom: 4 }}>
+              <span {...attributes} {...listeners} style={{ cursor: "grab", fontSize: 16, color: "#94a3b8", lineHeight: 1, userSelect: "none", touchAction: "none", padding: "2px 3px", borderRadius: 4 }} title="ลากเพื่อจัดลำดับ">⠿</span>
+              <span style={{ fontWeight: 800, fontSize: 15, color: "#1e293b" }}>{stop.name}</span>
+              <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: meta.bg, color: meta.color, fontWeight: 700, flexShrink: 0 }}>
+                {meta.icon} {meta.label.split(" · ")[0]}
+              </span>
+            </div>
+            {(stop.arrivalTime || stop.duration) && (
+              <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:4, flexWrap:"wrap" as const }}>
+                {stop.arrivalTime && (
+                  <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:11, fontWeight:700, color:"#1d4ed8", background:"#dbeafe", borderRadius:20, padding:"2px 10px" }}>
+                    🕐 ถึง {stop.arrivalTime}
+                  </span>
+                )}
+                {stop.duration && (
+                  <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:11, fontWeight:700, color:"#065f46", background:"#d1fae5", borderRadius:20, padding:"2px 10px" }}>
+                    ⏱ {stop.duration >= 60 ? `${Math.floor(stop.duration/60)}ชม.${stop.duration%60 ? stop.duration%60+"น." : ""}` : `${stop.duration} น.`}
+                  </span>
+                )}
+              </div>
+            )}
+            {(stop.province || stop.district) && (
+              <div style={{ fontSize: 12, color: "#64748b", marginBottom: stop.notes ? 6 : 0 }}>
+                📍 {[stop.province, stop.district].filter(Boolean).join(" · ")}
+              </div>
+            )}
+            {stop.notes && (
+              <p style={{ margin: "6px 0 0", fontSize: 13, color: "#374151", lineHeight: 1.6 }}>{stop.notes}</p>
+            )}
+            {stop.googleMapsUrl && (
+              <a href={stop.googleMapsUrl} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 8, fontSize: 12, color: "#3b82f6", fontWeight: 700, textDecoration: "none", padding: "4px 12px", borderRadius: 20, border: "1px solid #bfdbfe", background: "#eff6ff" }}>
+                🗺️ Google Maps
+              </a>
+            )}
+          </div>
+          {/* Action buttons */}
+          <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+            <button onClick={onEdit}
+              style={{ ...ab, background: "#eff6ff", color: "#3b82f6", border: "1px solid #bfdbfe" }} title="แก้ไข">✏️</button>
+            <button onClick={onRemove}
+              style={{ ...ab, background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }} title="ลบ">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -5,6 +82,16 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { PROVINCES, getDistricts } from "@/data/thailand";
+import {
+  DndContext, closestCenter,
+  KeyboardSensor, PointerSensor, useSensor, useSensors,
+  type DragEndEvent
+} from "@dnd-kit/core";
+import {
+  SortableContext, verticalListSortingStrategy,
+  useSortable, arrayMove
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface PlanStop {
   id: string; order: number; name: string; day: number;
@@ -41,6 +128,10 @@ export default function PlannerPage() {
   const { user } = useAuth();
   const router   = useRouter();
   const todayStr = new Date().toISOString().split("T")[0];
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor)
+  );
 
   useEffect(() => {
     if (user === null) router.replace("/login");
@@ -82,6 +173,8 @@ export default function PlannerPage() {
   const [customDist, setCustomDist] = useState("");
   const [customType, setCustomType] = useState("ATTRACTION");
   const [customMaps, setCustomMaps] = useState("");
+  const [customArrival, setCustomArrival] = useState("");
+  const [customDuration, setCustomDuration] = useState("");
   const [addingToStop, setAddingToStop] = useState<string | null>(null);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -145,7 +238,7 @@ export default function PlannerPage() {
     if (res.ok) { const d = await res.json(); setActivePlan(p => p ? { ...p, isPublic: d.plan.isPublic } : p); }
   };
 
-  const addStop = async (stop: { name: string; province?: string; district?: string; googleMapsUrl?: string; stopType?: string; placeId?: string; day?: number }) => {
+  const addStop = async (stop: { name: string; province?: string; district?: string; googleMapsUrl?: string; stopType?: string; placeId?: string; day?: number; arrivalTime?: string; duration?: number }) => {
     if (!activePlan) return;
     setAddingToStop(stop.name);
     const res = await fetch(`/api/planner/${activePlan.id}`, {
@@ -187,9 +280,24 @@ export default function PlannerPage() {
 
   const addCustomStop = async () => {
     if (!customName.trim()) return;
-    await addStop({ name: customName, province: customProv, district: customDist, googleMapsUrl: customMaps, stopType: customType, day: customDay });
+    await addStop({ name: customName, province: customProv, district: customDist, googleMapsUrl: customMaps, stopType: customType, day: customDay, arrivalTime: customArrival || undefined, duration: customDuration ? Number(customDuration) : undefined });
     setCustomName(""); setCustomProv(""); setCustomDist(""); setCustomMaps(""); setCustomType("ATTRACTION");
+    setCustomArrival(""); setCustomDuration("");
     setAddingCustom(false);
+  };
+
+  const reorderStops = async (orderedIds: string[]) => {
+    if (!activePlan) return;
+    // Optimistic update
+    const newStops = [...activePlan.stops].sort((a, b) => orderedIds.indexOf(a.id) - orderedIds.indexOf(b.id))
+      .map((s, i) => ({ ...s, order: i }));
+    setActivePlan(prev => prev ? { ...prev, stops: newStops } : prev);
+    setPlans(prev => prev.map(p => p.id === activePlan.id ? { ...p, stops: newStops } : p));
+    // Persist
+    await fetch(`/api/planner/${activePlan.id}`, {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "reorder-stops", orderedIds }),
+    });
   };
 
   const doSearch = useCallback(async () => {
@@ -516,6 +624,19 @@ export default function PlannerPage() {
                       <option key={d} value={d}>📅 วันที่ {d}</option>
                     ))}
                   </select>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:8 }}>
+                    <div>
+                      <label style={{ fontSize:10, fontWeight:700, color:"#64748b", display:"block", marginBottom:3 }}>🕐 เวลาที่คาดว่าจะถึง</label>
+                      <input type="time" value={customArrival} onChange={e => setCustomArrival(e.target.value)}
+                        style={{ ...inp, background:"#f0f9ff", border:"1.5px solid #bae6fd" }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize:10, fontWeight:700, color:"#64748b", display:"block", marginBottom:3 }}>⏱ เวลาที่ใช้ (นาที)</label>
+                      <input type="number" min="0" step="15" value={customDuration}
+                        onChange={e => setCustomDuration(e.target.value)} placeholder="เช่น 60"
+                        style={{ ...inp, background:"#f0fdf4", border:"1.5px solid #bbf7d0" }} />
+                    </div>
+                  </div>
                   <input value={customMaps} onChange={e => setCustomMaps(e.target.value)}
                     placeholder="🗺️ Google Maps URL (ไม่บังคับ)" style={{ ...inp, marginBottom: 12 }} />
                   <div style={{ display: "flex", gap: 8 }}>
@@ -579,7 +700,7 @@ export default function PlannerPage() {
                 <div style={{ flex:1, height:1, background:"#e2e8f0" }} />
               </div>
 
-              {/* Stops for selected day */}
+              {/* Stops for selected day — drag-and-drop */}
               {stopsForDay.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "36px 0", color: "#94a3b8" }}>
                   <div style={{ fontSize: 40, marginBottom: 10 }}>📅</div>
@@ -587,75 +708,39 @@ export default function PlannerPage() {
                   <div style={{ fontSize: 12, lineHeight: 1.7 }}>เพิ่มจุดแวะจากแผงขวา<br />หรือกด &ldquo;เพิ่มจุดแวะเอง&rdquo; ด้านบน</div>
                 </div>
               ) : (
-                <div>
-                  {stopsForDay.map((stop, idx) => {
-                    const meta = ST(stop.stopType);
-                    return (
-                      <div key={stop.id} style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-                        {/* Line connector */}
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 4 }}>
-                          <div style={{ width: 38, height: 38, borderRadius: "50%", background: meta.bg, border: `2px solid ${meta.color}`, color: meta.color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, flexShrink: 0 }}>
-                            {meta.icon}
-                          </div>
-                          {idx < stopsForDay.length - 1 && (
-                            <div style={{ width: 2, flex: 1, minHeight: 16, background: "linear-gradient(to bottom,#e2e8f0,transparent)", margin: "4px 0" }} />
-                          )}
-                        </div>
-                        {/* Stop card */}
-                        <div style={{ flex: 1, background: "#fff", borderRadius: 18, padding: "14px 18px", border: "1px solid #e2e8f0", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const, marginBottom: 4 }}>
-                                <span style={{ fontWeight: 800, fontSize: 15, color: "#1e293b" }}>{stop.name}</span>
-                                <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: meta.bg, color: meta.color, fontWeight: 700, flexShrink: 0 }}>
-                                  {meta.icon} {meta.label.split(" · ")[0]}
-                                </span>
-                              </div>
-                              {((stop as any).arrivalTime || (stop as any).duration) && (
-                                <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:4, flexWrap:"wrap" as const }}>
-                                  {(stop as any).arrivalTime && (
-                                    <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:11, fontWeight:700, color:"#1d4ed8", background:"#dbeafe", borderRadius:20, padding:"2px 10px" }}>
-                                      🕐 ถึง {(stop as any).arrivalTime}
-                                    </span>
-                                  )}
-                                  {(stop as any).duration && (
-                                    <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:11, fontWeight:700, color:"#065f46", background:"#d1fae5", borderRadius:20, padding:"2px 10px" }}>
-                                      ⏱ {(stop as any).duration >= 60 ? `${Math.floor((stop as any).duration/60)}ชม.${(stop as any).duration%60 ? (stop as any).duration%60+"น." : ""}` : `${(stop as any).duration} น.`}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                              {(stop.province || stop.district) && (
-                                <div style={{ fontSize: 12, color: "#64748b", marginBottom: stop.notes ? 6 : 0 }}>
-                                  📍 {[stop.province, stop.district].filter(Boolean).join(" · ")}
-                                </div>
-                              )}
-                              {stop.notes && (
-                                <p style={{ margin: "6px 0 0", fontSize: 13, color: "#374151", lineHeight: 1.6 }}>{stop.notes}</p>
-                              )}
-                              {stop.googleMapsUrl && (
-                                <a href={stop.googleMapsUrl} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 8, fontSize: 12, color: "#3b82f6", fontWeight: 700, textDecoration: "none", padding: "4px 12px", borderRadius: 20, border: "1px solid #bfdbfe", background: "#eff6ff" }}>
-                                  🗺️ Google Maps
-                                </a>
-                              )}
-                            </div>
-                            {/* Action buttons */}
-                            <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-                              <button onClick={() => moveStop(stop.id, "up")} disabled={idx === 0}
-                                style={{ ...ab, opacity: idx === 0 ? 0.25 : 1 }} title="ขึ้น">▲</button>
-                              <button onClick={() => moveStop(stop.id, "down")} disabled={idx === stopsForDay.length - 1}
-                                style={{ ...ab, opacity: idx === stopsForDay.length - 1 ? 0.25 : 1 }} title="ลง">▼</button>
-                              <button onClick={() => { setEditStop(stop); setEditNotes(stop.notes ?? ""); setEditMaps(stop.googleMapsUrl ?? ""); setEditArrival((stop as any).arrivalTime ?? ""); setEditDuration((stop as any).duration ? String((stop as any).duration) : ""); setEditDay(stop.day ?? 1); }}
-                                style={{ ...ab, background: "#eff6ff", color: "#3b82f6", border: "1px solid #bfdbfe" }} title="แก้ไข">✏️</button>
-                              <button onClick={() => removeStop(stop.id)}
-                                style={{ ...ab, background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }} title="ลบ">✕</button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={(event: DragEndEvent) => {
+                    const { active, over } = event;
+                    if (!over || active.id === over.id) return;
+                    const oldIdx = stopsForDay.findIndex(s => s.id === active.id);
+                    const newIdx = stopsForDay.findIndex(s => s.id === over.id);
+                    const reordered = arrayMove(stopsForDay, oldIdx, newIdx);
+                    // Rebuild full stop list with new order within this day
+                    const otherStops = activePlan!.stops.filter(s => (s.day ?? 1) !== selectedDay);
+                    const allNewStops = [...otherStops, ...reordered].sort((a, b) =>
+                      a.day !== b.day ? (a.day ?? 1) - (b.day ?? 1) : a.order - b.order
                     );
-                  })}
-                </div>
+                    // Persist
+                    reorderStops(reordered.map(s => s.id));
+                  }}
+                >
+                  <SortableContext items={stopsForDay.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                    <div>
+                      {stopsForDay.map((stop, idx) => (
+                        <SortableStopCard
+                          key={stop.id}
+                          stop={stop}
+                          idx={idx}
+                          total={stopsForDay.length}
+                          onEdit={() => { setEditStop(stop); setEditNotes(stop.notes ?? ""); setEditMaps(stop.googleMapsUrl ?? ""); setEditArrival((stop as any).arrivalTime ?? ""); setEditDuration((stop as any).duration ? String((stop as any).duration) : ""); setEditDay(stop.day ?? 1); }}
+                          onRemove={() => removeStop(stop.id)}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
               )}
             </>
           )}

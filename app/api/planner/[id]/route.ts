@@ -85,6 +85,25 @@ export async function PUT(request: Request, { params }: Params) {
     return NextResponse.json({ ok: true });
   }
 
+  // ── Reorder stops by drag-and-drop (ordered IDs for one day) ──
+  if (action === "reorder-stops") {
+    const { orderedIds } = body as { orderedIds: string[] };
+    // Get all stops so we can keep cross-day order intact
+    const allStops = await (prisma as any).tripPlanStop.findMany({ where: { planId: id }, orderBy: { order: "asc" } });
+    // Compute new global order: stops NOT in orderedIds keep their relative order before the day's stops
+    const dayStopIds = new Set(orderedIds);
+    const otherStops = allStops.filter((s: any) => !dayStopIds.has(s.id));
+    // Assign new order values
+    let i = 0;
+    for (const s of otherStops) {
+      await (prisma as any).tripPlanStop.update({ where: { id: s.id }, data: { order: i++ } });
+    }
+    for (const sid of orderedIds) {
+      await (prisma as any).tripPlanStop.update({ where: { id: sid }, data: { order: i++ } });
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   // ── Update stop notes ──
   if (action === "update-stop") {
     const { stopId, notes, googleMapsUrl, arrivalTime, duration, day } = body;
