@@ -665,6 +665,10 @@ export default function PlannerPage() {
                   </>
                 );
               })()}
+            </>
+          )}
+        </div>
+        </div>
 
         {/* ── COL 3: Search + Bookmarks ── */}
         <div style={{ borderLeft: "1px solid #e2e8f0", background: "#fff", display: "flex", flexDirection: "column", overflow: "hidden" }}>
