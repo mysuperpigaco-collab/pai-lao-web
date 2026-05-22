@@ -250,7 +250,7 @@ function PlacesInner() {
 
       <style jsx>{`
         /* ── Page ── */
-        .pl-page { min-height: 100vh; background: #f8fafc; }
+        .pl-page { min-height: 100vh; background: #f8fafc; overflow-x: hidden; }
 
         /* ── Hero ── */
         .pl-hero {
@@ -329,7 +329,7 @@ function PlacesInner() {
         .pl-cat-active .pl-cat-en { color: rgba(255,255,255,0.65); }
 
         /* Province + Sort row */
-        .pl-filter-row { display: flex; gap: 12px; flex-wrap: wrap; }
+        .pl-filter-row { display: flex; gap: 12px; flex-wrap: wrap; padding: 0 20px; box-sizing: border-box; }
         .pl-select-wrap {
           display: flex; align-items: center; gap: 8px;
           background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px;
@@ -387,9 +387,55 @@ function PlacesInner() {
         @media (max-width: 1200px) { .pl-grid, .pl-skeleton-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 900px)  { .pl-grid, .pl-skeleton-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 640px)  {
-          .pl-hero-title { font-size: 34px; }
-          .pl-grid, .pl-skeleton-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-          .pl-cat { padding: 7px 10px; min-width: 58px; }
+          /* Hero */
+          .pl-hero { padding: 36px 16px 48px; }
+          .pl-hero-title { font-size: 28px; }
+          .pl-hero-sub { font-size: 13px; margin-bottom: 20px; }
+          .pl-search-wrap { padding: 10px 14px; border-radius: 14px; }
+          .pl-search { font-size: 14px; }
+
+          /* Filter bar */
+          .pl-filters { padding: 10px 0 8px; }
+
+          /* Category chips — full-width horizontal scroll edge-to-edge */
+          .pl-cats {
+            padding-left: 16px; padding-right: 16px;
+            gap: 6px; padding-bottom: 8px;
+            /* force single row scroll */
+            display: flex; flex-wrap: nowrap; overflow-x: auto;
+          }
+          .pl-cat {
+            padding: 6px 10px; min-width: 56px; border-radius: 12px;
+            flex-shrink: 0;
+          }
+          .pl-cat-icon { font-size: 16px; }
+          .pl-cat-th { font-size: 10px; }
+          .pl-cat-en { font-size: 8px; }
+
+          /* Province / district row */
+          .pl-filter-row { padding: 0 16px; gap: 8px; }
+          .pl-select-wrap { padding: 7px 10px; border-radius: 10px; }
+          .pl-select-sm { max-width: none; }
+
+          /* Results */
+          .pl-results { padding: 16px 12px 60px; }
+          .pl-result-bar { margin-bottom: 14px; }
+          .pl-grid, .pl-skeleton-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+          }
+
+          /* Place card on small screen */
+          .plc-img { height: 160px; }
+          .plc-body { padding: 12px 14px 14px; }
+          .plc-title { font-size: 13px; }
+          .plc-desc { -webkit-line-clamp: 2; font-size: 11px; }
+          .plc-loc { font-size: 10px; }
+        }
+
+        @media (max-width: 380px) {
+          .pl-grid, .pl-skeleton-grid { grid-template-columns: 1fr; gap: 10px; }
+          .plc-img { height: 200px; }
         }
       `}</style>
     </div>
