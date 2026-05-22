@@ -285,11 +285,11 @@ export default function PlannerPage() {
               </button>
             )}
             <Link href={`/planner/${activePlan.id}`} target="_blank" style={{
-              padding: "7px 16px", borderRadius: 20, border: "1.5px solid #e2e8f0",
-              background: "#fff", color: "#374151", fontWeight: 700, fontSize: 12,
+              padding: "7px 16px", borderRadius: 20, border: "1.5px solid #7c3aed",
+              background: "linear-gradient(135deg,#f5f3ff,#ede9fe)", color: "#6d28d9", fontWeight: 800, fontSize: 12,
               textDecoration: "none", display: "flex", alignItems: "center", gap: 5
             }}>
-              🖨️ พิมพ์ · Print
+              📤 แชร์ · Share
             </Link>
           </div>
         )}
@@ -421,7 +421,7 @@ export default function PlannerPage() {
                 <div style={{ fontWeight: 700, fontSize: 14, color: "#3b82f6", marginBottom: 4 }}>Plan Your Next Adventure</div>
                 <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.8, maxWidth: 320 }}>
                   ค้นหาสถานที่จากแผงขวา · ดึงจุดแวะจากทริปที่บุ๊คมาร์ค<br />
-                  จัดลำดับ · แชร์ · พิมพ์เป็น PDF
+                  จัดลำดับ · แชร์ใน LINE/Facebook · บันทึกเป็น PDF
                 </div>
               </div>
               <button onClick={() => setShowNew(true)} style={{

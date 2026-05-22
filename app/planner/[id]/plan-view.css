@@ -1,66 +1,219 @@
-body { margin: 0; font-family: "Sarabun", "Noto Sans Thai", sans-serif; background: #f1f5f9; }
+/* ── Base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-family: "Sarabun", "Noto Sans Thai", system-ui, sans-serif; background: #f1f5f9; color: #1e293b; }
+a { text-decoration: none; }
+
 .pv-root { min-height: 100vh; }
 
-/* Controls */
-.pv-controls {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  background: #1e293b; color: #fff;
-  display: flex; align-items: center; gap: 16px; padding: 12px 24px;
+/* ── Top bar ─────────────────────────────────────── */
+.pv-topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 56px; gap: 16px;
 }
-.pv-back { color: #94a3b8; text-decoration: none; font-size: 14px; font-weight: 700; }
+.pv-topbar-left { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.pv-back {
+  display: flex; align-items: center; gap: 6px;
+  color: #94a3b8; font-size: 13px; font-weight: 700;
+  transition: color 0.15s; white-space: nowrap;
+}
 .pv-back:hover { color: #fff; }
-.pv-print-btn {
-  padding: 8px 20px; border-radius: 10px; border: none;
-  background: #3b82f6; color: #fff; font-weight: 800; font-size: 14px;
-  cursor: pointer; font-family: inherit;
+.pv-topbar-title {
+  color: #e2e8f0; font-size: 14px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.pv-share-url { font-size: 12px; color: #64748b; margin-left: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pv-topbar-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
-/* Printable page */
+/* Share buttons in topbar */
+.pv-share-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+  border: none; white-space: nowrap;
+}
+.pv-line-btn  { background: #06C755; color: #fff; }
+.pv-line-btn:hover  { background: #05b34c; }
+.pv-fb-btn    { background: #1877F2; color: #fff; }
+.pv-fb-btn:hover    { background: #1669d9; }
+.pv-copy-btn  { background: rgba(255,255,255,0.1); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.15); }
+.pv-copy-btn:hover  { background: rgba(255,255,255,0.18); }
+.pv-copy-btn.copied { background: #10b981; color: #fff; border-color: #10b981; }
+.pv-pdf-btn   { background: #f59e0b; color: #fff; }
+.pv-pdf-btn:hover   { background: #d97706; }
+
+/* ── Page container ──────────────────────────────── */
 .pv-page {
-  max-width: 800px; margin: 80px auto 40px;
-  background: #fff; border-radius: 20px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
-  overflow: hidden; padding: 0 0 40px;
+  max-width: 780px; margin: 72px auto 60px;
+  background: #fff; border-radius: 24px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+  overflow: hidden;
 }
 
-/* Header */
-.pv-header { padding: 32px 36px 24px; border-bottom: 2px solid #f1f5f9; }
-.pv-badge {
-  display: inline-block; padding: 4px 14px; border-radius: 20px;
-  background: #3b82f6; color: #fff; font-size: 12px; font-weight: 800;
-  margin-bottom: 14px; letter-spacing: 0.5px;
+/* ── Hero header ─────────────────────────────────── */
+.pv-hero {
+  background: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 60%, #7c3aed 100%);
+  padding: 40px 40px 36px; color: #fff;
 }
-.pv-title { font-size: 30px; font-weight: 900; color: #1e293b; margin: 0 0 8px; }
-.pv-desc { font-size: 15px; color: #64748b; margin: 0 0 14px; }
-.pv-meta { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: #64748b; font-weight: 600; }
+.pv-hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.18); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff; font-size: 11px; font-weight: 800; letter-spacing: 0.8px;
+  padding: 5px 14px; border-radius: 20px; margin-bottom: 18px;
+  text-transform: uppercase;
+}
+.pv-hero-title { font-size: 32px; font-weight: 900; margin: 0 0 10px; line-height: 1.25; }
+.pv-hero-desc  { font-size: 15px; color: rgba(255,255,255,0.8); margin: 0 0 20px; line-height: 1.65; }
+.pv-hero-meta  { display: flex; flex-wrap: wrap; gap: 10px; }
+.pv-hero-meta-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.95); font-size: 12px; font-weight: 700;
+  padding: 5px 13px; border-radius: 20px;
+}
 
-/* Stops section */
-.pv-stops { padding: 28px 36px 0; }
-.pv-section-title { font-size: 18px; font-weight: 800; color: #1e293b; margin: 0 0 20px; border-left: 4px solid #3b82f6; padding-left: 12px; }
-.pv-stop { display: flex; gap: 14px; margin-bottom: 18px; break-inside: avoid; }
-.pv-stop-num {
-  width: 34px; height: 34px; border-radius: 50%; color: #fff;
+/* ── Itinerary ───────────────────────────────────── */
+.pv-itinerary { padding: 32px 36px 0; }
+
+/* Day section */
+.pv-day-section { margin-bottom: 40px; }
+.pv-day-header  { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.pv-day-pill    {
+  background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+  color: #fff; font-size: 13px; font-weight: 800;
+  padding: 6px 18px; border-radius: 20px; white-space: nowrap;
+}
+.pv-day-date { font-size: 13px; color: #64748b; font-weight: 600; }
+
+/* Timeline */
+.pv-timeline { position: relative; padding-left: 52px; }
+.pv-timeline-item { position: relative; margin-bottom: 18px; }
+.pv-timeline-line {
+  position: absolute; left: -38px; top: 44px;
+  width: 2px; height: calc(100% - 16px);
+  background: linear-gradient(to bottom, #e2e8f0, #f1f5f9);
+}
+.pv-timeline-dot {
+  position: absolute; left: -52px; top: 10px;
+  width: 32px; height: 32px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 900; font-size: 15px; flex-shrink: 0;
+  font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  border: 3px solid #fff;
 }
-.pv-stop-body { flex: 1; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 16px; }
-.pv-stop-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
-.pv-stop-name { font-weight: 800; font-size: 16px; color: #1e293b; }
-.pv-stop-type { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 700; }
-.pv-stop-loc { font-size: 12px; color: #64748b; margin-bottom: 8px; }
-.pv-stop-notes { font-size: 14px; color: #374151; line-height: 1.75; margin: 8px 0; }
-.pv-maps-row { font-size: 12px; color: #3b82f6; word-break: break-all; }
-.pv-maps-url { font-style: italic; }
 
-/* Footer */
-.pv-footer { text-align: center; font-size: 12px; color: #94a3b8; margin-top: 32px; padding-top: 16px; border-top: 1px solid #f1f5f9; }
+/* Stop card */
+.pv-stop-card {
+  background: #f8fafc; border: 1.5px solid #e2e8f0;
+  border-radius: 16px; padding: 16px 18px;
+  transition: box-shadow 0.15s;
+}
+.pv-stop-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+.pv-stop-card-header { display: flex; align-items: flex-start; gap: 12px; }
+.pv-stop-order {
+  font-size: 11px; font-weight: 900;
+  min-width: 22px; padding-top: 3px;
+}
+.pv-stop-info  { flex: 1; min-width: 0; }
+.pv-stop-name  { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 3px; }
+.pv-stop-loc   { font-size: 12px; color: #64748b; font-weight: 600; }
+.pv-stop-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 700; padding: 4px 10px;
+  border-radius: 12px; white-space: nowrap; flex-shrink: 0;
+}
+.pv-stop-timing {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+.pv-timing-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 700; color: #475569;
+  background: #fff; border: 1px solid #e2e8f0;
+  padding: 4px 11px; border-radius: 12px;
+}
+.pv-stop-notes { font-size: 14px; color: #475569; line-height: 1.7; margin: 10px 0 0; }
+.pv-maps-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 10px; font-size: 12px; font-weight: 700; color: #3b82f6;
+  transition: color 0.15s;
+}
+.pv-maps-link:hover { color: #1d4ed8; }
+.pv-maps-print { font-size: 11px; color: #64748b; margin-top: 8px; word-break: break-all; }
 
-/* Print */
+/* ── Share section ───────────────────────────────── */
+.pv-share-section {
+  margin: 16px 36px 0;
+  background: linear-gradient(135deg, #f0f9ff, #f5f3ff);
+  border: 1.5px solid #e0e7ff; border-radius: 20px;
+  padding: 28px 28px 24px; text-align: center;
+}
+.pv-share-title { font-size: 17px; font-weight: 800; color: #1e293b; margin-bottom: 16px; }
+.pv-share-url-box {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px;
+  padding: 10px 10px 10px 16px; margin-bottom: 18px;
+}
+.pv-share-url-text { flex: 1; font-size: 12px; color: #64748b; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pv-share-url-copy {
+  flex-shrink: 0; background: #1d4ed8; color: #fff;
+  border: none; border-radius: 10px; padding: 7px 16px;
+  font-size: 12px; font-weight: 800; cursor: pointer; font-family: inherit;
+  transition: background 0.15s;
+}
+.pv-share-url-copy:hover { background: #1e40af; }
+.pv-share-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.pv-share-big-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 13px 24px; border-radius: 16px; font-size: 15px; font-weight: 800;
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+  border: none; text-decoration: none;
+}
+.pv-line-big { background: #06C755; color: #fff; }
+.pv-line-big:hover { background: #05b34c; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(6,199,85,0.35); }
+.pv-fb-big   { background: #1877F2; color: #fff; }
+.pv-fb-big:hover   { background: #1669d9; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(24,119,242,0.35); }
+.pv-pdf-big  { background: #f59e0b; color: #fff; }
+.pv-pdf-big:hover  { background: #d97706; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(245,158,11,0.35); }
+
+/* ── Footer ──────────────────────────────────────── */
+.pv-footer {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  margin-top: 32px; padding: 20px 36px;
+  border-top: 1.5px solid #f1f5f9;
+}
+.pv-footer-brand { font-size: 13px; font-weight: 800; color: #94a3b8; }
+.pv-footer-url   { font-size: 11px; color: #cbd5e1; }
+
+/* ── Print ───────────────────────────────────────── */
+.print-only { display: none; }
+
 @media print {
   body { background: #fff; }
-  .no-print { display: none !important; }
+  .no-print  { display: none !important; }
+  .print-only { display: block !important; }
   .pv-page { max-width: 100%; margin: 0; border-radius: 0; box-shadow: none; }
-  .pv-stop { break-inside: avoid; }
-  @page { size: A4; margin: 15mm 12mm; }
+  .pv-hero { background: #1e3a5f !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .pv-day-pill { background: #1d4ed8 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .pv-timeline-item { break-inside: avoid; }
+  .pv-stop-card { border: 1px solid #e2e8f0; background: #f8fafc !important; }
+  .pv-share-section { display: none !important; }
+  @page { size: A4; margin: 12mm 14mm; }
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 640px) {
+  .pv-topbar { padding: 0 14px; gap: 10px; }
+  .pv-topbar-title { display: none; }
+  .pv-share-btn span, .pv-pdf-btn span { display: none; }
+  .pv-page { margin: 64px 10px 40px; border-radius: 18px; }
+  .pv-hero { padding: 28px 22px 24px; }
+  .pv-hero-title { font-size: 24px; }
+  .pv-itinerary { padding: 24px 20px 0; }
+  .pv-timeline { padding-left: 46px; }
+  .pv-share-section { margin: 16px 20px 0; padding: 22px 18px 18px; }
+  .pv-share-big-btn { padding: 11px 18px; font-size: 14px; }
 }
