@@ -211,15 +211,17 @@ export default function ExplorerSection() {
 
         /* Category chips */
         .ex-cats {
-          display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px;
-          padding-bottom: 4px;
+          display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 22px;
+          overflow-x: auto; padding-bottom: 6px;
+          -webkit-overflow-scrolling: touch; scrollbar-width: none;
         }
+        .ex-cats::-webkit-scrollbar { display: none; }
         .ex-cat {
           display: inline-flex; flex-direction: column; align-items: center;
           gap: 1px; padding: 8px 14px; border-radius: 14px;
           border: 1.5px solid #e2e8f0; background: #f8fafc;
           cursor: pointer; transition: all 0.18s; font-family: inherit;
-          min-width: 64px;
+          min-width: 64px; flex-shrink: 0;
         }
         .ex-cat:hover:not(.active) { background: #eff6ff; border-color: #bfdbfe; }
         .ex-cat.active {
@@ -321,11 +323,12 @@ export default function ExplorerSection() {
         @media (max-width: 1100px) { .ex-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 780px)  { .ex-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 600px) {
-          .ex-wrap { padding: 22px 16px; }
-          .ex-filters { flex-direction: column; }
-          .ex-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+          .ex-wrap { padding: 18px 14px; border-radius: 18px; }
+          .ex-filters { flex-direction: column; gap: 10px; }
+          .ex-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
           .ex-cats { gap: 6px; }
-          .ex-cat { padding: 7px 10px; min-width: 56px; }
+          .ex-cat { padding: 6px 10px; min-width: 54px; }
+          .ex-img { height: 140px; }
         }
       `}</style>
     </div>

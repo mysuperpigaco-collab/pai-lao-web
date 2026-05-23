@@ -176,9 +176,11 @@ export default function AutoGridSection() {
 
         /* Tabs */
         .ag-tabs {
-          display: flex; gap: 8px; margin-bottom: 22px;
+          display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 22px;
           overflow-x: auto; padding-bottom: 4px;
+          -webkit-overflow-scrolling: touch; scrollbar-width: none;
         }
+        .ag-tabs::-webkit-scrollbar { display: none; }
         .ag-tab {
           display: inline-flex; flex-direction: column; align-items: center;
           gap: 2px; padding: 10px 16px; border-radius: 14px;
@@ -275,8 +277,11 @@ export default function AutoGridSection() {
           .ag-grid-4 { grid-template-columns: repeat(3, 1fr); }
         }
         @media (max-width: 640px)  {
-          .ag-grid-5, .ag-grid-4 { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-          .ag-tab { padding: 8px 12px; min-width: 62px; }
+          .ag-grid-5, .ag-grid-4 { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+          .ag-tab { padding: 7px 10px; min-width: 58px; }
+          .ag-tab-icon { font-size: 17px; }
+          .ag-tab-th { font-size: 11px; }
+          .ag-img { height: 120px; }
         }
       `}</style>
     </div>
