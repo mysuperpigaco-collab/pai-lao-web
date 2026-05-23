@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 
@@ -22,6 +23,7 @@ const IconPlus = () => (
 
 export default function Navbar() {
   const { user, isLoading, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const dashboardHref = user?.role === "BUSINESS" ? "/business/dashboard" : "/dashboard";
   const avatarInitial = user ? (user.displayName || user.firstName).charAt(0).toUpperCase() : "";
@@ -142,15 +144,46 @@ export default function Navbar() {
           box-shadow: 0 4px 12px rgba(16,185,129,0.3);
           white-space: nowrap;
         }
+        /* Hamburger */
+        .nb-hamburger {
+          display: none; flex-direction: column; justify-content: center;
+          gap: 5px; background: none; border: none; cursor: pointer;
+          padding: 6px; border-radius: 10px; flex-shrink: 0;
+        }
+        .nb-hamburger span {
+          display: block; width: 22px; height: 2.5px;
+          background: #10b981; border-radius: 2px;
+          transition: all 0.25s;
+        }
+        /* Mobile drawer */
+        .nb-mobile-menu {
+          display: none; flex-direction: column;
+          background: #fff; border-top: 1px solid #e8f5e9;
+          padding: 12px 16px 16px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+        .nb-mobile-menu.open { display: flex; }
+        .nb-m-link {
+          text-decoration: none; color: #1e293b; font-weight: 700;
+          font-size: 15px; padding: 12px 8px;
+          border-bottom: 1px solid #f1f5f9;
+        }
+        .nb-m-link:last-child { border-bottom: none; }
+        .nb-m-logout {
+          margin-top: 8px; background: none; border: 1.5px solid #fca5a5;
+          border-radius: 10px; padding: 10px; font-size: 13px; color: #ef4444;
+          cursor: pointer; font-weight: 700; font-family: inherit; width: 100%;
+        }
         /* ── Mobile ── */
         @media (max-width: 768px) {
-          .nb-links   { display: none; }
-          .nb-search  { display: none; }
-          .nb-avatar-name { display: none; }
-          .nb-logout  { display: none; }
-          .nb-write-btn { padding: 7px 10px; font-size: 12px; }
-          .nb-write-btn span { display: none; }   /* hide text, keep icon */
-          .nb-avatar-link { padding: 4px; border-radius: 50%; }
+          .nb-links        { display: none; }
+          .nb-search       { display: none; }
+          .nb-avatar-name  { display: none; }
+          .nb-logout       { display: none; }
+          .nb-write-btn    { padding: 7px 10px; font-size: 12px; }
+          .nb-write-btn span { display: none; }
+          .nb-avatar-link  { padding: 4px; border-radius: 50%; }
+          .nb-hamburger    { display: flex; }
         }
       `}</style>
 
@@ -185,6 +218,11 @@ export default function Navbar() {
           <input type="text" placeholder="ค้นหาทริปหรือสถานที่..." />
           <span style={{ color: "#10b981", display: "flex" }}><IconSearch /></span>
         </div>
+
+        {/* Hamburger — mobile only */}
+        <button className="nb-hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="เมนู">
+          <span /><span /><span />
+        </button>
 
         {/* Auth Zone */}
         <div className="nb-auth">
@@ -230,6 +268,25 @@ export default function Navbar() {
             </>
           )}
         </div>
+      </div>
+
+      {/* Mobile dropdown menu */}
+      <div className={`nb-mobile-menu${menuOpen ? " open" : ""}`}>
+        <Link href="/"        className="nb-m-link" onClick={() => setMenuOpen(false)}>🏠 หน้าแรก</Link>
+        <Link href="/place"   className="nb-m-link" onClick={() => setMenuOpen(false)}>🗺️ สถานที่</Link>
+        <Link href="/trips"   className="nb-m-link" onClick={() => setMenuOpen(false)}>✈️ ทริป</Link>
+        <Link href="/planner" className="nb-m-link" onClick={() => setMenuOpen(false)}>📅 แพลนเนอร์</Link>
+        {user && (
+          <button className="nb-m-logout" onClick={() => { logout(); setMenuOpen(false); }}>
+            ออกจากระบบ
+          </button>
+        )}
+        {!user && !isLoading && (
+          <>
+            <Link href="/login"  className="nb-m-link" onClick={() => setMenuOpen(false)}>🔑 เข้าสู่ระบบ</Link>
+            <Link href="/signup" className="nb-m-link" onClick={() => setMenuOpen(false)}>✨ สมัครสมาชิก</Link>
+          </>
+        )}
       </div>
     </nav>
   );
