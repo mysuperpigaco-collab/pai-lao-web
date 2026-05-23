@@ -26,7 +26,7 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <Navbar />
-          <main>{children}</main>
+          <main style={{overflowX:"clip",maxWidth:"100%"}}>{children}</main>
           <Footer />
         </AuthProvider>
       </body>

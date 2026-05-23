@@ -63,7 +63,7 @@ export default function ExplorerSection() {
   const handleProvinceChange = (v: string) => { setProvince(v); setDistrict(""); setCategory(""); };
 
   return (
-    <div className="ex-wrap">
+    <div className="ex-wrap" style={{maxWidth:"100%",overflowX:"hidden"}}>
       <div className="ex-header">
         <h2 className="ex-title">📍 เจาะลึกรายพื้นที่ <span>Explore by Area</span></h2>
         <p className="ex-sub">สถานที่ยอดนิยมในจังหวัดที่คุณเลือก วัดจากยอด Bookmark · Top places by area</p>
@@ -125,9 +125,9 @@ export default function ExplorerSection() {
               {category ? ` · ${CAT_LABEL[category] ?? category}` : ""}
               {district ? ` · ${district}` : ""}
             </p>
-            <div className="ex-grid">
+            <div className="ex-grid" style={{maxWidth:"100%"}}>
               {places.map((place, i) => (
-                <Link key={place.slug} href={`/place/${place.slug}`} className="ex-card" style={{ textDecoration: "none", color: "inherit" }}>
+                <Link key={place.slug} href={`/place/${place.slug}`} className="ex-card" style={{ textDecoration: "none", color: "inherit", minWidth: 0, width: "100%" }}>
                   <div className="ex-img">
                     {place.coverUrl
                       ? <img src={place.coverUrl} alt={place.title} loading="lazy" onError={(e)=>{const i=e.currentTarget;i.onerror=null;i.src="/images/default-place.svg";}} />

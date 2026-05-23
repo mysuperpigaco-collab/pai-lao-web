@@ -70,7 +70,7 @@ export default function AutoGridSection() {
   }, [activeTab]);
 
   return (
-    <div className="ag-root">
+    <div className="ag-root" style={{maxWidth:"100%",overflowX:"clip"}}>
       {/* ── Tab strip ── */}
       <div className="ag-tabs" style={{display:"flex",flexWrap:"nowrap",overflowX:"auto",WebkitOverflowScrolling:"touch",gap:8,marginBottom:22,paddingBottom:4,scrollbarWidth:"none"}}>
         {TABS.map(t => (
@@ -93,9 +93,9 @@ export default function AutoGridSection() {
         trips.length === 0 ? (
           <div className="ag-loading">ยังไม่มีเรื่องเล่า · No stories yet</div>
         ) : (
-          <div className="ag-grid ag-grid-5">
+          <div className="ag-grid ag-grid-5" style={{maxWidth:"100%"}}>
             {trips.map(trip => (
-              <Link key={trip.slug} href={`/trips/${trip.slug}`} className="ag-card">
+              <Link key={trip.slug} href={`/trips/${trip.slug}`} className="ag-card" style={{minWidth:0,width:"100%"}}>
                 <div className="ag-img">
                   {trip.coverUrl
                     ? <img src={trip.coverUrl} alt={trip.title} loading="lazy" />
@@ -132,9 +132,9 @@ export default function AutoGridSection() {
           <div className="ag-loading">ยังไม่มีสถานที่ในหมวดนี้ · No places yet</div>
         ) : (
           <>
-            <div className="ag-grid ag-grid-4">
+            <div className="ag-grid ag-grid-4" style={{maxWidth:"100%"}}>
               {places.map(place => (
-                <Link key={place.slug} href={`/place/${place.slug}`} className="ag-card">
+                <Link key={place.slug} href={`/place/${place.slug}`} className="ag-card" style={{minWidth:0,width:"100%"}}>
                   <div className="ag-img">
                     <img src={place.coverUrl} alt={place.title} loading="lazy" onError={(e)=>{const i=e.currentTarget;i.onerror=null;i.src="/images/default-place.svg";}} />
                     {place.business?.isVerified && (
