@@ -126,6 +126,7 @@ function PlacesInner() {
     <div className="pl-page">
 
       {/* ── Hero ── */}
+      <div style={{overflowX:"hidden"}}>
       <div className="pl-hero">
         <div className="pl-hero-inner">
           <p className="pl-hero-tag">DISCOVER THAILAND</p>
@@ -151,6 +152,7 @@ function PlacesInner() {
             )}
           </div>
         </div>
+      </div>
       </div>
 
       {/* ── Filters ── */}
@@ -217,7 +219,8 @@ function PlacesInner() {
         </div>
 
         {/* Grid */}
-        {loading ? (
+        <div style={{overflowX:"hidden"}}>
+      {loading ? (
           <div className="pl-skeleton-grid">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="pl-skeleton" />
@@ -247,10 +250,11 @@ function PlacesInner() {
           </div>
         )}
       </div>
+      </div>
 
       <style jsx>{`
         /* ── Page ── */
-        .pl-page { min-height: 100vh; background: #f8fafc; overflow-x: clip; }
+        .pl-page { min-height: 100vh; background: #f8fafc; }
 
         /* ── Hero ── */
         .pl-hero {
@@ -466,7 +470,7 @@ function PlaceCard({ place }: { place: Place }) {
   const bms   = place._count?.bookmarks ?? 0;
 
   return (
-    <Link href={`/place/${place.slug}`} className="plc-card">
+    <Link href={`/place/${place.slug}`} className="plc-card" style={{minWidth:0,width:"100%"}}>
       {/* ── Image area ── */}
       <div className="plc-img">
         {place.coverUrl
