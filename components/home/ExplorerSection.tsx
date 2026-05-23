@@ -88,7 +88,7 @@ export default function ExplorerSection() {
       </div>
 
       {/* ── Category chips ── */}
-      <div className="ex-cats">
+      <div className="ex-cats" style={{display:"flex",flexWrap:"nowrap",overflowX:"auto",WebkitOverflowScrolling:"touch",gap:8,marginBottom:22,paddingBottom:6,scrollbarWidth:"none"}}>
         {PLACE_CATS.map(c => (
           <button
             key={c.id}

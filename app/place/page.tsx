@@ -158,7 +158,7 @@ function PlacesInner() {
         <div className="pl-filters">
 
           {/* Category tabs */}
-          <div className="pl-cats">
+          <div className="pl-cats" style={{display:"flex",flexWrap:"nowrap",overflowX:"auto",WebkitOverflowScrolling:"touch",gap:8,paddingBottom:6,scrollbarWidth:"none"}}>
             {CATS.map(c => (
               <button
                 key={c.id}

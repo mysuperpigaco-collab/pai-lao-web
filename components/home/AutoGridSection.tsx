@@ -72,7 +72,7 @@ export default function AutoGridSection() {
   return (
     <div className="ag-root">
       {/* ── Tab strip ── */}
-      <div className="ag-tabs">
+      <div className="ag-tabs" style={{display:"flex",flexWrap:"nowrap",overflowX:"auto",WebkitOverflowScrolling:"touch",gap:8,marginBottom:22,paddingBottom:4,scrollbarWidth:"none"}}>
         {TABS.map(t => (
           <button
             key={t.id}
