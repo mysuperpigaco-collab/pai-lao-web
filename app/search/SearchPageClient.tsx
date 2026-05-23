@@ -135,7 +135,7 @@ export default function SearchPageClient() {
   const totalResults = totalTrips + totalPlaces;
 
   return (
-    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "36px 20px 80px" }}>
+    <div className="srch-page" style={{ maxWidth: 1100, margin: "0 auto", padding: "36px 20px 80px" }}>
 
       {/* ── Header ── */}
       <div style={{ marginBottom: 28 }}>
@@ -148,9 +148,9 @@ export default function SearchPageClient() {
       </div>
 
       {/* ── Search form ── */}
-      <form onSubmit={handleSubmit} style={{ background: "white", borderRadius: 20, padding: 22, border: "1.5px solid #e2e8f0", boxShadow: "0 4px 20px rgba(15,23,42,0.06)", marginBottom: 28 }}>
+      <form onSubmit={handleSubmit} className="srch-form" style={{ background: "white", borderRadius: 20, padding: 22, border: "1.5px solid #e2e8f0", boxShadow: "0 4px 20px rgba(15,23,42,0.06)", marginBottom: 28 }}>
         {/* Main search row */}
-        <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+        <div className="srch-row" style={{ display: "flex", gap: 10, marginBottom: 16 }}>
           <div style={{ flex: 1, display: "flex", alignItems: "center", background: "#f8fafc", borderRadius: 14, border: "1.5px solid #e2e8f0", padding: "0 14px", height: 48, gap: 10 }}>
             <span style={{ color: "#94a3b8", display: "flex", flexShrink: 0 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -180,9 +180,9 @@ export default function SearchPageClient() {
         )}
 
         {/* Filter row */}
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <div className="srch-filters" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
           {/* Type */}
-          <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 10, padding: 3, gap: 2 }}>
+          <div className="srch-type-toggle" style={{ display: "flex", background: "#f1f5f9", borderRadius: 10, padding: 3, gap: 2 }}>
             {[{ v:"all", l:"ทั้งหมด" }, { v:"trip", l:"✈️ ทริป" }, { v:"place", l:"🗺️ สถานที่" }].map(opt => (
               <button key={opt.v} type="button" onClick={() => setType(opt.v)}
                 style={{ padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: type === opt.v ? 800 : 500,
@@ -359,11 +359,34 @@ export default function SearchPageClient() {
 
       {/* Responsive */}
       <style jsx>{`
+        :global(.srch-page) { overflow-x: hidden; box-sizing: border-box; }
+
         @media (max-width: 900px) {
           :global(.search-result-grid) { grid-template-columns: repeat(2, 1fr) !important; }
         }
-        @media (max-width: 520px) {
-          :global(.search-result-grid) { grid-template-columns: repeat(1, 1fr) !important; }
+
+        @media (max-width: 640px) {
+          :global(.srch-page) { padding: 20px 12px 60px !important; }
+          :global(.srch-form) { padding: 14px !important; border-radius: 16px !important; margin-bottom: 18px !important; }
+          :global(.srch-row) { gap: 8px !important; margin-bottom: 12px !important; }
+          :global(.srch-filters) { gap: 8px !important; }
+          :global(.srch-filters select) {
+            flex: 1 1 calc(50% - 4px);
+            padding: 7px 8px !important;
+            font-size: 12px !important;
+            border-radius: 8px !important;
+            min-width: 0;
+          }
+          :global(.srch-type-toggle button) {
+            padding: 5px 10px !important;
+            font-size: 12px !important;
+          }
+          :global(.search-result-grid) { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+        }
+
+        @media (max-width: 400px) {
+          :global(.search-result-grid) { grid-template-columns: 1fr !important; }
+          :global(.srch-filters select) { flex: 1 1 100%; }
         }
       `}</style>
     </div>
