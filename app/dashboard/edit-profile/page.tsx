@@ -3,6 +3,7 @@
 import "./edit-profile.css";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 const GENDER_OPTIONS = [
@@ -62,6 +63,7 @@ function PasswordStrength({ password }: { password: string }) {
 
 export default function EditProfilePage() {
   const { user, refresh } = useAuth();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [apiError, setApiError] = useState("");
@@ -145,7 +147,11 @@ export default function EditProfilePage() {
       await refresh();
       setIsSaved(true);
       setForm(f => ({ ...f, currentPw: "", newPw: "", confirmPw: "" }));
-      setTimeout(() => setIsSaved(false), 3000);
+      // redirect to public profile after 1.2s
+      setTimeout(() => {
+        const username = (data.user?.username ?? user?.username);
+        if (username) router.push(`/user/${username}`);
+      }, 1200);
     } catch {
       setApiError("ไม่สามารถเชื่อมต่อได้ กรุณาลองใหม่");
     }

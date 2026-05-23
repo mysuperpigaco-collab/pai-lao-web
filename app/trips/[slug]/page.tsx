@@ -8,7 +8,6 @@ import BookmarkButton from "@/components/trips/BookmarkButton";
 import LikeButton from "@/components/trips/LikeButton";
 import FollowButton from "@/components/trips/FollowButton";
 import ShareButton from "@/components/common/ShareButton";
-import PrintTripButton from "@/components/trips/PrintTripButton";
 import ReportButton from "@/components/common/ReportButton";
 import Link from "next/link";
 import "./trip-detail.css";
@@ -41,7 +40,7 @@ export default async function TripDetailPage({ params }: Props) {
       author: {
         select: {
           id: true, username: true, firstName: true, lastName: true,
-          displayName: true, avatarUrl: true, bio: true,
+          displayName: true, avatarUrl: true, bio: true, role: true,
           _count: { select: { trips: true } },
         },
       },
@@ -181,7 +180,9 @@ export default async function TripDetailPage({ params }: Props) {
                     ? <img src={trip.author.avatarUrl} alt="" className="hero-avatar" style={{ borderRadius: "50%", objectFit: "cover" }} />
                     : <div className="hero-avatar">{authorInitial}</div>
                   }
-                  <span>{authorName}</span>
+                  {(trip.author.role === "ADMIN" || trip.author.role === "SUPERADMIN")
+                    ? <span>{authorName}</span>
+                    : <Link href={`/user/${trip.author.username}`} style={{ color: "inherit", textDecoration: "none", fontWeight: 600 }}>{authorName}</Link>}
                 </div>
                 {trip.budget && (
                   <>
@@ -327,7 +328,9 @@ export default async function TripDetailPage({ params }: Props) {
                 ? <img src={trip.author.avatarUrl} alt="" className="author-avatar" style={{ borderRadius: "50%", objectFit: "cover" }} />
                 : <div className="author-avatar">{authorInitial}</div>
               }
-              <div className="author-name">{authorName}</div>
+              {(trip.author.role === "ADMIN" || trip.author.role === "SUPERADMIN")
+                ? <div className="author-name">{authorName}</div>
+                : <Link href={`/user/${trip.author.username}`} className="author-name" style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}>{authorName}</Link>}
               <div className="author-sub">นักเล่าเรื่อง · {trip.author._count.trips} เรื่อง</div>
               {trip.author.bio && <p style={{ fontSize: 13, color: "#64748b", margin: "8px 0 0", textAlign: "center" }}>{trip.author.bio}</p>}
               <div style={{ marginTop: 12 }}>
@@ -353,9 +356,6 @@ export default async function TripDetailPage({ params }: Props) {
                   tripId={trip.id}
                   initialShareCount={trip.shareCount}
                 />
-              </div>
-              <div style={{ marginTop: 8 }}>
-                <PrintTripButton slug={trip.slug} title={trip.title} />
               </div>
               {session && !isOwner && (
                 <div style={{ marginTop: 8 }}>

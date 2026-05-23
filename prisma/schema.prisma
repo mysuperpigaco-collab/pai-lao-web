@@ -269,6 +269,7 @@ model Review {
   rating      Int
   text        String
   isAnonymous Boolean  @default(false)
+  isHidden    Boolean  @default(false)  // เจ้าของรีวิวซ่อนจากโปรไฟล์
   likes       Int      @default(0)
 
   createdAt DateTime @default(now())
