@@ -54,7 +54,7 @@
 .hero-badge {
   padding: 5px 14px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(12px);
@@ -63,10 +63,10 @@
 }
 
 .location {
-  font-size: 14px;
-  opacity: 0.75;
+  font-size: 15px;
+  opacity: 0.85;
   margin-bottom: 8px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .hero-content h1 {
@@ -82,9 +82,9 @@
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 600;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 700;
 }
 
 .hero-author {
@@ -208,7 +208,7 @@
 .trip-tag {
   padding: 6px 14px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   background: white;
   color: #475569;
@@ -235,7 +235,7 @@
 .description {
   line-height: 2;
   color: #475569;
-  font-size: 15.5px;
+  font-size: 16px;
 }
 
 /* ─── GALLERY ─── */
@@ -403,7 +403,7 @@
 }
 
 .info-label {
-  font-size: 11px;
+  font-size: 12px;
   color: #94a3b8;
   font-weight: 700;
   margin-bottom: 2px;
@@ -412,7 +412,7 @@
 }
 
 .info-val {
-  font-size: 13px;
+  font-size: 14px;
   color: #0f172a;
   font-weight: 700;
   line-height: 1.4;
@@ -455,7 +455,7 @@
 }
 
 .related-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   color: #0f172a;
   line-height: 1.35;
@@ -466,7 +466,7 @@
 }
 
 .related-meta {
-  font-size: 11px;
+  font-size: 12px;
   color: #94a3b8;
   font-weight: 600;
   margin-top: 3px;

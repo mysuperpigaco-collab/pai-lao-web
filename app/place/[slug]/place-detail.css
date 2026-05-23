@@ -77,9 +77,9 @@
 }
 
 .pd-title-en {
-  font-size: 18px;
-  opacity: 0.65;
-  font-weight: 500;
+  font-size: 19px;
+  opacity: 0.8;
+  font-weight: 600;
   margin-bottom: 14px;
 }
 
@@ -88,9 +88,9 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  font-size: 14px;
-  color: rgba(255,255,255,0.82);
-  font-weight: 600;
+  font-size: 15px;
+  color: rgba(255,255,255,0.92);
+  font-weight: 700;
 }
 
 .pd-rating-pill {
@@ -155,7 +155,7 @@
 .pd-tag {
   padding: 6px 14px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   background: white;
   color: #475569;
@@ -180,7 +180,7 @@
 }
 
 .pd-description {
-  font-size: 15.5px;
+  font-size: 16px;
   line-height: 2;
   color: #475569;
 }
@@ -280,7 +280,7 @@
 }
 
 .pd-info-label {
-  font-size: 11px;
+  font-size: 12px;
   color: #94a3b8;
   font-weight: 700;
   text-transform: uppercase;
@@ -289,14 +289,14 @@
 }
 
 .pd-info-val {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: #0f172a;
   line-height: 1.4;
 }
 
 .pd-info-link {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: #2563eb;
   text-decoration: none;
@@ -314,14 +314,14 @@
 }
 
 .pd-loc-district {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #64748b;
   margin-bottom: 8px;
 }
 
 .pd-loc-address {
-  font-size: 12px;
+  font-size: 13px;
   color: #94a3b8;
   line-height: 1.6;
   margin-bottom: 14px;

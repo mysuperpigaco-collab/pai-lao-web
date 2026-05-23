@@ -327,10 +327,10 @@ function PlacesInner() {
           box-shadow: 0 4px 14px rgba(15,23,42,0.25);
         }
         .pl-cat-icon { font-size: 18px; line-height: 1; }
-        .pl-cat-th { font-size: 11px; font-weight: 700; color: #334155; line-height: 1.2; }
-        .pl-cat-en { font-size: 9px; font-weight: 500; color: #94a3b8; line-height: 1; }
+        .pl-cat-th { font-size: 12px; font-weight: 700; color: #334155; line-height: 1.2; }
+        .pl-cat-en { font-size: 11px; font-weight: 700; color: #94a3b8; line-height: 1; }
         .pl-cat-active .pl-cat-th { color: white; }
-        .pl-cat-active .pl-cat-en { color: rgba(255,255,255,0.65); }
+        .pl-cat-active .pl-cat-en { color: rgba(255,255,255,0.8); }
 
         /* Province + Sort row */
         .pl-filter-row { display: flex; gap: 12px; flex-wrap: wrap; padding: 0 20px; box-sizing: border-box; }
@@ -632,13 +632,13 @@ function PlaceCard({ place }: { place: Place }) {
         /* Body */
         .plc-body { padding: 16px 18px 18px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
         .plc-title { font-size: 15px; font-weight: 900; color: #0f172a; margin: 0; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .plc-title-en { font-size: 11px; color: #94a3b8; font-style: italic; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .plc-title-en { font-size: 12px; font-weight: 600; color: #94a3b8; font-style: italic; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .plc-loc-row { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
-        .plc-loc { font-size: 12px; color: #64748b; font-weight: 600; }
-        .plc-desc { font-size: 12px; color: #64748b; margin: 6px 0 0; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .plc-loc { font-size: 13px; color: #64748b; font-weight: 600; }
+        .plc-desc { font-size: 13px; color: #64748b; margin: 6px 0 0; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .plc-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 12px; border-top: 1px solid #f8fafc; }
-        .plc-biz { font-size: 11px; color: #94a3b8; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
-        .plc-cta { font-size: 12px; font-weight: 800; color: #2563eb; white-space: nowrap; transition: gap 0.2s; }
+        .plc-biz { font-size: 12px; color: #94a3b8; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
+        .plc-cta { font-size: 13px; font-weight: 800; color: #2563eb; white-space: nowrap; transition: gap 0.2s; }
         .plc-card:hover .plc-cta { color: #1d4ed8; }
       `}</style>
     </Link>

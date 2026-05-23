@@ -300,10 +300,10 @@ function TripsInner() {
           box-shadow: 0 4px 14px rgba(124,58,237,0.3);
         }
         .tp-mood-icon { font-size: 18px; line-height: 1; }
-        .tp-mood-th { font-size: 11px; font-weight: 700; color: #334155; line-height: 1.2; }
-        .tp-mood-en { font-size: 9px; font-weight: 500; color: #94a3b8; line-height: 1; }
+        .tp-mood-th { font-size: 12px; font-weight: 700; color: #334155; line-height: 1.2; }
+        .tp-mood-en { font-size: 11px; font-weight: 700; color: #94a3b8; line-height: 1; }
         .tp-mood-active .tp-mood-th { color: white; }
-        .tp-mood-active .tp-mood-en { color: rgba(255,255,255,0.65); }
+        .tp-mood-active .tp-mood-en { color: rgba(255,255,255,0.8); }
 
         .tp-filter-row { display: flex; gap: 12px; flex-wrap: wrap; }
         .tp-select-wrap {
@@ -471,9 +471,9 @@ function TripCard({ trip }: { trip: Trip }) {
         }
 
         .tc-body { padding: 14px 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
-        .tc-title { font-size: 14px; font-weight: 800; color: #1e293b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .tc-subtitle { font-size: 12px; color: #64748b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .tc-loc { font-size: 12px; color: #94a3b8; margin: 2px 0 0; }
+        .tc-title { font-size: 15px; font-weight: 800; color: #1e293b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tc-subtitle { font-size: 13px; color: #64748b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tc-loc { font-size: 13px; font-weight: 600; color: #64748b; margin: 2px 0 0; }
 
         .tc-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 10px; flex-wrap: wrap; gap: 6px; }
         .tc-author { display: flex; align-items: center; gap: 6px; min-width: 0; }
@@ -484,10 +484,10 @@ function TripCard({ trip }: { trip: Trip }) {
           color: white; font-size: 10px; font-weight: 800;
           display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .tc-author-name { font-size: 11px; font-weight: 700; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .tc-author-name { font-size: 12px; font-weight: 700; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .tc-stats { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-        .tc-stat { font-size: 11px; color: #7c3aed; font-weight: 700; }
-        .tc-date { font-size: 10px; color: #cbd5e1; }
+        .tc-stat { font-size: 12px; color: #7c3aed; font-weight: 700; }
+        .tc-date { font-size: 11px; color: #94a3b8; font-weight: 600; }
       `}</style>
     </Link>
   );
