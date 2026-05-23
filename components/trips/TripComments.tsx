@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 
 interface ReviewAuthor {
@@ -374,7 +375,9 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
                     <div style={{ fontWeight: 700, fontSize: 14 }}>
                       {review.isAnonymous
                         ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>ผู้ใช้นิรนาม · Anonymous</span>
-                        : (review.author.displayName || review.author.firstName)}
+                        : (review.author.role === "ADMIN" || review.author.role === "SUPERADMIN")
+                          ? <span>{review.author.displayName || review.author.firstName}</span>
+                          : <Link href={`/user/${review.author.username}`} style={{ color: "inherit", textDecoration: "none", fontWeight: 700 }} onMouseEnter={e => (e.currentTarget.style.color = "#2563eb")} onMouseLeave={e => (e.currentTarget.style.color = "inherit")}>{review.author.displayName || review.author.firstName}</Link>}
                     </div>
                     <StarRow rating={review.rating} />
                   </div>
@@ -428,7 +431,11 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
                       <Avatar user={reply.author} size={28} />
                       <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
-                          <span style={{ fontWeight: 700, fontSize: 13 }}>{reply.author.displayName || reply.author.firstName}</span>
+                          <span style={{ fontWeight: 700, fontSize: 13 }}>
+                            {(reply.author.role === "ADMIN" || reply.author.role === "SUPERADMIN")
+                              ? (reply.author.displayName || reply.author.firstName)
+                              : <Link href={`/user/${reply.author.username}`} style={{ color: "inherit", textDecoration: "none" }} onMouseEnter={e => (e.currentTarget.style.color = "#2563eb")} onMouseLeave={e => (e.currentTarget.style.color = "inherit")}>{reply.author.displayName || reply.author.firstName}</Link>}
+                          </span>
                           {isOwnerR
                             ? <span style={{ fontSize: 10, fontWeight: 800, background: "#dcfce7", color: "#15803d", padding: "2px 6px", borderRadius: 999 }}>🏢 เจ้าของ</span>
                             : <span style={{ fontSize: 10, fontWeight: 800, background: "#eff6ff", color: "#2563eb", padding: "2px 6px", borderRadius: 999 }}>💬 ผู้ใช้</span>

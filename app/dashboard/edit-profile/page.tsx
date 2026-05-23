@@ -29,11 +29,45 @@ function Toggle({ checked, onChange, label, sub }: { checked: boolean; onChange:
   );
 }
 
+function PasswordStrength({ password }: { password: string }) {
+  if (!password) return null;
+  const checks = [
+    { ok: password.length >= 8,       label: "อย่างน้อย 8 ตัวอักษร" },
+    { ok: /[A-Z]/.test(password),     label: "มีตัวพิมพ์ใหญ่ (A-Z)" },
+    { ok: /[0-9]/.test(password),     label: "มีตัวเลข (0-9)" },
+    { ok: /[^A-Za-z0-9]/.test(password), label: "มีอักขระพิเศษ (!@#...)" },
+  ];
+  const score = checks.filter(c => c.ok).length;
+  const colors = ["#ef4444", "#f59e0b", "#eab308", "#10b981"];
+  const labels = ["อ่อนมาก", "อ่อน", "ปานกลาง", "แข็งแกร่ง"];
+  return (
+    <div style={{ marginTop: 8 }}>
+      <div style={{ display: "flex", gap: 4, marginBottom: 6 }}>
+        {[0,1,2,3].map(i => (
+          <div key={i} style={{ flex: 1, height: 4, borderRadius: 999, background: i < score ? colors[score - 1] : "#e2e8f0", transition: "background 0.2s" }} />
+        ))}
+      </div>
+      {score > 0 && <div style={{ fontSize: 11, fontWeight: 700, color: colors[score - 1], marginBottom: 6 }}>{labels[score - 1]}</div>}
+      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        {checks.map((c, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: c.ok ? "#15803d" : "#94a3b8" }}>
+            <span>{c.ok ? "✓" : "○"}</span>
+            <span>{c.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function EditProfilePage() {
   const { user, refresh } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [showCurPw, setShowCurPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfPw, setShowConfPw] = useState(false);
 
   const [form, setForm] = useState({
     firstName: "", lastName: "", displayName: "", phone: "", gender: "",
@@ -81,11 +115,17 @@ export default function EditProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.newPw && form.newPw !== form.confirmPw) {
-      setApiError("รหัสผ่านใหม่ไม่ตรงกัน"); return;
-    }
     if (form.newPw && form.newPw.length < 8) {
       setApiError("รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร"); return;
+    }
+    if (form.newPw && !/[A-Z]/.test(form.newPw)) {
+      setApiError("รหัสผ่านใหม่ต้องมีตัวพิมพ์ใหญ่อย่างน้อย 1 ตัว (A-Z)"); return;
+    }
+    if (form.newPw && !/[0-9]/.test(form.newPw)) {
+      setApiError("รหัสผ่านใหม่ต้องมีตัวเลขอย่างน้อย 1 ตัว (0-9)"); return;
+    }
+    if (form.newPw && form.newPw !== form.confirmPw) {
+      setApiError("รหัสผ่านใหม่ไม่ตรงกัน"); return;
     }
     setIsLoading(true); setApiError("");
     try {
@@ -214,15 +254,37 @@ export default function EditProfilePage() {
             <div className="section-label full-width">🔑 เปลี่ยนรหัสผ่าน · Change Password</div>
             <div className="full-width form-group">
               <label>รหัสผ่านปัจจุบัน (ต้องกรอกถ้าต้องการเปลี่ยน)</label>
-              <input className="form-control" name="currentPw" type="password" value={form.currentPw} onChange={handleChange} placeholder="รหัสผ่านปัจจุบัน" />
+              <div style={{ position: "relative" }}>
+                <input className="form-control" name="currentPw" type={showCurPw ? "text" : "password"} value={form.currentPw} onChange={handleChange} placeholder="รหัสผ่านปัจจุบัน" style={{ paddingRight: 44 }} />
+                <button type="button" onClick={() => setShowCurPw(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 16, padding: 0, lineHeight: 1 }}>
+                  {showCurPw ? "🙈" : "👁️"}
+                </button>
+              </div>
             </div>
             <div className="form-group">
-              <label>รหัสผ่านใหม่ (≥8 ตัว)</label>
-              <input className="form-control" name="newPw" type="password" value={form.newPw} onChange={handleChange} placeholder="รหัสผ่านใหม่" />
+              <label>รหัสผ่านใหม่</label>
+              <div style={{ position: "relative" }}>
+                <input className="form-control" name="newPw" type={showNewPw ? "text" : "password"} value={form.newPw} onChange={handleChange} placeholder="รหัสผ่านใหม่" style={{ paddingRight: 44 }} />
+                <button type="button" onClick={() => setShowNewPw(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 16, padding: 0, lineHeight: 1 }}>
+                  {showNewPw ? "🙈" : "👁️"}
+                </button>
+              </div>
+              <PasswordStrength password={form.newPw} />
             </div>
             <div className="form-group">
               <label>ยืนยันรหัสผ่านใหม่</label>
-              <input className="form-control" name="confirmPw" type="password" value={form.confirmPw} onChange={handleChange} placeholder="ยืนยันอีกครั้ง" />
+              <div style={{ position: "relative" }}>
+                <input className="form-control" name="confirmPw" type={showConfPw ? "text" : "password"} value={form.confirmPw} onChange={handleChange} placeholder="ยืนยันอีกครั้ง" style={{ paddingRight: 44 }} />
+                <button type="button" onClick={() => setShowConfPw(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 16, padding: 0, lineHeight: 1 }}>
+                  {showConfPw ? "🙈" : "👁️"}
+                </button>
+              </div>
+              {form.confirmPw && form.newPw && form.confirmPw !== form.newPw && (
+                <p style={{ fontSize: 12, color: "#ef4444", margin: "4px 0 0" }}>⚠️ รหัสผ่านไม่ตรงกัน</p>
+              )}
+              {form.confirmPw && form.newPw && form.confirmPw === form.newPw && (
+                <p style={{ fontSize: 12, color: "#15803d", margin: "4px 0 0" }}>✓ รหัสผ่านตรงกัน</p>
+              )}
             </div>
 
           </div>

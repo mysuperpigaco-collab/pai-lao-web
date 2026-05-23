@@ -341,7 +341,9 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
                       <div className="pr-reviewer-name">
                         {review.isAnonymous
                           ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>ผู้ใช้นิรนาม · Anonymous</span>
-                          : (review.author.displayName || review.author.firstName)}
+                          : (review.author.role === "ADMIN" || review.author.role === "SUPERADMIN")
+                            ? <span>{review.author.displayName || review.author.firstName}</span>
+                            : <a href={`/user/${review.author.username}`} style={{ color: "inherit", textDecoration: "none", fontWeight: 800 }} onMouseEnter={e => (e.currentTarget.style.color = "#2563eb")} onMouseLeave={e => (e.currentTarget.style.color = "inherit")}>{review.author.displayName || review.author.firstName}</a>}
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <Stars rating={review.rating} size={13} />
@@ -371,7 +373,11 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
                           <Avatar user={reply.author} size={28} />
                           <div style={{ flex: 1 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <span className="pr-reply-name">{reply.author.displayName || reply.author.firstName}</span>
+                              <span className="pr-reply-name">
+                                {(reply.author.role === "ADMIN" || reply.author.role === "SUPERADMIN")
+                                  ? (reply.author.displayName || reply.author.firstName)
+                                  : <a href={`/user/${reply.author.username}`} style={{ color: "inherit", textDecoration: "none" }} onMouseEnter={e => (e.currentTarget.style.color = "#059669")} onMouseLeave={e => (e.currentTarget.style.color = "inherit")}>{reply.author.displayName || reply.author.firstName}</a>}
+                              </span>
                               {isReplyOwner ? <span className="pr-owner-badge">🏢 เจ้าของ</span> : <span className="pr-user-badge">💬 ผู้ใช้</span>}
                               <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
                                 <span className="pr-date">{new Date(reply.createdAt).toLocaleDateString("th-TH")}</span>

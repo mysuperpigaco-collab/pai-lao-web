@@ -523,9 +523,9 @@ export default function DashboardPage() {
               <div className="tab-bar">
                 <div className="tabs">
                   {([
-                    ["my-stories", `✍️ เรื่องเล่าของฉัน (${myTrips.length})`],
-                    ["saved",        `🗺️ ทริปที่บันทึก (${savedTrips.length})`],
-                    ["saved-places", `📍 สถานที่บันทึก (${savedPlaces.length})`],
+                    ["my-stories",   "✍️ เรื่องเล่าของฉัน"],
+                    ["saved",        "🗺️ ทริปที่บันทึก"],
+                    ["saved-places", "📍 สถานที่บันทึก"],
                   ] as [string, string][]).map(([id, label]) => (
                     <button key={id} className={`tab-btn${activeTab === id ? " active" : ""}`} onClick={() => setActiveTab(id as any)}>
                       {label}

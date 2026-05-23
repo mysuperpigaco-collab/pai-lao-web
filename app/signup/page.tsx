@@ -196,9 +196,9 @@ export default function SignupPage() {
               />
               <label htmlFor="acceptTerms" style={{ fontSize: 13, color: "#475569", lineHeight: 1.6, cursor: "pointer" }}>
                 ข้าพเจ้ายอมรับ{" "}
-                <a href="/terms" target="_blank" style={{ color: "#0891b2", fontWeight: 700, textDecoration: "none" }}>ข้อกำหนดการใช้งาน</a>
+                <a href="/policy?tab=terms" target="_blank" style={{ color: "#0891b2", fontWeight: 700, textDecoration: "none" }}>ข้อกำหนดการใช้งาน</a>
                 {" "}และ{" "}
-                <a href="/privacy" target="_blank" style={{ color: "#0891b2", fontWeight: 700, textDecoration: "none" }}>นโยบายความเป็นส่วนตัว</a>
+                <a href="/policy?tab=privacy" target="_blank" style={{ color: "#0891b2", fontWeight: 700, textDecoration: "none" }}>นโยบายความเป็นส่วนตัว</a>
                 {" "}ของไปเล่า
                 <span style={{ display: "block", color: "#94a3b8", fontSize: 12, marginTop: 2 }}>
                   I agree to the Terms of Service and Privacy Policy.
