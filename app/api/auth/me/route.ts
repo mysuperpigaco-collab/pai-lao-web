@@ -14,9 +14,11 @@ export async function GET() {
     select: {
       id: true, firstName: true, lastName: true, username: true,
       email: true, displayName: true, avatarUrl: true, coverUrl: true,
-      bio: true, phone: true, gender: true,
+      bio: true, phone: true, gender: true, birthDate: true,
       lineId: true, facebook: true, instagram: true, tiktok: true,
       role: true,
+      profilePrivacy: true, showEmail: true, showPhone: true,
+      showSocial: true, showBirthDate: true,
       business: {
         select: { id: true, businessName: true, logoUrl: true, isVerified: true },
       },
@@ -41,6 +43,7 @@ export async function PUT(request: Request) {
     lineId, facebook, instagram, tiktok,
     avatarUrl, coverUrl,
     currentPw, newPw,
+    profilePrivacy, showEmail, showPhone, showSocial, showBirthDate,
   } = body;
 
   if (newPw) {
@@ -64,15 +67,22 @@ export async function PUT(request: Request) {
       ...(facebook    !== undefined && { facebook }),
       ...(instagram   !== undefined && { instagram }),
       ...(tiktok      !== undefined && { tiktok }),
-      ...(avatarUrl   !== undefined && { avatarUrl }),
-      ...(coverUrl    !== undefined && { coverUrl }),
-      ...(newPw       ? { password: await hashPassword(newPw) } : {}),
+      ...(avatarUrl      !== undefined && { avatarUrl }),
+      ...(coverUrl       !== undefined && { coverUrl }),
+      ...(newPw          ? { password: await hashPassword(newPw) } : {}),
+      ...(profilePrivacy !== undefined && { profilePrivacy }),
+      ...(showEmail      !== undefined && { showEmail: Boolean(showEmail) }),
+      ...(showPhone      !== undefined && { showPhone: Boolean(showPhone) }),
+      ...(showSocial     !== undefined && { showSocial: Boolean(showSocial) }),
+      ...(showBirthDate  !== undefined && { showBirthDate: Boolean(showBirthDate) }),
     },
     select: {
       id: true, firstName: true, lastName: true, username: true,
-      email: true, displayName: true, phone: true, gender: true,
+      email: true, displayName: true, phone: true, gender: true, birthDate: true,
       bio: true, lineId: true, facebook: true, instagram: true, tiktok: true,
       avatarUrl: true, coverUrl: true,
+      profilePrivacy: true, showEmail: true, showPhone: true,
+      showSocial: true, showBirthDate: true,
     },
   });
 

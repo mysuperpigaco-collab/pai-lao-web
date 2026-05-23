@@ -1,301 +1,187 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import ProfileHeader from "@/components/dashboard/ProfileHeader";
-import StoryCard from "@/components/dashboard/StoryCard";
+import { useParams } from "next/navigation";
 
-/* ── Mock data ── */
-const MY_STORIES = [
-  { slug: "doi-inthanon", title: "หนีร้อนไปพึ่งเย็นที่ดอยอินทนนท์", createdAt: "2024-05-12", coverUrl: "https://picsum.photos/seed/story21/600/400", isPublished: true },
-  { slug: "ari-cafe",     title: "คาเฟ่เปิดใหม่ย่านอารีย์ ห้ามพลาด!", createdAt: "2024-05-05", coverUrl: "https://picsum.photos/seed/story22/600/400", isPublished: false },
-  { slug: "amphawa",      title: "เดินตลาดน้ำอัมพวา หาของกินเพลิน",  createdAt: "2024-04-28", coverUrl: "https://picsum.photos/seed/story23/600/400", isPublished: false },
-];
+interface PublicUser {
+  id: string; username: string; displayName?: string; firstName: string;
+  avatarUrl?: string; coverUrl?: string; bio?: string; role: string;
+  email?: string; phone?: string; lineId?: string; facebook?: string;
+  instagram?: string; tiktok?: string; birthDate?: string;
+  createdAt?: string; isPrivate?: boolean;
+  _count?: { followers: number; following: number; trips: number };
+}
+interface TripCard {
+  id: string; slug: string; title: string; coverUrl: string;
+  mood: string; location?: string; createdAt: string;
+  _count: { likes: number; bookmarks: number };
+}
 
-const SAVED_STORIES = [
-  { slug: "koh-samui", title: "ทริปเกาะสมุย 3 วัน 2 คืน งบไม่เกิน 5,000", createdAt: "2024-05-01", coverUrl: "https://picsum.photos/seed/story24/600/400", isPublished: true },
-];
+export default function UserProfilePage() {
+  const params = useParams();
+  const username = params?.username as string;
+  const [user, setUser] = useState<PublicUser | null>(null);
+  const [trips, setTrips] = useState<TripCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-const NOTIFICATIONS = [
-  { id: 1, icon: "✅", text: "เรื่องเล่า 'ดอยอินทนนท์' ได้รับการอนุมัติแล้ว",   time: "2 ชม. ที่แล้ว" },
-  { id: 2, icon: "❤️", text: "สมหญิง และอีก 5 คน ถูกใจเรื่องเล่าของคุณ",        time: "5 ชม. ที่แล้ว" },
-  { id: 3, icon: "💬", text: "มีความคิดเห็นใหม่ในเรื่อง 'ตลาดน้ำอัมพวา'",        time: "เมื่อวาน" },
-];
+  useEffect(() => {
+    if (!username) return;
+    fetch(`/api/users/${encodeURIComponent(username)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.user) { setNotFound(true); setLoading(false); return; }
+        setUser(data.user);
+        setTrips(data.trips ?? []);
+        setLoading(false);
+      })
+      .catch(() => { setNotFound(true); setLoading(false); });
+  }, [username]);
 
-/* ── Stat card (sidebar) ── */
-function StatCard({ label, labelEn, value, color }: { label: string; labelEn: string; value: string | number; color?: string }) {
-  return (
-    <div className="stat-card">
-      <strong style={{ color: color ?? "#0f172a" }}>{value}</strong>
-      <span>{label}<small> {labelEn}</small></span>
-      <style jsx>{`
-        .stat-card {
-          display: flex; flex-direction: column; align-items: center;
-          gap: 4px; flex: 1; padding: 16px 12px;
-          background: #f8fafc; border-radius: 16px;
-        }
-        strong { font-size: 24px; font-weight: 900; line-height: 1; }
-        span { font-size: 12px; color: #64748b; text-align: center; }
-        small { color: #94a3b8; font-size: 10px; }
-      `}</style>
+  if (loading) return (
+    <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 16 }}>
+      ⏳ กำลังโหลด...
     </div>
   );
-}
 
-/* ── Interest tag ── */
-function InterestTag({ label }: { label: string }) {
-  return (
-    <span className="itag">
-      {label}
-      <style jsx>{`
-        .itag {
-          display: inline-block; padding: 7px 14px; border-radius: 999px;
-          background: #eff6ff; color: #2563eb; border: 1px solid #dbeafe;
-          font-size: 12px; font-weight: 600;
-        }
-      `}</style>
-    </span>
+  if (notFound || !user) return (
+    <div style={{ minHeight: "60vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
+      <div style={{ fontSize: 48 }}>🔍</div>
+      <h2 style={{ fontSize: 20, fontWeight: 800, color: "#1e293b" }}>ไม่พบผู้ใช้นี้</h2>
+      <p style={{ color: "#64748b" }}>@{username} ไม่มีในระบบ</p>
+      <Link href="/" style={{ color: "#10b981", fontWeight: 700 }}>← กลับหน้าแรก</Link>
+    </div>
   );
-}
 
-/* ── Main Page ── */
-export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<"my-stories" | "saved">("my-stories");
-  const stories = activeTab === "my-stories" ? MY_STORIES : SAVED_STORIES;
+  const displayName = user.displayName || user.firstName;
+  const initial = displayName.charAt(0).toUpperCase();
+  const joinYear = user.createdAt ? new Date(user.createdAt).getFullYear() : "";
 
   return (
-    <div className="dp-page">
-      <div className="dp-container">
+    <div className="up-page">
+      {/* Cover */}
+      <div className="up-cover">
+        {user.coverUrl
+          ? <img src={user.coverUrl} alt="cover" className="up-cover-img" />
+          : <div className="up-cover-placeholder" />
+        }
+      </div>
 
-        {/* ── Profile Header ── */}
-        <ProfileHeader isOwner={true} />
-
-        {/* ── Grid ── */}
-        <div className="dp-grid">
-
-          {/* ── SIDEBAR ── */}
-          <aside className="dp-sidebar">
-
-            {/* Notifications */}
-            <div className="dp-card">
-              <div className="noti-hdr">
-                <h3>การแจ้งเตือน <small>Notifications</small></h3>
-                <span className="noti-badge">{NOTIFICATIONS.length}</span>
-              </div>
-              <div className="noti-list">
-                {NOTIFICATIONS.map((n) => (
-                  <div className="noti-item" key={n.id}>
-                    <span className="noti-icon">{n.icon}</span>
-                    <div>
-                      <p>{n.text}</p>
-                      <span>{n.time}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="dp-card">
-              <h3 className="sb-title">สถิติคนเล่า <small>Statistics</small></h3>
-              <div className="stats-row">
-                <StatCard label="เรื่องเล่า" labelEn="Stories"  value={MY_STORIES.length} color="#2563eb" />
-                <StatCard label="ถูกใจ"     labelEn="Likes"     value="1.2k"               color="#22a06b" />
-                <StatCard label="ติดตาม"    labelEn="Following" value={142} />
-              </div>
-            </div>
-
-            {/* Interests */}
-            <div className="dp-card">
-              <h3 className="sb-title">สิ่งที่สนใจ <small>Interests</small></h3>
-              <div className="int-wrap">
-                {["☕ Café", "⛰️ Trekking", "📸 Photo", "🍲 Foodie", "🌊 Sea & Island"].map((t) => (
-                  <InterestTag key={t} label={t} />
-                ))}
-              </div>
-            </div>
-
-          </aside>
-
-          {/* ── MAIN CONTENT ── */}
-          <main className="dp-main">
-            <div className="dp-card main-card">
-
-              {/* Tab bar */}
-              <div className="tab-bar">
-                <div className="tabs">
-                  {(["my-stories", "saved"] as const).map((id) => (
-                    <button
-                      key={id}
-                      className={`tab-btn ${activeTab === id ? "active" : ""}`}
-                      onClick={() => setActiveTab(id)}
-                    >
-                      {id === "my-stories" ? "เรื่องเล่าของฉัน · My Stories" : "บันทึกไว้ · Saved"}
-                    </button>
-                  ))}
-                </div>
-                <Link href="/trips/create" className="btn-new">
-                  + เขียนเรื่องใหม่
-                </Link>
-              </div>
-
-              {/* Info row */}
-              <p className="info-row">
-                พบ <strong>{stories.length}</strong> รายการ
-              </p>
-
-              {/* Story grid */}
-              {stories.length > 0 ? (
-                <div className="story-grid">
-                  {stories.map((story) => (
-                    <StoryCard key={story.slug} story={story} isOwner={true} />
-                  ))}
-                </div>
-              ) : (
-                <div className="empty-state">
-                  <span>📭</span>
-                  <p>ยังไม่มีเรื่องเล่า · No stories yet</p>
-                  <Link href="/trips/create" className="btn-new inline">+ เขียนเรื่องแรก</Link>
-                </div>
-              )}
-
-            </div>
-          </main>
-
+      <div className="up-body">
+        {/* Avatar + Name */}
+        <div className="up-avatar-row">
+          <div className="up-avatar-wrap">
+            {user.avatarUrl
+              ? <img src={user.avatarUrl} alt={displayName} className="up-avatar" />
+              : <div className="up-avatar-circle">{initial}</div>
+            }
+          </div>
+          <div className="up-name-col">
+            <h1 className="up-displayname">{displayName}</h1>
+            <span className="up-username">@{user.username}</span>
+            {joinYear && <span className="up-since">สมาชิกตั้งแต่ {joinYear}</span>}
+          </div>
         </div>
+
+        {user.isPrivate ? (
+          <div className="up-private-box">
+            <div style={{ fontSize: 36 }}>🔒</div>
+            <h3>โปรไฟล์ส่วนตัว</h3>
+            <p>ผู้ใช้นี้ตั้งค่าโปรไฟล์เป็นส่วนตัว · This profile is private</p>
+          </div>
+        ) : (
+          <>
+            {user._count && (
+              <div className="up-stats">
+                <div className="up-stat"><strong>{user._count.trips}</strong><span>ทริป · Trips</span></div>
+                <div className="up-stat"><strong>{user._count.followers}</strong><span>ผู้ติดตาม · Followers</span></div>
+                <div className="up-stat"><strong>{user._count.following}</strong><span>กำลังติดตาม · Following</span></div>
+              </div>
+            )}
+
+            {user.bio && <p className="up-bio">{user.bio}</p>}
+
+            <div className="up-contact">
+              {user.email     && <a href={`mailto:${user.email}`} className="up-contact-item">📧 {user.email}</a>}
+              {user.phone     && <span className="up-contact-item">📞 {user.phone}</span>}
+              {user.lineId    && <span className="up-contact-item">💬 LINE: {user.lineId}</span>}
+              {user.facebook  && <a href={user.facebook.startsWith("http") ? user.facebook : `https://facebook.com/${user.facebook}`} target="_blank" rel="noopener" className="up-contact-item">📘 {user.facebook}</a>}
+              {user.instagram && <a href={`https://instagram.com/${user.instagram.replace("@","")}`} target="_blank" rel="noopener" className="up-contact-item">📸 {user.instagram}</a>}
+              {user.tiktok    && <a href={`https://tiktok.com/@${user.tiktok.replace("@","")}`} target="_blank" rel="noopener" className="up-contact-item">🎵 {user.tiktok}</a>}
+            </div>
+
+            {trips.length > 0 && (
+              <div className="up-trips-section">
+                <h2 className="up-section-title">✈️ ทริปของ {displayName} <span>Stories</span></h2>
+                <div className="up-trips-grid">
+                  {trips.map(t => (
+                    <Link key={t.id} href={`/trips/${t.slug}`} className="up-trip-card">
+                      <div className="up-trip-img-wrap">
+                        <img src={t.coverUrl} alt={t.title} className="up-trip-img" />
+                        <span className="up-trip-mood">{t.mood}</span>
+                      </div>
+                      <div className="up-trip-info">
+                        <h3>{t.title}</h3>
+                        {t.location && <p>📍 {t.location}</p>}
+                        <div className="up-trip-meta">
+                          <span>❤️ {t._count.likes}</span>
+                          <span>🔖 {t._count.bookmarks}</span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       <style jsx>{`
-        /* ── Page ── */
-        .dp-page {
-          min-height: 100vh;
-          background: #f8fafc;
-          padding: 36px 0 80px;
-        }
-        .dp-container {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 0 20px;
-        }
-
-        /* ── Grid ── */
-        .dp-grid {
-          display: grid;
-          grid-template-columns: 300px 1fr;
-          gap: 28px;
-          align-items: start;
-        }
-
-        /* ── Card base ── */
-        .dp-card {
-          background: white;
-          border-radius: 28px;
-          padding: 28px;
-          border: 1px solid #f1f5f9;
-          box-shadow: 0 2px 12px rgba(15,23,42,0.04);
-          margin-bottom: 20px;
-        }
-        .dp-card:last-child { margin-bottom: 0; }
-
-        /* ── Sidebar ── */
-        .dp-sidebar { position: sticky; top: 100px; }
-
-        /* Notifications */
-        .noti-hdr {
-          display: flex; justify-content: space-between; align-items: center;
-          margin-bottom: 20px;
-        }
-        .noti-hdr h3 {
-          font-size: 15px; font-weight: 900; color: #1e293b; margin: 0;
-        }
-        .noti-hdr small { font-size: 11px; color: #94a3b8; font-weight: 400; margin-left: 5px; }
-        .noti-badge {
-          background: #ef4444; color: white;
-          font-size: 10px; font-weight: 800;
-          padding: 2px 8px; border-radius: 999px;
-        }
-        .noti-list { display: flex; flex-direction: column; gap: 14px; }
-        .noti-item { display: flex; gap: 12px; font-size: 13px; }
-        .noti-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
-        .noti-item p { margin: 0; color: #475569; line-height: 1.5; }
-        .noti-item span { font-size: 11px; color: #94a3b8; }
-
-        /* Sidebar titles */
-        .sb-title {
-          font-size: 15px; font-weight: 900; color: #1e293b;
-          margin: 0 0 18px;
-        }
-        .sb-title small { font-size: 11px; color: #94a3b8; font-weight: 400; margin-left: 5px; }
-
-        /* Stats */
-        .stats-row { display: flex; gap: 10px; }
-
-        /* Interests */
-        .int-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
-
-        /* ── Main ── */
-        .main-card { padding: 32px; }
-
-        /* Tab bar */
-        .tab-bar {
-          display: flex; justify-content: space-between;
-          align-items: center; flex-wrap: wrap; gap: 12px;
-          border-bottom: 2px solid #f1f5f9;
-          padding-bottom: 16px; margin-bottom: 22px;
-        }
-        .tabs { display: flex; gap: 4px; }
-        .tab-btn {
-          padding: 10px 18px; border-radius: 10px;
-          border: none; background: transparent;
-          font-size: 14px; font-weight: 700;
-          color: #94a3b8; cursor: pointer; transition: 0.2s;
-        }
-        .tab-btn.active {
-          background: #eff6ff; color: #2563eb;
-        }
-        .tab-btn:hover:not(.active) { background: #f8fafc; color: #64748b; }
-
-        /* New story button */
-        .btn-new {
-          display: inline-flex; align-items: center;
-          padding: 10px 20px; border-radius: 12px;
-          background: linear-gradient(to right, #4facfe, #43e97b);
-          color: white; font-size: 13px; font-weight: 800;
-          text-decoration: none; border: none; cursor: pointer;
-          box-shadow: 0 6px 16px rgba(79,172,254,0.25);
-          transition: 0.2s;
-        }
-        .btn-new:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(79,172,254,0.3); }
-        .btn-new.inline { margin-top: 16px; }
-
-        /* Info row */
-        .info-row { font-size: 13px; color: #94a3b8; margin: 0 0 22px; }
-        .info-row strong { color: #1e293b; }
-
-        /* Story grid 2 col */
-        .story-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 22px;
-        }
-
-        /* Empty state */
-        .empty-state {
-          text-align: center; padding: 60px 20px;
-          display: flex; flex-direction: column; align-items: center; gap: 10px;
-        }
-        .empty-state span { font-size: 48px; }
-        .empty-state p { color: #94a3b8; font-size: 15px; }
-
-        /* ── Responsive ── */
-        @media (max-width: 1100px) {
-          .dp-grid { grid-template-columns: 1fr; }
-          .dp-sidebar { position: static; }
-        }
+        .up-page { min-height: 100vh; background: #f8fafc; padding-bottom: 60px; }
+        .up-cover { width: 100%; height: 260px; position: relative; background: linear-gradient(135deg, #10b981, #06b6d4); overflow: hidden; }
+        .up-cover-img { width: 100%; height: 100%; object-fit: cover; }
+        .up-cover-placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%); }
+        .up-body { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+        .up-avatar-row { display: flex; align-items: flex-end; gap: 20px; margin-top: -52px; margin-bottom: 20px; }
+        .up-avatar-wrap { flex-shrink: 0; }
+        .up-avatar, .up-avatar-circle { width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+        .up-avatar { object-fit: cover; }
+        .up-avatar-circle { background: linear-gradient(135deg, #10b981, #3b82f6); display: flex; align-items: center; justify-content: center; color: white; font-size: 36px; font-weight: 900; }
+        .up-name-col { padding-bottom: 6px; }
+        .up-displayname { font-size: 24px; font-weight: 900; color: #0f172a; margin: 0 0 2px; }
+        .up-username { font-size: 14px; color: #64748b; font-weight: 600; display: block; }
+        .up-since { font-size: 12px; color: #94a3b8; display: block; margin-top: 2px; }
+        .up-stats { display: flex; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; margin-bottom: 20px; }
+        .up-stat { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 16px; border-right: 1px solid #e2e8f0; }
+        .up-stat:last-child { border-right: none; }
+        .up-stat strong { font-size: 22px; font-weight: 900; color: #0f172a; }
+        .up-stat span { font-size: 12px; color: #64748b; margin-top: 2px; text-align: center; }
+        .up-bio { font-size: 15px; color: #334155; line-height: 1.7; margin-bottom: 16px; padding: 14px 16px; background: #f1f5f9; border-radius: 12px; }
+        .up-contact { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+        .up-contact-item { display: flex; align-items: center; gap: 6px; padding: 7px 13px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 999px; font-size: 13px; color: #334155; font-weight: 600; text-decoration: none; }
+        .up-contact-item:hover { background: #f0fdf4; border-color: #a7f3d0; }
+        .up-private-box { text-align: center; padding: 60px 20px; background: white; border-radius: 20px; border: 1px solid #e2e8f0; margin: 24px 0; }
+        .up-private-box h3 { font-size: 20px; font-weight: 800; color: #1e293b; margin: 12px 0 6px; }
+        .up-private-box p { color: #64748b; font-size: 14px; }
+        .up-section-title { font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 16px; }
+        .up-section-title span { font-size: 13px; font-weight: 600; color: #94a3b8; margin-left: 8px; }
+        .up-trips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+        .up-trip-card { text-decoration: none; background: white; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; transition: box-shadow 0.2s, transform 0.2s; display: block; }
+        .up-trip-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.1); transform: translateY(-2px); }
+        .up-trip-img-wrap { position: relative; height: 160px; overflow: hidden; }
+        .up-trip-img { width: 100%; height: 100%; object-fit: cover; }
+        .up-trip-mood { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.55); color: white; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+        .up-trip-info { padding: 12px 14px; }
+        .up-trip-info h3 { font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .up-trip-info p { font-size: 12px; color: #64748b; margin: 0 0 8px; }
+        .up-trip-meta { display: flex; gap: 12px; font-size: 12px; color: #94a3b8; font-weight: 600; }
         @media (max-width: 640px) {
-          .story-grid { grid-template-columns: 1fr; }
-          .main-card  { padding: 20px; }
-          .tab-btn    { font-size: 12px; padding: 8px 12px; }
+          .up-cover { height: 180px; }
+          .up-avatar, .up-avatar-circle { width: 76px; height: 76px; }
+          .up-displayname { font-size: 18px; }
+          .up-trips-grid { grid-template-columns: 1fr 1fr; }
         }
       `}</style>
     </div>

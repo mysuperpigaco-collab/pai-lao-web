@@ -1,186 +1,239 @@
 "use client";
 
 import "./edit-profile.css";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
-import InputField from "@/components/ui/InputField";
-import SelectField from "@/components/ui/SelectField";
+const GENDER_OPTIONS = [
+  { value: "MALE",             label: "ชาย · Male" },
+  { value: "FEMALE",           label: "หญิง · Female" },
+  { value: "OTHER",            label: "อื่นๆ · Other" },
+  { value: "PREFER_NOT_TO_SAY",label: "ไม่ระบุ · Prefer not to say" },
+];
 
-import BusinessSectionTitle from "@/components/business/BusinessSectionTitle";
+function Toggle({ checked, onChange, label, sub }: { checked: boolean; onChange: (v: boolean) => void; label: string; sub?: string }) {
+  return (
+    <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: checked ? "#f0fdf4" : "#f8fafc", border: `1.5px solid ${checked ? "#86efac" : "#e2e8f0"}`, borderRadius: 12, cursor: "pointer", gap: 12, transition: "all 0.15s" }}>
+      <span>
+        <span style={{ fontSize: 14, fontWeight: 700, color: "#334155", display: "block" }}>{label}</span>
+        {sub && <span style={{ fontSize: 12, color: "#94a3b8" }}>{sub}</span>}
+      </span>
+      <div
+        onClick={() => onChange(!checked)}
+        style={{ width: 44, height: 24, borderRadius: 999, background: checked ? "#10b981" : "#cbd5e1", position: "relative", transition: "background 0.2s", flexShrink: 0 }}
+      >
+        <div style={{ position: "absolute", top: 3, left: checked ? 22 : 3, width: 18, height: 18, borderRadius: "50%", background: "white", boxShadow: "0 1px 4px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
+      </div>
+    </label>
+  );
+}
 
-export default function EditBusinessProfilePage() {
+export default function EditProfilePage() {
+  const { user, refresh } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [apiError, setApiError] = useState("");
+
+  const [form, setForm] = useState({
+    firstName: "", lastName: "", displayName: "", phone: "", gender: "",
+    bio: "", lineId: "", facebook: "", instagram: "", tiktok: "",
+    currentPw: "", newPw: "", confirmPw: "",
+  });
+  const [privacy, setPrivacy] = useState({
+    profilePrivacy: "PUBLIC",
+    showEmail: false, showPhone: false, showSocial: true, showBirthDate: false,
+  });
+
+  // Load from API
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then(r => r.json())
+      .then(data => {
+        const u = data.user;
+        if (!u) return;
+        setForm(f => ({
+          ...f,
+          firstName:   u.firstName   ?? "",
+          lastName:    u.lastName    ?? "",
+          displayName: u.displayName ?? "",
+          phone:       u.phone       ?? "",
+          gender:      u.gender      ?? "",
+          bio:         u.bio         ?? "",
+          lineId:      u.lineId      ?? "",
+          facebook:    u.facebook    ?? "",
+          instagram:   u.instagram   ?? "",
+          tiktok:      u.tiktok      ?? "",
+        }));
+        setPrivacy({
+          profilePrivacy: u.profilePrivacy ?? "PUBLIC",
+          showEmail:      u.showEmail      ?? false,
+          showPhone:      u.showPhone      ?? false,
+          showSocial:     u.showSocial     ?? true,
+          showBirthDate:  u.showBirthDate  ?? false,
+        });
+      });
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (form.newPw && form.newPw !== form.confirmPw) {
+      setApiError("รหัสผ่านใหม่ไม่ตรงกัน"); return;
+    }
+    if (form.newPw && form.newPw.length < 8) {
+      setApiError("รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร"); return;
+    }
+    setIsLoading(true); setApiError("");
+    try {
+      const body: any = {
+        firstName: form.firstName, lastName: form.lastName,
+        displayName: form.displayName, phone: form.phone,
+        gender: form.gender || undefined, bio: form.bio,
+        lineId: form.lineId || undefined, facebook: form.facebook || undefined,
+        instagram: form.instagram || undefined, tiktok: form.tiktok || undefined,
+        ...privacy,
+      };
+      if (form.newPw) { body.currentPw = form.currentPw; body.newPw = form.newPw; }
+
+      const res = await fetch("/api/auth/me", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) { setApiError(data.message || "เกิดข้อผิดพลาด"); setIsLoading(false); return; }
+      await refresh();
+      setIsSaved(true);
+      setForm(f => ({ ...f, currentPw: "", newPw: "", confirmPw: "" }));
+      setTimeout(() => setIsSaved(false), 3000);
+    } catch {
+      setApiError("ไม่สามารถเชื่อมต่อได้ กรุณาลองใหม่");
+    }
+    setIsLoading(false);
+  };
+
+  const displayName = user?.displayName || user?.firstName || "";
+
   return (
     <div className="edit-container">
       <div className="edit-card">
-
         <div className="edit-header">
-          <h2>แก้ไขข้อมูลโปรไฟล์</h2>
-
-          <p>
-            จัดการข้อมูลปัจจุบันของคุณให้เป็นเวอร์ชันล่าสุด
-          </p>
+          <h2>แก้ไขโปรไฟล์ · Edit Profile</h2>
+          <p>ข้อมูลของ {displayName}</p>
         </div>
 
-        <form>
+        {apiError && (
+          <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 12, padding: "12px 16px", marginBottom: 20, color: "#b91c1c", fontSize: 14 }}>
+            ⚠️ {apiError}
+          </div>
+        )}
+        {isSaved && (
+          <div style={{ background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 12, padding: "12px 16px", marginBottom: 20, color: "#15803d", fontSize: 14 }}>
+            ✅ บันทึกสำเร็จแล้ว!
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
           <div className="form-grid">
 
-            <BusinessSectionTitle
-              title="ข้อมูลส่วนตัว"
-              subtitle="PERSONAL INFORMATION"
-            />
+            {/* Personal */}
+            <div className="section-label full-width">👤 ข้อมูลส่วนตัว · Personal Info</div>
 
-            <InputField
-              label="ชื่อจริง"
-              labelEn="FIRST NAME"
-              required
-              value="สมชาย"
-            />
-
-            <InputField
-              label="นามสกุล"
-              labelEn="LAST NAME"
-              required
-              value="สายเที่ยว"
-            />
-
-            <InputField
-              label="ชื่อที่ใช้แสดง"
-              labelEn="DISPLAY NAME"
-              required
-              value="แอดมินน้ำตกเอราวัณ"
-            />
-
-            <SelectField
-              label="เพศ"
-              labelEn="GENDER"
-              required
-              value="male"
-              options={[
-                {
-                  label: "ชาย | Male",
-                  value: "male",
-                },
-                {
-                  label: "หญิง | Female",
-                  value: "female",
-                },
-                {
-                  label: "อื่นๆ | Other",
-                  value: "other",
-                },
-              ]}
-            />
-
-            <InputField
-              label="เบอร์โทรศัพท์"
-              labelEn="PHONE"
-              required
-              value="08xxxxxxxx"
-            />
-
-            <div className="full-width">
-              <InputField
-                label="อีเมล"
-                labelEn="EMAIL ADDRESS"
-                required
-                type="email"
-                value="admin@erawan.com"
-              />
+            <div className="form-group">
+              <label>ชื่อจริง <span className="req">*</span></label>
+              <input className="form-control" name="firstName" value={form.firstName} onChange={handleChange} required placeholder="ชื่อจริง" />
+            </div>
+            <div className="form-group">
+              <label>นามสกุล <span className="req">*</span></label>
+              <input className="form-control" name="lastName" value={form.lastName} onChange={handleChange} required placeholder="นามสกุล" />
+            </div>
+            <div className="form-group">
+              <label>ชื่อที่แสดง · Display Name <span className="req">*</span></label>
+              <input className="form-control" name="displayName" value={form.displayName} onChange={handleChange} required placeholder="ชื่อฉายา" />
+            </div>
+            <div className="form-group">
+              <label>เพศ · Gender</label>
+              <select className="form-control" name="gender" value={form.gender} onChange={handleChange}>
+                <option value="">ไม่ระบุ</option>
+                {GENDER_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>เบอร์โทร · Phone</label>
+              <input className="form-control" name="phone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value.replace(/[^0-9+\-() ]/g, "") }))} placeholder="08XXXXXXXX" />
+            </div>
+            <div className="full-width form-group">
+              <label>แนะนำตัว · Bio</label>
+              <textarea className="form-control" name="bio" value={form.bio} onChange={handleChange} rows={3} placeholder="แนะนำตัวเองสั้นๆ..." style={{ resize: "vertical" }} />
             </div>
 
-            <BusinessSectionTitle
-              title="ข้อมูลการติดต่อธุรกิจ"
-              subtitle="BUSINESS CONTACTS"
-            />
+            {/* Social */}
+            <div className="section-label full-width">🔗 โซเชียล · Social Links</div>
+            <div className="form-group">
+              <label>Line ID</label>
+              <input className="form-control" name="lineId" value={form.lineId} onChange={handleChange} placeholder="@yourline" />
+            </div>
+            <div className="form-group">
+              <label>Facebook</label>
+              <input className="form-control" name="facebook" value={form.facebook} onChange={handleChange} placeholder="ชื่อเพจหรือ URL" />
+            </div>
+            <div className="form-group">
+              <label>Instagram</label>
+              <input className="form-control" name="instagram" value={form.instagram} onChange={handleChange} placeholder="@username" />
+            </div>
+            <div className="form-group">
+              <label>TikTok</label>
+              <input className="form-control" name="tiktok" value={form.tiktok} onChange={handleChange} placeholder="@username" />
+            </div>
 
-            <InputField
-              label="เบอร์โทรศัพท์ติดต่อ"
-              labelEn="BOOKING & INQUIRY"
-              required
-              value="0812345678"
-            />
+            {/* Privacy */}
+            <div className="section-label full-width">🔒 ความเป็นส่วนตัว · Privacy Settings</div>
+            <div className="full-width">
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ fontSize: 13, fontWeight: 700, color: "#475569", display: "block", marginBottom: 8 }}>การมองเห็นโปรไฟล์ · Profile Visibility</label>
+                <div style={{ display: "flex", gap: 10 }}>
+                  {[{ v: "PUBLIC", icon: "🌐", label: "สาธารณะ · Public" }, { v: "PRIVATE", icon: "🔒", label: "ส่วนตัว · Private" }].map(opt => (
+                    <button key={opt.v} type="button"
+                      onClick={() => setPrivacy(p => ({ ...p, profilePrivacy: opt.v }))}
+                      style={{ flex: 1, padding: "10px 16px", borderRadius: 12, border: `2px solid ${privacy.profilePrivacy === opt.v ? "#10b981" : "#e2e8f0"}`, background: privacy.profilePrivacy === opt.v ? "#f0fdf4" : "#fff", color: privacy.profilePrivacy === opt.v ? "#15803d" : "#64748b", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                      {opt.icon} {opt.label}
+                    </button>
+                  ))}
+                </div>
+                <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 6 }}>ส่วนตัว = คนอื่นไม่เห็นข้อมูลและทริปของคุณ</p>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <Toggle checked={privacy.showEmail}     onChange={v => setPrivacy(p => ({ ...p, showEmail: v }))}     label="แสดงอีเมล · Show Email"              sub="แสดงอีเมลของคุณในหน้าโปรไฟล์สาธารณะ" />
+                <Toggle checked={privacy.showPhone}     onChange={v => setPrivacy(p => ({ ...p, showPhone: v }))}     label="แสดงเบอร์โทร · Show Phone"           sub="แสดงเบอร์โทรของคุณในหน้าโปรไฟล์สาธารณะ" />
+                <Toggle checked={privacy.showSocial}    onChange={v => setPrivacy(p => ({ ...p, showSocial: v }))}    label="แสดงโซเชียล · Show Social Links"     sub="แสดง Line/Facebook/Instagram/TikTok" />
+                <Toggle checked={privacy.showBirthDate} onChange={v => setPrivacy(p => ({ ...p, showBirthDate: v }))} label="แสดงวันเกิด · Show Birth Date"        sub="แสดงปีเกิดในหน้าโปรไฟล์" />
+              </div>
+            </div>
 
-            <InputField
-              label="ไลน์ไอดี"
-              labelEn="LINE ID"
-              value="@erawan_park"
-            />
-
-            <InputField
-              label="เฟซบุ๊ก"
-              labelEn="FACEBOOK"
-              placeholder="ชื่อเพจ หรือ URL"
-            />
-
-            <InputField
-              label="อินสตาแกรม"
-              labelEn="INSTAGRAM"
-              placeholder="@username"
-            />
-
-            <InputField
-              label="ติ๊กต็อก"
-              labelEn="TIKTOK"
-              placeholder="@username"
-            />
-
-            <BusinessSectionTitle
-              title="ความปลอดภัยบัญชี"
-              subtitle="ACCOUNT SECURITY"
-            />
-
-            <InputField
-              label="รหัสผ่านใหม่"
-              labelEn="NEW PASSWORD"
-              type="password"
-              placeholder="ปล่อยว่างหากไม่ต้องการเปลี่ยน"
-            />
-
-            <InputField
-              label="ยืนยันรหัสผ่านใหม่"
-              labelEn="CONFIRM NEW PASSWORD"
-              type="password"
-              placeholder="ยืนยันรหัสผ่านใหม่อีกครั้ง"
-            />
-
-            <div className="full-width security-box">
-              <label className="security-label">
-                กรุณากรอกรหัสผ่านปัจจุบันเพื่อบันทึกการเปลี่ยนแปลง
-                <span className="required">*</span>
-              </label>
-
-              <input
-                type="password"
-                className="form-control"
-                placeholder="Current Password"
-              />
-
-              <p className="security-note">
-                * จำเป็นต้องระบุเพื่อยืนยันตัวตน
-              </p>
+            {/* Security */}
+            <div className="section-label full-width">🔑 เปลี่ยนรหัสผ่าน · Change Password</div>
+            <div className="full-width form-group">
+              <label>รหัสผ่านปัจจุบัน (ต้องกรอกถ้าต้องการเปลี่ยน)</label>
+              <input className="form-control" name="currentPw" type="password" value={form.currentPw} onChange={handleChange} placeholder="รหัสผ่านปัจจุบัน" />
+            </div>
+            <div className="form-group">
+              <label>รหัสผ่านใหม่ (≥8 ตัว)</label>
+              <input className="form-control" name="newPw" type="password" value={form.newPw} onChange={handleChange} placeholder="รหัสผ่านใหม่" />
+            </div>
+            <div className="form-group">
+              <label>ยืนยันรหัสผ่านใหม่</label>
+              <input className="form-control" name="confirmPw" type="password" value={form.confirmPw} onChange={handleChange} placeholder="ยืนยันอีกครั้ง" />
             </div>
 
           </div>
 
           <div className="btn-group">
-
-            <Link
-              href="/business/dashboard"
-              className="btn-cancel"
-            >
-              ยกเลิก
-            </Link>
-
-            <button
-              type="submit"
-              className="btn-save"
-            >
-              💾 บันทึกการเปลี่ยนแปลง
+            <Link href="/dashboard" className="btn-cancel">ยกเลิก</Link>
+            <button type="submit" className="btn-save" disabled={isLoading}>
+              {isLoading ? "⏳ กำลังบันทึก..." : "💾 บันทึกการเปลี่ยนแปลง"}
             </button>
-
           </div>
         </form>
-
       </div>
     </div>
   );

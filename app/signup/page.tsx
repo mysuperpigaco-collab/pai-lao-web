@@ -22,6 +22,7 @@ export default function SignupPage() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     const newErrors: Record<string, string> = {};
@@ -48,6 +49,7 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (Object.keys(errors).length > 0) return;
+    if (!acceptedTerms) { setApiError("กรุณายอมรับข้อกำหนดและนโยบายความเป็นส่วนตัวก่อนสมัคร"); return; }
     // hard-check required fields before sending
     if (accountType === "business" && !formData.businessName.trim()) {
       setApiError("กรุณากรอกชื่อธุรกิจ / Please enter your business name");
@@ -183,7 +185,28 @@ export default function SignupPage() {
               <InputField label="ยืนยันรหัสผ่าน" labelEn="Confirm" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} error={errors.confirmPassword} required />
             </div>
 
-            <button type="submit" className={`btn-submit ${accountType}`} disabled={isLoading}>
+            {/* Terms & Privacy */}
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 10, margin: "20px 0 4px", padding: "14px 16px", background: "#f8fafc", borderRadius: 12, border: "1px solid #e2e8f0" }}>
+              <input
+                id="acceptTerms"
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={e => setAcceptedTerms(e.target.checked)}
+                style={{ marginTop: 3, accentColor: "#10b981", width: 16, height: 16, flexShrink: 0, cursor: "pointer" }}
+              />
+              <label htmlFor="acceptTerms" style={{ fontSize: 13, color: "#475569", lineHeight: 1.6, cursor: "pointer" }}>
+                ข้าพเจ้ายอมรับ{" "}
+                <a href="/terms" target="_blank" style={{ color: "#0891b2", fontWeight: 700, textDecoration: "none" }}>ข้อกำหนดการใช้งาน</a>
+                {" "}และ{" "}
+                <a href="/privacy" target="_blank" style={{ color: "#0891b2", fontWeight: 700, textDecoration: "none" }}>นโยบายความเป็นส่วนตัว</a>
+                {" "}ของไปเล่า
+                <span style={{ display: "block", color: "#94a3b8", fontSize: 12, marginTop: 2 }}>
+                  I agree to the Terms of Service and Privacy Policy.
+                </span>
+              </label>
+            </div>
+
+            <button type="submit" className={`btn-submit ${accountType}`} disabled={isLoading || !acceptedTerms} style={{ opacity: !acceptedTerms ? 0.6 : 1 }}>
               {isLoading ? "กำลังสมัคร..." : "ยืนยันสมัครสมาชิก | Register Now"}
             </button>
           </form>

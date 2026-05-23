@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 const IconSearch = () => (
@@ -23,7 +24,17 @@ const IconPlus = () => (
 
 export default function Navbar() {
   const { user, isLoading, logout } = useAuth();
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchQ, setSearchQ] = useState("");
+  const [searchType, setSearchType] = useState("ทริป");
+
+  const handleSearch = () => {
+    const q = searchQ.trim();
+    if (!q) return;
+    const type = searchType === "ที่เที่ยว" ? "place" : "trip";
+    router.push(`/search?q=${encodeURIComponent(q)}&type=${type}`);
+  };
 
   const dashboardHref = user?.role === "BUSINESS" ? "/business/dashboard" : "/dashboard";
   const avatarInitial = user ? (user.displayName || user.firstName).charAt(0).toUpperCase() : "";
@@ -220,12 +231,24 @@ export default function Navbar() {
 
         {/* Search — desktop only */}
         <div className="nb-search">
-          <select>
+          <select value={searchType} onChange={e => setSearchType(e.target.value)}>
             <option>ทริป</option>
             <option>ที่เที่ยว</option>
           </select>
-          <input type="text" placeholder="ค้นหาทริปหรือสถานที่..." />
-          <span style={{ color: "#10b981", display: "flex" }}><IconSearch /></span>
+          <input
+            type="text"
+            placeholder="ค้นหาทริปหรือสถานที่..."
+            value={searchQ}
+            onChange={e => setSearchQ(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSearch()}
+          />
+          <button
+            type="button"
+            onClick={handleSearch}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", color: "#10b981" }}
+          >
+            <IconSearch />
+          </button>
         </div>
 
         {/* Auth Zone */}

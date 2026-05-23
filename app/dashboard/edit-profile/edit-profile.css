@@ -91,6 +91,18 @@
   margin-left: 3px;
 }
 
+/* ── New form helpers ── */
+.section-label {
+  font-size: 15px; font-weight: 800; color: #1e293b;
+  border-bottom: 1.5px solid #f1f5f9; padding-bottom: 8px;
+  margin-top: 8px;
+}
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 13px; font-weight: 700; color: #475569; }
+.req { color: #ef4444; }
+.form-control { width: 100%; padding: 11px 14px; border-radius: 12px; border: 1.5px solid #e2e8f0; outline: none; font-size: 14px; font-family: inherit; transition: border-color 0.15s; box-sizing: border-box; }
+.form-control:focus { border-color: #10b981; }
+
 .security-note {
   font-size: 12px;
   color: #16a34a;

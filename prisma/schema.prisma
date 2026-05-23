@@ -71,6 +71,13 @@ model User {
   bannedUntil     DateTime?  // บัญชีถูกระงับจนถึงวันที่นี้ (null = ไม่ถูกแบน)
   banReason       String?    // เหตุผลที่ถูกแบน
 
+  // Privacy settings
+  profilePrivacy  String    @default("PUBLIC")  // PUBLIC | PRIVATE
+  showEmail       Boolean   @default(false)
+  showPhone       Boolean   @default(false)
+  showSocial      Boolean   @default(true)
+  showBirthDate   Boolean   @default(false)
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
