@@ -213,7 +213,7 @@ export default function AutoGridSection() {
           text-decoration: none; color: inherit;
           border: 1px solid #f1f5f9;
           box-shadow: 0 2px 10px rgba(15,23,42,0.04);
-          display: flex; flex-direction: column;
+          display: flex; flex-direction: column; min-width: 0;
           transition: all 0.2s;
         }
         .ag-card:hover {

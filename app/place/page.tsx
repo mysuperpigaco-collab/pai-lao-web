@@ -356,7 +356,7 @@ function PlacesInner() {
         .pl-clear-btn:hover { background: #fff1f2; border-color: #fecaca; }
 
         /* Grid */
-        .pl-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .pl-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; overflow: hidden; }
 
         /* Skeleton */
         .pl-skeleton-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
@@ -548,7 +548,7 @@ function PlaceCard({ place }: { place: Place }) {
           text-decoration: none; color: inherit; display: flex; flex-direction: column;
           border: 1px solid #f1f5f9;
           box-shadow: 0 4px 16px rgba(15,23,42,0.07);
-          transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+          transition: all 0.25s cubic-bezier(0.4,0,0.2,1); min-width: 0;
         }
         .plc-card:hover {
           transform: translateY(-6px);
