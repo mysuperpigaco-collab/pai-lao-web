@@ -213,10 +213,9 @@ export default function Navbar() {
 
         {/* Nav Links — desktop only */}
         <div className="nb-links">
-          <Link href="/"       className="nb-link">🏠 หน้าแรก</Link>
-          <Link href="/place"  className="nb-link">🗺️ สถานที่</Link>
-          <Link href="/trips"  className="nb-link">✈️ ทริป</Link>
-          <Link href="/planner" className="nb-link">📅 แพลนเนอร์</Link>
+          <Link href="/"      className="nb-link">🏠 หน้าแรก <span style={{fontSize:10,color:"#94a3b8",fontWeight:400}}>Home</span></Link>
+          <Link href="/place" className="nb-link">🗺️ สถานที่ <span style={{fontSize:10,color:"#94a3b8",fontWeight:400}}>Places</span></Link>
+          <Link href="/trips" className="nb-link">✈️ ทริป <span style={{fontSize:10,color:"#94a3b8",fontWeight:400}}>Trips</span></Link>
         </div>
 
         {/* Search — desktop only */}
@@ -237,7 +236,7 @@ export default function Navbar() {
             <>
               {/* Plan button — desktop only, for USER role */}
               {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && user.role !== "BUSINESS" && (
-                <Link href="/planner" className="nb-plan-btn">📅 วางแผนเที่ยว</Link>
+                <Link href="/planner" className="nb-plan-btn">📅 วางแผนเที่ยว <span style={{fontSize:10,opacity:0.7}}>Planner</span></Link>
               )}
               {/* Write / Add Place */}
               {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && (
