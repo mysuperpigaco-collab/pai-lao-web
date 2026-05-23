@@ -188,6 +188,7 @@ export default function HomePage() {
 
       <style jsx>{`
         .hp-container { max-width: 1200px; margin: 0 auto; padding: 36px 20px 80px; }
+        @media (max-width: 640px) { .hp-container { padding: 16px 12px 60px; } }
 
         .hp-section-hdr { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
         .hp-title { font-size: 22px; font-weight: 900; color: #0f172a; margin: 0 0 4px; }
@@ -281,6 +282,8 @@ export default function HomePage() {
         @media (max-width: 600px) {
           .hp-archive-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
           .hp-top-img { height: 160px; }
+          .hp-top2 { grid-template-columns: 1fr; }
+          .hp-section-hdr { flex-direction: column; align-items: flex-start; }
         }
       `}</style>
     </main>

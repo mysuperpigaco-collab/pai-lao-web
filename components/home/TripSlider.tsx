@@ -132,8 +132,8 @@ export default function TripSlider() {
       {/* ── Arrow buttons ── */}
       {trips.length > 1 && (
         <>
-          <button onClick={() => go(-1)} aria-label="ก่อนหน้า" style={{ position: "absolute", left: -16, top: "50%", transform: "translateY(-50%)", width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.95)", border: "none", cursor: "pointer", fontSize: 20, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 12px rgba(0,0,0,0.2)", color: "#1e293b", zIndex: 10, fontWeight: 700, backdropFilter: "blur(4px)" }}>‹</button>
-          <button onClick={() => go(1)} aria-label="ถัดไป" style={{ position: "absolute", right: -16, top: "50%", transform: "translateY(-50%)", width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.95)", border: "none", cursor: "pointer", fontSize: 20, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 12px rgba(0,0,0,0.2)", color: "#1e293b", zIndex: 10, fontWeight: 700, backdropFilter: "blur(4px)" }}>›</button>
+          <button onClick={() => go(-1)} aria-label="ก่อนหน้า" style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.95)", border: "none", cursor: "pointer", fontSize: 20, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 12px rgba(0,0,0,0.2)", color: "#1e293b", zIndex: 10, fontWeight: 700, backdropFilter: "blur(4px)" }}>‹</button>
+          <button onClick={() => go(1)} aria-label="ถัดไป" style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.95)", border: "none", cursor: "pointer", fontSize: 20, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 12px rgba(0,0,0,0.2)", color: "#1e293b", zIndex: 10, fontWeight: 700, backdropFilter: "blur(4px)" }}>›</button>
         </>
       )}
 
