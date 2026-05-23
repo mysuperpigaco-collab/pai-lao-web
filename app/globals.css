@@ -65,6 +65,11 @@
   box-sizing: border-box;
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   font-family: sans-serif;
   background: var(--pl-bg);
@@ -282,19 +287,4 @@ body {
   .manage-grid     { grid-template-columns: 1fr; }
   .interest-grid   { grid-template-columns: 1fr; }
   .signup-card     { padding: 30px 20px; border-radius: 30px; }
-  .navbar          { padding: 20px; }
-  .section-divider { grid-column: span 1; }
-}
-/* ── Navbar responsive ── */
-/* Desktop: show desktop bar, hide mobile bar */
-.nav-desktop { display: flex !important; }
-.nav-mobile  { display: none !important; }
-
-@media (max-width: 768px) {
-  .nav-desktop { display: none !important; }
-  .nav-mobile  { display: flex !important; }
-}
-/* mobile dropdown is a block, not flex */
-@media (max-width: 768px) {
-  .nav-mobile[style*="flex-direction: column"] { display: block !important; }
-}
+  .navbar          { paddi
