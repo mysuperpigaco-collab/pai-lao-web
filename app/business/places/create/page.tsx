@@ -131,6 +131,12 @@ export default function CreatePlacePage() {
   const handlePhone = (v: string) => setPhone(v.replace(/[^0-9+\-() ]/g, ""));
   const [website, setWebsite]   = useState("");
   const [lineId, setLineId]     = useState("");
+  const [amenities, setAmenities] = useState<string[]>([]);
+  const [petPolicy, setPetPolicy] = useState<string>("");
+
+  const toggleAmenity = (key: string) => {
+    setAmenities(prev => prev.includes(key) ? prev.filter(a => a !== key) : [...prev, key]);
+  };
 
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError]   = useState("");
@@ -222,6 +228,8 @@ export default function CreatePlacePage() {
           phone:            phone       || undefined,
           website:          website     || undefined,
           lineId:           lineId      || undefined,
+          amenities,
+          petPolicy:        petPolicy   || undefined,
         }),
       });
 
@@ -551,6 +559,90 @@ export default function CreatePlacePage() {
             </div>
           </div>
 
+          {/* ── AMENITIES & PET POLICY ── */}
+          <div className="ui-section-card">
+            <div className="ui-section-hdr">
+              <div>
+                <h2>สิ่งอำนวยความสะดวก <span className="ui-en-tag">Facilities & Pet Policy</span></h2>
+                <p>เลือกสิ่งอำนวยความสะดวกที่มีในสถานที่ และระบุนโยบายสัตว์เลี้ยง</p>
+              </div>
+            </div>
+
+            {/* Amenity grid */}
+            <div style={{ marginBottom: 24 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 10 }}>
+                🏷️ สิ่งอำนวยความสะดวก · Facilities
+              </p>
+              <div className="amenity-grid">
+                {([
+                  { key: "PARKING",     icon: "🅿️",  label: "ที่จอดรถ",       en: "Parking" },
+                  { key: "WIFI",        icon: "📶",  label: "Wi-Fi ฟรี",      en: "Free Wi-Fi" },
+                  { key: "RESTROOM",    icon: "🚻",  label: "ห้องน้ำ",         en: "Restroom" },
+                  { key: "AIRCON",      icon: "❄️",  label: "แอร์",            en: "Air Con" },
+                  { key: "ACCESSIBLE",  icon: "♿",  label: "เข้าถึงได้",      en: "Accessible" },
+                  { key: "CREDIT_CARD", icon: "💳",  label: "รับบัตรเครดิต",   en: "Credit Card" },
+                  { key: "RESTAURANT",  icon: "🍽️", label: "ร้านอาหาร",       en: "Restaurant" },
+                  { key: "CAFE",        icon: "☕",  label: "เครื่องดื่ม",      en: "Café" },
+                  { key: "CHARGING",    icon: "🔌",  label: "ที่ชาร์จ",         en: "Charging" },
+                  { key: "ELEVATOR",    icon: "🛗",  label: "ลิฟต์",           en: "Elevator" },
+                  { key: "POOL",        icon: "🏊",  label: "สระว่ายน้ำ",      en: "Pool" },
+                  { key: "PHOTO_SPOT",  icon: "📸",  label: "จุดถ่ายรูป",      en: "Photo Spot" },
+                ] as { key: string; icon: string; label: string; en: string }[]).map(a => {
+                  const active = amenities.includes(a.key);
+                  return (
+                    <button
+                      key={a.key}
+                      type="button"
+                      className={`amenity-btn${active ? " active" : ""}`}
+                      onClick={() => toggleAmenity(a.key)}
+                    >
+                      <span className="amenity-icon">{a.icon}</span>
+                      <span className="amenity-label">{a.label}</span>
+                      <span className="amenity-en">{a.en}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Pet Policy */}
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 10 }}>
+                🐾 นโยบายสัตว์เลี้ยง · Pet Policy
+              </p>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {([
+                  { val: "ALLOWED",     icon: "🐾", label: "สัตว์เลี้ยงเข้าได้",       color: "#16a34a", bg: "#f0fdf4", border: "#86efac" },
+                  { val: "CONDITIONS",  icon: "⚠️", label: "เข้าได้บางส่วน",           color: "#b45309", bg: "#fffbeb", border: "#fcd34d" },
+                  { val: "NOT_ALLOWED", icon: "🚫", label: "ห้ามนำสัตว์เลี้ยงเข้า",    color: "#b91c1c", bg: "#fef2f2", border: "#fca5a5" },
+                ] as { val: string; icon: string; label: string; color: string; bg: string; border: string }[]).map(p => (
+                  <button
+                    key={p.val}
+                    type="button"
+                    onClick={() => setPetPolicy(prev => prev === p.val ? "" : p.val)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      padding: "10px 16px", borderRadius: 12, border: `2px solid`,
+                      borderColor: petPolicy === p.val ? p.color : "#e2e8f0",
+                      background: petPolicy === p.val ? p.bg : "#fff",
+                      color: petPolicy === p.val ? p.color : "#64748b",
+                      fontWeight: 700, fontSize: 13, cursor: "pointer",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    <span style={{ fontSize: 18 }}>{p.icon}</span>
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+              {!petPolicy && (
+                <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 8 }}>
+                  * หากไม่ระบุ จะไม่แสดงข้อมูลนโยบายสัตว์เลี้ยง
+                </p>
+              )}
+            </div>
+          </div>
+
           {/* ── GALLERY ── */}
           <div className="ui-section-card">
             <div className="ui-section-hdr">
@@ -628,6 +720,16 @@ export default function CreatePlacePage() {
 
         .gallery-empty { display: flex; flex-direction: column; align-items: center; padding: 40px; color: #94a3b8; font-size: 40px; gap: 8px; }
         .gallery-empty p { font-size: 14px; margin: 0; }
+
+        .amenity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+        .amenity-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border-radius: 12px; border: 2px solid #e2e8f0; background: #fff; cursor: pointer; transition: all 0.15s; }
+        .amenity-btn:hover { border-color: #93c5fd; background: #f0f9ff; }
+        .amenity-btn.active { border-color: #16a34a; background: #f0fdf4; }
+        .amenity-icon { font-size: 22px; }
+        .amenity-label { font-size: 12px; font-weight: 700; color: #334155; text-align: center; }
+        .amenity-en { font-size: 10px; font-weight: 600; color: #94a3b8; text-align: center; }
+        .amenity-btn.active .amenity-label { color: #15803d; }
+        .amenity-btn.active .amenity-en { color: #4ade80; }
 
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
         .g-item { position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 1; }

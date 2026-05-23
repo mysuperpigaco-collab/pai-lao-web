@@ -77,7 +77,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { title, titleEn, province, district, address, googleMapsUrl, lat, lng,
             category: categoryRaw, tags, coverUrl, gallery, description, descriptionShort,
-            openHours, closedDays, entryFee, phone, website, lineId } = body;
+            openHours, closedDays, entryFee, phone, website, lineId,
+            amenities, petPolicy } = body;
 
     if (!title || !province || !district || !categoryRaw || !coverUrl || !description) {
       return NextResponse.json({ message: "กรุณากรอกข้อมูลที่จำเป็นให้ครบ" }, { status: 400 });
@@ -139,6 +140,8 @@ export async function POST(request: Request) {
         phone:            phone            ?? null,
         website:          website          ?? null,
         lineId:           lineId           ?? null,
+        amenities:        amenities        ?? [],
+        petPolicy:        petPolicy        ?? null,
         businessId:       business.id,
         approvalStatus:   "PENDING",
       },

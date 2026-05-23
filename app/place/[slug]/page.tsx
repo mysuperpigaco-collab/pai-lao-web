@@ -24,6 +24,21 @@ const CAT_ICON: Record<string, string> = {
   FOOD:"🍲",TEMPLE:"🛕",BEACH:"🏖️",MARKET:"🛍️",ADVENTURE:"🧗",MUSEUM:"🏛️",
 };
 
+const AMENITY_META: Record<string, { icon: string; label: string; en: string }> = {
+  PARKING:     { icon: "🅿️",  label: "ที่จอดรถ",       en: "Parking" },
+  WIFI:        { icon: "📶",  label: "Wi-Fi ฟรี",      en: "Free Wi-Fi" },
+  RESTROOM:    { icon: "🚻",  label: "ห้องน้ำ",         en: "Restroom" },
+  AIRCON:      { icon: "❄️",  label: "แอร์",            en: "Air Con" },
+  ACCESSIBLE:  { icon: "♿",  label: "เข้าถึงได้",      en: "Accessible" },
+  CREDIT_CARD: { icon: "💳",  label: "รับบัตรเครดิต",   en: "Credit Card" },
+  RESTAURANT:  { icon: "🍽️", label: "ร้านอาหาร",       en: "Restaurant" },
+  CAFE:        { icon: "☕",  label: "เครื่องดื่ม",      en: "Café/Drinks" },
+  CHARGING:    { icon: "🔌",  label: "ที่ชาร์จ",         en: "Charging" },
+  ELEVATOR:    { icon: "🛗",  label: "ลิฟต์",           en: "Elevator" },
+  POOL:        { icon: "🏊",  label: "สระว่ายน้ำ",      en: "Pool" },
+  PHOTO_SPOT:  { icon: "📸",  label: "จุดถ่ายรูป",      en: "Photo Spot" },
+};
+
 export default async function PlaceDetailPage({ params }: Props) {
   const raw = await params;
   const slug = decodeURIComponent(raw.slug);
@@ -115,6 +130,21 @@ export default async function PlaceDetailPage({ params }: Props) {
                     Your Place
                   </span>
                 )}
+                {place.petPolicy === "NOT_ALLOWED" && (
+                  <span className="pd-badge" style={{ background: "rgba(185,28,28,0.75)", fontSize: 11 }}>
+                    🚫 ห้ามนำสัตว์เลี้ยง
+                  </span>
+                )}
+                {place.petPolicy === "ALLOWED" && (
+                  <span className="pd-badge" style={{ background: "rgba(21,128,61,0.75)", fontSize: 11 }}>
+                    🐾 สัตว์เลี้ยงเข้าได้
+                  </span>
+                )}
+                {place.petPolicy === "CONDITIONS" && (
+                  <span className="pd-badge" style={{ background: "rgba(146,64,14,0.75)", fontSize: 11 }}>
+                    ⚠️ สัตว์เลี้ยงได้บางส่วน
+                  </span>
+                )}
               </div>
               <h1>{place.title}</h1>
               {place.titleEn && <p className="pd-title-en">{place.titleEn}</p>}
@@ -148,6 +178,62 @@ export default async function PlaceDetailPage({ params }: Props) {
                 <p className="pd-description">{place.description}</p>
               </div>
             )}
+            {/* ── Amenities + Pet Policy ── */}
+            {((place.amenities?.length > 0) || place.petPolicy) && (
+              <div className="pd-card">
+                <h2>สิ่งอำนวยความสะดวก <span style={{ fontSize: 14, fontWeight: 600, color: "#94a3b8" }}>Facilities</span></h2>
+
+                {/* Pet Policy banner */}
+                {place.petPolicy && (
+                  <div style={{
+                    display: "inline-flex", alignItems: "center", gap: 8,
+                    padding: "8px 16px", borderRadius: 12, marginBottom: 16,
+                    ...(place.petPolicy === "ALLOWED"
+                      ? { background: "#dcfce7", border: "1.5px solid #bbf7d0", color: "#15803d" }
+                      : place.petPolicy === "CONDITIONS"
+                      ? { background: "#fef3c7", border: "1.5px solid #fde68a", color: "#92400e" }
+                      : { background: "#fee2e2", border: "1.5px solid #fecaca", color: "#991b1b" })
+                  }}>
+                    <span style={{ fontSize: 20 }}>
+                      {place.petPolicy === "ALLOWED" ? "🐾" : place.petPolicy === "CONDITIONS" ? "⚠️" : "🚫"}
+                    </span>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: 14 }}>
+                        {place.petPolicy === "ALLOWED" ? "สัตว์เลี้ยงเข้าได้" : place.petPolicy === "CONDITIONS" ? "สัตว์เลี้ยงได้บางส่วน" : "ห้ามนำสัตว์เลี้ยง"}
+                      </div>
+                      <div style={{ fontSize: 12, opacity: 0.75, fontWeight: 600 }}>
+                        {place.petPolicy === "ALLOWED" ? "Pet Friendly ✓" : place.petPolicy === "CONDITIONS" ? "Pets allowed with conditions" : "No Pets Allowed"}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Amenity chips */}
+                {place.amenities?.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                    {place.amenities.map((key: string) => {
+                      const m = AMENITY_META[key];
+                      if (!m) return null;
+                      return (
+                        <div key={key} style={{
+                          display: "inline-flex", alignItems: "center", gap: 6,
+                          background: "#f0fdf4", border: "1.5px solid #bbf7d0",
+                          borderRadius: 12, padding: "7px 14px",
+                          color: "#065f46", fontWeight: 700,
+                        }}>
+                          <span style={{ fontSize: 18 }}>{m.icon}</span>
+                          <div>
+                            <div style={{ fontSize: 13, lineHeight: 1.2 }}>{m.label}</div>
+                            <div style={{ fontSize: 11, color: "#94a3b8", lineHeight: 1 }}>{m.en}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
             {place.gallery?.length > 0 && (
               <div className="pd-card">
                 <h2>รูปภาพ Gallery</h2>

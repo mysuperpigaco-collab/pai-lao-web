@@ -151,6 +151,9 @@ model Place {
   website          String?
   lineId           String?
 
+  amenities        String[]  // e.g. PARKING, WIFI, RESTROOM, AIRCON, ACCESSIBLE, CREDIT_CARD, RESTAURANT, CAFE, CHARGING, ELEVATOR, POOL, PHOTO_SPOT
+  petPolicy        String?   // ALLOWED | NOT_ALLOWED | CONDITIONS
+
   shareCount       Int       @default(0)
   viewCount        Int       @default(0)
 

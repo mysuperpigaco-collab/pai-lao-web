@@ -55,7 +55,7 @@ export async function PUT(request: Request, { params }: Params) {
         address: true, googleMapsUrl: true, category: true, tags: true,
         coverUrl: true, gallery: true, description: true, descriptionShort: true,
         openHours: true, closedDays: true, entryFee: true, phone: true,
-        website: true, lineId: true, approvalStatus: true,
+        website: true, lineId: true, amenities: true, petPolicy: true, approvalStatus: true,
         business: { select: { userId: true } },
       },
     });
@@ -70,7 +70,8 @@ export async function PUT(request: Request, { params }: Params) {
     const body = await request.json();
     const { title, titleEn, province, district, address, googleMapsUrl, lat, lng,
             category: categoryRaw, tags, coverUrl, gallery, description, descriptionShort,
-            openHours, closedDays, entryFee, phone, website, lineId } = body;
+            openHours, closedDays, entryFee, phone, website, lineId,
+            amenities, petPolicy } = body;
 
     const CATEGORY_MAP: Record<string, string> = {
       "ธรรมชาติ": "NATURE", "คาเฟ่": "CAFE", "ที่พัก": "ACCOMMODATION",
@@ -107,6 +108,8 @@ export async function PUT(request: Request, { params }: Params) {
           ...(phone            !== undefined && { phone }),
           ...(website          !== undefined && { website }),
           ...(lineId           !== undefined && { lineId }),
+          ...(amenities        !== undefined && { amenities }),
+          ...(petPolicy        !== undefined && { petPolicy }),
         },
       });
       return NextResponse.json({ message: "อัปเดตสำเร็จ", place: updated });
