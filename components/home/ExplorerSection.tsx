@@ -190,7 +190,7 @@ export default function ExplorerSection() {
           border-radius: 28px;
           box-shadow: 0 8px 28px rgba(15,23,42,0.06);
           margin-top: 48px;
-          border: 1px solid #f1f5f9; overflow: hidden;
+          border: 1px solid #f1f5f9;
         }
         .ex-header { margin-bottom: 22px; }
         .ex-title { font-size: 22px; font-weight: 900; color: #0f172a; margin: 0 0 6px; }

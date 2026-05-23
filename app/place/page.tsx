@@ -356,7 +356,7 @@ function PlacesInner() {
         .pl-clear-btn:hover { background: #fff1f2; border-color: #fecaca; }
 
         /* Grid */
-        .pl-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; overflow: hidden; }
+        .pl-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 
         /* Skeleton */
         .pl-skeleton-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
