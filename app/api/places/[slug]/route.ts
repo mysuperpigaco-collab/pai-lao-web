@@ -127,6 +127,7 @@ export async function PUT(request: Request, { params }: Params) {
       openHours: place.openHours, closedDays: place.closedDays,
       entryFee: place.entryFee, phone: place.phone,
       website: place.website, lineId: place.lineId,
+      amenities: place.amenities, petPolicy: place.petPolicy,
     };
 
     const pendingData: Record<string, any> = {};
@@ -150,6 +151,8 @@ export async function PUT(request: Request, { params }: Params) {
     if (phone            !== undefined) pendingData.phone            = phone;
     if (website          !== undefined) pendingData.website          = website;
     if (lineId           !== undefined) pendingData.lineId           = lineId;
+    if (amenities        !== undefined) pendingData.amenities        = amenities;
+    if (petPolicy        !== undefined) pendingData.petPolicy        = petPolicy;
 
     // ยกเลิก PendingEdit เก่าที่ยังรออยู่ (ถ้ามี)
     await (prisma as any).pendingEdit.deleteMany({
