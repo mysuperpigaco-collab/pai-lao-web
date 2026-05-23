@@ -174,12 +174,22 @@ export default function Navbar() {
           border-radius: 10px; padding: 10px; font-size: 13px; color: #ef4444;
           cursor: pointer; font-weight: 700; font-family: inherit; width: 100%;
         }
+        /* Plan button */
+        .nb-plan-btn {
+          display: flex; align-items: center; gap: 6px;
+          text-decoration: none; color: #0891b2;
+          background: #f0fdfe; border: 1.5px solid #a5f3fc;
+          padding: 7px 13px; border-radius: 12px;
+          font-weight: 700; font-size: 13px; white-space: nowrap;
+        }
+        .nb-plan-btn:hover { background: #e0f9fe; }
         /* ── Mobile ── */
         @media (max-width: 768px) {
           .nb-links        { display: none; }
           .nb-search       { display: none; }
           .nb-avatar-name  { display: none; }
           .nb-logout       { display: none; }
+          .nb-plan-btn     { display: none; }
           .nb-write-btn    { padding: 7px 10px; font-size: 12px; }
           .nb-write-btn span { display: none; }
           .nb-avatar-link  { padding: 4px; border-radius: 50%; }
@@ -219,17 +229,16 @@ export default function Navbar() {
           <span style={{ color: "#10b981", display: "flex" }}><IconSearch /></span>
         </div>
 
-        {/* Hamburger — mobile only */}
-        <button className="nb-hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="เมนู">
-          <span /><span /><span />
-        </button>
-
         {/* Auth Zone */}
         <div className="nb-auth">
           {isLoading ? (
             <div style={{ width: "70px", height: "36px", background: "#f0fdf4", borderRadius: "12px" }} />
           ) : user ? (
             <>
+              {/* Plan button — desktop only, for USER role */}
+              {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && user.role !== "BUSINESS" && (
+                <Link href="/planner" className="nb-plan-btn">📅 วางแผนเที่ยว</Link>
+              )}
               {/* Write / Add Place */}
               {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && (
                 user.role === "BUSINESS" ? (
@@ -268,14 +277,18 @@ export default function Navbar() {
             </>
           )}
         </div>
+
+        {/* Hamburger — mobile only, far right */}
+        <button className="nb-hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="เมนู">
+          <span /><span /><span />
+        </button>
       </div>
 
       {/* Mobile dropdown menu */}
       <div className={`nb-mobile-menu${menuOpen ? " open" : ""}`}>
-        <Link href="/"        className="nb-m-link" onClick={() => setMenuOpen(false)}>🏠 หน้าแรก</Link>
-        <Link href="/place"   className="nb-m-link" onClick={() => setMenuOpen(false)}>🗺️ สถานที่</Link>
-        <Link href="/trips"   className="nb-m-link" onClick={() => setMenuOpen(false)}>✈️ ทริป</Link>
-        <Link href="/planner" className="nb-m-link" onClick={() => setMenuOpen(false)}>📅 แพลนเนอร์</Link>
+        <Link href="/"      className="nb-m-link" onClick={() => setMenuOpen(false)}>🏠 หน้าแรก</Link>
+        <Link href="/place" className="nb-m-link" onClick={() => setMenuOpen(false)}>🗺️ สถานที่</Link>
+        <Link href="/trips" className="nb-m-link" onClick={() => setMenuOpen(false)}>✈️ ทริป</Link>
         {user && (
           <button className="nb-m-logout" onClick={() => { logout(); setMenuOpen(false); }}>
             ออกจากระบบ
