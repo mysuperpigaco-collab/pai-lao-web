@@ -287,4 +287,6 @@ body {
   .manage-grid     { grid-template-columns: 1fr; }
   .interest-grid   { grid-template-columns: 1fr; }
   .signup-card     { padding: 30px 20px; border-radius: 30px; }
-  .navbar          { paddi
+  .navbar          { padding: 20px; }
+  .section-divider { grid-column: span 1; }
+}
