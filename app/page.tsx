@@ -191,17 +191,17 @@ export default function HomePage() {
         @media (max-width: 640px) { .hp-container { padding: 16px 12px 60px; } }
 
         .hp-section-hdr { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
-        .hp-title { font-size: 22px; font-weight: 900; color: #0f172a; margin: 0 0 4px; }
+        .hp-title { font-size: 26px; font-weight: 900; color: #0f172a; margin: 0 0 6px; }
         .hp-title span { color: #2563eb; }
-        .hp-sub { font-size: 13px; color: #64748b; margin: 0; }
-        .hp-see-all { font-size: 13px; font-weight: 700; color: #2563eb; text-decoration: none; white-space: nowrap; }
+        .hp-sub { font-size: 15px; color: #64748b; margin: 0; }
+        .hp-see-all { font-size: 14px; font-weight: 700; color: #2563eb; text-decoration: none; white-space: nowrap; }
         .hp-see-all:hover { text-decoration: underline; }
 
         /* Archive toggle button */
         .hp-archive-btn {
           width: 100%; display: flex; justify-content: space-between; align-items: center;
           padding: 14px 22px; background: white; border: 1.5px solid #e2e8f0;
-          border-radius: 14px; font-size: 14px; font-weight: 700; color: #334155;
+          border-radius: 14px; font-size: 15px; font-weight: 700; color: #334155;
           cursor: pointer; font-family: inherit; transition: 0.2s; text-align: left;
         }
         .hp-archive-btn:hover { background: #f8fafc; border-color: #f59e0b; color: #92400e; }
@@ -212,7 +212,7 @@ export default function HomePage() {
         /* Archive panel */
         .hp-archive-panel { background: white; border: 1.5px solid #fde68a; border-top: none; border-radius: 0 0 14px 14px; padding: 24px; }
         .hp-archive-loading { text-align: center; padding: 40px; color: #94a3b8; font-size: 15px; }
-        .hp-archive-hdr { font-size: 14px; font-weight: 800; color: #1e293b; margin: 0 0 18px; }
+        .hp-archive-hdr { font-size: 15px; font-weight: 800; color: #1e293b; margin: 0 0 18px; }
 
         /* Top 2 featured */
         .hp-top2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
@@ -237,7 +237,7 @@ export default function HomePage() {
           padding: 3px 10px; border-radius: 999px; backdrop-filter: blur(4px);
         }
         .hp-top-body { padding: 14px 18px 18px; }
-        .hp-top-body h3 { font-size: 16px; font-weight: 900; color: #0f172a; margin: 0 0 6px; }
+        .hp-top-body h3 { font-size: 18px; font-weight: 900; color: #0f172a; margin: 0 0 6px; }
         .hp-top-meta { display: flex; gap: 12px; font-size: 12px; color: #64748b; flex-wrap: wrap; margin-bottom: 6px; }
         .hp-top-reviews { font-size: 12px; color: #059669; font-weight: 700; }
 
@@ -261,7 +261,7 @@ export default function HomePage() {
           padding: 2px 7px; border-radius: 999px;
         }
         .hp-acard-body { padding: 11px 13px; }
-        .hp-acard-body h4 { font-size: 13px; font-weight: 700; color: #1e293b; margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .hp-acard-body h4 { font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .hp-acard-meta { display: flex; gap: 8px; flex-wrap: wrap; font-size: 11px; color: #94a3b8; margin-bottom: 3px; }
         .hp-acard-author { font-size: 11px; color: #64748b; margin: 0; font-style: italic; }
 
