@@ -334,16 +334,16 @@ export default function UserProfilePage() {
 
       <style jsx>{`
         .up-page { min-height: 100vh; background: #f8fafc; padding-bottom: 60px; }
-        .up-cover { width: 100%; height: 260px; position: relative; background: linear-gradient(135deg, #10b981, #06b6d4); overflow: hidden; }
+        .up-cover { width: 100%; height: 200px; position: relative; background: linear-gradient(135deg, #10b981, #06b6d4); overflow: hidden; }
         .up-cover-img { width: 100%; height: 100%; object-fit: cover; }
         .up-cover-placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%); }
         .up-body { max-width: 860px; margin: 0 auto; padding: 0 20px; }
-        .up-avatar-row { display: flex; align-items: flex-end; gap: 20px; margin-top: -52px; margin-bottom: 20px; flex-wrap: wrap; }
+        .up-avatar-row { display: flex; align-items: flex-end; gap: 16px; margin-top: -44px; margin-bottom: 20px; flex-wrap: wrap; }
         .up-avatar-wrap { flex-shrink: 0; }
-        .up-avatar, .up-avatar-circle { width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
-        .up-avatar { object-fit: cover; }
-        .up-avatar-circle { background: linear-gradient(135deg, #10b981, #3b82f6); display: flex; align-items: center; justify-content: center; color: white; font-size: 36px; font-weight: 900; }
-        .up-name-col { padding-bottom: 6px; flex: 1; }
+        .up-avatar, .up-avatar-circle { width: 96px; height: 96px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .up-avatar { object-fit: cover; display: block; }
+        .up-avatar-circle { background: linear-gradient(135deg, #10b981, #3b82f6); display: flex; align-items: center; justify-content: center; color: white; font-size: 34px; font-weight: 900; }
+        .up-name-col { padding-bottom: 8px; flex: 1; min-width: 0; }
         .up-displayname { font-size: 24px; font-weight: 900; color: #0f172a; margin: 0 0 2px; }
         .up-username { font-size: 14px; color: #64748b; font-weight: 600; display: block; }
         .up-since { font-size: 12px; color: #94a3b8; display: block; margin-top: 2px; }
@@ -373,19 +373,21 @@ export default function UserProfilePage() {
         .up-private-box p { color: #64748b; font-size: 14px; }
 
         .up-trips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
-        .up-trip-card { text-decoration: none; background: white; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; transition: box-shadow 0.2s, transform 0.2s; display: block; }
+        .up-trip-card { text-decoration: none; color: #1e293b; background: white; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; transition: box-shadow 0.2s, transform 0.2s; display: block; }
         .up-trip-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.1); transform: translateY(-2px); }
         .up-trip-img-wrap { position: relative; height: 160px; overflow: hidden; }
         .up-trip-img { width: 100%; height: 100%; object-fit: cover; }
         .up-trip-mood { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.55); color: white; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
         .up-trip-info { padding: 12px 14px; }
-        .up-trip-info h3 { font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .up-trip-info p { font-size: 12px; color: #64748b; margin: 0 0 8px; }
+        .up-trip-info h3 { font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-decoration: none; }
+        .up-trip-info p { font-size: 12px; color: #64748b; margin: 0 0 8px; text-decoration: none; }
         .up-trip-meta { display: flex; gap: 12px; font-size: 12px; color: #94a3b8; font-weight: 600; }
+        .up-trip-meta span { color: #94a3b8; }
 
         @media (max-width: 640px) {
-          .up-cover { height: 180px; }
-          .up-avatar, .up-avatar-circle { width: 76px; height: 76px; }
+          .up-cover { height: 150px; }
+          .up-avatar-row { margin-top: -36px; gap: 12px; }
+          .up-avatar, .up-avatar-circle { width: 72px; height: 72px; font-size: 28px; }
           .up-displayname { font-size: 18px; }
           .up-trips-grid { grid-template-columns: 1fr 1fr; }
         }
