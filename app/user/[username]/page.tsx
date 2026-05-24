@@ -173,20 +173,23 @@ export default function UserProfilePage() {
 
       <div className="up-body">
         {/* Avatar + Name row */}
-        <div className="up-avatar-row">
-          <div className="up-avatar-wrap">
-            {user.avatarUrl
-              ? <img src={user.avatarUrl} alt={displayName} className="up-avatar" />
-              : <div className="up-avatar-circle">{initial}</div>
-            }
-          </div>
+        {/* Avatar — overlaps cover */}
+        <div className="up-avatar-wrap">
+          {user.avatarUrl
+            ? <img src={user.avatarUrl} alt={displayName} className="up-avatar" />
+            : <div className="up-avatar-circle">{initial}</div>
+          }
+        </div>
+
+        {/* Name row — sits cleanly in white body */}
+        <div className="up-name-row">
           <div className="up-name-col">
             <h1 className="up-displayname">{displayName}</h1>
             <span className="up-username">@{user.username}</span>
             {joinYear && <span className="up-since">สมาชิกตั้งแต่ {joinYear}</span>}
           </div>
           {isOwnProfile && (
-            <Link href="/dashboard/edit-profile" style={{ marginLeft: "auto", marginBottom: 6, padding: "8px 16px", borderRadius: 12, background: "#f1f5f9", border: "1.5px solid #e2e8f0", color: "#475569", fontWeight: 700, fontSize: 13, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+            <Link href="/dashboard/edit-profile" className="up-edit-btn">
               ✏️ แก้ไขโปรไฟล์
             </Link>
           )}
@@ -334,19 +337,21 @@ export default function UserProfilePage() {
 
       <style jsx>{`
         .up-page { min-height: 100vh; background: #f8fafc; padding-bottom: 60px; }
-        .up-cover { width: 100%; height: 200px; position: relative; background: linear-gradient(135deg, #10b981, #06b6d4); overflow: hidden; }
+        .up-cover { width: 100%; height: 180px; position: relative; background: linear-gradient(135deg, #10b981, #06b6d4); overflow: hidden; }
         .up-cover-img { width: 100%; height: 100%; object-fit: cover; }
         .up-cover-placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%); }
         .up-body { max-width: 860px; margin: 0 auto; padding: 0 20px; }
-        .up-avatar-row { display: flex; align-items: flex-end; gap: 16px; margin-top: -44px; margin-bottom: 20px; flex-wrap: wrap; }
-        .up-avatar-wrap { flex-shrink: 0; }
-        .up-avatar, .up-avatar-circle { width: 96px; height: 96px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
-        .up-avatar { object-fit: cover; display: block; }
+        .up-avatar-wrap { margin-top: -48px; margin-bottom: 0; display: block; }
+        .up-avatar, .up-avatar-circle { width: 96px; height: 96px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 20px rgba(0,0,0,0.18); display: block; }
+        .up-avatar { object-fit: cover; }
         .up-avatar-circle { background: linear-gradient(135deg, #10b981, #3b82f6); display: flex; align-items: center; justify-content: center; color: white; font-size: 34px; font-weight: 900; }
-        .up-name-col { padding-bottom: 8px; flex: 1; min-width: 0; }
-        .up-displayname { font-size: 24px; font-weight: 900; color: #0f172a; margin: 0 0 2px; }
-        .up-username { font-size: 14px; color: #64748b; font-weight: 600; display: block; }
+        .up-name-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-top: 14px; margin-bottom: 20px; flex-wrap: wrap; }
+        .up-name-col { flex: 1; min-width: 0; }
+        .up-displayname { font-size: 22px; font-weight: 900; color: #0f172a; margin: 0 0 2px; }
+        .up-username { font-size: 13px; color: #64748b; font-weight: 600; display: block; }
         .up-since { font-size: 12px; color: #94a3b8; display: block; margin-top: 2px; }
+        .up-edit-btn { padding: 7px 14px; border-radius: 10px; background: #f1f5f9; border: 1.5px solid #e2e8f0; color: #475569; font-weight: 700; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; white-space: nowrap; }
+        .up-edit-btn:hover { background: #e2e8f0; }
 
         .up-stats { display: flex; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; margin-bottom: 20px; background: white; }
         .up-stat { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 16px; border-right: 1px solid #e2e8f0; }
@@ -385,10 +390,10 @@ export default function UserProfilePage() {
         .up-trip-meta span { color: #94a3b8; }
 
         @media (max-width: 640px) {
-          .up-cover { height: 150px; }
-          .up-avatar-row { margin-top: -36px; gap: 12px; }
-          .up-avatar, .up-avatar-circle { width: 72px; height: 72px; font-size: 28px; }
-          .up-displayname { font-size: 18px; }
+          .up-cover { height: 130px; }
+          .up-avatar-wrap { margin-top: -36px; }
+          .up-avatar, .up-avatar-circle { width: 72px; height: 72px; font-size: 26px; }
+          .up-displayname { font-size: 17px; }
           .up-trips-grid { grid-template-columns: 1fr 1fr; }
         }
       `}</style>
