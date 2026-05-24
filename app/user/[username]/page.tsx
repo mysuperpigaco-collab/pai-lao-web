@@ -340,8 +340,8 @@ export default function UserProfilePage() {
         .up-cover { width: 100%; height: 180px; position: relative; background: linear-gradient(135deg, #10b981, #06b6d4); overflow: hidden; }
         .up-cover-img { width: 100%; height: 100%; object-fit: cover; }
         .up-cover-placeholder { width: 100%; height: 100%; background: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%); }
-        .up-body { max-width: 860px; margin: 0 auto; padding: 0 20px; }
-        .up-avatar-wrap { margin-top: -48px; margin-bottom: 0; display: block; }
+        .up-body { max-width: 860px; margin: 0 auto; padding: 20px 20px 0; }
+        .up-avatar-wrap { margin-top: 0; margin-bottom: 0; display: block; }
         .up-avatar, .up-avatar-circle { width: 96px; height: 96px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 20px rgba(0,0,0,0.18); display: block; }
         .up-avatar { object-fit: cover; }
         .up-avatar-circle { background: linear-gradient(135deg, #10b981, #3b82f6); display: flex; align-items: center; justify-content: center; color: white; font-size: 34px; font-weight: 900; }
@@ -391,7 +391,7 @@ export default function UserProfilePage() {
 
         @media (max-width: 640px) {
           .up-cover { height: 130px; }
-          .up-avatar-wrap { margin-top: -36px; }
+          .up-avatar-wrap { margin-top: 0; }
           .up-avatar, .up-avatar-circle { width: 72px; height: 72px; font-size: 26px; }
           .up-displayname { font-size: 17px; }
           .up-trips-grid { grid-template-columns: 1fr 1fr; }
