@@ -70,6 +70,20 @@ export default async function PlaceDetailPage({ params }: Props) {
 
   if (!place) return notFound();
 
+  // ดึงรูปจาก timeline stops ที่อนุญาต shareToPlace
+  const timelinePhotos = await (prisma as any).timelineStop.findMany({
+    where: {
+      placeId: place.id,
+      shareToPlace: true,
+      trip: { approvalStatus: "APPROVED" },
+    },
+    select: {
+      images: true,
+      trip: { select: { slug: true, title: true, author: { select: { username: true, displayName: true, firstName: true } } } },
+    },
+    take: 20,
+  });
+
   const session = await getCurrentUser();
   const avgRating = place.reviews.length
     ? place.reviews.reduce((s, r) => s + r.rating, 0) / place.reviews.length
@@ -234,7 +248,7 @@ export default async function PlaceDetailPage({ params }: Props) {
               </div>
             )}
 
-            {(place.gallery?.length > 0 || place.timelinePhotos?.length > 0) && (
+            {((place.gallery?.length ?? 0) > 0 || timelinePhotos.length > 0) && (
               <div className="pd-card">
                 <h2>รูปภาพ Gallery</h2>
                 <div className="pd-gallery">
@@ -243,7 +257,7 @@ export default async function PlaceDetailPage({ params }: Props) {
                       <img src={img} alt={place.title + " " + (i + 1)} />
                     </div>
                   ))}
-                  {(place.timelinePhotos ?? []).flatMap((tp: any) => tp.images).slice(0, 12).map((img: string, i: number) => (
+                  {timelinePhotos.flatMap((tp: any) => tp.images as string[]).slice(0, 12).map((img: string, i: number) => (
                     <div key={`tp-${i}`} className="pd-gal-item" title="รูปจากนักเดินทาง">
                       <img src={img} alt={`รูปจากทริป ${i + 1}`} />
                       <div style={{ position: "absolute", bottom: 4, right: 4, background: "rgba(16,185,129,0.85)", color: "#fff", fontSize: 9, fontWeight: 700, padding: "2px 5px", borderRadius: 6 }}>
@@ -252,9 +266,9 @@ export default async function PlaceDetailPage({ params }: Props) {
                     </div>
                   ))}
                 </div>
-                {place.timelinePhotos?.length > 0 && (
+                {timelinePhotos.length > 0 && (
                   <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 8 }}>
-                    ✨ รูปจากนักเดินทาง {place.timelinePhotos.length} คน · Photos from {place.timelinePhotos.length} traveller{place.timelinePhotos.length > 1 ? "s" : ""}
+                    ✨ รูปจากนักเดินทาง {timelinePhotos.length} คน · Photos from {timelinePhotos.length} traveller{timelinePhotos.length > 1 ? "s" : ""}
                   </p>
                 )}
               </div>
