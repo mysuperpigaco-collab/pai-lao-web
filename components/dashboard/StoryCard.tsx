@@ -4,11 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 
 interface TripItem {
-  slug:        string;
-  title:       string;
-  coverUrl?:   string | null;
-  createdAt:   string;
-  isPublished?: boolean;
+  slug:           string;
+  title:          string;
+  coverUrl?:      string | null;
+  createdAt:      string;
+  isPublished?:   boolean;
+  approvalStatus?: string;
+  hasPendingEdit?: boolean;
 }
 
 function formatDate(iso: string) {
@@ -47,6 +49,8 @@ export default function StoryCard({
 
   const published = story.isPublished !== false;
   const imgSrc    = story.coverUrl || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=800";
+  const hasPending = story.hasPendingEdit === true;
+  const approval   = story.approvalStatus ?? "";
 
   const handleDelete = async () => {
     if (!confirm) { setConfirm(true); return; }
@@ -67,17 +71,27 @@ export default function StoryCard({
       <div style={{ position: "relative", height: "170px", overflow: "hidden", background: "#f1f5f9", flexShrink: 0 }}>
         <img src={imgSrc} alt={story.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
         {/* Status badge */}
-        <span style={{
-          position: "absolute", top: "10px", right: "10px",
-          display: "inline-flex", alignItems: "center", gap: "5px",
-          padding: "4px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: 700,
-          background: published ? "#dcfce7" : "#f1f5f9",
-          color:      published ? "#15803d" : "#475569",
-          backdropFilter: "blur(4px)",
-        }}>
-          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: published ? "#22c55e" : "#94a3b8", flexShrink: 0 }} />
-          {published ? "เผยแพร่แล้ว · Published" : "ฉบับร่าง · Draft"}
-        </span>
+        {hasPending ? (
+          <span style={{ position: "absolute", top: "10px", right: "10px", display: "inline-flex", alignItems: "center", gap: "5px", padding: "4px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: 700, background: "#fef3c7", color: "#92400e", backdropFilter: "blur(4px)" }}>
+            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#f59e0b", flexShrink: 0 }} />
+            รอตรวจสอบการแก้ไข
+          </span>
+        ) : approval === "PENDING" ? (
+          <span style={{ position: "absolute", top: "10px", right: "10px", display: "inline-flex", alignItems: "center", gap: "5px", padding: "4px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: 700, background: "#fef3c7", color: "#92400e", backdropFilter: "blur(4px)" }}>
+            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#f59e0b", flexShrink: 0 }} />
+            รอการอนุมัติ
+          </span>
+        ) : approval === "REJECTED" ? (
+          <span style={{ position: "absolute", top: "10px", right: "10px", display: "inline-flex", alignItems: "center", gap: "5px", padding: "4px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: 700, background: "#fee2e2", color: "#991b1b", backdropFilter: "blur(4px)" }}>
+            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#ef4444", flexShrink: 0 }} />
+            ถูกปฏิเสธ
+          </span>
+        ) : (
+          <span style={{ position: "absolute", top: "10px", right: "10px", display: "inline-flex", alignItems: "center", gap: "5px", padding: "4px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: 700, background: published ? "#dcfce7" : "#f1f5f9", color: published ? "#15803d" : "#475569", backdropFilter: "blur(4px)" }}>
+            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: published ? "#22c55e" : "#94a3b8", flexShrink: 0 }} />
+            {published ? "เผยแพร่แล้ว · Published" : "ฉบับร่าง · Draft"}
+          </span>
+        )}
       </div>
 
       {/* Body */}

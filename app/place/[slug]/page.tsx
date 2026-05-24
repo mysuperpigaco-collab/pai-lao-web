@@ -234,16 +234,29 @@ export default async function PlaceDetailPage({ params }: Props) {
               </div>
             )}
 
-            {place.gallery?.length > 0 && (
+            {(place.gallery?.length > 0 || place.timelinePhotos?.length > 0) && (
               <div className="pd-card">
                 <h2>รูปภาพ Gallery</h2>
                 <div className="pd-gallery">
-                  {place.gallery.slice(0, 6).map((img, i) => (
-                    <div key={i} className="pd-gal-item">
+                  {(place.gallery ?? []).slice(0, 6).map((img: string, i: number) => (
+                    <div key={`gal-${i}`} className="pd-gal-item">
                       <img src={img} alt={place.title + " " + (i + 1)} />
                     </div>
                   ))}
+                  {(place.timelinePhotos ?? []).flatMap((tp: any) => tp.images).slice(0, 12).map((img: string, i: number) => (
+                    <div key={`tp-${i}`} className="pd-gal-item" title="รูปจากนักเดินทาง">
+                      <img src={img} alt={`รูปจากทริป ${i + 1}`} />
+                      <div style={{ position: "absolute", bottom: 4, right: 4, background: "rgba(16,185,129,0.85)", color: "#fff", fontSize: 9, fontWeight: 700, padding: "2px 5px", borderRadius: 6 }}>
+                        🧳 ทริป
+                      </div>
+                    </div>
+                  ))}
                 </div>
+                {place.timelinePhotos?.length > 0 && (
+                  <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 8 }}>
+                    ✨ รูปจากนักเดินทาง {place.timelinePhotos.length} คน · Photos from {place.timelinePhotos.length} traveller{place.timelinePhotos.length > 1 ? "s" : ""}
+                  </p>
+                )}
               </div>
             )}
             {place.googleMapsUrl && (

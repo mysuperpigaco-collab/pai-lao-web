@@ -106,6 +106,7 @@ export async function PUT(request: Request, { params }: Params) {
                 transport: stop.transport ?? null, duration: stop.duration ?? null,
                 cost: stop.cost ?? null,
                 images: stop.images ?? (stop.image ? [stop.image] : []),
+                shareToPlace: stop.shareToPlace ?? false,
               })),
             },
           }),
@@ -200,6 +201,13 @@ export async function PUT(request: Request, { params }: Params) {
         submittedById: session.userId,
       },
     });
+
+    // อัปเดต coverUrl ทันทีให้ profile เห็นรูปใหม่ (content อื่นรออนุมัติ)
+    const immediateUpdate: Record<string, any> = {};
+    if (coverUrl !== undefined) immediateUpdate.coverUrl = coverUrl;
+    if (Object.keys(immediateUpdate).length > 0) {
+      await prisma.trip.update({ where: { slug }, data: immediateUpdate });
+    }
 
     return NextResponse.json({ message: "ส่งการแก้ไขสำเร็จ รอการตรวจสอบจากแอดมิน", pending: true });
   } catch (error) {

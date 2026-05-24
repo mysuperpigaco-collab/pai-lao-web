@@ -76,7 +76,25 @@ export async function GET(request: Request) {
       };
     });
 
-    return NextResponse.json({ trips: tripsFlat, total, page, totalPages: Math.ceil(total / limit) });
+    // ถ้าเป็น mine=1 ให้ตรวจว่ามี PendingEdit รออยู่สำหรับทริปไหนบ้าง
+    let pendingEditTripIds = new Set<string>();
+    if (mine) {
+      const tripIds = tripsFlat.map((t: any) => t.id).filter(Boolean);
+      if (tripIds.length > 0) {
+        const pending = await (prisma as any).pendingEdit.findMany({
+          where: { targetType: "TRIP", targetId: { in: tripIds }, status: "PENDING" },
+          select: { targetId: true },
+        });
+        pending.forEach((p: any) => pendingEditTripIds.add(p.targetId));
+      }
+    }
+
+    const tripsWithPending = tripsFlat.map((t: any) => ({
+      ...t,
+      hasPendingEdit: pendingEditTripIds.has(t.id),
+    }));
+
+    return NextResponse.json({ trips: tripsWithPending, total, page, totalPages: Math.ceil(total / limit) });
   } catch (error) {
     console.error("GET /api/trips:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
@@ -157,10 +175,11 @@ export async function POST(request: Request) {
             transport:   stop.transport   ?? null,
             duration:    stop.duration    ?? null,
             cost:        stop.cost          ?? null,
-            images:      stop.images        ?? (stop.image ? [stop.image] : []),
+            images:        stop.images        ?? (stop.image ? [stop.image] : []),
             stopType:      stop.stopType      ?? null,
             googleMapsUrl: stop.googleMapsUrl ?? null,
             tips:          stop.tips          ?? null,
+            shareToPlace:  stop.shareToPlace  ?? false,
           })),
         } : undefined,
       },

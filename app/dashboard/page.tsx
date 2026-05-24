@@ -14,6 +14,7 @@ type TripItem = {
   isPublished: boolean;
   approvalStatus?: string;   // PENDING | APPROVED | REJECTED
   rejectionReason?: string | null;
+  hasPendingEdit?: boolean;
   avgRating?: number | null;
   _count?: { reviews: number; bookmarks: number; likes: number };
 };

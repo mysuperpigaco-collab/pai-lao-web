@@ -250,6 +250,8 @@ model TimelineStop {
   placeId     String?
   place       Place?  @relation(fields: [placeId], references: [id], onDelete: SetNull)
 
+  shareToPlace Boolean @default(false)  // อนุญาตให้รูปแสดงบนหน้าสถานที่
+
   @@index([tripId])
   @@index([order])
 }

@@ -50,7 +50,8 @@ export default function EditTripPage({ params }: Props) {
 
   const [timeline, setTimeline] = useState<{
     date: string; time: string; place: string; province: string; district: string;
-    description: string; imageFile: File | null; imagePreview: string | null; existingImage?: string;
+    description: string; imageFile: File | null; imagePreview: string | null;
+    existingImage?: string; shareToPlace: boolean;
   }[]>([]);
 
   // ── โหลดข้อมูลทริปที่มีอยู่ ───────────────────────────
@@ -72,15 +73,16 @@ export default function EditTripPage({ params }: Props) {
         setExistingGallery(t.gallery ?? []);
         setIsDraft(t.isDraft ?? false);
         setTimeline((t.timeline ?? []).map((stop: any) => ({
-          date:          stop.date        ?? today,
-          time:          stop.time        ?? "",
-          place:         stop.placeName   ?? "",
-          province:      stop.province    ?? "",
-          district:      stop.district    ?? "",
-          description:   stop.description ?? "",
+          date:          stop.date           ?? today,
+          time:          stop.time           ?? "",
+          place:         stop.placeName      ?? "",
+          province:      stop.province       ?? "",
+          district:      stop.district       ?? "",
+          description:   stop.description    ?? "",
           imageFile:     null,
-          imagePreview:  stop.images?.[0] ?? null,
-          existingImage: stop.images?.[0] ?? undefined,
+          imagePreview:  stop.images?.[0]    ?? null,
+          existingImage: stop.images?.[0]    ?? undefined,
+          shareToPlace:  stop.shareToPlace   ?? false,
         })));
       })
       .catch(() => setNotFound(true))
@@ -105,7 +107,7 @@ export default function EditTripPage({ params }: Props) {
 
   const addStop = () => setTimeline(prev => [...prev, {
     date: today, time: "", place: "", province: "", district: "", description: "",
-    imageFile: null, imagePreview: null,
+    imageFile: null, imagePreview: null, shareToPlace: false,
   }]);
 
   const removeStop = (i: number) => setTimeline(prev => prev.filter((_, j) => j !== i));
@@ -154,13 +156,14 @@ export default function EditTripPage({ params }: Props) {
             imageUrl = await uploadFile(stop.imageFile, "checkpoints");
           }
           return {
-            date:        stop.date,
-            time:        stop.time,
-            place:       stop.place,
-            province:    stop.province,
-            district:    stop.district,
-            description: stop.description,
-            images:      imageUrl ? [imageUrl] : [],
+            date:         stop.date,
+            time:         stop.time,
+            place:        stop.place,
+            province:     stop.province,
+            district:     stop.district,
+            description:  stop.description,
+            images:       imageUrl ? [imageUrl] : [],
+            shareToPlace: stop.shareToPlace ?? false,
           };
         })
       );
@@ -462,13 +465,15 @@ export default function EditTripPage({ params }: Props) {
                   <div className="form-group cp-upload-container">
                     <label>รูปภาพ</label>
                     {item.imagePreview ? (
-                      <div className="cp-preview-box">
-                        <img src={item.imagePreview} alt="checkpoint" />
+                      <div style={{ position: "relative", width: "100%", height: "110px", borderRadius: "20px", overflow: "hidden" }}>
+                        <img src={item.imagePreview} alt="checkpoint" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         <button type="button" onClick={() => {
                           updateTimeline(idx, "imageFile", null);
                           updateTimeline(idx, "imagePreview", null);
                           updateTimeline(idx, "existingImage", undefined);
-                        }}>ลบรูป</button>
+                        }} style={{ position: "absolute", top: 6, right: 6, width: 26, height: 26, borderRadius: "50%", background: "rgba(239,68,68,0.9)", color: "#fff", border: "none", fontSize: 14, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+                          ×
+                        </button>
                       </div>
                     ) : (
                       <label className="cp-label">
@@ -478,6 +483,30 @@ export default function EditTripPage({ params }: Props) {
                       </label>
                     )}
                   </div>
+                </div>
+
+                {/* Share to place toggle */}
+                <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", userSelect: "none" }}>
+                    <div style={{ position: "relative", width: 38, height: 22, flexShrink: 0 }}>
+                      <input type="checkbox" checked={item.shareToPlace} onChange={e => updateTimeline(idx, "shareToPlace", e.target.checked)}
+                        style={{ opacity: 0, width: 0, height: 0, position: "absolute" }} />
+                      <div onClick={() => updateTimeline(idx, "shareToPlace", !item.shareToPlace)} style={{
+                        width: 38, height: 22, borderRadius: 11, cursor: "pointer",
+                        background: item.shareToPlace ? "#10b981" : "#cbd5e1",
+                        transition: "background 0.2s", position: "relative",
+                      }}>
+                        <div style={{
+                          position: "absolute", top: 3, left: item.shareToPlace ? 19 : 3,
+                          width: 16, height: 16, borderRadius: "50%", background: "#fff",
+                          transition: "left 0.2s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+                        }} />
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: item.shareToPlace ? "#065f46" : "#64748b" }}>
+                      {item.shareToPlace ? "✅ อนุญาตให้แสดงรูปบนหน้าสถานที่" : "อนุญาตให้แสดงรูปบนหน้าสถานที่"}
+                    </span>
+                  </label>
                 </div>
               </div>
             ))}
