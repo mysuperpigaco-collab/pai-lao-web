@@ -20,46 +20,7 @@ export default function CreateStoryPage() {
     }
   }, [user, router]);
 
-  // ── โหลด draft ที่มีอยู่ พร้อมข้อมูลทั้งหมด (รูป, timeline ฯลฯ) ──
-  useEffect(() => {
-    if (!user) return;
-    fetch("/api/trips/draft")
-      .then(r => r.json())
-      .then(async d => {
-        if (!d.draft) return;
-        setExistingDraft(d.draft);
-        // โหลดข้อมูลเต็มจาก trip API เพื่อกู้คืน form
-        const res  = await fetch(`/api/trips/${d.draft.slug}`);
-        const data = await res.json();
-        if (!data.trip) return;
-        const t       = data.trip;
-        const todayStr = new Date().toISOString().split("T")[0];
-        if (t.title)          setTitle(t.title);
-        if (t.description)    setContent(t.description);
-        if (t.budget)         setBudget(String(t.budget));
-        if (t.mood)           setMood(t.mood);
-        if (t.tags?.length)   setTags(t.tags.join(", "));
-        if (t.youtubeUrl)     setYoutubeUrl(t.youtubeUrl);
-        if (t.tiktokUrl)      setTiktokUrl(t.tiktokUrl);
-        if (t.coverUrl)       { setExistingCoverUrl(t.coverUrl); setCoverPreview(t.coverUrl); }
-        if (t.gallery?.length){ setExistingGallery(t.gallery); setGalleryPreviews(t.gallery); }
-        if (t.timeline?.length) {
-          setTimeline(t.timeline.map((stop: any) => ({
-            date:        stop.date        || todayStr,
-            time:        stop.time        || "",
-            place:       stop.placeName   || "",
-            province:    normalizeProvince(stop.province || ""),
-            district:    stop.district    || "",
-            description: stop.description || "",
-            imageFile:   null,
-            imagePreview: stop.images?.[0] ?? null,
-            placeId:     stop.placeId     ?? null,
-            placeSlug:   null,
-          })));
-        }
-      })
-      .catch(() => {});
-  }, [user]);
+  // (create page เริ่มใหม่เสมอ ไม่โหลด draft เก่า — ดู draft ได้ที่ dashboard)
 
   if (user && (user.role === "ADMIN" || user.role === "SUPERADMIN")) {
     return null;
@@ -246,22 +207,16 @@ export default function CreateStoryPage() {
         if (!res.ok) { setError(data.message || "เกิดข้อผิดพลาด"); return; }
         savedDraft = data.trip;
       } else {
-        // ยังไม่มี draft → POST สร้างใหม่
+        // ยังไม่มี draft ในเซสชันนี้ → POST สร้างใหม่
         const res  = await fetch("/api/trips", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...draftBody, isDraft: true }),
         });
         const data = await res.json();
         if (res.status === 409) {
-          // มี draft อยู่แล้วใน DB → PUT อัปเดต
-          const draftSlug = data.draftSlug;
-          setExistingDraft({ id: data.draftId, slug: draftSlug, title });
-          const putRes  = await fetch(`/api/trips/${draftSlug}`, {
-            method: "PUT", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(draftBody),
-          });
-          const putData = await putRes.json();
-          savedDraft = putData.trip;
+          // มีดราฟเต็มแล้ว (2 อัน) → แจ้งเตือน
+          setError(data.message || "มีดราฟอยู่แล้ว 2 อัน กรุณาส่งหรือลบดราฟก่อนสร้างใหม่");
+          return;
         } else if (!res.ok) {
           setError(data.message || "เกิดข้อผิดพลาด"); return;
         } else {
