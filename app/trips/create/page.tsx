@@ -20,12 +20,44 @@ export default function CreateStoryPage() {
     }
   }, [user, router]);
 
-  // ── โหลด draft ที่มีอยู่ ──────────────────────────────────
+  // ── โหลด draft ที่มีอยู่ พร้อมข้อมูลทั้งหมด (รูป, timeline ฯลฯ) ──
   useEffect(() => {
     if (!user) return;
     fetch("/api/trips/draft")
       .then(r => r.json())
-      .then(d => { if (d.draft) setExistingDraft(d.draft); })
+      .then(async d => {
+        if (!d.draft) return;
+        setExistingDraft(d.draft);
+        // โหลดข้อมูลเต็มจาก trip API เพื่อกู้คืน form
+        const res  = await fetch(`/api/trips/${d.draft.slug}`);
+        const data = await res.json();
+        if (!data.trip) return;
+        const t       = data.trip;
+        const todayStr = new Date().toISOString().split("T")[0];
+        if (t.title)          setTitle(t.title);
+        if (t.description)    setContent(t.description);
+        if (t.budget)         setBudget(String(t.budget));
+        if (t.mood)           setMood(t.mood);
+        if (t.tags?.length)   setTags(t.tags.join(", "));
+        if (t.youtubeUrl)     setYoutubeUrl(t.youtubeUrl);
+        if (t.tiktokUrl)      setTiktokUrl(t.tiktokUrl);
+        if (t.coverUrl)       { setExistingCoverUrl(t.coverUrl); setCoverPreview(t.coverUrl); }
+        if (t.gallery?.length){ setExistingGallery(t.gallery); setGalleryPreviews(t.gallery); }
+        if (t.timeline?.length) {
+          setTimeline(t.timeline.map((stop: any) => ({
+            date:        stop.date        || todayStr,
+            time:        stop.time        || "",
+            place:       stop.placeName   || "",
+            province:    normalizeProvince(stop.province || ""),
+            district:    stop.district    || "",
+            description: stop.description || "",
+            imageFile:   null,
+            imagePreview: stop.images?.[0] ?? null,
+            placeId:     stop.placeId     ?? null,
+            placeSlug:   null,
+          })));
+        }
+      })
       .catch(() => {});
   }, [user]);
 
@@ -66,6 +98,8 @@ export default function CreateStoryPage() {
   const [submitted,    setSubmitted   ] = useState(false);
   const [draftSaved,   setDraftSaved  ] = useState(false);
   const [existingDraft, setExistingDraft] = useState<{ id: string; slug: string; title: string; _count?: { timeline: number } } | null>(null);
+  const [existingCoverUrl,  setExistingCoverUrl ] = useState("");
+  const [existingGallery,   setExistingGallery  ] = useState<string[]>([]);
 
   // ── Handlers ─────────────────────────────────────────────
   const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -215,19 +249,22 @@ export default function CreateStoryPage() {
     if (!user)       { setError("กรุณาเข้าสู่ระบบก่อน"); return; }
     if (!title)      { setError("กรุณาใส่ชื่อทริป"); return; }
     if (!content)    { setError("กรุณาเขียนเรื่องเล่าโดยรวม"); return; }
-    if (!coverFile)  { setError("กรุณาเพิ่มรูปปก"); return; }
+    if (!coverFile && !existingCoverUrl) { setError("กรุณาเพิ่มรูปปก"); return; }
 
     setError("");
     setIsLoading(true);
 
     try {
-      // 1. อัปโหลดรูปปก
-      const coverUrl = await uploadFile(coverFile, "trips/covers");
+      // 1. อัปโหลดรูปปก (หรือใช้ URL เดิมจาก draft)
+      const coverUrl = coverFile
+        ? await uploadFile(coverFile, "trips/covers")
+        : existingCoverUrl;
 
-      // 2. อัปโหลด gallery (ถ้ามี)
-      const galleryUrls = galleryFiles.length
+      // 2. อัปโหลด gallery ใหม่ + รวมกับ gallery เดิมจาก draft
+      const newGalleryUrls = galleryFiles.length
         ? await uploadFiles(galleryFiles, "trips/gallery")
         : [];
+      const galleryUrls = [...existingGallery, ...newGalleryUrls];
 
       // 3. อัปโหลดรูป timeline แต่ละจุด
       const timelineData = await Promise.all(
@@ -241,7 +278,7 @@ export default function CreateStoryPage() {
           description: stop.description,
           images: stop.imageFile
             ? [await uploadFile(stop.imageFile, `trips/timeline/${i}`)]
-            : [],
+            : (stop.imagePreview ? [stop.imagePreview] : []),
         }))
       );
 
