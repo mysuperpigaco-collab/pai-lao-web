@@ -162,7 +162,7 @@ export default function EditTripPage({ params }: Props) {
 
   const addStop = () => setTimeline(prev => [...prev, {
     date: today, time: "", place: "", province: "", district: "", description: "",
-    imageFile: null, imagePreview: null, shareToPlace: false,
+    imageFile: null, imagePreview: null, shareToPlace: false, placeId: null,
   }]);
 
   const removeStop = (i: number) => setTimeline(prev => prev.filter((_, j) => j !== i));
