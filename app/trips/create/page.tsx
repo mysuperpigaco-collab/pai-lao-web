@@ -6,8 +6,7 @@ import Link from "next/link";
 import { ArrowRight, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
-import { getDistricts, normalizeProvince } from "@/data/thailand";
-import ProvinceSelect from "@/components/ui/ProvinceSelect";
+import { getDistricts, normalizeProvince, PROVINCES } from "@/data/thailand";
 
 export default function CreateStoryPage() {
   const router   = useRouter();
@@ -611,11 +610,11 @@ export default function CreateStoryPage() {
                 <div className="timeline-location-row">
                   <div className="form-group" style={{ flex: 1 }}>
                     <label>จังหวัด</label>
-                    <ProvinceSelect
-                      className="form-control"
-                      value={item.province}
-                      onChange={(v) => updateTimeline(idx, "province", v)}
-                    />
+                    <select className="form-control" value={item.province}
+                      onChange={(e) => updateTimeline(idx, "province", e.target.value)}>
+                      <option value="">-- เลือกจังหวัด --</option>
+                      {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+                    </select>
                   </div>
                   <div className="form-group" style={{ flex: 1 }}>
                     <label>อำเภอ / เขต</label>
