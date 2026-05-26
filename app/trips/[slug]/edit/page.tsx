@@ -478,7 +478,7 @@ export default function EditTripPage({ params }: Props) {
                       </div>
                     ) : (
                       <label className="cp-label">
-                        📷<br />อัปโหลด
+                        <span>🖼 เพิ่มรูป</span>
                         <input hidden type="file" accept="image/*"
                           onChange={e => handleCheckpointImage(idx, e.target.files?.[0] ?? null)} />
                       </label>

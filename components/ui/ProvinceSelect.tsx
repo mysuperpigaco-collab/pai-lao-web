@@ -63,36 +63,36 @@ export default function ProvinceSelect({
 
   return (
     <div ref={containerRef} id={id} style={{ position: "relative", width: "100%" }}>
-      {/*
-        The outer div IS the visual "input box" — it gets className (e.g. "form-control")
-        and all its border/background/padding styling. The button inside is 100% transparent
-        and absolutely fills the container so clicks reach it without double-boxing.
-      */}
+      {/* Trigger — styled exactly like a <select className="form-control"> */}
       <div
         className={className}
+        onClick={() => { if (!disabled) setOpen((o) => !o); }}
         style={{
           position: "relative",
-          display: "flex",
-          alignItems: "center",
+          paddingRight: 36,
           cursor: disabled ? "not-allowed" : "pointer",
           userSelect: "none",
           opacity: disabled ? 0.6 : 1,
+          color: normalizedValue ? "inherit" : "#9ca3af",
           ...(open ? { borderColor: "#3b82f6", boxShadow: "0 0 0 4px rgba(59,130,246,0.1)", background: "white" } : {}),
           ...style,
         }}
-        onClick={() => { if (!disabled) setOpen((o) => !o); }}
       >
-        <span style={{
-          flex: 1,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          color: normalizedValue ? "inherit" : "#9ca3af",
-        }}>
+        <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {normalizedValue || placeholder}
         </span>
-        <span style={{ color: "#9ca3af", fontSize: 11, flexShrink: 0, marginLeft: 8 }}>
-          {open ? "▲" : "▼"}
+        {/* Arrow — mimics native select arrow */}
+        <span style={{
+          position: "absolute",
+          right: 14,
+          top: "50%",
+          transform: "translateY(-50%)",
+          pointerEvents: "none",
+          color: "#6b7280",
+          fontSize: 10,
+          lineHeight: 1,
+        }}>
+          ▼
         </span>
       </div>
 
@@ -142,7 +142,6 @@ export default function ProvinceSelect({
               onBlur={(e) => (e.target.style.borderColor = "#e2e8f0")}
             />
           </div>
-
           <div style={{ maxHeight: 220, overflowY: "auto" }}>
             <div
               onClick={handleClear}

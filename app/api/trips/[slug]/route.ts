@@ -142,7 +142,10 @@ export async function PUT(request: Request, { params }: Params) {
         });
         return NextResponse.json({ message: "ส่งทริปเพื่อรอการอนุมัติแล้ว", trip: updated, pending: true });
       }
-      // ไม่ finalize — แค่ update draft ตรง ๆ
+      // ไม่ finalize — แค่ update draft ตรง ๆ (รวม timeline)
+      if (timeline !== undefined) {
+        await prisma.timelineStop.deleteMany({ where: { trip: { slug } } });
+      }
       const updated = await (prisma as any).trip.update({
         where: { slug },
         data: {
@@ -157,6 +160,21 @@ export async function PUT(request: Request, { params }: Params) {
           ...(tags        !== undefined && { tags }),
           ...(youtubeUrl  !== undefined && { youtubeUrl: youtubeUrl || null }),
           ...(tiktokUrl   !== undefined && { tiktokUrl: tiktokUrl  || null }),
+          ...(timeline?.length && {
+            timeline: {
+              create: (timeline as any[]).map((stop: any, index: number) => ({
+                order: index, date: stop.date ?? "", time: stop.time ?? "",
+                placeName: stop.place ?? stop.placeName ?? "",
+                province: stop.province ?? "", district: stop.district ?? "",
+                description: stop.description ?? "",
+                images: stop.images ?? [],
+                stopType: stop.stopType ?? null,
+                googleMapsUrl: stop.googleMapsUrl ?? null,
+                shareToPlace: stop.shareToPlace ?? false,
+                placeId: stop.placeId ?? null,
+              })),
+            },
+          }),
         },
         include: { timeline: { orderBy: { order: "asc" } } },
       });

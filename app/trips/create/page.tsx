@@ -161,16 +161,38 @@ export default function CreateStoryPage() {
     if (!title) { setError("กรุณาใส่ชื่อทริปก่อนบันทึก"); return; }
     setError("");
     setIsSavingDraft(true);
+
+    // Build timeline text data (no image upload for draft)
+    const timelineData = timeline
+      .filter(s => s.place || s.province || s.description)
+      .map((stop, i) => ({
+        date: stop.date, time: stop.time,
+        place: stop.place, province: stop.province, district: stop.district,
+        description: stop.description,
+        placeId: stop.placeId ?? undefined,
+        images: [],
+      }));
+
     try {
       const res = await fetch("/api/trips", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, isDraft: true }),
+        body: JSON.stringify({ title, isDraft: true, timeline: timelineData }),
       });
       const data = await res.json();
       if (res.status === 409) {
-        // มี draft อยู่แล้ว → แสดงให้รู้
-        setExistingDraft({ id: data.draftId, slug: data.draftSlug, title });
+        // มี draft อยู่แล้ว → อัปเดต timeline ของ draft เดิม
+        const draftSlug = data.draftSlug;
+        setExistingDraft({ id: data.draftId, slug: draftSlug, title });
+        if (draftSlug && timelineData.length > 0) {
+          await fetch(`/api/trips/${draftSlug}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, timeline: timelineData }),
+          });
+        }
+        setDraftSaved(true);
+        setTimeout(() => setDraftSaved(false), 3000);
         setError("");
       } else if (!res.ok) {
         setError(data.message || "เกิดข้อผิดพลาด");
