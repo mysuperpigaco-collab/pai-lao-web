@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { PROVINCES, getDistricts } from "@/data/thailand";
+import { getDistricts } from "@/data/thailand";
+import ProvinceSelect from "@/components/ui/ProvinceSelect";
 
 interface Place {
   id: string;
@@ -73,10 +74,12 @@ export default function ExplorerSection() {
       <div className="ex-filters">
         <div className="ex-select-wrap">
           <label className="ex-label">🗾 จังหวัด · Province</label>
-          <select className="ex-select" value={province} onChange={e => handleProvinceChange(e.target.value)}>
-            <option value="">-- เลือกจังหวัด / Select Province --</option>
-            {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-          </select>
+          <ProvinceSelect
+            className="ex-select"
+            value={province}
+            onChange={v => handleProvinceChange(v)}
+            placeholder="-- เลือกจังหวัด / Select Province --"
+          />
         </div>
         <div className="ex-select-wrap">
           <label className="ex-label">📌 อำเภอ · District</label>

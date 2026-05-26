@@ -162,16 +162,20 @@ export default function CreateStoryPage() {
     setError("");
     setIsSavingDraft(true);
 
-    // Build timeline text data (no image upload for draft)
-    const timelineData = timeline
-      .filter(s => s.place || s.province || s.description)
-      .map((stop, i) => ({
-        date: stop.date, time: stop.time,
-        place: stop.place, province: stop.province, district: stop.district,
-        description: stop.description,
-        placeId: stop.placeId ?? undefined,
-        images: [],
-      }));
+    // Build timeline data — upload new image files, preserve existing URLs
+    const timelineData = await Promise.all(
+      timeline
+        .filter(s => s.place || s.province || s.description)
+        .map(async (stop, i) => ({
+          date: stop.date, time: stop.time,
+          place: stop.place, province: stop.province, district: stop.district,
+          description: stop.description,
+          placeId: stop.placeId ?? undefined,
+          images: stop.imageFile
+            ? [await uploadFile(stop.imageFile, `trips/timeline/${i}`)]
+            : (stop.imagePreview ? [stop.imagePreview] : []),
+        }))
+    );
 
     try {
       const res = await fetch("/api/trips", {
