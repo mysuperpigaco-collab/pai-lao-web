@@ -25,6 +25,7 @@ interface Review {
   text?: string | null;
   createdAt: string;
   isAnonymous?: boolean;
+  isHidden?: boolean;
   author: ReviewAuthor;
   replies: ReviewReply[];
   likes?: number;
@@ -140,6 +141,21 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [localReviews, setLocalReviews] = useState<Review[]>(reviews);
+
+  // Hidden toggle state (keyed by reviewId)
+  const [hiddenMap, setHiddenMap] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(reviews.map(r => [r.id, r.isHidden ?? false]))
+  );
+
+  const handleToggleHide = async (reviewId: string) => {
+    const next = !hiddenMap[reviewId];
+    setHiddenMap(m => ({ ...m, [reviewId]: next }));
+    try {
+      await fetch(`/api/reviews/${reviewId}/hide`, { method: "POST" });
+    } catch {
+      setHiddenMap(m => ({ ...m, [reviewId]: !next })); // revert on error
+    }
+  };
 
   // Reply state per review
   const [replyOpen, setReplyOpen] = useState<Record<string, boolean>>({});
@@ -363,8 +379,18 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
       {localReviews.length === 0 ? (
         <p style={{ color: "#94a3b8", textAlign: "center", padding: "24px 0" }}>ยังไม่มีรีวิว เป็นคนแรกที่รีวิวทริปนี้!</p>
       ) : (
-        localReviews.map(review => (
-          <div key={review.id} style={{ borderBottom: "1px solid #f1f5f9", paddingBottom: 20, marginBottom: 20 }}>
+        localReviews.map(review => {
+          const isHiddenNow = hiddenMap[review.id] ?? false;
+          const isMyReview  = meId != null && review.author.id === meId;
+          // ซ่อนจากคนอื่น — แต่เจ้าของรีวิวยังเห็นแบบจาง
+          if (isHiddenNow && !isMyReview) return null;
+          return (
+          <div key={review.id} style={{ borderBottom: "1px solid #f1f5f9", paddingBottom: 20, marginBottom: 20, opacity: isHiddenNow ? 0.55 : 1, transition: "opacity 0.2s" }}>
+            {isHiddenNow && isMyReview && (
+              <div style={{ background: "#fef9c3", border: "1px solid #fde047", borderRadius: 8, padding: "5px 12px", marginBottom: 8, fontSize: 12, color: "#92400e", fontWeight: 600 }}>
+                🙈 รีวิวนี้ถูกซ่อน — คนอื่นไม่เห็น เฉพาะคุณเท่านั้น
+              </div>
+            )}
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
               {review.isAnonymous
                 ? <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#e2e8f0", color: "#94a3b8", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, flexShrink: 0 }}>?</div>
@@ -381,13 +407,23 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
                     </div>
                     <StarRow rating={review.rating} />
                   </div>
-                  {/* Report button */}
-                  {user && user.id !== review.author.id && (
-                    <button onClick={() => setReportTarget({ id: review.id, type: "REVIEW" })}
-                      style={{ padding: "3px 10px", borderRadius: 999, border: "1px solid #fee2e2", background: "#fff5f5", color: "#dc2626", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}>
-                      🚩 รายงาน
-                    </button>
-                  )}
+                  <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
+                    {/* Hide toggle — only for review author */}
+                    {isMyReview && (
+                      <button onClick={() => handleToggleHide(review.id)}
+                        title={isHiddenNow ? "แสดงรีวิวนี้" : "ซ่อนรีวิวจากคนอื่น"}
+                        style={{ padding: "3px 10px", borderRadius: 999, border: `1px solid ${isHiddenNow ? "#bbf7d0" : "#e2e8f0"}`, background: isHiddenNow ? "#f0fdf4" : "#f8fafc", color: isHiddenNow ? "#15803d" : "#64748b", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>
+                        {isHiddenNow ? "👁️ แสดง" : "🙈 ซ่อน"}
+                      </button>
+                    )}
+                    {/* Report button — only for others */}
+                    {user && user.id !== review.author.id && (
+                      <button onClick={() => setReportTarget({ id: review.id, type: "REVIEW" })}
+                        style={{ padding: "3px 10px", borderRadius: 999, border: "1px solid #fee2e2", background: "#fff5f5", color: "#dc2626", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                        🚩 รายงาน
+                      </button>
+                    )}
+                  </div>
                 </div>
                 {review.text && <p style={{ margin: "8px 0 0", color: "#374151", lineHeight: 1.6, fontSize: 14 }}>{review.text}</p>}
                 <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 6 }}>
@@ -475,7 +511,8 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
               </div>
             )}
           </div>
-        ))
+          );
+        })
       )}
     </div>
   );

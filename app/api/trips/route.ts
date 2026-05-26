@@ -81,8 +81,14 @@ export async function GET(request: Request) {
     if (mine) {
       const tripIds = tripsFlat.map((t: any) => t.id).filter(Boolean);
       if (tripIds.length > 0) {
-        const pending = await (prisma as any).pendingEdit.findMany({
-          where: { targetType: "TRIP", targetId: { in: tripIds }, status: "PENDING" },
+        const sessionForPending = await getCurrentUser();
+      const pending = await (prisma as any).pendingEdit.findMany({
+          where: {
+            targetType: "TRIP",
+            targetId: { in: tripIds },
+            status: "PENDING",
+            ...(sessionForPending ? { submittedById: sessionForPending.userId } : {}),
+          },
           select: { targetId: true },
         });
         pending.forEach((p: any) => pendingEditTripIds.add(p.targetId));
