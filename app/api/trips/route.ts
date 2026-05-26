@@ -157,7 +157,7 @@ export async function POST(request: Request) {
         coverUrl:    coverUrl    ?? "",
         gallery:     gallery     ?? [],
         mood:        mood        ?? "ทั่วไป",
-        budget:      budget      ? Number(budget) : null,
+        budget:      budget      ? Math.round(Number(budget)) : null,
         location:    location    ?? "",
         tags:        tags        ?? [],
         youtubeUrl:    youtubeUrl    ?? null,

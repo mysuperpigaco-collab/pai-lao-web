@@ -31,6 +31,8 @@ export default function EditTripPage({ params }: Props) {
   const [notFound,      setNotFound     ] = useState(false);
   const [isDraft,       setIsDraft      ] = useState(false);
   const [draftSubmitted, setDraftSubmitted] = useState(false);
+  const [isSavingTemp, setIsSavingTemp] = useState(false);
+  const [tempSaved,    setTempSaved   ] = useState(false);
 
   // ── Form state ─────────────────────────────────────────
   const [coverFile,        setCoverFile       ] = useState<File | null>(null);
@@ -125,6 +127,73 @@ export default function EditTripPage({ params }: Props) {
     const files = Array.from(e.target.files || []);
     setGalleryFiles(prev => [...prev, ...files]);
     setGalleryPreviews(prev => [...prev, ...files.map(f => URL.createObjectURL(f))]);
+  };
+
+  // ── Temp Save (บันทึกชั่วคราว) ────────────────────────────
+  const saveTempDraft = async () => {
+    if (!title.trim()) { setError("กรุณาใส่ชื่อทริปก่อนบันทึก"); return; }
+    setError("");
+    setIsSavingTemp(true);
+    try {
+      // อัปโหลดรูปปกใหม่ (ถ้ามี)
+      let finalCoverUrl = existingCoverUrl;
+      if (coverFile) {
+        finalCoverUrl = await uploadFile(coverFile, "covers");
+        setExistingCoverUrl(finalCoverUrl);
+      }
+      // อัปโหลด gallery ใหม่
+      let newGalleryUrls: string[] = [];
+      if (galleryFiles.length > 0) {
+        newGalleryUrls = await uploadFiles(galleryFiles, "gallery");
+      }
+      const finalGallery = [...existingGallery, ...newGalleryUrls];
+      // อัปโหลดรูป timeline
+      const timelineData = await Promise.all(
+        timeline.map(async (stop) => {
+          let imageUrl = stop.existingImage ?? "";
+          if (stop.imageFile) {
+            imageUrl = await uploadFile(stop.imageFile, "checkpoints");
+          }
+          return {
+            date: stop.date, time: stop.time,
+            place: stop.place, province: stop.province, district: stop.district,
+            description: stop.description,
+            images: imageUrl ? [imageUrl] : [],
+            shareToPlace: stop.shareToPlace ?? false,
+          };
+        })
+      );
+      const res = await fetch(`/api/trips/${slug}`, {
+        method:  "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description: content,
+          coverUrl: finalCoverUrl,
+          gallery: finalGallery,
+          mood,
+          budget: budget || null,
+          tags: tags.split(",").map(t => t.trim()).filter(Boolean),
+          youtubeUrl: youtubeUrl.trim() || null,
+          tiktokUrl:  tiktokUrl.trim()  || null,
+          timeline: timelineData,
+          // ไม่ส่ง finalize → บันทึกเป็น draft เท่านั้น
+        }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        setError(d.message || "เกิดข้อผิดพลาด");
+      } else {
+        setTempSaved(true);
+        setTimeout(() => setTempSaved(false), 3000);
+        setGalleryFiles([]);
+        if (newGalleryUrls.length) setExistingGallery(finalGallery);
+      }
+    } catch (err: any) {
+      setError(err.message || "บันทึกไม่สำเร็จ");
+    } finally {
+      setIsSavingTemp(false);
+    }
   };
 
   // ── Submit ─────────────────────────────────────────────
@@ -363,7 +432,7 @@ export default function EditTripPage({ params }: Props) {
             <div className="form-group">
               <label>งบประมาณ | <small>BUDGET (บาท)</small></label>
               <input type="number" className="form-control" value={budget}
-                onChange={e => setBudget(e.target.value)} placeholder="0" min="0" />
+                onChange={e => setBudget(e.target.value)} placeholder="0" min="0" step="1" max="2000000000" />
             </div>
 
             <div className="form-group">
@@ -520,6 +589,23 @@ export default function EditTripPage({ params }: Props) {
           {/* Submit */}
           <ActionBar>
             <CancelButton href="/dashboard" label="ยกเลิก · Discard" />
+            {isDraft && (
+              <button
+                type="button"
+                onClick={saveTempDraft}
+                disabled={isSavingTemp}
+                style={{
+                  padding: "12px 22px", borderRadius: 14,
+                  background: tempSaved ? "#d1fae5" : "#fef3c7",
+                  color: tempSaved ? "#065f46" : "#92400e",
+                  border: `1.5px solid ${tempSaved ? "#6ee7b7" : "#fcd34d"}`,
+                  fontWeight: 700, fontSize: 14, cursor: isSavingTemp ? "not-allowed" : "pointer",
+                  display: "flex", alignItems: "center", gap: 6, transition: "all .2s",
+                }}
+              >
+                {isSavingTemp ? "⏳ กำลังบันทึก..." : tempSaved ? "✅ บันทึกแล้ว!" : "💾 บันทึกชั่วคราว"}
+              </button>
+            )}
             <SaveButton label={isDraft ? "🚀 ส่งเพื่อเผยแพร่ · Submit" : "💾 บันทึกการแก้ไข · Save Changes"} loading={isLoading} />
           </ActionBar>
 

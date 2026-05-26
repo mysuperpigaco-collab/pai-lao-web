@@ -488,7 +488,7 @@ export default function CreateStoryPage() {
             <div className="form-group">
               <label>งบประมาณ | <small>BUDGET (บาท)</small></label>
               <input type="number" className="form-control" value={budget}
-                onChange={(e) => setBudget(e.target.value)} placeholder="เช่น 2500" />
+                onChange={(e) => setBudget(e.target.value)} placeholder="เช่น 2500" step="1" max="2000000000" />
             </div>
             <div className="form-group">
               <label>สไตล์ทริป | <small>MOOD</small></label>
