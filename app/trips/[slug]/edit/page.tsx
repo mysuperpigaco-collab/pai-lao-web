@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
-import { getDistricts } from "@/data/thailand";
+import { getDistricts, normalizeProvince } from "@/data/thailand";
 import ProvinceSelect from "@/components/ui/ProvinceSelect";
 import {
   BackButton,
@@ -77,7 +77,7 @@ export default function EditTripPage({ params }: Props) {
           date:          stop.date           ?? today,
           time:          stop.time           ?? "",
           place:         stop.placeName      ?? "",
-          province:      stop.province       ?? "",
+          province:      normalizeProvince(stop.province ?? ""),
           district:      stop.district       ?? "",
           description:   stop.description    ?? "",
           imageFile:     null,

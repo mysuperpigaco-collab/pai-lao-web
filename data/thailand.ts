@@ -159,6 +159,22 @@ export const THAILAND: Record<string, string[]> = {
 
 export const PROVINCES = Object.keys(THAILAND).sort();
 
+/** Find the canonical PROVINCES key for a province string (handles short names like "ระนอง" → "ระนอง (Ranong)") */
+export function normalizeProvince(province: string): string {
+  if (!province) return "";
+  if (THAILAND[province]) return province;
+  const key = Object.keys(THAILAND).find(
+    k => k.startsWith(province + " (") || province.startsWith(k.split(" (")[0])
+  );
+  return key ?? province;
+}
+
 export function getDistricts(province: string): string[] {
-  return THAILAND[province] ?? [];
+  if (!province) return [];
+  if (THAILAND[province]) return THAILAND[province];
+  // fuzzy match: "ระนอง" → "ระนอง (Ranong)"
+  const key = Object.keys(THAILAND).find(
+    k => k.startsWith(province + " (") || province.startsWith(k.split(" (")[0])
+  );
+  return key ? THAILAND[key] : [];
 }

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowRight, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
-import { getDistricts } from "@/data/thailand";
+import { getDistricts, normalizeProvince } from "@/data/thailand";
 import ProvinceSelect from "@/components/ui/ProvinceSelect";
 
 export default function CreateStoryPage() {
@@ -115,8 +115,8 @@ export default function CreateStoryPage() {
   const selectPlace = (idx: number, p: any) => {
     const updated = [...timeline];
     updated[idx].place    = p.title;
-    updated[idx].province = p.province;
-    updated[idx].district = p.district;
+    updated[idx].province = normalizeProvince(p.province ?? "");
+    updated[idx].district = p.district ?? "";
     updated[idx].placeId  = p.id;
     updated[idx].placeSlug = p.slug;
     setTimeline(updated);
@@ -543,16 +543,22 @@ export default function CreateStoryPage() {
                 )}
 
                 <div className="timeline-location-row">
-                  <ProvinceSelect
-                    className="form-control"
-                    value={item.province}
-                    onChange={(v) => updateTimeline(idx, "province", v)}
-                  />
-                  <select className="form-control" disabled={!item.province} value={item.district}
-                    onChange={(e) => updateTimeline(idx, "district", e.target.value)}>
-                    <option value="">-- เลือกอำเภอ/เขต --</option>
-                    {getDistricts(item.province).map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label>จังหวัด</label>
+                    <ProvinceSelect
+                      className="form-control"
+                      value={item.province}
+                      onChange={(v) => updateTimeline(idx, "province", v)}
+                    />
+                  </div>
+                  <div className="form-group" style={{ flex: 1 }}>
+                    <label>อำเภอ / เขต</label>
+                    <select className="form-control" disabled={!item.province} value={item.district}
+                      onChange={(e) => updateTimeline(idx, "district", e.target.value)}>
+                      <option value="">-- เลือกอำเภอ/เขต --</option>
+                      {getDistricts(item.province).map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
                 </div>
                 <div className="timeline-detail-row">
                   <textarea className="form-control desc-area" placeholder="เล่าบรรยากาศที่จุดนี้..."
