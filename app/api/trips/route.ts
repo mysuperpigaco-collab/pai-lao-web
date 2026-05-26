@@ -53,7 +53,7 @@ export async function GET(request: Request) {
         select: {
           id: true, slug: true, title: true, subtitle: true,
           coverUrl: true, mood: true, budget: true, location: true,
-          tags: true, createdAt: true, isPublished: true,
+          tags: true, createdAt: true, isPublished: true, viewCount: true,
           approvalStatus: true, rejectionReason: true,
           author: { select: { id: true, username: true, displayName: true, firstName: true, avatarUrl: true } },
           _count: { select: { reviews: true, bookmarks: true, likes: true } },
