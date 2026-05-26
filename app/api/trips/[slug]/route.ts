@@ -120,17 +120,25 @@ export async function PUT(request: Request, { params }: Params) {
     if ((trip as any).isDraft) {
       const { finalize } = body;
       if (finalize) {
-        if (!trip.title || !trip.description || !trip.coverUrl) {
+        // ตรวจสอบจาก request body (ไม่ใช่จาก DB ซึ่งอาจว่างสำหรับ draft)
+        const finalTitle       = title       ?? trip.title;
+        const finalDescription = description ?? trip.description;
+        const finalCoverUrl    = coverUrl    ?? trip.coverUrl;
+        if (!finalTitle || !finalDescription || !finalCoverUrl) {
           return NextResponse.json({ message: "กรุณากรอกข้อมูลให้ครบก่อนเผยแพร่ (ชื่อ คำอธิบาย รูปปก)" }, { status: 400 });
+        }
+        // ลบ timeline เก่าแล้วสร้างใหม่จาก request body
+        if (timeline !== undefined) {
+          await prisma.timelineStop.deleteMany({ where: { trip: { slug } } });
         }
         const updated = await (prisma as any).trip.update({
           where: { slug },
           data: {
             isDraft: false, approvalStatus: "PENDING",
-            ...(title       !== undefined && { title }),
+            title:       finalTitle,
+            description: finalDescription,
+            coverUrl:    finalCoverUrl,
             ...(subtitle    !== undefined && { subtitle }),
-            ...(description !== undefined && { description }),
-            ...(coverUrl    !== undefined && { coverUrl }),
             ...(gallery     !== undefined && { gallery }),
             ...(mood        !== undefined && { mood }),
             ...(budget      !== undefined && { budget: budget ? Number(budget) : null }),
@@ -138,7 +146,23 @@ export async function PUT(request: Request, { params }: Params) {
             ...(tags        !== undefined && { tags }),
             ...(youtubeUrl  !== undefined && { youtubeUrl: youtubeUrl || null }),
             ...(tiktokUrl   !== undefined && { tiktokUrl: tiktokUrl  || null }),
+            ...(timeline?.length && {
+              timeline: {
+                create: (timeline as any[]).map((stop: any, index: number) => ({
+                  order: index, date: stop.date ?? "", time: stop.time ?? "",
+                  placeName: stop.place ?? stop.placeName ?? "",
+                  province: stop.province ?? "", district: stop.district ?? "",
+                  description: stop.description ?? "",
+                  images: stop.images ?? [],
+                  stopType: stop.stopType ?? null,
+                  googleMapsUrl: stop.googleMapsUrl ?? null,
+                  shareToPlace: stop.shareToPlace ?? false,
+                  placeId: stop.placeId ?? null,
+                })),
+              },
+            }),
           },
+          include: { timeline: { orderBy: { order: "asc" } } },
         });
         return NextResponse.json({ message: "ส่งทริปเพื่อรอการอนุมัติแล้ว", trip: updated, pending: true });
       }

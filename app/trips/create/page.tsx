@@ -196,50 +196,85 @@ export default function CreateStoryPage() {
     setError("");
     setIsSavingDraft(true);
 
-    // Build timeline data — upload new image files, preserve existing URLs
-    const timelineData = await Promise.all(
-      timeline
-        .filter(s => s.place || s.province || s.description)
-        .map(async (stop, i) => ({
-          date: stop.date, time: stop.time,
-          place: stop.place, province: stop.province, district: stop.district,
-          description: stop.description,
-          placeId: stop.placeId ?? undefined,
-          images: stop.imageFile
-            ? [await uploadFile(stop.imageFile, `trips/timeline/${i}`)]
-            : (stop.imagePreview ? [stop.imagePreview] : []),
-        }))
-    );
-
     try {
-      const res = await fetch("/api/trips", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, isDraft: true, timeline: timelineData }),
-      });
-      const data = await res.json();
-      if (res.status === 409) {
-        // มี draft อยู่แล้ว → อัปเดต timeline ของ draft เดิม
-        const draftSlug = data.draftSlug;
-        setExistingDraft({ id: data.draftId, slug: draftSlug, title });
-        if (draftSlug && timelineData.length > 0) {
-          await fetch(`/api/trips/${draftSlug}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title, timeline: timelineData }),
-          });
-        }
-        setDraftSaved(true);
-        setTimeout(() => setDraftSaved(false), 3000);
-        setError("");
-      } else if (!res.ok) {
-        setError(data.message || "เกิดข้อผิดพลาด");
-      } else {
-        setExistingDraft({ id: data.trip.id, slug: data.trip.slug, title: data.trip.title });
-        setDraftSaved(true);
-        setTimeout(() => setDraftSaved(false), 3000);
+      // 1. อัปโหลดรูปปกถ้ามีไฟล์ใหม่
+      let draftCoverUrl = existingCoverUrl;
+      if (coverFile) {
+        draftCoverUrl = await uploadFile(coverFile, "trips/covers");
+        setExistingCoverUrl(draftCoverUrl);
+        setCoverPreview(draftCoverUrl);
       }
-    } catch { setError("ไม่สามารถเชื่อมต่อระบบได้"); }
+
+      // 2. Build timeline — upload new images, preserve existing URLs
+      const timelineData = await Promise.all(
+        timeline
+          .filter(s => s.place || s.province || s.description || s.imagePreview)
+          .map(async (stop, i) => ({
+            date: stop.date, time: stop.time,
+            place: stop.place, province: stop.province, district: stop.district,
+            description: stop.description,
+            placeId: stop.placeId ?? undefined,
+            images: stop.imageFile
+              ? [await uploadFile(stop.imageFile, `trips/timeline/${i}`)]
+              : (stop.imagePreview ? [stop.imagePreview] : []),
+          }))
+      );
+
+      const draftBody = {
+        title,
+        description: content,
+        coverUrl: draftCoverUrl || "",
+        gallery: existingGallery,
+        mood,
+        budget: budget || null,
+        location: timeline[0]?.province || "",
+        tags: tags.split(",").map((t: string) => t.trim()).filter(Boolean),
+        youtubeUrl: youtubeUrl.trim() || null,
+        tiktokUrl:  tiktokUrl.trim()  || null,
+        timeline: timelineData,
+      };
+
+      let savedDraft: any = null;
+
+      if (existingDraft?.slug) {
+        // Draft มีอยู่แล้ว → PUT อัปเดตตรง ๆ
+        const res  = await fetch(`/api/trips/${existingDraft.slug}`, {
+          method: "PUT", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(draftBody),
+        });
+        const data = await res.json();
+        if (!res.ok) { setError(data.message || "เกิดข้อผิดพลาด"); return; }
+        savedDraft = data.trip;
+      } else {
+        // ยังไม่มี draft → POST สร้างใหม่
+        const res  = await fetch("/api/trips", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...draftBody, isDraft: true }),
+        });
+        const data = await res.json();
+        if (res.status === 409) {
+          // มี draft อยู่แล้วใน DB → PUT อัปเดต
+          const draftSlug = data.draftSlug;
+          setExistingDraft({ id: data.draftId, slug: draftSlug, title });
+          const putRes  = await fetch(`/api/trips/${draftSlug}`, {
+            method: "PUT", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(draftBody),
+          });
+          const putData = await putRes.json();
+          savedDraft = putData.trip;
+        } else if (!res.ok) {
+          setError(data.message || "เกิดข้อผิดพลาด"); return;
+        } else {
+          savedDraft = data.trip;
+        }
+      }
+
+      if (savedDraft) setExistingDraft({ id: savedDraft.id, slug: savedDraft.slug, title: savedDraft.title });
+      setDraftSaved(true);
+      setTimeout(() => setDraftSaved(false), 3000);
+    } catch (err: any) {
+      setError(err.message || "ไม่สามารถเชื่อมต่อระบบได้");
+    }
     setIsSavingDraft(false);
   };
 
@@ -282,25 +317,38 @@ export default function CreateStoryPage() {
         }))
       );
 
-      // 4. POST ไป /api/trips
-      const res = await fetch("/api/trips", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({
-          title,
-          subtitle: "",
-          description: content,
-          coverUrl,
-          gallery:  galleryUrls,
-          mood,
-          budget:   budget || null,
-          location: timeline[0]?.province || "",
-          tags:       tags.split(",").map(t => t.trim()).filter(Boolean),
-          youtubeUrl: youtubeUrl.trim() || null,
-          tiktokUrl:  tiktokUrl.trim()  || null,
-          timeline: timelineData,
-        }),
-      });
+      // 4. บันทึกทริป — ถ้ามี draft อยู่แล้วให้ finalize, ถ้าไม่มีให้ POST ใหม่
+      const tripBody = {
+        title,
+        subtitle: "",
+        description: content,
+        coverUrl,
+        gallery:  galleryUrls,
+        mood,
+        budget:   budget || null,
+        location: timeline[0]?.province || "",
+        tags:       tags.split(",").map(t => t.trim()).filter(Boolean),
+        youtubeUrl: youtubeUrl.trim() || null,
+        tiktokUrl:  tiktokUrl.trim()  || null,
+        timeline: timelineData,
+      };
+
+      let res: Response;
+      if (existingDraft?.slug) {
+        // Finalize draft → PUT พร้อม finalize: true
+        res = await fetch(`/api/trips/${existingDraft.slug}`, {
+          method:  "PUT",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({ ...tripBody, finalize: true }),
+        });
+      } else {
+        // ไม่มี draft → POST สร้างทริปใหม่ตรง ๆ
+        res = await fetch("/api/trips", {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify(tripBody),
+        });
+      }
 
       const data = await res.json();
       if (!res.ok) { setError(data.message || "เกิดข้อผิดพลาด"); setIsLoading(false); return; }
