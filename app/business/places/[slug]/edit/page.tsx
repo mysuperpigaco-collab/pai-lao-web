@@ -3,7 +3,8 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { PROVINCES, getDistricts } from "@/data/thailand";
+import { getDistricts } from "@/data/thailand";
+import ProvinceSelect from "@/components/ui/ProvinceSelect";
 import "./page.css";
 
 type PlaceCategory =
@@ -384,10 +385,7 @@ export default function EditPlacePage({ params }: Props) {
             <div className="form-grid two-col">
               <div className="field">
                 <label>จังหวัด · Province <span className="req">*</span></label>
-                <select className="form-control" value={province} onChange={e => handleProvinceChange(e.target.value)} required>
-                  <option value="">— เลือกจังหวัด / Select Province —</option>
-                  {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
+                <ProvinceSelect className="form-control" value={province} onChange={v => handleProvinceChange(v)} placeholder="— เลือกจังหวัด / Select Province —" required />
               </div>
               <div className="field">
                 <label>อำเภอ / เขต · District <span className="req">*</span></label>

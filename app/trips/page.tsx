@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { PROVINCES } from "@/data/thailand";
+import ProvinceSelect from "@/components/ui/ProvinceSelect";
 
 /* ─── Types ──────────────────────────────────────────────── */
 interface Trip {
@@ -157,14 +157,12 @@ function TripsInner() {
           <div className="tp-filter-row">
             <div className="tp-select-wrap">
               <span className="tp-select-icon">🗾</span>
-              <select
-                className="tp-select"
+              <ProvinceSelect
                 value={province}
-                onChange={e => changeFilter(setProvince, e.target.value)}
-              >
-                <option value="">ทุกจังหวัด · All Provinces</option>
-                {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-              </select>
+                onChange={v => changeFilter(setProvince, v)}
+                placeholder="ทุกจังหวัด · All Provinces"
+                style={{ borderRadius: 20, padding: "8px 14px", minHeight: 40, fontSize: 14 }}
+              />
             </div>
             <div className="tp-select-wrap tp-select-sm">
               <span className="tp-select-icon">📊</span>

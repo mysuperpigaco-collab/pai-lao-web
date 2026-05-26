@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
-import { PROVINCES, getDistricts } from "@/data/thailand";
+import { getDistricts } from "@/data/thailand";
+import ProvinceSelect from "@/components/ui/ProvinceSelect";
 import {
   BackButton,
   CancelButton,
@@ -439,11 +440,11 @@ export default function EditTripPage({ params }: Props) {
                 <div className="timeline-location-row">
                   <div className="form-group" style={{ flex: 1 }}>
                     <label>จังหวัด</label>
-                    <select className="form-control" value={item.province}
-                      onChange={e => updateTimeline(idx, "province", e.target.value)}>
-                      <option value="">-- เลือกจังหวัด --</option>
-                      {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-                    </select>
+                    <ProvinceSelect
+                      className="form-control"
+                      value={item.province}
+                      onChange={v => updateTimeline(idx, "province", v)}
+                    />
                   </div>
                   <div className="form-group" style={{ flex: 1 }}>
                     <label>อำเภอ</label>

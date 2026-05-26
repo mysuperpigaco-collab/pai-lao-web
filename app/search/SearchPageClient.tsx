@@ -1,4 +1,5 @@
 "use client";
+import ProvinceSelect from "@/components/ui/ProvinceSelect";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -21,20 +22,6 @@ interface PlaceResult {
 }
 
 // ── Constants ────────────────────────────────────────────
-const PROVINCES = [
-  "กรุงเทพมหานคร","เชียงใหม่","เชียงราย","ภูเก็ต","กระบี่","สุราษฎร์ธานี",
-  "ประจวบคีรีขันธ์","ชลบุรี","ระยอง","นครราชสีมา","ขอนแก่น","อุดรธานี",
-  "นครพนม","เลย","น่าน","แม่ฮ่องสอน","ตาก","กาญจนบุรี","พระนครศรีอยุธยา",
-  "สุโขทัย","พิษณุโลก","อุตรดิตถ์","ลำปาง","ลำพูน","แพร่","อุทัยธานี",
-  "นครสวรรค์","อ่างทอง","สิงห์บุรี","ลพบุรี","สระบุรี","นนทบุรี","ปทุมธานี",
-  "สมุทรปราการ","สมุทรสาคร","นครปฐม","ราชบุรี","เพชรบุรี","สมุทรสงคราม",
-  "ชัยนาท","สุพรรณบุรี","นครนายก","ปราจีนบุรี","สระแก้ว","ฉะเชิงเทรา",
-  "ตราด","จันทบุรี","ระนอง","ชุมพร","พังงา","ตรัง","พัทลุง","สตูล",
-  "นราธิวาส","ปัตตานี","ยะลา","สงขลา","นครศรีธรรมราช","สุรินทร์","บุรีรัมย์",
-  "ศรีสะเกษ","อุบลราชธานี","ยโสธร","มุกดาหาร","กาฬสินธุ์","มหาสารคาม",
-  "ร้อยเอ็ด","สกลนคร","นครพนม","หนองคาย","หนองบัวลำภู","บึงกาฬ","เพชรบูรณ์",
-  "พิจิตร","กำแพงเพชร","สุโขทัย","อำนาจเจริญ",
-];
 const CATEGORIES = [
   { value:"",              label:"ทุกหมวด" },
   { value:"NATURE",        label:"🌿 ธรรมชาติ" },
@@ -196,11 +183,12 @@ export default function SearchPageClient() {
           </div>
 
           {/* Province */}
-          <select value={province} onChange={e => setProv(e.target.value)}
-            style={{ padding: "8px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "white", fontSize: 13, color: "#374151", fontFamily: "inherit", cursor: "pointer" }}>
-            <option value="">📍 ทุกจังหวัด</option>
-            {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-          </select>
+          <ProvinceSelect
+            value={province}
+            onChange={v => setProv(v)}
+            placeholder="📍 ทุกจังหวัด"
+            style={{ borderRadius: 10, minHeight: 38, fontSize: 13 }}
+          />
 
           {/* Category (only for place/all) */}
           {type !== "trip" && (

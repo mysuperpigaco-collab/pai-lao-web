@@ -14,7 +14,8 @@ import {
   ActionBar,
   PageTag,
 } from "@/components/ui/ActionButtons";
-import { PROVINCES, getDistricts } from "@/data/thailand";
+import { getDistricts } from "@/data/thailand";
+import ProvinceSelect from "@/components/ui/ProvinceSelect";
 
 import "@/components/ui/form-card.css";
 import "@/components/ui/action-buttons.css";
@@ -269,10 +270,7 @@ export default function EditBusinessProfilePage() {
               {/* Province dropdown */}
               <div className="ui-field">
                 <label>จังหวัด <span className="en">Province</span></label>
-                <select className="ui-input" value={province} onChange={handleProvince}>
-                  <option value="">— เลือกจังหวัด —</option>
-                  {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
+                <ProvinceSelect className="ui-input" value={province} onChange={v => { setProvince(v); setDistrict(""); }} placeholder="— เลือกจังหวัด —" />
               </div>
 
               {/* District dropdown */}

@@ -96,7 +96,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { PROVINCES, getDistricts } from "@/data/thailand";
+import { getDistricts } from "@/data/thailand";
+import ProvinceSelect from "@/components/ui/ProvinceSelect";
 import {
   DndContext, closestCenter,
   KeyboardSensor, PointerSensor, useSensor, useSensors,
@@ -532,10 +533,7 @@ export default function PlannerPage() {
               </div>
               <div style={{ marginBottom: 12 }}>
                 <label style={lbl}>จังหวัดหลัก · Province</label>
-                <select value={nProv} onChange={e => setNProv(e.target.value)} style={inp}>
-                  <option value="">-- เลือกจังหวัด --</option>
-                  {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
+                <ProvinceSelect value={nProv} onChange={v => setNProv(v)} style={inp} />
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={createPlan} disabled={creating || !nTitle.trim()} style={{
@@ -735,10 +733,7 @@ export default function PlannerPage() {
                   <input value={customName} onChange={e => setCustomName(e.target.value)}
                     placeholder="ชื่อสถานที่ · Place name *" style={{ ...inp, marginBottom: 8 }} />
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
-                    <select value={customProv} onChange={e => { setCustomProv(e.target.value); setCustomDist(""); }} style={inp}>
-                      <option value="">จังหวัด · Province</option>
-                      {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-                    </select>
+                    <ProvinceSelect value={customProv} onChange={v => { setCustomProv(v); setCustomDist(""); }} placeholder="จังหวัด · Province" style={inp} />
                     <select value={customDist} onChange={e => setCustomDist(e.target.value)} disabled={!customProv} style={inp}>
                       <option value="">อำเภอ · District</option>
                       {getDistricts(customProv).map(d => <option key={d} value={d}>{d}</option>)}
@@ -922,10 +917,7 @@ export default function PlannerPage() {
                   <input value={sQ} onChange={e => setSQ(e.target.value)}
                     placeholder="ชื่อสถานที่ · Place name..." style={{ ...inp, paddingLeft: 32 }} />
                 </div>
-                <select value={sProv} onChange={e => { setSProv(e.target.value); setSDist(""); }} style={{ ...inp, marginBottom: 6 }}>
-                  <option value="">📍 ทุกจังหวัด · All Provinces</option>
-                  {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
+                <ProvinceSelect value={sProv} onChange={v => { setSProv(v); setSDist(""); }} placeholder="📍 ทุกจังหวัด · All Provinces" style={{ ...inp, marginBottom: 6 }} />
                 {sProv && (
                   <select value={sDist} onChange={e => setSDist(e.target.value)} style={{ ...inp, marginBottom: 6 }}>
                     <option value="">ทุกอำเภอ · All Districts</option>

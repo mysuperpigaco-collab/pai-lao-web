@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { PROVINCES } from "@/data/thailand";
+import ProvinceSelect from "@/components/ui/ProvinceSelect";
 
 /* ─── Types ──────────────────────────────────────────────── */
 interface Place {
@@ -178,14 +178,12 @@ function PlacesInner() {
           <div className="pl-filter-row">
             <div className="pl-select-wrap">
               <span className="pl-select-icon">🗾</span>
-              <select
-                className="pl-select"
+              <ProvinceSelect
                 value={province}
-                onChange={e => changeFilter(setProvince, e.target.value)}
-              >
-                <option value="">ทุกจังหวัด · All Provinces</option>
-                {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-              </select>
+                onChange={v => changeFilter(setProvince, v)}
+                placeholder="ทุกจังหวัด · All Provinces"
+                style={{ borderRadius: 20, padding: "8px 14px", minHeight: 40, fontSize: 14 }}
+              />
             </div>
             <div className="pl-select-wrap pl-select-sm">
               <span className="pl-select-icon">📊</span>
