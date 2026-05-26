@@ -69,16 +69,19 @@ export default function ProvinceSelect({
         onClick={() => { if (!disabled) setOpen((o) => !o); }}
         style={{
           position: "relative",
+          display: "flex",
+          alignItems: "center",
           paddingRight: 36,
           cursor: disabled ? "not-allowed" : "pointer",
           userSelect: "none",
           opacity: disabled ? 0.6 : 1,
           color: normalizedValue ? "inherit" : "#9ca3af",
+          lineHeight: 1.5,
           ...(open ? { borderColor: "#3b82f6", boxShadow: "0 0 0 4px rgba(59,130,246,0.1)", background: "white" } : {}),
           ...style,
         }}
       >
-        <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {normalizedValue || placeholder}
         </span>
         {/* Arrow — mimics native select arrow */}
