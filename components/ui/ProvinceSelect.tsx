@@ -28,14 +28,12 @@ export default function ProvinceSelect({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Normalize the stored value to match PROVINCES list
   const normalizedValue = normalizeProvince(value);
 
   const filtered = query
     ? PROVINCES.filter((p) => p.toLowerCase().includes(query.toLowerCase()))
     : PROVINCES;
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -47,11 +45,8 @@ export default function ProvinceSelect({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Focus search input when opened
   useEffect(() => {
-    if (open && inputRef.current) {
-      inputRef.current.focus();
-    }
+    if (open && inputRef.current) inputRef.current.focus();
   }, [open]);
 
   const handleSelect = (prov: string) => {
@@ -68,36 +63,39 @@ export default function ProvinceSelect({
 
   return (
     <div ref={containerRef} id={id} style={{ position: "relative", width: "100%" }}>
-      {/* Trigger — styled like a form input via className + style */}
-      <button
-        type="button"
-        disabled={disabled}
+      {/*
+        The outer div IS the visual "input box" — it gets className (e.g. "form-control")
+        and all its border/background/padding styling. The button inside is 100% transparent
+        and absolutely fills the container so clicks reach it without double-boxing.
+      */}
+      <div
         className={className}
-        onClick={() => { if (!disabled) setOpen((o) => !o); }}
         style={{
-          width: "100%",
-          textAlign: "left",
+          position: "relative",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
-          gap: 8,
           cursor: disabled ? "not-allowed" : "pointer",
-          color: normalizedValue ? undefined : "#9ca3af",
-          background: disabled ? "#f8fafc" : undefined,
-          outline: "none",
+          userSelect: "none",
+          opacity: disabled ? 0.6 : 1,
           ...(open ? { borderColor: "#3b82f6", boxShadow: "0 0 0 4px rgba(59,130,246,0.1)", background: "white" } : {}),
           ...style,
         }}
+        onClick={() => { if (!disabled) setOpen((o) => !o); }}
       >
-        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: normalizedValue ? undefined : 400 }}>
+        <span style={{
+          flex: 1,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          color: normalizedValue ? "inherit" : "#9ca3af",
+        }}>
           {normalizedValue || placeholder}
         </span>
-        <span style={{ color: "#94a3b8", fontSize: 11, flexShrink: 0 }}>
+        <span style={{ color: "#9ca3af", fontSize: 11, flexShrink: 0, marginLeft: 8 }}>
           {open ? "▲" : "▼"}
         </span>
-      </button>
+      </div>
 
-      {/* Hidden input for required validation */}
       {required && (
         <input
           tabIndex={-1}
@@ -108,23 +106,19 @@ export default function ProvinceSelect({
         />
       )}
 
-      {/* Dropdown panel */}
       {open && (
-        <div
-          style={{
-            position: "absolute",
-            top: "calc(100% + 4px)",
-            left: 0,
-            right: 0,
-            background: "#fff",
-            border: "1.5px solid #e2e8f0",
-            borderRadius: 15,
-            boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-            zIndex: 9999,
-            overflow: "hidden",
-          }}
-        >
-          {/* Search box */}
+        <div style={{
+          position: "absolute",
+          top: "calc(100% + 4px)",
+          left: 0,
+          right: 0,
+          background: "#fff",
+          border: "1.5px solid #e2e8f0",
+          borderRadius: 15,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+          zIndex: 9999,
+          overflow: "hidden",
+        }}>
           <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9" }}>
             <input
               ref={inputRef}
@@ -132,6 +126,7 @@ export default function ProvinceSelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="พิมพ์เพื่อค้นหาจังหวัด..."
+              onClick={(e) => e.stopPropagation()}
               style={{
                 width: "100%",
                 border: "1.5px solid #e2e8f0",
@@ -148,7 +143,6 @@ export default function ProvinceSelect({
             />
           </div>
 
-          {/* Options */}
           <div style={{ maxHeight: 220, overflowY: "auto" }}>
             <div
               onClick={handleClear}
@@ -158,11 +152,8 @@ export default function ProvinceSelect({
             >
               -- เลือกจังหวัด --
             </div>
-
             {filtered.length === 0 ? (
-              <div style={{ padding: "12px 16px", color: "#94a3b8", fontSize: 14 }}>
-                ไม่พบจังหวัดที่ค้นหา
-              </div>
+              <div style={{ padding: "12px 16px", color: "#94a3b8", fontSize: 14 }}>ไม่พบจังหวัดที่ค้นหา</div>
             ) : (
               filtered.map((prov) => {
                 const isSelected = prov === normalizedValue;
