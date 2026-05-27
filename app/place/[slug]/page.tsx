@@ -100,28 +100,29 @@ export default async function PlaceDetailPage({ params }: Props) {
     })),
   }));
 
-  // Community photos from trips (only for unclaimed places)
-  const communityStops = !place.business
-    ? await prisma.timelineStop.findMany({
-        where: {
-          shareToPlace: true,
-          OR: [
-            { placeId: place.id },
-            { placeName: { equals: place.title, mode: "insensitive" }, placeId: null },
-          ],
-        },
-        include: {
-          trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true } } } },
-        },
-      })
-    : [];
+  // Community photos from trips (all places — business or not)
+  const communityStops = await prisma.timelineStop.findMany({
+    where: {
+      shareToPlace: true,
+      OR: [
+        { placeId: place.id },
+        { placeName: { equals: place.title, mode: "insensitive" }, placeId: null },
+      ],
+    },
+    include: {
+      trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true } } } },
+    },
+  });
 
   const communityStopsSorted = communityStops
     .filter(s => s.images.length > 0)
     .sort((a, b) => (b.trip?._count.likes ?? 0) - (a.trip?._count.likes ?? 0));
 
   const communityImages = communityStopsSorted.flatMap(s => s.images);
-  const communityCover = !place.coverUrl && communityImages.length > 0 ? communityImages[0] : null;
+  // For unclaimed places: use top-liked reviewer photo as temp cover until owner claims
+  const communityCover = !place.business && !place.coverUrl && communityImages.length > 0
+    ? communityImages[0]
+    : null;
 
   return (
     <div className="pd-page">
