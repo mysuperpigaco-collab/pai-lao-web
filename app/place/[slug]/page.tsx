@@ -111,19 +111,26 @@ export default async function PlaceDetailPage({ params }: Props) {
       ],
     },
     include: {
-      trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true } } } },
+      trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true, reviews: true } } } },
     },
   });
 
+  // Sort by review count (most reviewed trip first) for cover selection
   const communityStopsSorted = communityStops
     .filter(s => s.images.length > 0)
-    .sort((a, b) => (b.trip?._count.likes ?? 0) - (a.trip?._count.likes ?? 0));
+    .sort((a, b) => (b.trip?._count.reviews ?? 0) - (a.trip?._count.reviews ?? 0));
 
   const communityImages = communityStopsSorted.flatMap(s => s.images);
-  // For unclaimed places: use top-liked reviewer photo as temp cover until owner claims
+
+  // For unclaimed places: use top-reviewed trip's first photo as temp cover
   const communityCover = !place.business && !place.coverUrl && communityImages.length > 0
     ? communityImages[0]
     : null;
+
+  // Strip section: exclude the cover photo to avoid showing it twice
+  const communityImagesStrip = communityCover
+    ? communityImages.slice(1)
+    : communityImages;
 
   return (
     <div className="pd-page">
@@ -261,7 +268,7 @@ export default async function PlaceDetailPage({ params }: Props) {
               </div>
             )}
 
-            {communityImages.length > 0 && (
+            {(communityImagesStrip.length > 0 || !place.business) && (
               <div className="pd-card" style={{ overflow: "visible" }}>
                 <h2>
                   📸 รูปจากนักเดินทาง
@@ -270,7 +277,7 @@ export default async function PlaceDetailPage({ params }: Props) {
                 <p style={{ fontSize: 12, color: "#94a3b8", marginTop: -8, marginBottom: 16 }}>
                   รูปภาพที่นักเดินทางแชร์จากทริปของพวกเขา · Photos shared by travelers from their trips
                 </p>
-                <CommunityGallery images={communityImages} />
+                <CommunityGallery images={communityImagesStrip} minSlots={4} />
               </div>
             )}
 

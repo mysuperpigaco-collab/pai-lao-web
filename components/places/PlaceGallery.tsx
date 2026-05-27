@@ -195,17 +195,47 @@ export function OwnerGallery({ images }: { images: string[] }) {
    – arrows jump by 1 visible width
    – click → lightbox
    ───────────────────────────────────────────── */
-export function CommunityGallery({ images }: { images: string[] }) {
+/* Placeholder card shown when not enough community photos */
+function WaitingCard({ idx }: { idx: number }) {
+  const phrases = [
+    { th: "รอนักเดินทางมาเยือน", en: "Waiting for travelers", icon: "🧭" },
+    { th: "แชร์ทริปของคุณ", en: "Share your trip here", icon: "📸" },
+    { th: "เป็นคนแรกที่บันทึก", en: "Be the first to capture", icon: "✨" },
+    { th: "ยังไม่มีภาพจากทริป", en: "No trip photos yet", icon: "🗺️" },
+  ];
+  const p = phrases[idx % phrases.length];
+  return (
+    <div style={{
+      flexShrink: 0, width: 200, height: 150, borderRadius: 10,
+      background: "linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%)",
+      border: "2px dashed #a7f3d0",
+      display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center",
+      gap: 6, padding: 12, textAlign: "center",
+      userSelect: "none",
+    }}>
+      <span style={{ fontSize: 28 }}>{p.icon}</span>
+      <span style={{ fontSize: 11, fontWeight: 700, color: "#065f46", lineHeight: 1.3 }}>{p.th}</span>
+      <span style={{ fontSize: 10, color: "#64748b" }}>{p.en}</span>
+    </div>
+  );
+}
+
+export function CommunityGallery({ images, minSlots = 4 }: { images: string[]; minSlots?: number }) {
   const [lb, setLb]   = useState<number | null>(null);
   const stripRef      = useRef<HTMLDivElement>(null);
   const animRef       = useRef<number | null>(null);
   const pausedRef     = useRef(false);
 
-  // duplicate images so seamless wrap feels natural
-  const REPEAT = images.length < 6 ? 4 : 2;
-  const all    = Array.from({ length: REPEAT }, () => images).flat();
-
   const ITEM_W = 200; // px
+  const hasImages = images.length > 0;
+
+  // Duplicate real images for seamless loop (only when there are real images)
+  const REPEAT = hasImages ? (images.length < 6 ? 4 : 2) : 0;
+  const looped = hasImages ? Array.from({ length: REPEAT }, () => images).flat() : [];
+
+  // Placeholders fill remaining slots up to minSlots
+  const placeholderCount = Math.max(0, minSlots - images.length);
 
   useEffect(() => {
     const el = stripRef.current;
@@ -228,8 +258,6 @@ export function CommunityGallery({ images }: { images: string[] }) {
     stripRef.current?.scrollBy({ left: dir * (ITEM_W + 8) * 3, behavior: "smooth" });
   };
 
-  if (!images.length) return null;
-
   // map display index back to real image index for lightbox
   const realIdx = (displayIdx: number) => displayIdx % images.length;
 
@@ -240,11 +268,10 @@ export function CommunityGallery({ images }: { images: string[] }) {
       )}
 
       <div style={{ position: "relative" }}>
-        {/* left arrow */}
-        <button
-          onClick={() => scrollBy(-1)}
-          style={{ ...stripArrow("left") }}
-        >‹</button>
+        {/* left arrow — only when scrollable */}
+        {hasImages && (
+          <button onClick={() => scrollBy(-1)} style={{ ...stripArrow("left") }}>‹</button>
+        )}
 
         {/* scrollable strip */}
         <div
@@ -253,59 +280,16 @@ export function CommunityGallery({ images }: { images: string[] }) {
           onMouseLeave={() => { pausedRef.current = false; }}
           style={{
             display: "flex", gap: 8, overflowX: "auto",
-            scrollbarWidth: "none", cursor: "grab",
+            scrollbarWidth: "none", cursor: hasImages ? "grab" : "default",
             padding: "4px 0",
           }}
         >
-          {all.map((img, i) => (
+          {/* real (looped) images */}
+          {looped.map((img, i) => (
             <div
-              key={i}
+              key={`img-${i}`}
               onClick={() => setLb(realIdx(i))}
               style={{
                 flexShrink: 0, width: ITEM_W, height: 150,
                 borderRadius: 10, overflow: "hidden", cursor: "zoom-in",
-              }}
-            >
-              <img
-                src={img}
-                alt={`Community ${realIdx(i) + 1}`}
-                loading="lazy"
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* right arrow */}
-        <button
-          onClick={() => scrollBy(1)}
-          style={{ ...stripArrow("right") }}
-        >›</button>
-
-        <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 8, textAlign: "right" }}>
-          {images.length} รูปจากนักเดินทาง
-        </p>
-      </div>
-    </>
-  );
-}
-
-function carouselArrow(side: "left" | "right"): React.CSSProperties {
-  return {
-    position: "absolute", [side]: 10, top: "50%", transform: "translateY(-50%)",
-    background: "rgba(0,0,0,0.4)", border: "none", color: "#fff",
-    fontSize: 32, lineHeight: 1, width: 40, height: 40, borderRadius: "50%",
-    cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-    zIndex: 1, transition: "background 0.2s",
-  };
-}
-
-function stripArrow(side: "left" | "right"): React.CSSProperties {
-  return {
-    position: "absolute", [side]: -16, top: "50%", transform: "translateY(-50%)",
-    background: "#fff", border: "1px solid #e2e8f0", color: "#374151",
-    fontSize: 22, lineHeight: 1, width: 36, height: 36, borderRadius: "50%",
-    cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-    zIndex: 1, boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-  };
-}
+       
