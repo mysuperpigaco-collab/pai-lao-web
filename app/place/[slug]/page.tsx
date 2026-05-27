@@ -132,8 +132,8 @@ export default async function PlaceDetailPage({ params }: Props) {
     ? communityImages[0]
     : null;
 
-  // Strip section: exclude the cover photo to avoid showing it twice
-  const communityImagesStrip = communityCover
+  // Strip section: only exclude cover when there are multiple photos
+  const communityImagesStrip = (communityCover && communityImages.length > 1)
     ? communityImages.slice(1)
     : communityImages;
 
@@ -273,7 +273,7 @@ export default async function PlaceDetailPage({ params }: Props) {
               </div>
             )}
 
-            {(communityImagesStrip.length > 0 || !place.business) && (
+            {communityImagesStrip.length > 0 ? (
               <div className="pd-card" style={{ overflow: "visible" }}>
                 <h2>
                   📸 รูปจากนักเดินทาง
@@ -282,9 +282,20 @@ export default async function PlaceDetailPage({ params }: Props) {
                 <p style={{ fontSize: 12, color: "#94a3b8", marginTop: -8, marginBottom: 16 }}>
                   รูปภาพที่นักเดินทางแชร์จากทริปของพวกเขา · Photos shared by travelers from their trips
                 </p>
-                <CommunityGallery images={communityImagesStrip} minSlots={4} />
+                <CommunityGallery images={communityImagesStrip} minSlots={0} />
               </div>
-            )}
+            ) : !place.business ? (
+              <div className="pd-card" style={{ overflow: "visible" }}>
+                <h2>
+                  📸 รูปจากนักเดินทาง
+                  <span style={{ fontSize: 14, fontWeight: 600, color: "#94a3b8" }}> Community Photos</span>
+                </h2>
+                <p style={{ fontSize: 12, color: "#94a3b8", marginTop: -8, marginBottom: 16 }}>
+                  รูปภาพที่นักเดินทางแชร์จากทริปของพวกเขา · Photos shared by travelers from their trips
+                </p>
+                <CommunityGallery images={[]} minSlots={4} />
+              </div>
+            ) : null}
 
             {place.googleMapsUrl && (
               <div className="pd-card pd-map-card">
