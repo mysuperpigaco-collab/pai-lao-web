@@ -41,7 +41,7 @@ function Lightbox({
         position: "absolute", top: 16, right: 20,
         background: "none", border: "none", color: "#fff",
         fontSize: 32, cursor: "pointer", lineHeight: 1, zIndex: 2,
-      }}>×</button>
+      }}>x</button>
 
       <span style={{
         position: "absolute", top: 18, left: "50%", transform: "translateX(-50%)",
@@ -49,12 +49,12 @@ function Lightbox({
       }}>{idx + 1} / {images.length}</span>
 
       {images.length > 1 && (
-        <button onClick={e => { e.stopPropagation(); prev(); }} style={lbArrow("left")}>‹</button>
+        <button onClick={e => { e.stopPropagation(); prev(); }} style={lbArrow("left")}>{"<"}</button>
       )}
 
       <img
         src={images[idx]}
-        alt={`Photo ${idx + 1}`}
+        alt={"Photo " + (idx + 1)}
         onClick={e => e.stopPropagation()}
         loading="lazy"
         style={{
@@ -65,7 +65,7 @@ function Lightbox({
       />
 
       {images.length > 1 && (
-        <button onClick={e => { e.stopPropagation(); next(); }} style={lbArrow("right")}>›</button>
+        <button onClick={e => { e.stopPropagation(); next(); }} style={lbArrow("right")}>{">"}</button>
       )}
     </div>
   );
@@ -82,7 +82,7 @@ function lbArrow(side: "left" | "right"): React.CSSProperties {
 }
 
 /* ─────────────────────────────────────────────
-   Owner Gallery — single-image carousel
+   Owner Gallery
    ───────────────────────────────────────────── */
 export function OwnerGallery({ images }: { images: string[] }) {
   const [idx, setIdx] = useState(0);
@@ -110,14 +110,14 @@ export function OwnerGallery({ images }: { images: string[] }) {
   if (!images.length) return null;
 
   return (
-    <>
+    <div>
       {lb !== null && (
         <Lightbox images={images} startIndex={lb} onClose={() => setLb(null)} />
       )}
       <div style={{ position: "relative", width: "100%", borderRadius: 12, overflow: "hidden" }}>
         <img
           src={images[idx]}
-          alt={`Gallery ${idx + 1}`}
+          alt={"Gallery " + (idx + 1)}
           loading="lazy"
           onClick={() => setLb(idx)}
           style={{
@@ -134,14 +134,14 @@ export function OwnerGallery({ images }: { images: string[] }) {
           {idx + 1} / {images.length}
         </span>
         {images.length > 1 && (
-          <>
-            <button onClick={() => go(-1)} style={carouselArrow("left")}>‹</button>
-            <button onClick={() => go(1)}  style={carouselArrow("right")}>›</button>
+          <div>
+            <button onClick={() => go(-1)} style={carouselArrow("left")}>{"<"}</button>
+            <button onClick={() => go(1)}  style={carouselArrow("right")}>{">"}</button>
             <div style={{
               position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)",
               display: "flex", gap: 6,
             }}>
-              {images.map((_, i) => (
+              {images.map((_img, i) => (
                 <button
                   key={i}
                   onClick={() => { setIdx(i); resetTimer(); }}
@@ -154,10 +154,10 @@ export function OwnerGallery({ images }: { images: string[] }) {
                 />
               ))}
             </div>
-          </>
+          </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -176,11 +176,14 @@ function carouselArrow(side: "left" | "right"): React.CSSProperties {
    ───────────────────────────────────────────── */
 function WaitingCard({ idx }: { idx: number }) {
   const phrases = [
-    { th: "รอนักเดินทางมาเยือน", en: "Waiting for travelers", icon: "🧭" },
-    { th: "แชร์ทริปของคุณ",      en: "Share your trip here",  icon: "📸" },
-    { th: "เป็นคนแรกที่บันทึก", en: "Be the first to capture", icon: "✨" },
-    { th: "ยังไม่มีภาพจากทริป", en: "No trip photos yet",     icon: "🗺️" },
+    { th: "รอนักเดินทางมาเยือน", en: "Waiting for travelers", icon: "compass" },
+    { th: "แชร์ทริปของคุณ",      en: "Share your trip here",  icon: "camera" },
+    { th: "เป็นคนแรกที่บันทึก", en: "Be the first to capture", icon: "star" },
+    { th: "ยังไม่มีภาพจากทริป", en: "No trip photos yet",     icon: "map" },
   ];
+  const icons: Record<string, string> = {
+    compass: "🧭", camera: "📸", star: "✨", map: "🗺️",
+  };
   const p = phrases[idx % phrases.length];
   return (
     <div style={{
@@ -191,7 +194,7 @@ function WaitingCard({ idx }: { idx: number }) {
       alignItems: "center", justifyContent: "center",
       gap: 6, padding: 12, textAlign: "center", userSelect: "none",
     }}>
-      <span style={{ fontSize: 28 }}>{p.icon}</span>
+      <span style={{ fontSize: 28 }}>{icons[p.icon]}</span>
       <span style={{ fontSize: 11, fontWeight: 700, color: "#065f46", lineHeight: 1.3 }}>{p.th}</span>
       <span style={{ fontSize: 10, color: "#64748b" }}>{p.en}</span>
     </div>
@@ -199,7 +202,7 @@ function WaitingCard({ idx }: { idx: number }) {
 }
 
 /* ─────────────────────────────────────────────
-   Community Gallery — infinite-scroll strip
+   Community Gallery
    ───────────────────────────────────────────── */
 export function CommunityGallery({
   images,
@@ -216,9 +219,12 @@ export function CommunityGallery({
   const ITEM_W    = 200;
   const hasImages = images.length > 0;
   const REPEAT    = hasImages ? (images.length < 6 ? 4 : 2) : 0;
-  const looped    = hasImages
-    ? Array.from({ length: REPEAT }, () => images).flat()
-    : [];
+  const looped: string[] = [];
+  for (let r = 0; r < REPEAT; r++) {
+    for (let j = 0; j < images.length; j++) {
+      looped.push(images[j]);
+    }
+  }
   const placeholderCount = Math.max(0, minSlots - images.length);
 
   useEffect(() => {
@@ -236,20 +242,20 @@ export function CommunityGallery({
     return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
   }, [images.length]);
 
-  const scrollBy = (dir: number) => {
+  const doScroll = (dir: number) => {
     stripRef.current?.scrollBy({ left: dir * (ITEM_W + 8) * 3, behavior: "smooth" });
   };
 
   const realIdx = (displayIdx: number) => displayIdx % images.length;
 
   return (
-    <>
+    <div>
       {lb !== null && (
         <Lightbox images={images} startIndex={lb} onClose={() => setLb(null)} />
       )}
       <div style={{ position: "relative" }}>
         {hasImages && (
-          <button onClick={() => scrollBy(-1)} style={stripArrow("left")}>‹</button>
+          <button onClick={() => doScroll(-1)} style={stripArrow("left")}>{"<"}</button>
         )}
         <div
           ref={stripRef}
@@ -263,7 +269,7 @@ export function CommunityGallery({
         >
           {looped.map((img, i) => (
             <div
-              key={`img-${i}`}
+              key={"img-" + i}
               onClick={() => setLb(realIdx(i))}
               style={{
                 flexShrink: 0, width: ITEM_W, height: 150,
@@ -272,8 +278,39 @@ export function CommunityGallery({
             >
               <img
                 src={img}
-                alt={`Community ${realIdx(i) + 1}`}
+                alt={"Community " + (realIdx(i) + 1)}
                 loading="lazy"
                 style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
               />
-            </
+            </div>
+          ))}
+          {Array.from({ length: placeholderCount }).map((_v, i) => (
+            <WaitingCard key={"ph-" + i} idx={i} />
+          ))}
+        </div>
+        {hasImages && (
+          <button onClick={() => doScroll(1)} style={stripArrow("right")}>{">"}</button>
+        )}
+        {hasImages ? (
+          <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 8, textAlign: "right" }}>
+            {images.length} รูปจากนักเดินทาง
+          </p>
+        ) : (
+          <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 8, textAlign: "center" }}>
+            ยังไม่มีนักเดินทางแชร์รูปจากสถานที่นี้ · Be the first to share!
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function stripArrow(side: "left" | "right"): React.CSSProperties {
+  return {
+    position: "absolute", [side]: -16, top: "50%", transform: "translateY(-50%)",
+    background: "#fff", border: "1px solid #e2e8f0", color: "#374151",
+    fontSize: 22, lineHeight: 1, width: 36, height: 36, borderRadius: "50%",
+    cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+    zIndex: 1, boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+  };
+}
