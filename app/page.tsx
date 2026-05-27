@@ -312,6 +312,80 @@ function SmallCard({ trip, rank }: { trip: Trip; rank: number }) {
   );
 }
 
+
+// ── Invite Card (fills empty grid slots) ─────────────────────────────────────
+function InviteCard({ user }: { user: { role?: string } | null }) {
+  const [hovered, setHovered] = useState(false);
+  const href = user
+    ? (user.role === "BUSINESS" ? "/business/dashboard" : "/trips/create")
+    : "/signup";
+
+  return (
+    <Link
+      href={href}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 16,
+        overflow: "hidden",
+        textDecoration: "none",
+        color: "inherit",
+        border: "2px dashed " + (hovered ? "#10b981" : "#cbd5e1"),
+        background: hovered
+          ? "linear-gradient(135deg,#ecfdf5,#d1fae5)"
+          : "linear-gradient(135deg,#f8fafc,#f1f5f9)",
+        transition: "all 0.25s",
+        boxShadow: hovered ? "0 8px 24px rgba(16,185,129,0.15)" : "none",
+        transform: hovered ? "translateY(-4px)" : "translateY(0)",
+        cursor: "pointer",
+        padding: "20px 12px",
+        textAlign: "center",
+        minHeight: 160,
+        gap: 10,
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div style={{
+        width: 52, height: 52, borderRadius: "50%",
+        background: hovered
+          ? "linear-gradient(135deg,#10b981,#06b6d4)"
+          : "linear-gradient(135deg,#e2e8f0,#cbd5e1)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 24, transition: "all 0.25s",
+        boxShadow: hovered ? "0 4px 14px rgba(16,185,129,0.35)" : "none",
+      }}>
+        ✍️
+      </div>
+      <p style={{
+        fontSize: 13, fontWeight: 800,
+        color: hovered ? "#065f46" : "#475569",
+        margin: 0, lineHeight: 1.4,
+        transition: "color 0.25s",
+      }}>
+        {user ? "เขียนเรื่องเล่าของคุณ" : "เข้าร่วมและเล่าเรื่อง"}
+      </p>
+      <p style={{ fontSize: 11, color: hovered ? "#059669" : "#94a3b8", margin: 0, lineHeight: 1.5, transition: "color 0.25s" }}>
+        {user ? "แชร์ประสบการณ์การท่องเที่ยว\nให้คนอื่นได้แรงบันดาลใจ" : "สมัครฟรี · Join for free"}
+      </p>
+      <span style={{
+        marginTop: 4,
+        display: "inline-flex", alignItems: "center", gap: 5,
+        background: hovered ? "linear-gradient(135deg,#10b981,#06b6d4)" : "#e2e8f0",
+        color: hovered ? "white" : "#64748b",
+        fontSize: 11, fontWeight: 800,
+        padding: "5px 14px", borderRadius: 999,
+        transition: "all 0.25s",
+        boxShadow: hovered ? "0 3px 10px rgba(16,185,129,0.3)" : "none",
+      }}>
+        {user ? "เขียนเลย →" : "สมัครเลย →"}
+      </span>
+    </Link>
+  );
+}
+
 // ── Responsive columns hook ──────────────────────────────────────────────────
 function useSmallCols() {
   const [cols, setCols] = useState(4);
@@ -471,14 +545,22 @@ export default function HomePage() {
                   </div>
                 )}
 
-                {/* Small — rank 4–10 */}
-                {archiveTrips.length > 3 && (
-                  <div style={{ display: "grid", gridTemplateColumns: `repeat(${smallCols},1fr)`, gap: 12 }}>
-                    {archiveTrips.slice(3).map((trip, i) => (
-                      <SmallCard key={trip.slug} trip={trip} rank={i + 3} />
-                    ))}
-                  </div>
-                )}
+                {/* Small — rank 4–10 + invite card */}
+                {archiveTrips.length > 3 && (() => {
+                  const smallTrips = archiveTrips.slice(3);
+                  const remainder = smallTrips.length % smallCols;
+                  const fillCount = remainder === 0 ? 0 : smallCols - remainder;
+                  return (
+                    <div style={{ display: "grid", gridTemplateColumns: `repeat(${smallCols},1fr)`, gap: 12 }}>
+                      {smallTrips.map((trip, i) => (
+                        <SmallCard key={trip.slug} trip={trip} rank={i + 3} />
+                      ))}
+                      {Array.from({ length: fillCount }).map((_, i) => (
+                        <InviteCard key={`invite-${i}`} user={user} />
+                      ))}
+                    </div>
+                  );
+                })()}
               </>
             )}
           </div>
