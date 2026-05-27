@@ -94,7 +94,7 @@ export default function BusinessNotifications() {
             </div>
                 </div>
               </div>
-              <style>{\`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}\`}</style>
+              <style>{"@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
             </div></div>
           ) : items.length === 0 ? (
             <div className="bn-empty">

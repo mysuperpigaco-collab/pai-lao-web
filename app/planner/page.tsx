@@ -609,7 +609,7 @@ export default function PlannerPage() {
             </div>
                 </div>
               </div>
-              <style>{\`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}\`}</style>
+              <style>{"@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
             </div>
             ) : plans.length === 0 ? (
               <div style={{ padding: "32px 16px", textAlign: "center", color: "#94a3b8" }}>
@@ -1085,7 +1085,7 @@ export default function PlannerPage() {
             </div>
                 </div>
               </div>
-              <style>{\`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}\`}</style>
+              <style>{"@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
             </div>
               ) : bmTrips.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "32px 16px", color: "#94a3b8" }}>

@@ -297,7 +297,7 @@ export default function SearchPageClient() {
                 </div>
               </div>
             </div>
-            <style>{\`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}\`}</style>
+            <style>{"@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
           </>
       ) : !searched ? (
         <div style={{ textAlign: "center", padding: 60 }}>
