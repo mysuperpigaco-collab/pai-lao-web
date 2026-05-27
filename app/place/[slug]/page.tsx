@@ -8,6 +8,7 @@ import PlaceBookmarkButton from "@/components/places/PlaceBookmarkButton";
 import ShareButton from "@/components/common/ShareButton";
 import ReportButton from "@/components/common/ReportButton";
 import ClaimPlaceButton from "@/components/places/ClaimPlaceButton";
+import { OwnerGallery, CommunityGallery } from "@/components/places/PlaceGallery";
 import "./place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -256,37 +257,20 @@ export default async function PlaceDetailPage({ params }: Props) {
             {place.gallery?.length > 0 && (
               <div className="pd-card">
                 <h2>รูปภาพ Gallery</h2>
-                <div className="pd-gallery">
-                  {place.gallery.slice(0, 6).map((img, i) => (
-                    <div key={i} className="pd-gal-item">
-                      <img src={img} alt={place.title + " " + (i + 1)} />
-                    </div>
-                  ))}
-                </div>
+                <OwnerGallery images={place.gallery} />
               </div>
             )}
 
             {communityImages.length > 0 && (
-              <div className="pd-card">
+              <div className="pd-card" style={{ overflow: "visible" }}>
                 <h2>
                   📸 รูปจากนักเดินทาง
                   <span style={{ fontSize: 14, fontWeight: 600, color: "#94a3b8" }}> Community Photos</span>
                 </h2>
-                <p style={{ fontSize: 12, color: "#94a3b8", marginTop: -8, marginBottom: 12 }}>
+                <p style={{ fontSize: 12, color: "#94a3b8", marginTop: -8, marginBottom: 16 }}>
                   รูปภาพที่นักเดินทางแชร์จากทริปของพวกเขา · Photos shared by travelers from their trips
                 </p>
-                <div className="pd-gallery">
-                  {communityImages.slice(0, 9).map((img, i) => (
-                    <div key={i} className="pd-gal-item">
-                      <img src={img} alt={"Community photo " + (i + 1)} />
-                    </div>
-                  ))}
-                </div>
-                {communityImages.length > 9 && (
-                  <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 8 }}>
-                    +{communityImages.length - 9} รูปเพิ่มเติม
-                  </p>
-                )}
+                <CommunityGallery images={communityImages} />
               </div>
             )}
 
