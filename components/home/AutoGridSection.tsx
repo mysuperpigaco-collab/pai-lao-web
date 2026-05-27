@@ -152,6 +152,49 @@ function PlaceCard({ place }: { place: Place }) {
   );
 }
 
+
+// ── Skeleton Grid ─────────────────────────────────────────────────────────────
+function SkeletonGrid({ cols }: { cols: number }) {
+  return (
+    <>
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols},1fr)`, gap: 16 }}>
+        {Array.from({ length: cols * 2 }).map((_, i) => (
+          <div key={i} style={{ borderRadius: 20, overflow: "hidden", border: "1px solid #f1f5f9", background: "white" }}>
+            {/* Image area */}
+            <div style={{ position: "relative", paddingBottom: "62%", background: "#f1f5f9", overflow: "hidden" }}>
+              <div style={{
+                position: "absolute", inset: 0,
+                background: "linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 45%, #f1f5f9 90%)",
+                backgroundSize: "200% 100%",
+                animation: `skshimmer 1.5s ease infinite ${(i * 0.08).toFixed(2)}s`,
+              }} />
+              {/* Chip placeholder */}
+              <div style={{ position: "absolute", top: 10, left: 10, width: 56, height: 18, borderRadius: 999, background: "#e2e8f0", overflow: "hidden" }}>
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 45%, #e2e8f0 90%)", backgroundSize: "200% 100%", animation: `skshimmer 1.5s ease infinite ${(i * 0.08 + 0.15).toFixed(2)}s` }} />
+              </div>
+            </div>
+            {/* Footer */}
+            <div style={{ padding: "9px 12px", display: "flex", alignItems: "center", gap: 8, borderTop: "1px solid #f8fafc" }}>
+              <div style={{ flex: 1, height: 9, borderRadius: 6, background: "#f1f5f9", overflow: "hidden", position: "relative" }}>
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 45%, #f1f5f9 90%)", backgroundSize: "200% 100%", animation: `skshimmer 1.5s ease infinite ${(i * 0.08 + 0.25).toFixed(2)}s` }} />
+              </div>
+              <div style={{ width: 36, height: 9, borderRadius: 6, background: "#f1f5f9", overflow: "hidden", position: "relative" }}>
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 45%, #f1f5f9 90%)", backgroundSize: "200% 100%", animation: `skshimmer 1.5s ease infinite ${(i * 0.08 + 0.35).toFixed(2)}s` }} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <style>{`
+        @keyframes skshimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
+    </>
+  );
+}
+
 export default function AutoGridSection() {
   const [activeTab, setActiveTab] = useState("recent");
   const [trips,   setTrips  ] = useState<Trip[]>([]);
@@ -190,7 +233,7 @@ export default function AutoGridSection() {
 
       {/* Content */}
       {loading ? (
-        <div style={S.empty}>⏳ กำลังโหลด...</div>
+        <SkeletonGrid cols={tab.type === "trip" ? cols.trip : cols.place} />
       ) : tab.type === "trip" ? (
         trips.length === 0 ? <div style={S.empty}>ยังไม่มีเรื่องเล่า</div> : (
           <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols.trip},1fr)`, gap: 16 }}>
