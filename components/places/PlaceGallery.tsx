@@ -218,7 +218,10 @@ export function CommunityGallery({
 
   const ITEM_W    = 200;
   const hasImages = images.length > 0;
-  const REPEAT    = hasImages ? (images.length < 6 ? 4 : 2) : 0;
+  // Only loop when there are enough distinct images
+  const REPEAT    = hasImages
+    ? (images.length >= 6 ? 2 : images.length >= 3 ? 4 : 1)
+    : 0;
   const looped: string[] = [];
   for (let r = 0; r < REPEAT; r++) {
     for (let j = 0; j < images.length; j++) {
