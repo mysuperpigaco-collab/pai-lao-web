@@ -664,8 +664,9 @@ export default function EditTripPage({ params }: Props) {
                       onChange={e => updateTimeline(idx, "description", e.target.value)}
                       placeholder="อธิบายสถานที่นี้..." />
                   </div>
-                  <div className="form-group cp-upload-container">
+                  <div className="form-group">
                     <label>รูปภาพ</label>
+                    <div className="cp-upload-container">
                     {item.imagePreview ? (
                       <div style={{ position: "relative", width: "100%", height: "110px", borderRadius: "20px", overflow: "hidden" }}>
                         <img src={item.imagePreview} alt="checkpoint" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -684,6 +685,7 @@ export default function EditTripPage({ params }: Props) {
                           onChange={e => handleCheckpointImage(idx, e.target.files?.[0] ?? null)} />
                       </label>
                     )}
+                    </div>
                   </div>
                 </div>
 
