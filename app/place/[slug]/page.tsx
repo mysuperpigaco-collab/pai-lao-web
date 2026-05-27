@@ -103,7 +103,13 @@ export default async function PlaceDetailPage({ params }: Props) {
   // Community photos from trips (only for unclaimed places)
   const communityStops = !place.business
     ? await prisma.timelineStop.findMany({
-        where: { placeId: place.id, shareToPlace: true },
+        where: {
+          shareToPlace: true,
+          OR: [
+            { placeId: place.id },
+            { placeName: { equals: place.title, mode: "insensitive" }, placeId: null },
+          ],
+        },
         include: {
           trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true } } } },
         },
