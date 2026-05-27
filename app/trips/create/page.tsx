@@ -43,7 +43,8 @@ export default function CreateStoryPage() {
   const [timeline, setTimeline] = useState([
     { date: today, time: "", place: "", province: "", district: "", description: "",
       imageFile: null as File | null, imagePreview: null as string | null,
-      placeId: null as string | null, placeSlug: null as string | null }
+      placeId: null as string | null, placeSlug: null as string | null,
+      shareToPlace: false }
   ]);
   const [placeSuggestions, setPlaceSuggestions] = useState<Record<number, any[]>>({});
   const [placeSearchLoading, setPlaceSearchLoading] = useState<Record<number, boolean>>({});
@@ -89,7 +90,7 @@ export default function CreateStoryPage() {
   };
 
   const addTimeline    = () => setTimeline([...timeline,
-    { date: today, time: "", place: "", province: "", district: "", description: "", imageFile: null, imagePreview: null, placeId: null, placeSlug: null }]);
+    { date: today, time: "", place: "", province: "", district: "", description: "", imageFile: null, imagePreview: null, placeId: null, placeSlug: null, shareToPlace: false }]);
   const removeTimeline = (i: number) => setTimeline(timeline.filter((_, idx) => idx !== i));
 
   // ── Place search for timeline stops ──────────────────────
@@ -174,6 +175,7 @@ export default function CreateStoryPage() {
             place: stop.place, province: stop.province, district: stop.district,
             description: stop.description,
             placeId: stop.placeId ?? undefined,
+            shareToPlace: stop.shareToPlace ?? false,
             images: stop.imageFile
               ? [await uploadFile(stop.imageFile, `trips/timeline/${i}`)]
               : (stop.imagePreview ? [stop.imagePreview] : []),
@@ -643,6 +645,24 @@ export default function CreateStoryPage() {
                     )}
                   </div>
                 </div>
+                {/* shareToPlace toggle — only when place is linked AND has image */}
+                {item.placeId && item.imagePreview && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+                    <input type="checkbox" id={`stp-${idx}`} checked={item.shareToPlace}
+                      onChange={e => updateTimeline(idx, "shareToPlace", e.target.checked)}
+                      style={{ display: "none" }} />
+                    <div onClick={() => updateTimeline(idx, "shareToPlace", !item.shareToPlace)}
+                      style={{ width: 38, height: 22, borderRadius: 11, background: item.shareToPlace ? "#10b981" : "#cbd5e1",
+                        position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
+                      <div style={{ position: "absolute", top: 3, left: item.shareToPlace ? 19 : 3,
+                        width: 16, height: 16, borderRadius: "50%", background: "#fff",
+                        transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: item.shareToPlace ? "#065f46" : "#64748b" }}>
+                      {item.shareToPlace ? "✅ อนุญาตให้แสดงรูปบนหน้าสถานที่" : "อนุญาตให้แสดงรูปบนหน้าสถานที่"}
+                    </span>
+                  </div>
+                )}
               </div>
             ))}
             <button type="button" className="btn-add-checkpoint-premium" onClick={addTimeline}>
@@ -764,21 +784,4 @@ export default function CreateStoryPage() {
         .modal-content{background:white;width:100%;max-width:900px;border-radius:50px;position:relative;height:fit-content;overflow:hidden;padding-bottom:60px;box-shadow:0 50px 100px rgba(0,0,0,0.5)}
         .close-btn{position:absolute;top:30px;right:30px;font-size:30px;border:none;background:rgba(255,255,255,0.9);color:#1e293b;width:50px;height:50px;border-radius:50%;cursor:pointer;z-index:10;box-shadow:0 10px 20px rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;transition:0.3s}
         .close-btn:hover{background:#ef4444;color:white;transform:rotate(90deg)}
-        .pv-header{width:100%;height:500px;position:relative}
-        .pv-header img{width:100%;height:100%;object-fit:cover}
-        .pv-title-box{position:absolute;bottom:0;left:0;right:0;padding:80px 50px 50px;background:linear-gradient(transparent,rgba(15,23,42,0.95));color:#fff}
-        .pv-tag{background:#3b82f6;padding:6px 18px;border-radius:50px;font-size:13px;font-weight:800;text-transform:uppercase}
-        .pv-title-box h1{font-size:42px;margin:15px 0;font-weight:900;line-height:1.1}
-        .pv-body{padding:50px}
-        .pv-main-content{line-height:2;color:#475569;font-size:18px;margin-bottom:50px;white-space:pre-wrap}
-        .pv-timeline{border-left:4px solid #3b82f6;padding-left:40px;margin-left:15px}
-        .pv-item{position:relative;margin-bottom:50px}
-        .pv-dot{position:absolute;left:-49px;top:8px;width:18px;height:18px;background:#3b82f6;border-radius:50%;border:4px solid #fff;box-shadow:0 0 0 6px rgba(59,130,246,0.2)}
-        .pv-info h4{margin:0;font-size:24px;color:#1e293b;font-weight:800}
-        .pv-desc{color:#64748b;line-height:1.8;margin:15px 0;font-size:16px}
-        .pv-checkpoint-img{width:100%;max-width:500px;border-radius:30px;margin-top:20px;box-shadow:0 20px 40px rgba(0,0,0,0.1)}
-        @media(max-width:768px){.info-grid{grid-template-columns:1fr}.timeline-detail-row{grid-template-columns:1fr}.main-actions{flex-direction:column}.create-card{padding:30px}}@media(max-width:480px){.create-card{padding:20px;border-radius:24px}.create-container{padding:20px 12px}.timeline-card{padding:18px;border-radius:20px}.btn-action-publish{font-size:15px;padding:16px}}
-      `}</style>
-    </div>
-  );
-}
+        .p
