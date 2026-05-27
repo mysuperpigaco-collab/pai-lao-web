@@ -516,7 +516,7 @@ export default function HomePage() {
             {archiveLoading ? (
               <div style={{ textAlign: "center", padding: "48px 20px", color: "#94a3b8", fontSize: 15 }}>
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12 }}>
-                  {Array.from({{ length:3 }}).map((_,i) => (
+                  {Array.from({ length:3 }).map((_,i) => (
                     <div key={i} style={{ borderRadius:16, overflow:"hidden", border:"1px solid #f1f5f9", background:"white" }}>
                       <div style={{ position:"relative", paddingBottom:"65%", background:"#f1f5f9", overflow:"hidden" }}>
                         <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)", backgroundSize:"200% 100%", animation:`_sh 1.5s ease infinite ${(i*0.1).toFixed(1)}s` }}/>
@@ -532,7 +532,7 @@ export default function HomePage() {
                     </div>
                   ))}
                 </div>
-                <style>{`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
+                <style>{"@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
               </div>
             ) : archiveTrips.length === 0 ? (
               <div style={{ textAlign: "center", padding: "48px 20px", color: "#94a3b8", fontSize: 15 }}>
