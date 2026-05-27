@@ -368,7 +368,7 @@ export default function EditTripPage({ params }: Props) {
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:"60px 20px"}}>
         <div style={{width:52,height:52,borderRadius:"50%",border:"3px solid #e2e8f0",borderTopColor:"#10b981",animation:"_spin 0.8s linear infinite"}}/>
         <p style={{fontSize:14,color:"#94a3b8",margin:0}}>กำลังโหลดข้อมูลทริป...</p>
-        <style>{`@keyframes _spin{to{transform:rotate(360deg)}}`}</style>
+        <style>{"@keyframes _spin{to{transform:rotate(360deg)}}"}</style>
       </div>
       </div>
     );
@@ -664,8 +664,8 @@ export default function EditTripPage({ params }: Props) {
                       onChange={e => updateTimeline(idx, "description", e.target.value)}
                       placeholder="อธิบายสถานที่นี้..." />
                   </div>
-                  <div className="form-group">
-                    <label>รูปภาพ</label>
+                  <div>
+                    <p style={{ display:"block", fontWeight:700, fontSize:14, marginBottom:8, color:"#374151" }}>รูปภาพ</p>
                     <div className="cp-upload-container">
                     {item.imagePreview ? (
                       <div style={{ position: "relative", width: "100%", height: "110px", borderRadius: "20px", overflow: "hidden" }}>
@@ -698,11 +698,9 @@ export default function EditTripPage({ params }: Props) {
                     style={{ width: 38, height: 22, borderRadius: 11, cursor: "pointer",
                       background: item.shareToPlace ? "#10b981" : "#cbd5e1",
                       transition: "background 0.2s", position: "relative", flexShrink: 0 }}>
-                    <div style={{
-                      position: "absolute", top: 3, left: item.shareToPlace ? 19 : 3,
+                    <div style={{ position: "absolute", top: 3, left: item.shareToPlace ? 19 : 3,
                       width: 16, height: 16, borderRadius: "50%", background: "#fff",
-                      transition: "left 0.2s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-                    }} />
+                      transition: "left 0.2s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }} />
                   </div>
                   <span style={{ fontSize: 12, fontWeight: 600, color: item.shareToPlace ? "#065f46" : "#64748b" }}>
                     {item.shareToPlace ? "✅ อนุญาตให้แสดงรูปบนหน้าสถานที่" : "อนุญาตให้แสดงรูปบนหน้าสถานที่"}
@@ -787,4 +785,3 @@ export default function EditTripPage({ params }: Props) {
     </div>
   );
 }
-                                                                                                                                                                                                                                       
