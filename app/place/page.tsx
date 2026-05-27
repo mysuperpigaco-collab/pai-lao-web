@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, Suspense } from "react";
+import React, { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import ProvinceSelect from "@/components/ui/ProvinceSelect";
@@ -446,6 +446,9 @@ function PlacesInner() {
 
 /* ─── Place Card ─────────────────────────────────────────── */
 function PlaceCard({ place }: { place: Place }) {
+  const [hovered, setHovered] = React.useState(false);
+  const [imgError, setImgError] = React.useState(false);
+
   const catIcon: Record<string, string> = {
     NATURE:"🌿",CAFE:"☕",ACCOMMODATION:"🏨",CAMPING:"⛺",
     FOOD:"🍲",TEMPLE:"🛕",BEACH:"🏖️",MARKET:"🛍️",ADVENTURE:"🧗",MUSEUM:"🏛️",
@@ -463,182 +466,120 @@ function PlaceCard({ place }: { place: Place }) {
   const label = catLabel[place.category] ?? place.category;
   const color = catColor[place.category] ?? "#0f172a";
   const avg   = place.avgRating;
-  const likes = place._count?.likes ?? 0;
   const revs  = place._count?.reviews ?? 0;
   const bms   = place._count?.bookmarks ?? 0;
+  const likes = place._count?.likes ?? 0;
+  const prov  = place.province?.split(" (")[0] ?? place.province ?? "";
+  const showImg = !!place.coverUrl && !imgError;
 
   return (
-    <Link href={`/place/${place.slug}`} className="plc-card" style={{minWidth:0,width:"100%"}}>
+    <Link
+      href={`/place/${place.slug}`}
+      style={{
+        display: "flex", flexDirection: "column",
+        borderRadius: 20, overflow: "hidden",
+        background: "#fff", textDecoration: "none", color: "inherit",
+        boxShadow: hovered ? "0 16px 36px rgba(15,23,42,.13)" : "0 2px 12px rgba(15,23,42,.06)",
+        border: "1px solid #f1f5f9",
+        transform: hovered ? "translateY(-6px)" : "none",
+        transition: "transform .22s ease, box-shadow .22s ease",
+        minWidth: 0,
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       {/* ── Image area ── */}
-      <div className="plc-img">
-        {place.coverUrl
-          ? <img src={place.coverUrl} alt={place.title} loading="lazy"
-              onError={(e) => {
-                const el = e.currentTarget;
-                el.style.display = "none";
-                const ph = el.nextElementSibling as HTMLElement | null;
-                if (ph) ph.style.display = "flex";
-              }}
+      <div style={{ position: "relative", height: 164, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
+        {showImg
+          ? <img
+              src={place.coverUrl!}
+              alt={place.title}
+              loading="lazy"
+              onError={() => setImgError(true)}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block",
+                transform: hovered ? "scale(1.06)" : "scale(1)", transition: "transform .35s ease" }}
             />
-          : null
+          : <div style={{
+              width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+              background: `linear-gradient(135deg, ${color}18, ${color}38)`,
+            }}>
+              <span style={{ fontSize: 48 }}>{icon}</span>
+            </div>
         }
-        <div className="plc-img-ph" style={{ background: `linear-gradient(135deg, ${color}22, ${color}44)`, display: place.coverUrl ? "none" : "flex" }}>
-          <span style={{ fontSize: 52 }}>{icon}</span>
-        </div>
 
         {/* Gradient overlay */}
-        <div className="plc-overlay" />
+        <div style={{ position: "absolute", inset: 0,
+          background: "linear-gradient(to top, rgba(15,23,42,.65) 0%, transparent 55%)",
+          pointerEvents: "none" }} />
 
-        {/* Top row: verified + owner badge + rating */}
-        <div className="plc-top-row">
-          {place.business?.isVerified && (
-            <span className="plc-verified">✓ Verified</span>
+        {/* Top row */}
+        <div style={{ position: "absolute", top: 10, left: 10, right: 10,
+          display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 6 }}>
+          {prov && (
+            <span style={{
+              background: "rgba(255,255,255,.88)", color: "#0f172a",
+              fontSize: 11, fontWeight: 800, padding: "4px 10px", borderRadius: 999,
+              backdropFilter: "blur(6px)", boxShadow: "0 2px 6px rgba(0,0,0,.12)",
+              maxWidth: 130, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            }}>{prov}</span>
           )}
-          {place.business
-            ? <span className="plc-owner-badge">🏢 มีเจ้าของ</span>
-            : <span className="plc-unowned-badge">⭕ ยังไม่มีเจ้าของ</span>
-          }
-          {avg != null && avg > 0 && (
-            <span className="plc-rating-pill">
-              <span style={{ color: "#fbbf24", fontSize: 13 }}>★</span>
-              <b>{avg.toFixed(1)}</b>
-              {revs > 0 && <span className="plc-rev-count">{revs} รีวิว</span>}
-            </span>
-          )}
+          <div style={{ display: "flex", gap: 5, marginLeft: "auto", flexDirection: "column", alignItems: "flex-end" }}>
+            {place.business?.isVerified && (
+              <span style={{ background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "3px 9px", borderRadius: 999 }}>✓ Verified</span>
+            )}
+            {avg != null && avg > 0 && (
+              <span style={{
+                display: "flex", alignItems: "center", gap: 3,
+                background: "rgba(15,23,42,.75)", backdropFilter: "blur(8px)",
+                color: "white", fontSize: 12, fontWeight: 800,
+                padding: "4px 9px", borderRadius: 999,
+                border: "1px solid rgba(255,255,255,.15)",
+              }}>
+                <span style={{ color: "#fbbf24" }}>★</span>
+                {avg.toFixed(1)}
+                {revs > 0 && <span style={{ fontSize: 10, color: "rgba(255,255,255,.6)", fontWeight: 500 }}>{revs}</span>}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Bottom: category chip on image */}
-        <div className="plc-img-footer">
-          <span className="plc-cat-chip" style={{ background: color }}>
-            {icon} {label}
-          </span>
-          {(likes > 0 || bms > 0) && (
-            <div className="plc-img-stats">
-              {likes > 0 && <span>❤️ {likes}</span>}
-              {bms > 0 && <span>🔖 {bms}</span>}
-            </div>
-          )}
+        {/* Bottom row: category + stats */}
+        <div style={{ position: "absolute", bottom: 10, left: 10, right: 10,
+          display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 6 }}>
+          <span style={{
+            background: color, color: "white",
+            fontSize: 11, fontWeight: 800, padding: "4px 10px", borderRadius: 999,
+            boxShadow: "0 2px 8px rgba(0,0,0,.2)",
+          }}>{icon} {label}</span>
+          <div style={{ display: "flex", gap: 5 }}>
+            {place.business
+              ? <span style={{ background: "rgba(16,185,129,.85)", color: "#fff", fontSize: 10, fontWeight: 800, padding: "3px 9px", borderRadius: 999 }}>🏢 มีเจ้าของ</span>
+              : <span style={{ background: "rgba(100,116,139,.75)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 999 }}>⭕ ยังไม่มี</span>
+            }
+          </div>
         </div>
       </div>
 
       {/* ── Body ── */}
-      <div className="plc-body">
-        <h3 className="plc-title">{place.title}</h3>
-        {place.titleEn && <p className="plc-title-en">{place.titleEn}</p>}
-
-        <div className="plc-loc-row">
-          <span className="plc-loc">📍 {[place.district, place.province].filter(Boolean).join(", ")}</span>
-        </div>
-
-        {place.descriptionShort && (
-          <p className="plc-desc">{place.descriptionShort}</p>
+      <div style={{ padding: "12px 14px 13px", flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
+        <h3 style={{ fontSize: 14, fontWeight: 800, color: "#1e293b", margin: 0,
+          overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+          lineHeight: 1.35 } as React.CSSProperties}>{place.title}</h3>
+        {place.titleEn && (
+          <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0,
+            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{place.titleEn}</p>
         )}
-
-        {/* Footer: business + arrow */}
-        <div className="plc-footer">
-          {place.business?.businessName
-            ? <span className="plc-biz">🏪 {place.business.businessName}</span>
-            : <span />
-          }
-          <span className="plc-cta">ดูรายละเอียด →</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+          marginTop: "auto", paddingTop: 8, borderTop: "1px solid #f1f5f9" }}>
+          <span style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>
+            📍 {[place.district, prov].filter(Boolean).join(", ")}
+          </span>
+          <div style={{ display: "flex", gap: 6, fontSize: 11, fontWeight: 700, color: "#94a3b8" }}>
+            {likes > 0 && <span>❤️ {likes}</span>}
+            {bms > 0 && <span>🔖 {bms}</span>}
+          </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .plc-card {
-          background: white; border-radius: 24px; overflow: hidden;
-          text-decoration: none; color: inherit; display: flex; flex-direction: column;
-          border: 1px solid #f1f5f9;
-          box-shadow: 0 4px 16px rgba(15,23,42,0.07);
-          transition: all 0.25s cubic-bezier(0.4,0,0.2,1); min-width: 0;
-        }
-        .plc-card:hover {
-          transform: translateY(-6px);
-          box-shadow: 0 20px 48px rgba(15,23,42,0.14);
-          border-color: #c7d2fe;
-        }
-
-        /* Image */
-        .plc-img {
-          position: relative; height: 210px;
-          overflow: hidden; background: #e2e8f0; flex-shrink: 0;
-        }
-        .plc-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; display: block; }
-        .plc-card:hover .plc-img img { transform: scale(1.07); }
-        .plc-img-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-
-        /* Overlay */
-        .plc-overlay {
-          position: absolute; inset: 0;
-          background: linear-gradient(to top, rgba(10,18,35,0.75) 0%, rgba(10,18,35,0.1) 50%, transparent 100%);
-          pointer-events: none;
-        }
-
-        /* Top row (verified + rating) */
-        .plc-top-row {
-          position: absolute; top: 12px; left: 12px; right: 12px;
-          display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
-        }
-        .plc-verified {
-          background: #dcfce7; color: #15803d;
-          font-size: 10px; font-weight: 800;
-          padding: 4px 10px; border-radius: 999px;
-          border: 1px solid #a7f3d0; backdrop-filter: blur(4px);
-        }
-        .plc-owner-badge {
-          background: rgba(16,185,129,0.85); color: #fff;
-          font-size: 10px; font-weight: 800;
-          padding: 4px 10px; border-radius: 999px;
-          border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(4px);
-        }
-        .plc-unowned-badge {
-          background: rgba(100,116,139,0.75); color: #fff;
-          font-size: 10px; font-weight: 700;
-          padding: 4px 10px; border-radius: 999px;
-          border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(4px);
-        }
-        .plc-rating-pill {
-          display: flex; align-items: center; gap: 4px;
-          background: rgba(15,23,42,0.75); backdrop-filter: blur(8px);
-          color: white; font-size: 13px; font-weight: 800;
-          padding: 5px 10px; border-radius: 999px;
-          border: 1px solid rgba(255,255,255,0.15);
-          margin-left: auto;
-        }
-        .plc-rating-pill b { font-weight: 900; }
-        .plc-rev-count { font-size: 10px; color: rgba(255,255,255,0.6); font-weight: 500; margin-left: 2px; }
-
-        /* Image footer */
-        .plc-img-footer {
-          position: absolute; bottom: 12px; left: 12px; right: 12px;
-          display: flex; justify-content: space-between; align-items: flex-end; gap: 8px;
-        }
-        .plc-cat-chip {
-          color: white; font-size: 12px; font-weight: 800;
-          padding: 5px 12px; border-radius: 999px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        .plc-img-stats {
-          display: flex; gap: 6px;
-        }
-        .plc-img-stats span {
-          background: rgba(15,23,42,0.7); backdrop-filter: blur(6px);
-          color: white; font-size: 11px; font-weight: 700;
-          padding: 4px 9px; border-radius: 999px;
-        }
-
-        /* Body */
-        .plc-body { padding: 16px 18px 18px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
-        .plc-title { font-size: 15px; font-weight: 900; color: #0f172a; margin: 0; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .plc-title-en { font-size: 12px; font-weight: 600; color: #94a3b8; font-style: italic; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .plc-loc-row { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
-        .plc-loc { font-size: 13px; color: #64748b; font-weight: 600; }
-        .plc-desc { font-size: 13px; color: #64748b; margin: 6px 0 0; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .plc-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 12px; border-top: 1px solid #f8fafc; }
-        .plc-biz { font-size: 12px; color: #94a3b8; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
-        .plc-cta { font-size: 13px; font-weight: 800; color: #2563eb; white-space: nowrap; transition: gap 0.2s; }
-        .plc-card:hover .plc-cta { color: #1d4ed8; }
-      `}</style>
     </Link>
   );
 }
