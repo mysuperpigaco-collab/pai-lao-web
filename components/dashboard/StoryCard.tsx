@@ -10,6 +10,7 @@ interface TripItem {
   createdAt:     string;
   isPublished?:  boolean;
   approvalStatus?: string | null;  // "APPROVED" | "PENDING" | "REJECTED" | null
+  hasPendingEdit?: boolean;
 }
 
 function formatDate(iso: string) {
@@ -46,8 +47,9 @@ export default function StoryCard({
   const [deleting, setDeleting] = useState(false);
   const [confirm,  setConfirm ] = useState(false);
 
-  const approvalStatus = story.approvalStatus;
-  const published = approvalStatus === "APPROVED" || (approvalStatus == null && story.isPublished !== false);
+  const approvalStatus  = story.approvalStatus;
+  const hasPendingEdit  = story.hasPendingEdit ?? false;
+  const published  = approvalStatus === "APPROVED" || (approvalStatus == null && story.isPublished !== false);
   const isPending  = approvalStatus === "PENDING";
   const isRejected = approvalStatus === "REJECTED";
   const imgSrc    = story.coverUrl || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=800";
@@ -82,6 +84,16 @@ export default function StoryCard({
           <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: published ? "#22c55e" : isPending ? "#f59e0b" : isRejected ? "#ef4444" : "#94a3b8", flexShrink: 0 }} />
           {published ? "✅ เผยแพร่แล้ว · Published" : isPending ? "⏳ รอการตรวจสอบ · Pending" : isRejected ? "❌ ถูกปฏิเสธ · Rejected" : "📝 แบบร่าง · Draft"}
         </span>
+        {hasPendingEdit && (
+          <span style={{
+            position: "absolute", top: "34px", right: "10px",
+            display: "inline-flex", alignItems: "center", gap: "4px",
+            padding: "3px 8px", borderRadius: "999px", fontSize: "10px", fontWeight: 700,
+            background: "#fef3c7", color: "#92400e", backdropFilter: "blur(4px)",
+          }}>
+            ✏️ รออนุมัติการแก้ไข
+          </span>
+        )}
       </div>
 
       {/* Body */}
