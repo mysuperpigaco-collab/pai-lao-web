@@ -76,7 +76,7 @@ export default function EditTripPage({ params }: Props) {
   const selectPlace = (idx: number, p: any) => {
     const updated = [...timeline];
     updated[idx].place    = p.title;
-    updated[idx].province = p.province ?? updated[idx].province;
+    updated[idx].province = p.province ? normalizeProvince(p.province) : updated[idx].province;
     updated[idx].district = p.district ?? updated[idx].district;
     updated[idx].placeId  = p.id;
     setTimeline(updated);
