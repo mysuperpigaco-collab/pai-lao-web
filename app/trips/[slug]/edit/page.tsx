@@ -664,8 +664,8 @@ export default function EditTripPage({ params }: Props) {
                       onChange={e => updateTimeline(idx, "description", e.target.value)}
                       placeholder="อธิบายสถานที่นี้..." />
                   </div>
-                  <div className="form-group">
-                    <label>รูปภาพ</label>
+                  <div>
+                    <p style={{ display:"block", fontWeight:700, fontSize:14, marginBottom:8, color:"#374151" }}>รูปภาพ</p>
                     <div className="cp-upload-container">
                     {item.imagePreview ? (
                       <div style={{ position: "relative", width: "100%", height: "110px", borderRadius: "20px", overflow: "hidden" }}>
