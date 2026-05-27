@@ -127,8 +127,8 @@ export default async function PlaceDetailPage({ params }: Props) {
 
   const communityImages = communityStopsSorted.flatMap(s => s.images);
 
-  // For unclaimed places: use top-reviewed trip's first photo as temp cover
-  const communityCover = !place.business && !place.coverUrl && communityImages.length > 0
+  // For unclaimed places: always prefer community photo as cover (ignore placeholder coverUrl)
+  const communityCover = !place.business && communityImages.length > 0
     ? communityImages[0]
     : null;
 
@@ -147,8 +147,8 @@ export default async function PlaceDetailPage({ params }: Props) {
               <span>สถานที่ทั้งหมด · All Places</span>
             </Link>
           </div>
-          {(place.coverUrl || communityCover)
-            ? <img src={place.coverUrl || communityCover!} alt={place.title} className="pd-hero-img" />
+          {(communityCover || place.coverUrl)
+            ? <img src={communityCover || place.coverUrl} alt={place.title} className="pd-hero-img" />
             : <div className="pd-hero-img" style={{ background: "linear-gradient(135deg,#10b981,#06b6d4)" }} />
           }
           <div className="pd-hero-overlay">

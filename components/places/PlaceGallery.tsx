@@ -225,7 +225,8 @@ export function CommunityGallery({
       looped.push(images[j]);
     }
   }
-  const placeholderCount = Math.max(0, minSlots - images.length);
+  // Only show placeholders when there are NO real images at all
+  const placeholderCount = hasImages ? 0 : minSlots;
 
   useEffect(() => {
     const el = stripRef.current;
