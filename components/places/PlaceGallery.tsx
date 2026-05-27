@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 
 /* ─────────────────────────────────────────────
-   Lightbox — full-screen viewer with arrow nav
+   Lightbox
    ───────────────────────────────────────────── */
 function Lightbox({
   images,
@@ -15,7 +15,6 @@ function Lightbox({
   onClose: () => void;
 }) {
   const [idx, setIdx] = useState(startIndex);
-
   const prev = () => setIdx(i => (i - 1 + images.length) % images.length);
   const next = () => setIdx(i => (i + 1) % images.length);
 
@@ -38,33 +37,21 @@ function Lightbox({
         display: "flex", alignItems: "center", justifyContent: "center",
       }}
     >
-      {/* close */}
-      <button
-        onClick={onClose}
-        style={{
-          position: "absolute", top: 16, right: 20,
-          background: "none", border: "none", color: "#fff",
-          fontSize: 32, cursor: "pointer", lineHeight: 1, zIndex: 2,
-        }}
-      >×</button>
+      <button onClick={onClose} style={{
+        position: "absolute", top: 16, right: 20,
+        background: "none", border: "none", color: "#fff",
+        fontSize: 32, cursor: "pointer", lineHeight: 1, zIndex: 2,
+      }}>×</button>
 
-      {/* counter */}
-      <span
-        style={{
-          position: "absolute", top: 18, left: "50%", transform: "translateX(-50%)",
-          color: "#cbd5e1", fontSize: 13, fontWeight: 600, letterSpacing: 1,
-        }}
-      >{idx + 1} / {images.length}</span>
+      <span style={{
+        position: "absolute", top: 18, left: "50%", transform: "translateX(-50%)",
+        color: "#cbd5e1", fontSize: 13, fontWeight: 600, letterSpacing: 1,
+      }}>{idx + 1} / {images.length}</span>
 
-      {/* prev */}
       {images.length > 1 && (
-        <button
-          onClick={e => { e.stopPropagation(); prev(); }}
-          style={arrowStyle("left")}
-        >‹</button>
+        <button onClick={e => { e.stopPropagation(); prev(); }} style={lbArrow("left")}>‹</button>
       )}
 
-      {/* image */}
       <img
         src={images[idx]}
         alt={`Photo ${idx + 1}`}
@@ -73,41 +60,34 @@ function Lightbox({
         style={{
           maxWidth: "90vw", maxHeight: "88vh",
           objectFit: "contain", borderRadius: 10,
-          boxShadow: "0 8px 40px rgba(0,0,0,0.6)",
-          display: "block",
+          boxShadow: "0 8px 40px rgba(0,0,0,0.6)", display: "block",
         }}
       />
 
-      {/* next */}
       {images.length > 1 && (
-        <button
-          onClick={e => { e.stopPropagation(); next(); }}
-          style={arrowStyle("right")}
-        >›</button>
+        <button onClick={e => { e.stopPropagation(); next(); }} style={lbArrow("right")}>›</button>
       )}
     </div>
   );
 }
 
-function arrowStyle(side: "left" | "right"): React.CSSProperties {
+function lbArrow(side: "left" | "right"): React.CSSProperties {
   return {
     position: "absolute", [side]: 16, top: "50%", transform: "translateY(-50%)",
     background: "rgba(255,255,255,0.12)", border: "none", color: "#fff",
     fontSize: 44, lineHeight: 1, width: 52, height: 52, borderRadius: "50%",
     cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-    zIndex: 2, transition: "background 0.2s",
+    zIndex: 2,
   };
 }
 
 /* ─────────────────────────────────────────────
-   Single-image carousel (owner gallery)
-   – left/right arrows, auto-advance every 5s
-   – click image → lightbox
+   Owner Gallery — single-image carousel
    ───────────────────────────────────────────── */
 export function OwnerGallery({ images }: { images: string[] }) {
-  const [idx, setIdx]   = useState(0);
-  const [lb, setLb]     = useState<number | null>(null);
-  const timer           = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [idx, setIdx] = useState(0);
+  const [lb, setLb]   = useState<number | null>(null);
+  const timer         = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const resetTimer = useCallback(() => {
     if (timer.current) clearInterval(timer.current);
@@ -134,9 +114,7 @@ export function OwnerGallery({ images }: { images: string[] }) {
       {lb !== null && (
         <Lightbox images={images} startIndex={lb} onClose={() => setLb(null)} />
       )}
-
       <div style={{ position: "relative", width: "100%", borderRadius: 12, overflow: "hidden" }}>
-        {/* main image */}
         <img
           src={images[idx]}
           alt={`Gallery ${idx + 1}`}
@@ -145,11 +123,8 @@ export function OwnerGallery({ images }: { images: string[] }) {
           style={{
             width: "100%", height: 320, objectFit: "cover",
             display: "block", cursor: "zoom-in",
-            transition: "opacity 0.3s",
           }}
         />
-
-        {/* counter badge */}
         <span style={{
           position: "absolute", bottom: 12, right: 14,
           background: "rgba(0,0,0,0.55)", color: "#fff",
@@ -158,13 +133,10 @@ export function OwnerGallery({ images }: { images: string[] }) {
         }}>
           {idx + 1} / {images.length}
         </span>
-
         {images.length > 1 && (
           <>
             <button onClick={() => go(-1)} style={carouselArrow("left")}>‹</button>
             <button onClick={() => go(1)}  style={carouselArrow("right")}>›</button>
-
-            {/* dot indicators */}
             <div style={{
               position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)",
               display: "flex", gap: 6,
@@ -189,19 +161,25 @@ export function OwnerGallery({ images }: { images: string[] }) {
   );
 }
 
+function carouselArrow(side: "left" | "right"): React.CSSProperties {
+  return {
+    position: "absolute", [side]: 10, top: "50%", transform: "translateY(-50%)",
+    background: "rgba(0,0,0,0.4)", border: "none", color: "#fff",
+    fontSize: 32, lineHeight: 1, width: 40, height: 40, borderRadius: "50%",
+    cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+    zIndex: 1,
+  };
+}
+
 /* ─────────────────────────────────────────────
-   Infinite-scroll strip (community photos)
-   – continuous auto-scroll left
-   – arrows jump by 1 visible width
-   – click → lightbox
+   Placeholder card
    ───────────────────────────────────────────── */
-/* Placeholder card shown when not enough community photos */
 function WaitingCard({ idx }: { idx: number }) {
   const phrases = [
     { th: "รอนักเดินทางมาเยือน", en: "Waiting for travelers", icon: "🧭" },
-    { th: "แชร์ทริปของคุณ", en: "Share your trip here", icon: "📸" },
+    { th: "แชร์ทริปของคุณ",      en: "Share your trip here",  icon: "📸" },
     { th: "เป็นคนแรกที่บันทึก", en: "Be the first to capture", icon: "✨" },
-    { th: "ยังไม่มีภาพจากทริป", en: "No trip photos yet", icon: "🗺️" },
+    { th: "ยังไม่มีภาพจากทริป", en: "No trip photos yet",     icon: "🗺️" },
   ];
   const p = phrases[idx % phrases.length];
   return (
@@ -211,8 +189,7 @@ function WaitingCard({ idx }: { idx: number }) {
       border: "2px dashed #a7f3d0",
       display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center",
-      gap: 6, padding: 12, textAlign: "center",
-      userSelect: "none",
+      gap: 6, padding: 12, textAlign: "center", userSelect: "none",
     }}>
       <span style={{ fontSize: 28 }}>{p.icon}</span>
       <span style={{ fontSize: 11, fontWeight: 700, color: "#065f46", lineHeight: 1.3 }}>{p.th}</span>
@@ -221,28 +198,33 @@ function WaitingCard({ idx }: { idx: number }) {
   );
 }
 
-export function CommunityGallery({ images, minSlots = 4 }: { images: string[]; minSlots?: number }) {
-  const [lb, setLb]   = useState<number | null>(null);
-  const stripRef      = useRef<HTMLDivElement>(null);
-  const animRef       = useRef<number | null>(null);
-  const pausedRef     = useRef(false);
+/* ─────────────────────────────────────────────
+   Community Gallery — infinite-scroll strip
+   ───────────────────────────────────────────── */
+export function CommunityGallery({
+  images,
+  minSlots = 4,
+}: {
+  images: string[];
+  minSlots?: number;
+}) {
+  const [lb, setLb]  = useState<number | null>(null);
+  const stripRef     = useRef<HTMLDivElement>(null);
+  const animRef      = useRef<number | null>(null);
+  const pausedRef    = useRef(false);
 
-  const ITEM_W = 200; // px
+  const ITEM_W    = 200;
   const hasImages = images.length > 0;
-
-  // Duplicate real images for seamless loop (only when there are real images)
-  const REPEAT = hasImages ? (images.length < 6 ? 4 : 2) : 0;
-  const looped = hasImages ? Array.from({ length: REPEAT }, () => images).flat() : [];
-
-  // Placeholders fill remaining slots up to minSlots
+  const REPEAT    = hasImages ? (images.length < 6 ? 4 : 2) : 0;
+  const looped    = hasImages
+    ? Array.from({ length: REPEAT }, () => images).flat()
+    : [];
   const placeholderCount = Math.max(0, minSlots - images.length);
 
   useEffect(() => {
     const el = stripRef.current;
     if (!el || images.length <= 1) return;
-
-    const totalW = images.length * (ITEM_W + 8); // gap=8
-
+    const totalW = images.length * (ITEM_W + 8);
     const tick = () => {
       if (!pausedRef.current) {
         el.scrollLeft += 0.6;
@@ -258,7 +240,6 @@ export function CommunityGallery({ images, minSlots = 4 }: { images: string[]; m
     stripRef.current?.scrollBy({ left: dir * (ITEM_W + 8) * 3, behavior: "smooth" });
   };
 
-  // map display index back to real image index for lightbox
   const realIdx = (displayIdx: number) => displayIdx % images.length;
 
   return (
@@ -266,14 +247,10 @@ export function CommunityGallery({ images, minSlots = 4 }: { images: string[]; m
       {lb !== null && (
         <Lightbox images={images} startIndex={lb} onClose={() => setLb(null)} />
       )}
-
       <div style={{ position: "relative" }}>
-        {/* left arrow — only when scrollable */}
         {hasImages && (
-          <button onClick={() => scrollBy(-1)} style={{ ...stripArrow("left") }}>‹</button>
+          <button onClick={() => scrollBy(-1)} style={stripArrow("left")}>‹</button>
         )}
-
-        {/* scrollable strip */}
         <div
           ref={stripRef}
           onMouseEnter={() => { pausedRef.current = true; }}
@@ -284,7 +261,6 @@ export function CommunityGallery({ images, minSlots = 4 }: { images: string[]; m
             padding: "4px 0",
           }}
         >
-          {/* real (looped) images */}
           {looped.map((img, i) => (
             <div
               key={`img-${i}`}
@@ -292,4 +268,12 @@ export function CommunityGallery({ images, minSlots = 4 }: { images: string[]; m
               style={{
                 flexShrink: 0, width: ITEM_W, height: 150,
                 borderRadius: 10, overflow: "hidden", cursor: "zoom-in",
-       
+              }}
+            >
+              <img
+                src={img}
+                alt={`Community ${realIdx(i) + 1}`}
+                loading="lazy"
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            </

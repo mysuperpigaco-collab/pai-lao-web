@@ -115,10 +115,15 @@ export default async function PlaceDetailPage({ params }: Props) {
     },
   });
 
-  // Sort by review count (most reviewed trip first) for cover selection
+  // Sort: most-liked trip first; if tied at 0 likes, use most recent (by stop order desc)
   const communityStopsSorted = communityStops
     .filter(s => s.images.length > 0)
-    .sort((a, b) => (b.trip?._count.reviews ?? 0) - (a.trip?._count.reviews ?? 0));
+    .sort((a, b) => {
+      const likesDiff = (b.trip?._count.likes ?? 0) - (a.trip?._count.likes ?? 0);
+      if (likesDiff !== 0) return likesDiff;
+      // fallback: higher id = more recent
+      return b.id.localeCompare(a.id);
+    });
 
   const communityImages = communityStopsSorted.flatMap(s => s.images);
 
