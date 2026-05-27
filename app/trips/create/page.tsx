@@ -260,13 +260,14 @@ export default function CreateStoryPage() {
       // 3. อัปโหลดรูป timeline แต่ละจุด
       const timelineData = await Promise.all(
         timeline.map(async (stop, i) => ({
-          placeId: stop.placeId ?? undefined,
-          date:        stop.date,
-          time:        stop.time,
-          place:       stop.place,
-          province:    stop.province,
-          district:    stop.district,
-          description: stop.description,
+          placeId:      stop.placeId ?? undefined,
+          shareToPlace: stop.shareToPlace ?? false,
+          date:         stop.date,
+          time:         stop.time,
+          place:        stop.place,
+          province:     stop.province,
+          district:     stop.district,
+          description:  stop.description,
           images: stop.imageFile
             ? [await uploadFile(stop.imageFile, `trips/timeline/${i}`)]
             : (stop.imagePreview ? [stop.imagePreview] : []),
@@ -783,5 +784,4 @@ export default function CreateStoryPage() {
         .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.9);backdrop-filter:blur(12px);z-index:3000;display:flex;justify-content:center;padding:50px 20px;overflow-y:auto}
         .modal-content{background:white;width:100%;max-width:900px;border-radius:50px;position:relative;height:fit-content;overflow:hidden;padding-bottom:60px;box-shadow:0 50px 100px rgba(0,0,0,0.5)}
         .close-btn{position:absolute;top:30px;right:30px;font-size:30px;border:none;background:rgba(255,255,255,0.9);color:#1e293b;width:50px;height:50px;border-radius:50%;cursor:pointer;z-index:10;box-shadow:0 10px 20px rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;transition:0.3s}
-        .close-btn:hover{background:#ef4444;color:white;transform:rotate(90deg)}
-        .p
+        .close-btn:hover{bac
