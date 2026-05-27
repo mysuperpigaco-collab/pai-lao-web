@@ -14,6 +14,7 @@ type TripItem = {
   isPublished: boolean;
   approvalStatus?: string;   // PENDING | APPROVED | REJECTED
   rejectionReason?: string | null;
+  hasPendingEdit?: boolean;
   avgRating?: number | null;
   _count?: { reviews: number; bookmarks: number; likes: number };
 };
@@ -87,7 +88,7 @@ export default function DashboardPage() {
   const [replyNotifs, setReplyNotifs]   = useState<ReplyNotif[]>([]);
   const [tripReviews, setTripReviews]   = useState<TripOwnerNotif[]>([]);
   const [loadingNotifs, setLoadingNotifs] = useState(true);
-  const [draftTrip, setDraftTrip] = useState<{ id: string; slug: string; title: string; updatedAt?: string; timeline?: { id: string }[] } | null>(null);
+  const [draftTrips, setDraftTrips] = useState<{ id: string; slug: string; title: string; updatedAt?: string; timeline?: { id: string }[] }[]>([]);
 
   // ── Read/unread tracking via localStorage ──
   const [seenIds, setSeenIds] = useState<Set<string>>(() => {
@@ -133,7 +134,7 @@ export default function DashboardPage() {
     if (!user) return;
     fetch("/api/trips/draft")
       .then(r => r.json())
-      .then(d => { if (d.draft) setDraftTrip(d.draft); })
+      .then(d => { setDraftTrips(d.drafts ?? (d.draft ? [d.draft] : [])); })
       .catch(() => {});
   }, [user]);
 
@@ -251,50 +252,59 @@ export default function DashboardPage() {
         </div>
 
         {/* ─── Draft trip banner ─── */}
-        {draftTrip && (
-          <div style={{
-            background: "linear-gradient(135deg, #fefce8, #fffbeb)",
-            border: "2px solid #fde68a", borderRadius: 20,
-            padding: "18px 20px", marginBottom: 20,
-            display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap",
-            boxShadow: "0 4px 16px rgba(245,158,11,0.12)",
-          }}>
-            <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,#f59e0b,#fbbf24)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
-              📝
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 900, color: "#78350f", marginBottom: 2 }}>
-                บันทึกทริปที่ยังไม่เสร็จ
+        {draftTrips.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            {draftTrips.length === 2 && (
+              <div style={{ fontSize: 12, color: "#b45309", fontWeight: 700, marginBottom: 8, padding: "6px 12px", background: "#fef9c3", borderRadius: 8, border: "1px solid #fde68a" }}>
+                ⚠️ คุณมีดราฟเต็ม 2 อัน กรุณาส่งหรือลบก่อนสร้างทริปใหม่
               </div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#92400e", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                📍 {draftTrip.title}
-              </div>
-              {draftTrip.timeline && draftTrip.timeline.length > 0 && (
-                <div style={{ fontSize: 11, color: "#a16207", marginTop: 2 }}>
-                  {draftTrip.timeline.length} จุดแวะที่บันทึกไว้
-                </div>
-              )}
-            </div>
-            <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-              <Link href={`/trips/${draftTrip.slug}/edit`} style={{
-                padding: "9px 18px", borderRadius: 12, background: "linear-gradient(135deg,#f59e0b,#d97706)",
-                color: "#fff", fontWeight: 800, fontSize: 13, textDecoration: "none",
-                display: "flex", alignItems: "center", gap: 6,
+            )}
+            {draftTrips.map(draftTrip => (
+              <div key={draftTrip.id} style={{
+                background: "linear-gradient(135deg, #fefce8, #fffbeb)",
+                border: "2px solid #fde68a", borderRadius: 20,
+                padding: "18px 20px", marginBottom: 10,
+                display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap",
+                boxShadow: "0 4px 16px rgba(245,158,11,0.12)",
               }}>
-                ✏️ แก้ไขและเผยแพร่
-              </Link>
-              <button
-                onClick={() => {
-                  if (!confirm("ลบบันทึกชั่วคราวนี้ออกใช่ไหม?")) return;
-                  fetch("/api/trips/draft", { method: "DELETE" })
-                    .then(() => setDraftTrip(null))
-                    .catch(() => {});
-                }}
-                style={{ padding: "9px 12px", borderRadius: 12, background: "#fef3c7", border: "1.5px solid #fde68a", color: "#92400e", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
-              >
-                🗑️ ลบ
-              </button>
-            </div>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,#f59e0b,#fbbf24)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
+                  📝
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: "#78350f", marginBottom: 2 }}>
+                    บันทึกทริปที่ยังไม่เสร็จ
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#92400e", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    📍 {draftTrip.title}
+                  </div>
+                  {draftTrip.timeline && draftTrip.timeline.length > 0 && (
+                    <div style={{ fontSize: 11, color: "#a16207", marginTop: 2 }}>
+                      {draftTrip.timeline.length} จุดแวะที่บันทึกไว้
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                  <Link href={`/trips/${draftTrip.slug}/edit`} style={{
+                    padding: "9px 18px", borderRadius: 12, background: "linear-gradient(135deg,#f59e0b,#d97706)",
+                    color: "#fff", fontWeight: 800, fontSize: 13, textDecoration: "none",
+                    display: "flex", alignItems: "center", gap: 6,
+                  }}>
+                    ✏️ แก้ไขและเผยแพร่
+                  </Link>
+                  <button
+                    onClick={() => {
+                      if (!confirm("ลบบันทึกชั่วคราวนี้ออกใช่ไหม?")) return;
+                      fetch(`/api/trips/draft?id=${draftTrip.id}`, { method: "DELETE" })
+                        .then(() => setDraftTrips(prev => prev.filter(d => d.id !== draftTrip.id)))
+                        .catch(() => {});
+                    }}
+                    style={{ padding: "9px 12px", borderRadius: 12, background: "#fef3c7", border: "1.5px solid #fde68a", color: "#92400e", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+                  >
+                    🗑️ ลบ
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
@@ -538,8 +548,24 @@ export default function DashboardPage() {
               {activeTab === "saved-places" ? (
                 isLoading ? (
                   <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
-                    <div style={{ fontSize: "32px", marginBottom: "12px" }}>⏳</div>
-                    <p style={{ margin: 0 }}>กำลังโหลด...</p>
+                    <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, padding:"0 4px" }}>
+                    {Array.from({ length:6 }).map((_,i) => (
+                      <div key={i} style={{ borderRadius:14, overflow:"hidden", border:"1px solid #f1f5f9", background:"white" }}>
+                        <div style={{ position:"relative", paddingBottom:"62%", background:"#f1f5f9", overflow:"hidden" }}>
+                          <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)", backgroundSize:"200% 100%", animation:`_sh 1.5s ease infinite ${(i*0.08).toFixed(2)}s` }}/>
+                        </div>
+                        <div style={{ padding:"8px 10px", display:"flex", flexDirection:"column", gap:5 }}>
+                          <div style={{ position:"relative", height:8, borderRadius:4, background:"#f1f5f9", overflow:"hidden" }}>
+                            <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)", backgroundSize:"200% 100%", animation:`_sh 1.5s ease infinite ${(i*0.08+0.15).toFixed(2)}s` }}/>
+                          </div>
+                          <div style={{ position:"relative", height:7, width:"60%", borderRadius:4, background:"#f1f5f9", overflow:"hidden" }}>
+                            <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)", backgroundSize:"200% 100%", animation:`_sh 1.5s ease infinite ${(i*0.08+0.25).toFixed(2)}s` }}/>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <style>{`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
                   </div>
                 ) : savedPlaces.length > 0 ? (
                   <>
@@ -582,8 +608,21 @@ export default function DashboardPage() {
                 )
               ) : isLoading ? (
                 <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
-                  <div style={{ fontSize: "32px", marginBottom: "12px" }}>⏳</div>
-                  <p style={{ margin: 0 }}>กำลังโหลด...</p>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, padding:"0 4px" }}>
+                    {Array.from({ length:6 }).map((_,i) => (
+                      <div key={i} style={{ borderRadius:14, overflow:"hidden", border:"1px solid #f1f5f9", background:"white" }}>
+                        <div style={{ position:"relative", paddingBottom:"62%", background:"#f1f5f9", overflow:"hidden" }}>
+                          <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)", backgroundSize:"200% 100%", animation:`_sh 1.5s ease infinite ${(i*0.08).toFixed(2)}s` }}/>
+                        </div>
+                        <div style={{ padding:"8px 10px", display:"flex", flexDirection:"column", gap:5 }}>
+                          <div style={{ position:"relative", height:8, borderRadius:4, background:"#f1f5f9", overflow:"hidden" }}>
+                            <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)", backgroundSize:"200% 100%", animation:`_sh 1.5s ease infinite ${(i*0.08+0.15).toFixed(2)}s` }}/>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <style>{`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
                 </div>
               ) : stories.length > 0 ? (
                 <>
@@ -687,3 +726,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+  

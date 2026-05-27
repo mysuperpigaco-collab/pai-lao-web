@@ -1,4 +1,5 @@
 "use client";
+import ProvinceSelect from "@/components/ui/ProvinceSelect";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -21,20 +22,6 @@ interface PlaceResult {
 }
 
 // ── Constants ────────────────────────────────────────────
-const PROVINCES = [
-  "กรุงเทพมหานคร","เชียงใหม่","เชียงราย","ภูเก็ต","กระบี่","สุราษฎร์ธานี",
-  "ประจวบคีรีขันธ์","ชลบุรี","ระยอง","นครราชสีมา","ขอนแก่น","อุดรธานี",
-  "นครพนม","เลย","น่าน","แม่ฮ่องสอน","ตาก","กาญจนบุรี","พระนครศรีอยุธยา",
-  "สุโขทัย","พิษณุโลก","อุตรดิตถ์","ลำปาง","ลำพูน","แพร่","อุทัยธานี",
-  "นครสวรรค์","อ่างทอง","สิงห์บุรี","ลพบุรี","สระบุรี","นนทบุรี","ปทุมธานี",
-  "สมุทรปราการ","สมุทรสาคร","นครปฐม","ราชบุรี","เพชรบุรี","สมุทรสงคราม",
-  "ชัยนาท","สุพรรณบุรี","นครนายก","ปราจีนบุรี","สระแก้ว","ฉะเชิงเทรา",
-  "ตราด","จันทบุรี","ระนอง","ชุมพร","พังงา","ตรัง","พัทลุง","สตูล",
-  "นราธิวาส","ปัตตานี","ยะลา","สงขลา","นครศรีธรรมราช","สุรินทร์","บุรีรัมย์",
-  "ศรีสะเกษ","อุบลราชธานี","ยโสธร","มุกดาหาร","กาฬสินธุ์","มหาสารคาม",
-  "ร้อยเอ็ด","สกลนคร","นครพนม","หนองคาย","หนองบัวลำภู","บึงกาฬ","เพชรบูรณ์",
-  "พิจิตร","กำแพงเพชร","สุโขทัย","อำนาจเจริญ",
-];
 const CATEGORIES = [
   { value:"",              label:"ทุกหมวด" },
   { value:"NATURE",        label:"🌿 ธรรมชาติ" },
@@ -196,11 +183,12 @@ export default function SearchPageClient() {
           </div>
 
           {/* Province */}
-          <select value={province} onChange={e => setProv(e.target.value)}
-            style={{ padding: "8px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "white", fontSize: 13, color: "#374151", fontFamily: "inherit", cursor: "pointer" }}>
-            <option value="">📍 ทุกจังหวัด</option>
-            {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-          </select>
+          <ProvinceSelect
+            value={province}
+            onChange={v => setProv(v)}
+            placeholder="📍 ทุกจังหวัด"
+            style={{ borderRadius: 10, minHeight: 38, fontSize: 13 }}
+          />
 
           {/* Category (only for place/all) */}
           {type !== "trip" && (
@@ -228,10 +216,89 @@ export default function SearchPageClient() {
 
       {/* ── Results ── */}
       {loading ? (
-        <div style={{ textAlign: "center", padding: 60, color: "#94a3b8" }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
-          <p style={{ margin: 0 }}>กำลังค้นหา...</p>
-        </div>
+        <>
+            <div style={{display:"grid",gridTemplateColumns:`repeat(3,1fr)`,gap:12}}>
+              <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #f1f5f9",background:"white"}}>
+                <div style={{position:"relative",paddingBottom:"62%",background:"#f1f5f9",overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.00s`}}/>
+                </div>
+                <div style={{padding:"10px 12px",display:"flex",flexDirection:"column",gap:6}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.1s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.2s`}}/>
+            </div>
+                </div>
+              </div>
+              <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #f1f5f9",background:"white"}}>
+                <div style={{position:"relative",paddingBottom:"62%",background:"#f1f5f9",overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.07s`}}/>
+                </div>
+                <div style={{padding:"10px 12px",display:"flex",flexDirection:"column",gap:6}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.17s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.27s`}}/>
+            </div>
+                </div>
+              </div>
+              <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #f1f5f9",background:"white"}}>
+                <div style={{position:"relative",paddingBottom:"62%",background:"#f1f5f9",overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.14s`}}/>
+                </div>
+                <div style={{padding:"10px 12px",display:"flex",flexDirection:"column",gap:6}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.24000000000000002s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.34s`}}/>
+            </div>
+                </div>
+              </div>
+              <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #f1f5f9",background:"white"}}>
+                <div style={{position:"relative",paddingBottom:"62%",background:"#f1f5f9",overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.21s`}}/>
+                </div>
+                <div style={{padding:"10px 12px",display:"flex",flexDirection:"column",gap:6}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.31000000000000005s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.41000000000000003s`}}/>
+            </div>
+                </div>
+              </div>
+              <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #f1f5f9",background:"white"}}>
+                <div style={{position:"relative",paddingBottom:"62%",background:"#f1f5f9",overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.28s`}}/>
+                </div>
+                <div style={{padding:"10px 12px",display:"flex",flexDirection:"column",gap:6}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.38s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.48000000000000004s`}}/>
+            </div>
+                </div>
+              </div>
+              <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #f1f5f9",background:"white"}}>
+                <div style={{position:"relative",paddingBottom:"62%",background:"#f1f5f9",overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.35s`}}/>
+                </div>
+                <div style={{padding:"10px 12px",display:"flex",flexDirection:"column",gap:6}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.45000000000000007s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.55s`}}/>
+            </div>
+                </div>
+              </div>
+            </div>
+            <style>{"@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
+          </>
       ) : !searched ? (
         <div style={{ textAlign: "center", padding: 60 }}>
           <div style={{ fontSize: 56, marginBottom: 16 }}>🔍</div>
@@ -392,3 +459,4 @@ export default function SearchPageClient() {
     </div>
   );
 }
+  

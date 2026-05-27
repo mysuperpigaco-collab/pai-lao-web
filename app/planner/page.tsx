@@ -96,7 +96,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { PROVINCES, getDistricts } from "@/data/thailand";
+import { getDistricts } from "@/data/thailand";
+import ProvinceSelect from "@/components/ui/ProvinceSelect";
 import {
   DndContext, closestCenter,
   KeyboardSensor, PointerSensor, useSensor, useSensors,
@@ -532,10 +533,7 @@ export default function PlannerPage() {
               </div>
               <div style={{ marginBottom: 12 }}>
                 <label style={lbl}>จังหวัดหลัก · Province</label>
-                <select value={nProv} onChange={e => setNProv(e.target.value)} style={inp}>
-                  <option value="">-- เลือกจังหวัด --</option>
-                  {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
+                <ProvinceSelect value={nProv} onChange={v => setNProv(v)} style={inp} />
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={createPlan} disabled={creating || !nTitle.trim()} style={{
@@ -558,10 +556,61 @@ export default function PlannerPage() {
           {/* Plans list */}
           <div style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
             {loadingPlans ? (
-              <div style={{ padding: "24px 16px", textAlign: "center", color: "#94a3b8" }}>
-                <div style={{ fontSize: 28, marginBottom: 8 }}>⏳</div>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>กำลังโหลด...</div>
+            <div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.00s`}}/>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.1s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.2s`}}/>
+            </div>
+                </div>
               </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.08s`}}/>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.18s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.28s`}}/>
+            </div>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.16s`}}/>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.26s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.36s`}}/>
+            </div>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.24s`}}/>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.33999999999999997s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.44s`}}/>
+            </div>
+                </div>
+              </div>
+              <style>{"@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
+            </div>
             ) : plans.length === 0 ? (
               <div style={{ padding: "32px 16px", textAlign: "center", color: "#94a3b8" }}>
                 <div style={{ fontSize: 36, marginBottom: 10 }}>📋</div>
@@ -735,10 +784,7 @@ export default function PlannerPage() {
                   <input value={customName} onChange={e => setCustomName(e.target.value)}
                     placeholder="ชื่อสถานที่ · Place name *" style={{ ...inp, marginBottom: 8 }} />
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
-                    <select value={customProv} onChange={e => { setCustomProv(e.target.value); setCustomDist(""); }} style={inp}>
-                      <option value="">จังหวัด · Province</option>
-                      {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-                    </select>
+                    <ProvinceSelect value={customProv} onChange={v => { setCustomProv(v); setCustomDist(""); }} placeholder="จังหวัด · Province" style={inp} />
                     <select value={customDist} onChange={e => setCustomDist(e.target.value)} disabled={!customProv} style={inp}>
                       <option value="">อำเภอ · District</option>
                       {getDistricts(customProv).map(d => <option key={d} value={d}>{d}</option>)}
@@ -922,10 +968,7 @@ export default function PlannerPage() {
                   <input value={sQ} onChange={e => setSQ(e.target.value)}
                     placeholder="ชื่อสถานที่ · Place name..." style={{ ...inp, paddingLeft: 32 }} />
                 </div>
-                <select value={sProv} onChange={e => { setSProv(e.target.value); setSDist(""); }} style={{ ...inp, marginBottom: 6 }}>
-                  <option value="">📍 ทุกจังหวัด · All Provinces</option>
-                  {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
+                <ProvinceSelect value={sProv} onChange={v => { setSProv(v); setSDist(""); }} placeholder="📍 ทุกจังหวัด · All Provinces" style={{ ...inp, marginBottom: 6 }} />
                 {sProv && (
                   <select value={sDist} onChange={e => setSDist(e.target.value)} style={{ ...inp, marginBottom: 6 }}>
                     <option value="">ทุกอำเภอ · All Districts</option>
@@ -1002,10 +1045,48 @@ export default function PlannerPage() {
           {rightTab === "bookmarks" && (
             <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px" }}>
               {loadingBm ? (
-                <div style={{ textAlign: "center", padding: "32px 0", color: "#94a3b8" }}>
-                  <div style={{ fontSize: 24, marginBottom: 8 }}>⏳</div>
-                  <div style={{ fontSize: 13 }}>กำลังโหลด · Loading...</div>
+              <div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.10s`}}/>
                 </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.2s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.30000000000000004s`}}/>
+            </div>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.18s`}}/>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.28s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.38s`}}/>
+            </div>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.26s`}}/>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.36s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.46s`}}/>
+            </div>
+                </div>
+              </div>
+              <style>{"@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
+            </div>
               ) : bmTrips.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "32px 16px", color: "#94a3b8" }}>
                   <div style={{ fontSize: 40, marginBottom: 10 }}>🔖</div>
@@ -1131,3 +1212,4 @@ export default function PlannerPage() {
 const lbl: React.CSSProperties = { display: "block", fontWeight: 700, fontSize: 11, color: "#64748b", marginBottom: 5, letterSpacing: "0.3px", textTransform: "uppercase" as const };
 const inp: React.CSSProperties = { width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const, color: "#1e293b" };
 const ab: React.CSSProperties  = { width: 28, height: 28, borderRadius: 8, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#64748b", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" };
+    
