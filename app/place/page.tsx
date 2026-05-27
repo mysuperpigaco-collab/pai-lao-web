@@ -471,7 +471,10 @@ function PlaceCard({ place }: { place: Place }) {
   const bms   = place._count?.bookmarks ?? 0;
   const likes = place._count?.likes ?? 0;
   const prov  = place.province?.split(" (")[0] ?? place.province ?? "";
-  const displayImg = place.coverUrl || place.communityCover || null;
+  // Unclaimed places: prefer community photo (matches detail page logic)
+  const displayImg = (!place.business && place.communityCover)
+    ? place.communityCover
+    : (place.coverUrl || place.communityCover || null);
   const showImg = !!displayImg && !imgError;
 
   return (

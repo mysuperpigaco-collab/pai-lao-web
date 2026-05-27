@@ -60,25 +60,36 @@ export async function GET(request: Request) {
 
     // Fetch community cover photos (first reviewer image per place)
     const placeIds = placesWithAvg.map(p => p.id);
+    const placeTitles = placesWithAvg.map(p => p.title.toLowerCase());
+
     const communityStops = await prisma.timelineStop.findMany({
       where: {
         shareToPlace: true,
-        placeId: { in: placeIds },
+        OR: [
+          { placeId: { in: placeIds } },
+          { placeId: null, placeName: { in: placeTitles, mode: "insensitive" } },
+        ],
       },
-      select: { placeId: true, images: true },
+      select: { placeId: true, placeName: true, images: true },
       orderBy: { id: "desc" },
     });
-    // Build map: placeId → first image
-    const communityCoverMap: Record<string, string> = {};
+
+    // Build maps: placeId → first image, placeName(lower) → first image
+    const coverByPlaceId: Record<string, string> = {};
+    const coverByName: Record<string, string> = {};
     for (const stop of communityStops) {
-      if (stop.placeId && stop.images.length > 0 && !communityCoverMap[stop.placeId]) {
-        communityCoverMap[stop.placeId] = stop.images[0];
+      if (stop.images.length === 0) continue;
+      if (stop.placeId && !coverByPlaceId[stop.placeId]) {
+        coverByPlaceId[stop.placeId] = stop.images[0];
+      }
+      if (!stop.placeId && stop.placeName && !coverByName[stop.placeName.toLowerCase()]) {
+        coverByName[stop.placeName.toLowerCase()] = stop.images[0];
       }
     }
 
     const placesWithCover = placesWithAvg.map(p => ({
       ...p,
-      communityCover: communityCoverMap[p.id] ?? null,
+      communityCover: coverByPlaceId[p.id] ?? coverByName[p.title.toLowerCase()] ?? null,
     }));
 
     return NextResponse.json({ places: placesWithCover, total, page, totalPages: Math.ceil(total / limit) });

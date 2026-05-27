@@ -126,14 +126,19 @@ function TripCard({ trip }: { trip: Trip }) {
 
 function PlaceCard({ place }: { place: Place }) {
   const [hovered, setHovered] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const prov = place.province?.split(" (")[0] ?? place.province;
+  // Unclaimed places prefer community photo over placeholder coverUrl
+  const displayImg = (!place.business && place.communityCover)
+    ? place.communityCover
+    : (place.coverUrl || place.communityCover || "");
   return (
     <Link href={`/place/${place.slug}`} style={{ ...S.card, ...(hovered ? { transform: "translateY(-6px)", boxShadow: "0 16px 36px rgba(15,23,42,.13)" } : {}) }}
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <div style={S.imgWrap}>
-        <img src={place.coverUrl || place.communityCover || ""} alt={place.title} loading="lazy"
+        <img src={imgError ? "/images/default-place.svg" : displayImg} alt={place.title} loading="lazy"
           style={{ ...S.imgEl, transform: hovered ? "scale(1.06)" : "scale(1)", transition: "transform .35s ease" }}
-          onError={e => { const i = e.currentTarget; i.onerror = null; i.src = "/images/default-place.svg"; }} />
+          onError={() => setImgError(true)} />
         {prov && <span style={S.chipProv}>{prov}</span>}
         {place.business?.isVerified && <span style={S.chipGreen}>✓ Verified</span>}
         <div style={S.grad} />

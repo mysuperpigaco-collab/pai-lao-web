@@ -231,17 +231,23 @@ function PlaceCard({ place, rank }: { place: Place; rank: number }) {
     >
       {/* Image */}
       <div style={imgWrap}>
-        {(place.coverUrl || place.communityCover) && !imgError ? (
-          <img
-            src={place.coverUrl || place.communityCover || ""}
+        {/* Unclaimed: prefer community photo; owned: prefer coverUrl */}
+        {(() => {
+          const src = (!place.business && place.communityCover)
+            ? place.communityCover
+            : (place.coverUrl || place.communityCover || "");
+          return src && !imgError ? (
+            <img
+              src={src}
             alt={place.title}
             style={imgStyle}
             loading="lazy"
             onError={() => setImgError(true)}
           />
-        ) : (
-          <div style={placeholder}>🏞️</div>
-        )}
+          ) : (
+            <div style={placeholder}>🏞️</div>
+          );
+        })()}
 
         {/* Gradient overlay */}
         <div style={gradient} />
