@@ -260,13 +260,17 @@ export default function EditPlacePage({ params }: Props) {
 
   if (pageLoading) return (
     <div className="edit-page" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <p style={{color:"#94a3b8",fontSize:"16px"}}>⏳ กำลังโหลดข้อมูล...</p>
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:"60px 20px"}}>
+        <div style={{width:52,height:52,borderRadius:"50%",border:"3px solid #e2e8f0",borderTopColor:"#10b981",animation:"_spin 0.8s linear infinite"}}/>
+        <p style={{fontSize:14,color:"#94a3b8",margin:0}}>กำลังโหลดข้อมูล...</p>
+        <style>{`@keyframes _spin{to{transform:rotate(360deg)}}`}</style>
+      </div>
     </div>
   );
 
   if (submitted) return (
     <div className="edit-page" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"24px",minHeight:"60vh"}}>
-      <div style={{fontSize:"56px"}}>⏳</div>
+      <div style={{fontSize:"56px"}}>✅</div>
       <div style={{textAlign:"center"}}>
         <h2 style={{fontSize:"22px",fontWeight:700,color:"#1e293b",marginBottom:"8px"}}>ส่งคำขอแก้ไขแล้ว!</h2>
         <p style={{color:"#64748b",fontSize:"15px",maxWidth:"360px"}}>

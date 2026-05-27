@@ -115,7 +115,11 @@ export default function BusinessDashboardPage() {
 
   if (loading) return (
     <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <p style={{ color: "#94a3b8", fontSize: "16px" }}>⏳ กำลังโหลดข้อมูล...</p>
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:"60px 20px"}}>
+        <div style={{width:52,height:52,borderRadius:"50%",border:"3px solid #e2e8f0",borderTopColor:"#10b981",animation:"_spin 0.8s linear infinite"}}/>
+        <p style={{fontSize:14,color:"#94a3b8",margin:0}}>กำลังโหลดข้อมูล...</p>
+        <style>{`@keyframes _spin{to{transform:rotate(360deg)}}`}</style>
+      </div>
     </div>
   );
 

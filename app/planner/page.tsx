@@ -556,10 +556,61 @@ export default function PlannerPage() {
           {/* Plans list */}
           <div style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
             {loadingPlans ? (
-              <div style={{ padding: "24px 16px", textAlign: "center", color: "#94a3b8" }}>
-                <div style={{ fontSize: 28, marginBottom: 8 }}>⏳</div>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>กำลังโหลด...</div>
+            <div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.00s`}}/>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.1s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.2s`}}/>
+            </div>
+                </div>
               </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.08s`}}/>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.18s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.28s`}}/>
+            </div>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.16s`}}/>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.26s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.36s`}}/>
+            </div>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.24s`}}/>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.33999999999999997s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.44s`}}/>
+            </div>
+                </div>
+              </div>
+              <style>{\`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}\`}</style>
+            </div>
             ) : plans.length === 0 ? (
               <div style={{ padding: "32px 16px", textAlign: "center", color: "#94a3b8" }}>
                 <div style={{ fontSize: 36, marginBottom: 10 }}>📋</div>
@@ -994,10 +1045,48 @@ export default function PlannerPage() {
           {rightTab === "bookmarks" && (
             <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px" }}>
               {loadingBm ? (
-                <div style={{ textAlign: "center", padding: "32px 0", color: "#94a3b8" }}>
-                  <div style={{ fontSize: 24, marginBottom: 8 }}>⏳</div>
-                  <div style={{ fontSize: 13 }}>กำลังโหลด · Loading...</div>
+              <div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.10s`}}/>
                 </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.2s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.30000000000000004s`}}/>
+            </div>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.18s`}}/>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.28s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.38s`}}/>
+            </div>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.26s`}}/>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.36s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.46s`}}/>
+            </div>
+                </div>
+              </div>
+              <style>{\`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}\`}</style>
+            </div>
               ) : bmTrips.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "32px 16px", color: "#94a3b8" }}>
                   <div style={{ fontSize: 40, marginBottom: 10 }}>🔖</div>

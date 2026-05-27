@@ -54,7 +54,48 @@ export default function BusinessNotifications() {
       {open && (
         <div className="bn-body">
           {loading ? (
-            <div className="bn-empty">⏳ กำลังโหลด...</div>
+            <div><div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.00s`}}/>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.1s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.2s`}}/>
+            </div>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.08s`}}/>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.18s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.28s`}}/>
+            </div>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
+                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.16s`}}/>
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
+                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.26s`}}/>
+            </div>
+                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.36s`}}/>
+            </div>
+                </div>
+              </div>
+              <style>{\`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}\`}</style>
+            </div></div>
           ) : items.length === 0 ? (
             <div className="bn-empty">
               <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>

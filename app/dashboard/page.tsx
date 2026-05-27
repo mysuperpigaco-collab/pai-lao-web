@@ -548,8 +548,24 @@ export default function DashboardPage() {
               {activeTab === "saved-places" ? (
                 isLoading ? (
                   <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
-                    <div style={{ fontSize: "32px", marginBottom: "12px" }}>⏳</div>
-                    <p style={{ margin: 0 }}>กำลังโหลด...</p>
+                    <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, padding:"0 4px" }}>
+                    {Array.from({{ length:6 }}).map((_,i) => (
+                      <div key={i} style={{ borderRadius:14, overflow:"hidden", border:"1px solid #f1f5f9", background:"white" }}>
+                        <div style={{ position:"relative", paddingBottom:"62%", background:"#f1f5f9", overflow:"hidden" }}>
+                          <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)", backgroundSize:"200% 100%", animation:`_sh 1.5s ease infinite ${(i*0.08).toFixed(2)}s` }}/>
+                        </div>
+                        <div style={{ padding:"8px 10px", display:"flex", flexDirection:"column", gap:5 }}>
+                          <div style={{ position:"relative", height:8, borderRadius:4, background:"#f1f5f9", overflow:"hidden" }}>
+                            <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)", backgroundSize:"200% 100%", animation:`_sh 1.5s ease infinite ${(i*0.08+0.15).toFixed(2)}s` }}/>
+                          </div>
+                          <div style={{ position:"relative", height:7, width:"60%", borderRadius:4, background:"#f1f5f9", overflow:"hidden" }}>
+                            <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)", backgroundSize:"200% 100%", animation:`_sh 1.5s ease infinite ${(i*0.08+0.25).toFixed(2)}s` }}/>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <style>{`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
                   </div>
                 ) : savedPlaces.length > 0 ? (
                   <>
@@ -592,8 +608,21 @@ export default function DashboardPage() {
                 )
               ) : isLoading ? (
                 <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
-                  <div style={{ fontSize: "32px", marginBottom: "12px" }}>⏳</div>
-                  <p style={{ margin: 0 }}>กำลังโหลด...</p>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, padding:"0 4px" }}>
+                    {Array.from({ length:6 }).map((_,i) => (
+                      <div key={i} style={{ borderRadius:14, overflow:"hidden", border:"1px solid #f1f5f9", background:"white" }}>
+                        <div style={{ position:"relative", paddingBottom:"62%", background:"#f1f5f9", overflow:"hidden" }}>
+                          <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)", backgroundSize:"200% 100%", animation:`_sh 1.5s ease infinite ${(i*0.08).toFixed(2)}s` }}/>
+                        </div>
+                        <div style={{ padding:"8px 10px", display:"flex", flexDirection:"column", gap:5 }}>
+                          <div style={{ position:"relative", height:8, borderRadius:4, background:"#f1f5f9", overflow:"hidden" }}>
+                            <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)", backgroundSize:"200% 100%", animation:`_sh 1.5s ease infinite ${(i*0.08+0.15).toFixed(2)}s` }}/>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <style>{`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
                 </div>
               ) : stories.length > 0 ? (
                 <>
