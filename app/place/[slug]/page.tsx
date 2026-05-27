@@ -70,20 +70,6 @@ export default async function PlaceDetailPage({ params }: Props) {
 
   if (!place) return notFound();
 
-  // ดึงรูปจาก timeline stops ที่อนุญาต shareToPlace
-  const timelinePhotos = await (prisma as any).timelineStop.findMany({
-    where: {
-      placeId: place.id,
-      shareToPlace: true,
-      trip: { approvalStatus: "APPROVED" },
-    },
-    select: {
-      images: true,
-      trip: { select: { slug: true, title: true, author: { select: { username: true, displayName: true, firstName: true } } } },
-    },
-    take: 20,
-  });
-
   const session = await getCurrentUser();
   const avgRating = place.reviews.length
     ? place.reviews.reduce((s, r) => s + r.rating, 0) / place.reviews.length
@@ -114,6 +100,23 @@ export default async function PlaceDetailPage({ params }: Props) {
     })),
   }));
 
+  // Community photos from trips that shared images to this place (only for unclaimed places)
+  const communityStops = !place.business
+    ? await prisma.timelineStop.findMany({
+        where: { placeId: place.id, shareToPlace: true },
+        include: {
+          trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true } } } },
+        },
+      })
+    : [];
+
+  const communityStopsSorted = communityStops
+    .filter(s => s.images.length > 0)
+    .sort((a, b) => (b.trip?._count.likes ?? 0) - (a.trip?._count.likes ?? 0));
+
+  const communityImages = communityStopsSorted.flatMap(s => s.images);
+  const communityCover = !place.coverUrl && communityImages.length > 0 ? communityImages[0] : null;
+
   return (
     <div className="pd-page">
       <div className="pd-hero-wrap">
@@ -124,8 +127,8 @@ export default async function PlaceDetailPage({ params }: Props) {
               <span>สถานที่ทั้งหมด · All Places</span>
             </Link>
           </div>
-          {place.coverUrl
-            ? <img src={place.coverUrl} alt={place.title} className="pd-hero-img" />
+          {(place.coverUrl || communityCover)
+            ? <img src={place.coverUrl || communityCover!} alt={place.title} className="pd-hero-img" />
             : <div className="pd-hero-img" style={{ background: "linear-gradient(135deg,#10b981,#06b6d4)" }} />
           }
           <div className="pd-hero-overlay">
@@ -248,31 +251,42 @@ export default async function PlaceDetailPage({ params }: Props) {
               </div>
             )}
 
-            {((place.gallery?.length ?? 0) > 0 || timelinePhotos.length > 0) && (
+            {place.gallery?.length > 0 && (
               <div className="pd-card">
                 <h2>รูปภาพ Gallery</h2>
                 <div className="pd-gallery">
-                  {(place.gallery ?? []).slice(0, 6).map((img: string, i: number) => (
-                    <div key={`gal-${i}`} className="pd-gal-item">
+                  {place.gallery.slice(0, 6).map((img, i) => (
+                    <div key={i} className="pd-gal-item">
                       <img src={img} alt={place.title + " " + (i + 1)} />
                     </div>
                   ))}
-                  {timelinePhotos.flatMap((tp: any) => tp.images as string[]).slice(0, 12).map((img: string, i: number) => (
-                    <div key={`tp-${i}`} className="pd-gal-item" title="รูปจากนักเดินทาง">
-                      <img src={img} alt={`รูปจากทริป ${i + 1}`} />
-                      <div style={{ position: "absolute", bottom: 4, right: 4, background: "rgba(16,185,129,0.85)", color: "#fff", fontSize: 9, fontWeight: 700, padding: "2px 5px", borderRadius: 6 }}>
-                        🧳 ทริป
-                      </div>
+                </div>
+              </div>
+            )}
+            {communityImages.length > 0 && (
+              <div className="pd-card">
+                <h2>
+                  📸 รูปจากนักเดินทาง
+                  <span style={{ fontSize: 14, fontWeight: 600, color: "#94a3b8" }}> Community Photos</span>
+                </h2>
+                <p style={{ fontSize: 12, color: "#94a3b8", marginTop: -8, marginBottom: 12 }}>
+                  รูปภาพที่นักเดินทางแชร์จากทริปของพวกเขา · Photos shared by travelers from their trips
+                </p>
+                <div className="pd-gallery">
+                  {communityImages.slice(0, 9).map((img, i) => (
+                    <div key={i} className="pd-gal-item">
+                      <img src={img} alt={"Community photo " + (i + 1)} />
                     </div>
                   ))}
                 </div>
-                {timelinePhotos.length > 0 && (
+                {communityImages.length > 9 && (
                   <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 8 }}>
-                    ✨ รูปจากนักเดินทาง {timelinePhotos.length} คน · Photos from {timelinePhotos.length} traveller{timelinePhotos.length > 1 ? "s" : ""}
+                    +{communityImages.length - 9} รูปเพิ่มเติม
                   </p>
                 )}
               </div>
             )}
+
             {place.googleMapsUrl && (
               <div className="pd-card pd-map-card">
                 <h2>แผนที่ Map</h2>
@@ -428,47 +442,4 @@ export default async function PlaceDetailPage({ params }: Props) {
             </div>
 
             {place.business && (
-              <div className="pd-side-card">
-                <div className="pd-side-title">
-                  &#x1F3E2; ธุรกิจ <span style={{ fontSize: 11, color: "#94a3b8" }}>Business</span>
-                </div>
-                {place.business.logoUrl && (
-                  <img src={place.business.logoUrl} alt="" style={{ width: 48, height: 48, borderRadius: 12, objectFit: "cover", marginBottom: 10 }} />
-                )}
-                <div style={{ fontWeight: 800, fontSize: 15, color: "#0f172a", marginBottom: 4 }}>
-                  {place.business.businessName}
-                </div>
-                {place.business.isVerified && (
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#dcfce7", color: "#15803d", fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 999, marginBottom: 8 }}>
-                    Verified Business
-                  </div>
-                )}
-                {place.business.phone && (
-                  <div style={{ fontSize: 13, color: "#64748b", marginTop: 6 }}>{place.business.phone}</div>
-                )}
-                {place.business.website && (
-                  <a href={place.business.website} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: "#2563eb", display: "block", marginTop: 4 }}>
-                    {place.business.website.replace(/^https?:\/\//, "")}
-                  </a>
-                )}
-              </div>
-            )}
-
-            <ClaimPlaceButton
-              placeSlug={slug}
-              placeTitle={place.title}
-              isBusiness={isBusiness}
-              hasOwner={!!place.business}
-            />
-
-            {isOwner && (
-              <Link href={`/business/places/${slug}/edit`} className="pd-edit-btn">
-                &#x270F;&#xFE0F; แก้ไขสถานที่ · Edit Place
-              </Link>
-            )}
-          </aside>
-        </div>
-      </div>
-    </div>
-  );
-}
+ 
