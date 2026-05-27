@@ -21,6 +21,7 @@ interface Place {
   avgRating?: number | null;
   shareCount?: number;
   business?: { businessName: string; isVerified?: boolean } | null;
+  communityCover?: string | null;
 }
 
 /* ─── Constants ──────────────────────────────────────────── */
@@ -470,7 +471,8 @@ function PlaceCard({ place }: { place: Place }) {
   const bms   = place._count?.bookmarks ?? 0;
   const likes = place._count?.likes ?? 0;
   const prov  = place.province?.split(" (")[0] ?? place.province ?? "";
-  const showImg = !!place.coverUrl && !imgError;
+  const displayImg = place.coverUrl || place.communityCover || null;
+  const showImg = !!displayImg && !imgError;
 
   return (
     <Link
@@ -492,7 +494,7 @@ function PlaceCard({ place }: { place: Place }) {
       <div style={{ position: "relative", height: 164, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
         {showImg
           ? <img
-              src={place.coverUrl!}
+              src={displayImg!}
               alt={place.title}
               loading="lazy"
               onError={() => setImgError(true)}

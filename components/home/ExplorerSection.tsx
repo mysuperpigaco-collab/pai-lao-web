@@ -14,6 +14,7 @@ interface Place {
   category: string;
   isVerified?: boolean;
   avgRating?: number | null;
+  communityCover?: string | null;
   _count?: { reviews: number; bookmarks: number };
   business?: { businessName: string; isVerified?: boolean } | null;
 }
@@ -230,9 +231,9 @@ function PlaceCard({ place, rank }: { place: Place; rank: number }) {
     >
       {/* Image */}
       <div style={imgWrap}>
-        {place.coverUrl && !imgError ? (
+        {(place.coverUrl || place.communityCover) && !imgError ? (
           <img
-            src={place.coverUrl}
+            src={place.coverUrl || place.communityCover || ""}
             alt={place.title}
             style={imgStyle}
             loading="lazy"

@@ -58,7 +58,30 @@ export async function GET(request: Request) {
       return { ...rest, avgRating };
     });
 
-    return NextResponse.json({ places: placesWithAvg, total, page, totalPages: Math.ceil(total / limit) });
+    // Fetch community cover photos (first reviewer image per place)
+    const placeIds = placesWithAvg.map(p => p.id);
+    const communityStops = await prisma.timelineStop.findMany({
+      where: {
+        shareToPlace: true,
+        placeId: { in: placeIds },
+      },
+      select: { placeId: true, images: true },
+      orderBy: { id: "desc" },
+    });
+    // Build map: placeId → first image
+    const communityCoverMap: Record<string, string> = {};
+    for (const stop of communityStops) {
+      if (stop.placeId && stop.images.length > 0 && !communityCoverMap[stop.placeId]) {
+        communityCoverMap[stop.placeId] = stop.images[0];
+      }
+    }
+
+    const placesWithCover = placesWithAvg.map(p => ({
+      ...p,
+      communityCover: communityCoverMap[p.id] ?? null,
+    }));
+
+    return NextResponse.json({ places: placesWithCover, total, page, totalPages: Math.ceil(total / limit) });
   } catch (error) {
     console.error("GET /api/places:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });

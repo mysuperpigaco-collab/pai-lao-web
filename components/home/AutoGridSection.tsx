@@ -14,6 +14,7 @@ interface Place {
   coverUrl: string; province: string; district: string; category: string;
   _count?: { reviews: number; bookmarks: number };
   business?: { businessName: string; isVerified?: boolean } | null;
+  communityCover?: string | null;
 }
 
 const TABS = [
@@ -130,7 +131,7 @@ function PlaceCard({ place }: { place: Place }) {
     <Link href={`/place/${place.slug}`} style={{ ...S.card, ...(hovered ? { transform: "translateY(-6px)", boxShadow: "0 16px 36px rgba(15,23,42,.13)" } : {}) }}
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <div style={S.imgWrap}>
-        <img src={place.coverUrl} alt={place.title} loading="lazy"
+        <img src={place.coverUrl || place.communityCover || ""} alt={place.title} loading="lazy"
           style={{ ...S.imgEl, transform: hovered ? "scale(1.06)" : "scale(1)", transition: "transform .35s ease" }}
           onError={e => { const i = e.currentTarget; i.onerror = null; i.src = "/images/default-place.svg"; }} />
         {prov && <span style={S.chipProv}>{prov}</span>}
