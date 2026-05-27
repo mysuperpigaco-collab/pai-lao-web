@@ -318,3 +318,43 @@ function stripArrow(side: "left" | "right"): React.CSSProperties {
     zIndex: 1, boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
   };
 }
+
+/* ─────────────────────────────────────────────
+   Trip Gallery — grid with lightbox on click
+   ───────────────────────────────────────────── */
+export function TripGallery({ images }: { images: string[] }) {
+  const [lb, setLb] = useState<number | null>(null);
+
+  if (!images.length) return null;
+
+  return (
+    <div>
+      {lb !== null && (
+        <Lightbox images={images} startIndex={lb} onClose={() => setLb(null)} />
+      )}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+        gap: 10,
+      }}>
+        {images.map((img, i) => (
+          <div
+            key={i}
+            onClick={() => setLb(i)}
+            style={{
+              borderRadius: 10, overflow: "hidden",
+              cursor: "zoom-in", aspectRatio: "4/3",
+            }}
+          >
+            <img
+              src={img}
+              alt={"รูป " + (i + 1)}
+              loading="lazy"
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
