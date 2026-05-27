@@ -428,10 +428,42 @@ export default function ExplorerSection() {
             <small style={{ fontSize: 12, color: "#94a3b8" }}>Select a province to explore popular places</small>
           </div>
         ) : loading ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "52px 20px", gap: 12, textAlign: "center", background: "#f8fafc", borderRadius: 18 }}>
-            <span style={{ fontSize: 44 }}>⏳</span>
-            <p style={{ fontSize: 15, color: "#475569", fontWeight: 700, margin: 0 }}>กำลังโหลด... <span style={{ fontWeight: 400, color: "#94a3b8" }}>Loading...</span></p>
-          </div>
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols},1fr)`, gap: 16 }}>
+              {Array.from({ length: cols * 2 }).map((_, i) => (
+                <div key={i} style={{ borderRadius: 20, overflow: "hidden", border: "1px solid #f1f5f9", background: "white" }}>
+                  {/* Image skeleton */}
+                  <div style={{ position: "relative", paddingBottom: "65%", background: "#f1f5f9", overflow: "hidden" }}>
+                    <div style={{
+                      position: "absolute", inset: 0,
+                      background: "linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 40%, #f1f5f9 80%)",
+                      backgroundSize: "200% 100%",
+                      animation: `shimmer 1.4s ease infinite ${i * 0.1}s`,
+                    }} />
+                    {/* Fake chip top-left */}
+                    <div style={{ position: "absolute", top: 10, left: 10, width: 52, height: 18, borderRadius: 999, background: "#e2e8f0", overflow: "hidden" }}>
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 40%, #e2e8f0 80%)", backgroundSize: "200% 100%", animation: `shimmer 1.4s ease infinite ${i * 0.1}s` }} />
+                    </div>
+                  </div>
+                  {/* Footer skeleton */}
+                  <div style={{ padding: "10px 12px", display: "flex", gap: 8, alignItems: "center" }}>
+                    <div style={{ flex: 1, height: 10, borderRadius: 6, background: "#f1f5f9", overflow: "hidden", position: "relative" }}>
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 40%, #f1f5f9 80%)", backgroundSize: "200% 100%", animation: `shimmer 1.4s ease infinite ${i * 0.1 + 0.2}s` }} />
+                    </div>
+                    <div style={{ width: 40, height: 10, borderRadius: 6, background: "#f1f5f9", overflow: "hidden", position: "relative" }}>
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 40%, #f1f5f9 80%)", backgroundSize: "200% 100%", animation: `shimmer 1.4s ease infinite ${i * 0.1 + 0.3}s` }} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <style>{`
+              @keyframes shimmer {
+                0% { background-position: 200% 0; }
+                100% { background-position: -200% 0; }
+              }
+            `}</style>
+          </>
         ) : places.length === 0 ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "52px 20px", gap: 12, textAlign: "center", background: "#f8fafc", borderRadius: 18 }}>
             <span style={{ fontSize: 44 }}>📭</span>
