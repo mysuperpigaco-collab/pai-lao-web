@@ -211,6 +211,7 @@ export default function EditTripPage({ params }: Props) {
             description: stop.description,
             images: imageUrl ? [imageUrl] : [],
             shareToPlace: stop.shareToPlace ?? false,
+            placeId:      stop.placeId      ?? null,
           };
         })
       );

@@ -260,7 +260,8 @@ export default function CreateStoryPage() {
       // 3. อัปโหลดรูป timeline แต่ละจุด
       const timelineData = await Promise.all(
         timeline.map(async (stop, i) => ({
-          placeId: stop.placeId ?? undefined,
+          placeId:      stop.placeId      ?? undefined,
+          shareToPlace: stop.shareToPlace  ?? false,
           date:        stop.date,
           time:        stop.time,
           place:       stop.place,
