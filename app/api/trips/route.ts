@@ -186,6 +186,7 @@ export async function POST(request: Request) {
             googleMapsUrl: stop.googleMapsUrl ?? null,
             tips:          stop.tips          ?? null,
             shareToPlace:  stop.shareToPlace  ?? false,
+            placeId:       stop.placeId       ?? null,
           })),
         } : undefined,
       },
