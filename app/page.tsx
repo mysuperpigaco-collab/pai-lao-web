@@ -420,28 +420,22 @@ export default function HomePage() {
 
   const [btnHovered, setBtnHovered] = useState(false);
 
-  // ── Background image: ทำให้ body โปร่งใสเฉพาะหน้าแรก ──
+  // ── Background image เฉพาะหน้าแรก ──
   // ลบ useEffect นี้ออกเพื่อย้อนกลับ
   useEffect(() => {
-    const prev = document.body.style.background;
+    const html = document.documentElement;
+    const prevHtml = html.style.background;
+    const prevBody = document.body.style.background;
+    html.style.background = "url('/images/hero-bg.png') center 60% / cover no-repeat fixed";
     document.body.style.background = "transparent";
-    return () => { document.body.style.background = prev; };
+    return () => {
+      html.style.background = prevHtml;
+      document.body.style.background = prevBody;
+    };
   }, []);
 
   return (
     <>
-      {/* ─── Fixed background image ─── */}
-      {/* ลบ div นี้ออกเพื่อย้อนกลับ */}
-      <div style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: -1,
-        backgroundImage: "url('/images/hero-bg.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center 60%",
-        backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed",
-      }} />
 
     <main style={{ maxWidth: 1200, margin: "0 auto", padding: "36px 20px 80px" }}>
 
