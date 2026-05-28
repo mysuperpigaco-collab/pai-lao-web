@@ -283,7 +283,10 @@ a { text-decoration: none; }
   .pv-timeline-dot { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .pv-timeline-item { break-inside: avoid; page-break-inside: avoid; }
   .pv-day-section { break-inside: auto; }
-  .pv-day-section + .pv-day-section { break-before: page; page-break-before: always; }
+  .pv-day-section + .pv-day-section {
+    break-before: page; page-break-before: always;
+    padding-top: 66px; /* compensate for fixed 54px brand header on pages 2+ */
+  }
   .pv-day-header { break-after: avoid; page-break-after: avoid; }
   .pv-stop-card { border: 1px solid #e2e8f0; background: #f8fafc !important; }
 
@@ -357,6 +360,4 @@ a { text-decoration: none; }
   .pv-wishes-sig { font-size: 11px; }
 
   /* Footer */
-  .pv-footer { padding: 16px 18px; margin-top: 20px; }
-  .pv-footer-brand { font-size: 12px; }
-}
+  .pv-foote
