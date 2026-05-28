@@ -28,9 +28,8 @@ export async function GET(_req: Request, { params }: Params) {
       },
     });
 
-    if (!user) return NextResponse.json({ message: "ไม่พบผู้ใช้" }, { status: 404 });
+    if (!user) return NextResponse.json({ message: "User not found" }, { status: 404 });
 
-    // If profile is PRIVATE and viewer is not the owner → show minimal info only
     const isOwn = session?.userId === user.id;
     if (user.profilePrivacy === "PRIVATE" && !isOwn) {
       return NextResponse.json({
@@ -43,7 +42,6 @@ export async function GET(_req: Request, { params }: Params) {
       });
     }
 
-    // Apply field-level privacy
     const pub: Record<string, any> = {
       id: user.id, username: user.username,
       displayName: user.displayName, firstName: user.firstName,
@@ -54,12 +52,11 @@ export async function GET(_req: Request, { params }: Params) {
       _count: user._count,
       isPrivate: false,
     };
-    if (user.showEmail)     pub.email      = user.email;
-    if (user.showPhone)     pub.phone      = user.phone;
+    if (user.showEmail)     pub.email     = user.email;
+    if (user.showPhone)     pub.phone     = user.phone;
     if (user.showSocial)    { pub.lineId = user.lineId; pub.facebook = user.facebook; pub.instagram = user.instagram; pub.tiktok = user.tiktok; }
-    if (user.showBirthDate) pub.birthDate  = user.birthDate;
+    if (user.showBirthDate) pub.birthDate = user.birthDate;
 
-    // Published trips by this user
     const trips = await prisma.trip.findMany({
       where: { authorId: user.id, isPublished: true, approvalStatus: "APPROVED", isDraft: false },
       orderBy: { createdAt: "desc" },
@@ -74,4 +71,6 @@ export async function GET(_req: Request, { params }: Params) {
     return NextResponse.json({ user: pub, trips });
   } catch (error) {
     console.error("GET /api/users/[username]:", error);
-    return NextResponse.json({ message: "เกิ
+    return NextResponse.json({ message: "Server error" }, { status: 500 });
+  }
+}
