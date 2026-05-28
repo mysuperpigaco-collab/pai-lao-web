@@ -82,14 +82,14 @@ export default function ProfileHeader({ isOwner, user = DEFAULT_USER }: Props) {
     finally { setUploading(false); }
   };
 
+  const rawUsername = u.username.replace("@", "");
   const initials = u.displayName?.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase() || "?";
 
   return (
     <div style={{ background: "#fff", borderRadius: "28px", overflow: "hidden", border: "1px solid #f1f5f9", boxShadow: "0 4px 24px rgba(15,23,42,0.07)" }}>
 
-      {/* ─── Gradient top ─── */}
+      {/* Gradient top */}
       <div style={{ height: "110px", background: "linear-gradient(135deg, #667eea 0%, #4facfe 50%, #43e97b 100%)", position: "relative" }}>
-        {/* Decorative dots */}
         <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.15) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
         {/* Avatar */}
         <div style={{ position: "absolute", bottom: "-44px", left: "50%", transform: "translateX(-50%)" }}>
@@ -108,21 +108,19 @@ export default function ProfileHeader({ isOwner, user = DEFAULT_USER }: Props) {
               </label>
             )}
           </div>
-          {/* ─── "Add photo" prompt when no avatar ─── */}
           {isOwner && !avatarSrc && (
             <Link href="/dashboard/edit-profile" style={{ display: "inline-flex", alignItems: "center", gap: "5px", marginTop: "6px", fontSize: "11px", fontWeight: 700, color: "#fff", background: "rgba(0,0,0,0.32)", backdropFilter: "blur(4px)", padding: "4px 10px", borderRadius: "999px", textDecoration: "none", border: "1px solid rgba(255,255,255,0.3)", whiteSpace: "nowrap" }}>
-              📸 เพิ่มรูปโปรไฟล์ · Add photo
+              📸 เพิ่มรูปโปรไฟล์
             </Link>
           )}
         </div>
       </div>
 
-      {/* ─── Body ─── */}
+      {/* Body */}
       <div style={{ padding: "56px 22px 24px", textAlign: "center" }}>
         <p style={{ fontSize: "11px", fontWeight: 700, color: "#4facfe", letterSpacing: "1.2px", textTransform: "uppercase", margin: "0 0 4px" }}>{u.username}</p>
         <h2 style={{ fontSize: "20px", fontWeight: 900, color: "#0f172a", margin: "0 0 12px", lineHeight: 1.2 }}>{u.displayName}</h2>
 
-        {/* Badges */}
         <div style={{ display: "flex", gap: "6px", justifyContent: "center", flexWrap: "wrap", marginBottom: "16px" }}>
           <span style={{ fontSize: "11px", fontWeight: 700, background: "#eff6ff", color: "#2563eb", padding: "4px 10px", borderRadius: "999px" }}>✓ Traveler</span>
           <span style={{ fontSize: "11px", fontWeight: 700, background: "#fefce8", color: "#a16207", padding: "4px 10px", borderRadius: "999px" }}>🥉 {u.level}</span>
@@ -132,10 +130,8 @@ export default function ProfileHeader({ isOwner, user = DEFAULT_USER }: Props) {
           <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 16px", lineHeight: 1.6, fontStyle: "italic" }}>"{u.bio}"</p>
         )}
 
-        {/* Divider */}
         <div style={{ height: "1px", background: "#f1f5f9", margin: "0 0 16px" }} />
 
-        {/* Stats */}
         <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", marginBottom: "16px" }}>
           <div style={{ textAlign: "center" }}>
             <strong style={{ display: "block", fontSize: "20px", fontWeight: 900, color: "#2563eb", lineHeight: 1 }}>{u.storiesCount}</strong>
@@ -153,7 +149,6 @@ export default function ProfileHeader({ isOwner, user = DEFAULT_USER }: Props) {
           </div>
         </div>
 
-        {/* Interests */}
         {u.interests.length > 0 && (
           <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", justifyContent: "center", marginBottom: "20px" }}>
             {u.interests.map(tag => (
@@ -162,7 +157,6 @@ export default function ProfileHeader({ isOwner, user = DEFAULT_USER }: Props) {
           </div>
         )}
 
-        {/* Divider */}
         <div style={{ height: "1px", background: "#f1f5f9", margin: "0 0 16px" }} />
 
         {/* Action buttons */}
@@ -171,4 +165,15 @@ export default function ProfileHeader({ isOwner, user = DEFAULT_USER }: Props) {
             <Link href="/dashboard/edit-profile" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 16px", borderRadius: "12px", background: "#eff6ff", color: "#2563eb", textDecoration: "none", fontSize: "13px", fontWeight: 700, border: "1.5px solid #dbeafe" }}>
               <IconEdit /> แก้ไขโปรไฟล์
             </Link>
-            <Link href={`/user/${u.username.replace("@", "")}?preview=true`} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 16px", borderRadius: "
+            <Link href={"/user/" + rawUsername + "?preview=true"} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 16px", borderRadius: "12px", background: "#f0fdf4", color: "#059669", textDecoration: "none", fontSize: "13px", fontWeight: 700, border: "1.5px solid #bbf7d0" }}>
+              <IconEye /> ดูโปรไฟล์สาธารณะ
+            </Link>
+            <button onClick={handleLogout} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 16px", borderRadius: "12px", background: "#fff5f5", color: "#dc2626", fontSize: "13px", fontWeight: 700, border: "1.5px solid #fecaca", cursor: "pointer", width: "100%", fontFamily: "inherit" }}>
+              <IconLogout /> ออกจากระบบ
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
