@@ -430,11 +430,11 @@ export default function PlannerPage() {
   const maxEditDay = activePlan ? Math.max(activePlan.stops.reduce((m, s) => Math.max(m, s.day ?? 1), 1), editDay) : editDay;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
+    <div style={{ minHeight: "100vh", background: "transparent" }}>
 
       {/* ════ HEADER ════ */}
       <div style={{
-        background: "#fff",
+        background: "rgba(255,255,255,0.90)",
         borderBottom: "1px solid #e2e8f0",
         padding: "0 24px", display: "flex", alignItems: "center", gap: 16,
         height: 56, position: "sticky", top: 0, zIndex: 100,
@@ -495,7 +495,7 @@ export default function PlannerPage() {
       <div className="planner-grid" style={{ maxWidth: 1400, margin: "0 auto", width: "100%", borderLeft: "1px solid #e2e8f0", borderRight: "1px solid #e2e8f0" }}>
 
         {/* ── COL 1: Plans sidebar ── */}
-        <div className="planner-sidebar" style={{ borderRight: "1px solid #e2e8f0", background: "#fff", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div className="planner-sidebar" style={{ borderRight: "1px solid #e2e8f0", background: "rgba(255,255,255,0.90)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <div style={{ padding: "16px 14px", borderBottom: "1px solid #f1f5f9" }}>
             <button onClick={() => setShowNew(!showNew)} style={{
               width: "100%", padding: "11px 14px", borderRadius: 14,
@@ -939,7 +939,7 @@ export default function PlannerPage() {
         </div>
 
         {/* ── COL 3: Search + Bookmarks ── */}
-        <div className="planner-right" style={{ borderLeft: "1px solid #e2e8f0", background: "#fff", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div className="planner-right" style={{ borderLeft: "1px solid #e2e8f0", background: "rgba(255,255,255,0.90)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
           {/* Tabs */}
           <div style={{ display: "flex", padding: "0 8px", borderBottom: "2px solid #f1f5f9" }}>
             {([["search","🔍","ค้นหาสถานที่","Find Places"],["bookmarks","🔖","ทริปบุ๊คมาร์ค","Bookmarked"]] as const).map(([key, icon, th, en]) => (

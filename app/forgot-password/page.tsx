@@ -155,7 +155,7 @@ export default function ForgotPasswordPage() {
 
           justify-content: center;
 
-          background: #f8fafc;
+          background: transparent;
 
           padding: 24px;
 

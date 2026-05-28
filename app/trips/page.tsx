@@ -226,7 +226,7 @@ function TripsInner() {
       </div>
 
       <style jsx>{`
-        .tp-page { min-height: 100vh; background: #f8fafc; }
+        .tp-page { min-height: 100vh; background: transparent; }
 
         /* ── Hero ── */
         .tp-hero {

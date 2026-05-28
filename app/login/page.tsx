@@ -89,8 +89,8 @@ export default function LoginPage() {
       </div>
 
       <style jsx>{`
-        .auth-container { min-height: 85vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; background-color: #f8fafc; }
-        .auth-card { background: white; padding: 50px; border-radius: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.05); width: 100%; max-width: 480px; text-align: center; }
+        .auth-container { min-height: 85vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; background-color: transparent; }
+        .auth-card { background: rgba(255,255,255,0.90); padding: 50px; border-radius: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.05); width: 100%; max-width: 480px; text-align: center; }
         .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding: 0 5px; }
         .remember-me { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #666; }
         .remember-me input { width: 16px; height: 16px; accent-color: #3b82f6; cursor: pointer; }

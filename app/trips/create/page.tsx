@@ -260,14 +260,14 @@ export default function CreateStoryPage() {
       // 3. อัปโหลดรูป timeline แต่ละจุด
       const timelineData = await Promise.all(
         timeline.map(async (stop, i) => ({
-          placeId:      stop.placeId      ?? undefined,
-          shareToPlace: stop.shareToPlace  ?? false,
-          date:        stop.date,
-          time:        stop.time,
-          place:       stop.place,
-          province:    stop.province,
-          district:    stop.district,
-          description: stop.description,
+          placeId:      stop.placeId ?? undefined,
+          shareToPlace: stop.shareToPlace ?? false,
+          date:         stop.date,
+          time:         stop.time,
+          place:        stop.place,
+          province:     stop.province,
+          district:     stop.district,
+          description:  stop.description,
           images: stop.imageFile
             ? [await uploadFile(stop.imageFile, `trips/timeline/${i}`)]
             : (stop.imagePreview ? [stop.imagePreview] : []),
@@ -740,8 +740,8 @@ export default function CreateStoryPage() {
       )}
 
       <style jsx>{`
-        .create-container{padding:50px 20px;background:#f0f4f8;min-height:100vh;display:flex;justify-content:center}
-        .create-card{background:white;padding:60px;border-radius:50px;box-shadow:0 30px 80px rgba(0,0,0,0.08);width:100%;max-width:1050px;position:relative}
+        .create-container{padding:50px 20px;background:transparent;min-height:100vh;display:flex;justify-content:center}
+        .create-card{background:rgba(255,255,255,0.88);padding:60px;border-radius:50px;box-shadow:0 30px 80px rgba(0,0,0,0.08);width:100%;max-width:1050px;position:relative}
         .top-nav-actions{margin-bottom:30px}
         .header-text{text-align:center;margin-bottom:50px}
         .header-text h2{font-size:34px;font-weight:900;color:#1e293b;letter-spacing:-0.5px}

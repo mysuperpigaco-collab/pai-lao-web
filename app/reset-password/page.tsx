@@ -377,7 +377,7 @@ export default function ResetPasswordPage() {
           border: 0;
           border-radius: 8px;
           color: #64748b;
-          background: #f8fafc;
+          background: transparent;
           cursor: pointer;
           transition: background 0.2s ease, color 0.2s ease;
         }

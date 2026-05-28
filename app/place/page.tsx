@@ -253,7 +253,7 @@ function PlacesInner() {
 
       <style jsx>{`
         /* ── Page ── */
-        .pl-page { min-height: 100vh; background: #f8fafc; }
+        .pl-page { min-height: 100vh; background: transparent; }
 
         /* ── Hero ── */
         .pl-hero {

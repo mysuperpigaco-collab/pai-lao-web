@@ -118,7 +118,7 @@ export default function BusinessDashboardPage() {
       <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:"60px 20px"}}>
         <div style={{width:52,height:52,borderRadius:"50%",border:"3px solid #e2e8f0",borderTopColor:"#10b981",animation:"_spin 0.8s linear infinite"}}/>
         <p style={{fontSize:14,color:"#94a3b8",margin:0}}>กำลังโหลดข้อมูล...</p>
-        <style>{"@keyframes _spin{to{transform:rotate(360deg)}}"}</style>
+        <style>{`@keyframes _spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     </div>
   );
@@ -198,7 +198,7 @@ export default function BusinessDashboardPage() {
 
       {/* ── PLACES GRID ── */}
       {places.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "60px 20px", background: "#f8fafc", borderRadius: "24px" }}>
+        <div style={{ textAlign: "center", padding: "60px 20px", background: "rgba(255,255,255,0.82)", borderRadius: "24px" }}>
           <p style={{ fontSize: "40px", marginBottom: "12px" }}>🏞️</p>
           <h3 style={{ fontSize: "18px", fontWeight: 800, color: "#334155" }}>ยังไม่มีสถานที่</h3>
           <p style={{ color: "#64748b", fontSize: "14px", marginBottom: "24px" }}>เพิ่มสถานที่แรกของคุณเพื่อให้นักท่องเที่ยวค้นพบ</p>
