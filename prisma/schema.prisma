@@ -248,6 +248,7 @@ model TimelineStop {
   googleMapsUrl String?  // Google Maps URL
   tips          String?  // เคล็ดลับ/ข้อควรรู้
 
+  shareToPlace  Boolean  @default(false)  // แชร์รูปนี้ให้แสดงในหน้าสถานที่
   placeId     String?
   place       Place?  @relation(fields: [placeId], references: [id], onDelete: SetNull)
 
