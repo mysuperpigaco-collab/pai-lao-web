@@ -209,17 +209,10 @@ export default function ProfileHeader({ isOwner, loading, user = DEFAULT_USER }:
         {isOwner && (
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             <Link href="/dashboard/edit-profile" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 16px", borderRadius: "12px", background: "#eff6ff", color: "#2563eb", textDecoration: "none", fontSize: "13px", fontWeight: 700, border: "1.5px solid #dbeafe" }}>
-              <IconEdit /> Edit Profile
+              <IconEdit /> แก้ไขโปรไฟล์ · Edit Profile
             </Link>
             <Link href={"/user/" + u.username.replace("@", "") + "?preview=true"} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 16px", borderRadius: "12px", background: "#f0fdf4", color: "#059669", textDecoration: "none", fontSize: "13px", fontWeight: 700, border: "1.5px solid #bbf7d0" }}>
-              <IconEye /> Public Profile
+              <IconEye /> โปรไฟล์สาธารณะ · Public Profile
             </Link>
             <button onClick={handleLogout} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 16px", borderRadius: "12px", background: "#fff5f5", color: "#dc2626", fontSize: "13px", fontWeight: 700, border: "1.5px solid #fecaca", cursor: "pointer", width: "100%", fontFamily: "inherit" }}>
-              <IconLogout /> Logout
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+              <IconLogout /> �
