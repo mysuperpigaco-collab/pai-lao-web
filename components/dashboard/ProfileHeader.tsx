@@ -52,6 +52,12 @@ const IconCamera = () => (
     <circle cx="12" cy="13" r="4"/>
   </svg>
 );
+const IconEye = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+);
 
 export default function ProfileHeader({ isOwner, user = DEFAULT_USER }: Props) {
   const u = { ...DEFAULT_USER, ...user };
@@ -165,12 +171,4 @@ export default function ProfileHeader({ isOwner, user = DEFAULT_USER }: Props) {
             <Link href="/dashboard/edit-profile" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 16px", borderRadius: "12px", background: "#eff6ff", color: "#2563eb", textDecoration: "none", fontSize: "13px", fontWeight: 700, border: "1.5px solid #dbeafe" }}>
               <IconEdit /> แก้ไขโปรไฟล์
             </Link>
-            <button onClick={handleLogout} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 16px", borderRadius: "12px", background: "#fff5f5", color: "#dc2626", fontSize: "13px", fontWeight: 700, border: "1.5px solid #fecaca", cursor: "pointer", width: "100%", fontFamily: "inherit" }}>
-              <IconLogout /> ออกจากระบบ
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+            <Link href={`/user/${u.username.replace("@", "")}?preview=true`} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 16px", borderRadius: "
