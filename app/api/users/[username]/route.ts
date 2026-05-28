@@ -14,7 +14,7 @@ export async function GET(_req: Request, { params }: Params) {
       where: { username },
       select: {
         id: true, username: true, displayName: true, firstName: true,
-        avatarUrl: true, coverUrl: true, bio: true,
+        avatarUrl: true, coverUrl: true, profileCovers: true, bio: true,
         gender: true, birthDate: true,
         lineId: true, facebook: true, instagram: true, tiktok: true,
         email: true, phone: true,
@@ -48,6 +48,7 @@ export async function GET(_req: Request, { params }: Params) {
       id: user.id, username: user.username,
       displayName: user.displayName, firstName: user.firstName,
       avatarUrl: user.avatarUrl, coverUrl: user.coverUrl,
+      profileCovers: user.profileCovers,
       bio: user.bio, role: user.role,
       createdAt: user.createdAt,
       _count: user._count,
@@ -73,6 +74,4 @@ export async function GET(_req: Request, { params }: Params) {
     return NextResponse.json({ user: pub, trips });
   } catch (error) {
     console.error("GET /api/users/[username]:", error);
-    return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
-  }
-}
+    return NextResponse.json({ message: "เกิ

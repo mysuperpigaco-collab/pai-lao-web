@@ -56,9 +56,10 @@ model User {
   displayName String?
   birthDate   DateTime?
   gender      Gender?
-  avatarUrl   String?
-  coverUrl    String?
-  bio         String?
+  avatarUrl      String?
+  coverUrl       String?
+  profileCovers  String[]   // รูปสไลด์โชว์ปกโปรไฟล์ สูงสุด 5 รูป
+  bio            String?
 
   lineId      String?
   facebook    String?
@@ -249,8 +250,6 @@ model TimelineStop {
 
   placeId     String?
   place       Place?  @relation(fields: [placeId], references: [id], onDelete: SetNull)
-
-  shareToPlace Boolean @default(false)  // อนุญาตให้รูปแสดงบนหน้าสถานที่
 
   @@index([tripId])
   @@index([order])
