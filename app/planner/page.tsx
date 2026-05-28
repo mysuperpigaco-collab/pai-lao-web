@@ -125,7 +125,7 @@ interface Plan {
 }
 interface PlaceResult {
   id: string; slug: string; title: string; province: string;
-  district?: string; category: string; coverUrl?: string; googleMapsUrl?: string;
+  district?: string; category: string; coverUrl?: string; communityCover?: string | null; googleMapsUrl?: string;
 }
 interface BmTrip {
   id: string; slug: string; title: string; coverUrl?: string;
@@ -1016,8 +1016,10 @@ export default function PlannerPage() {
                 )}
                 {placeResults.map(p => (
                   <div key={p.id} style={{ marginBottom: 12, border: "1px solid #e2e8f0", borderRadius: 14, overflow: "hidden", background: "#fafafa" }}>
-                    {p.coverUrl && (
-                      <img src={p.coverUrl} alt="" style={{ width: "100%", height: 80, objectFit: "cover" }} />
+                    {(p.communityCover || p.coverUrl) ? (
+                      <img src={(p.communityCover || p.coverUrl)!} alt="" style={{ width: "100%", height: 80, objectFit: "cover" }} />
+                    ) : (
+                      <div style={{ width: "100%", height: 80, background: "linear-gradient(135deg,#e0f2fe,#d1fae5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>🏛️</div>
                     )}
                     <div style={{ padding: "10px 12px" }}>
                       <div style={{ fontWeight: 700, fontSize: 13, color: "#1e293b", marginBottom: 2 }}>{p.title}</div>
