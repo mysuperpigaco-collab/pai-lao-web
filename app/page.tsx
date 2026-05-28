@@ -2,6 +2,7 @@
 
 import { useState, useEffect, CSSProperties } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import TripSlider from "@/components/home/TripSlider";
 import ExplorerSection from "@/components/home/ExplorerSection";
 import AutoGridSection from "@/components/home/AutoGridSection";
@@ -404,9 +405,11 @@ function useSmallCols() {
 // ── Main Page ────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [showArchive, setShowArchive] = useState(false);
   const [archiveTrips, setArchiveTrips] = useState<Trip[]>([]);
   const [archiveLoading, setArchiveLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const smallCols = useSmallCols();
 
   useEffect(() => {
@@ -420,7 +423,61 @@ export default function HomePage() {
 
   const [btnHovered, setBtnHovered] = useState(false);
 
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    router.push(q ? `/place?q=${encodeURIComponent(q)}` : "/place");
+  }
+
   return (
+    <>
+      {/* ─── Hero Section ─── */}
+      <section style={{ position: "relative", width: "100%", height: 380, overflow: "hidden" }}>
+        {/* Background image */}
+        <img
+          src="/images/hero-bg.png"
+          alt="hero"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 60%" }}
+        />
+        {/* Dark overlay */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(5,10,30,0.38) 0%, rgba(5,10,30,0.62) 100%)" }} />
+
+        {/* Content */}
+        <div style={{ position: "relative", zIndex: 2, maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          {/* Tagline chip */}
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 999, padding: "5px 16px", marginBottom: 18, width: "fit-content" }}>
+            <span style={{ fontSize: 14 }}>🇹🇭</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.92)", letterSpacing: "0.04em" }}>ไปเล่า · Thailand Travel Stories</span>
+          </div>
+
+          {/* Headline */}
+          <h1 style={{ fontSize: "clamp(26px,4.5vw,48px)", fontWeight: 900, color: "white", margin: "0 0 10px", lineHeight: 1.2, textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
+            สำรวจประสบการณ์เดินทาง<br />
+            <span style={{ color: "#86efac" }}>จากนักเดินทางจริง</span>
+          </h1>
+          <p style={{ fontSize: "clamp(13px,1.8vw,17px)", color: "rgba(255,255,255,0.82)", margin: "0 0 28px", textShadow: "0 1px 6px rgba(0,0,0,0.3)" }}>
+            รีวิว · ทริป · สถานที่น่าไป ทั่วประเทศไทย
+          </p>
+
+          {/* Search bar */}
+          <form onSubmit={handleSearch} style={{ display: "flex", maxWidth: 520, width: "100%", background: "white", borderRadius: 999, overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,0.28)", border: "2px solid rgba(255,255,255,0.6)" }}>
+            <input
+              type="text"
+              placeholder="ค้นหาสถานที่ จังหวัด หรือหมวดหมู่..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{ flex: 1, border: "none", outline: "none", padding: "14px 20px", fontSize: 14, color: "#1e293b", background: "transparent", fontFamily: "inherit" }}
+            />
+            <button
+              type="submit"
+              style={{ padding: "12px 24px", background: "linear-gradient(135deg,#10b981,#06b6d4)", border: "none", color: "white", fontWeight: 800, fontSize: 14, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", borderRadius: "0 999px 999px 0" }}
+            >
+              🔍 ค้นหา
+            </button>
+          </form>
+        </div>
+      </section>
+
     <main style={{ maxWidth: 1200, margin: "0 auto", padding: "36px 20px 80px" }}>
 
       {/* ─── Spotlight header ─── */}
@@ -609,5 +666,6 @@ export default function HomePage() {
         }
       `}</style>
     </main>
+    </>
   );
 }
