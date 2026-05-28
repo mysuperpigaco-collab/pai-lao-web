@@ -298,4 +298,5 @@ body {
   .interest-grid{ grid-template-columns: 1fr; }
   .signup-card     { padding: 30px 20px; border-radius: 30px; }
   .navbar          { padding: 20px; }
-  .section-divid
+  .section-divider { grid-column: span 1; }
+}

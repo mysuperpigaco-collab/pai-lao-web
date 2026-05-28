@@ -324,4 +324,10 @@ export default function Navbar() {
         {!user && !isLoading && (
           <>
             <Link href="/login"  className="nb-m-link" onClick={() => setMenuOpen(false)}>🔑 เข้าสู่ระบบ</Link>
-            <Link href="/signup" className="nb-m-link" onClick={() => setMenuOpen(fa
+            <Link href="/signup" className="nb-m-link" onClick={() => setMenuOpen(false)}>✨ สมัครสมาชิก</Link>
+          </>
+        )}
+      </div>
+    </nav>
+  );
+}
