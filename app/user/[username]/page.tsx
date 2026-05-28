@@ -30,7 +30,6 @@ interface ReviewItem {
   place?: { slug: string; title: string; coverUrl: string } | null;
 }
 
-// ── ลดขนาดรูปก่อน upload ────────────────────────────────────
 function resizeImage(file: File, maxW = 1920, maxH = 800, quality = 0.82): Promise<File> {
   return new Promise(resolve => {
     const img = new Image();
@@ -77,7 +76,7 @@ function CoverSlideshow({ images, defaultCover }: { images: string[]; defaultCov
         width: "100%", height: "100%", objectFit: "cover", display: "block",
         opacity: fade ? 1 : 0, transition: "opacity 0.35s ease"
       }} />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.52) 100%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.55) 100%)", pointerEvents: "none" }} />
       {all.length > 1 && (
         <div style={{ position: "absolute", bottom: 16, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 6 }}>
           {all.map((_, i) => (
@@ -92,9 +91,9 @@ function CoverSlideshow({ images, defaultCover }: { images: string[]; defaultCov
   );
 }
 
-// ── Cover Manager (เจ้าของเท่านั้น) ─────────────────────────
-function CoverManager({ username, covers, onUpdate }: {
-  username: string; covers: string[]; onUpdate: (c: string[]) => void;
+// ── Cover Manager panel (overlay) ───────────────────────────
+function CoverManagerPanel({ username, covers, onUpdate, onClose }: {
+  username: string; covers: string[]; onUpdate: (c: string[]) => void; onClose: () => void;
 }) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
@@ -108,7 +107,7 @@ function CoverManager({ username, covers, onUpdate }: {
       const resized = await resizeImage(file, 1920, 800, 0.82);
       const fd = new FormData();
       fd.append("file", resized);
-      const res = await fetch(`/api/users/${username}/covers`, { method: "POST", body: fd });
+      const res = await fetch("/api/users/" + username + "/covers", { method: "POST", body: fd });
       const data = await res.json();
       if (res.ok) onUpdate(data.profileCovers ?? []);
       else alert(data.message ?? "Upload failed");
@@ -118,8 +117,8 @@ function CoverManager({ username, covers, onUpdate }: {
   };
 
   const remove = async (url: string) => {
-    if (!confirm("Remove this photo from slideshow?")) return;
-    const res = await fetch(`/api/users/${username}/covers`, {
+    if (!confirm("ลบรูปนี้ออกจากสไลด์โชว์?")) return;
+    const res = await fetch("/api/users/" + username + "/covers", {
       method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }),
     });
     const data = await res.json();
@@ -127,35 +126,53 @@ function CoverManager({ username, covers, onUpdate }: {
   };
 
   return (
-    <div className="up-cover-manager">
+    <>
       {preview && (
-        <div className="up-preview-overlay" onClick={() => setPreview(null)}>
-          <img src={preview} alt="preview" className="up-preview-img" onClick={e => e.stopPropagation()} />
-          <button className="up-preview-close" onClick={() => setPreview(null)}>✕</button>
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:20,cursor:"pointer"}} onClick={() => setPreview(null)}>
+          <img src={preview} alt="preview" style={{maxWidth:"92vw",maxHeight:"82vh",borderRadius:12,objectFit:"contain",boxShadow:"0 20px 60px rgba(0,0,0,0.4)",cursor:"default"}} onClick={e=>e.stopPropagation()} />
+          <button style={{position:"fixed",top:20,right:24,background:"rgba(255,255,255,0.15)",border:"none",color:"white",fontSize:16,width:38,height:38,borderRadius:"50%",cursor:"pointer",fontWeight:900}} onClick={() => setPreview(null)}>✕</button>
         </div>
       )}
-      <div className="up-cm-header">
-        <span>📸 รูปภาพสไลด์โชว์ ({covers.length}/5)</span>
-      </div>
-      <div className="up-cm-thumbs">
-        {covers.map((url, i) => (
-          <div key={i} className="up-cm-thumb">
-            <img src={url} alt="" className="up-cm-thumb-img" onClick={() => setPreview(url)} />
-            <div className="up-cm-thumb-overlay">
-              <button onClick={() => setPreview(url)} className="up-cm-eye">ดู</button>
-              <button onClick={() => remove(url)} className="up-cm-del">ลบ</button>
+
+      {/* Panel backdrop */}
+      <div style={{position:"fixed",inset:0,zIndex:200}} onClick={onClose} />
+
+      {/* Panel */}
+      <div style={{
+        position:"absolute", bottom:0, left:0, right:0, zIndex:201,
+        background:"rgba(15,23,42,0.88)", backdropFilter:"blur(16px)", WebkitBackdropFilter:"blur(16px)",
+        borderTop:"1px solid rgba(255,255,255,0.12)",
+        padding:"18px 20px 22px", borderRadius:"0 0 0 0",
+      }}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+          <span style={{color:"#fff",fontWeight:800,fontSize:14}}>
+            📸 รูปสไลด์โชว์ปก ({covers.length}/5)
+          </span>
+          <button onClick={onClose} style={{background:"rgba(255,255,255,0.15)",border:"none",color:"#fff",width:28,height:28,borderRadius:"50%",cursor:"pointer",fontWeight:700,fontSize:14}}>✕</button>
+        </div>
+
+        <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
+          {covers.map((url, i) => (
+            <div key={i} style={{position:"relative",width:110,height:68,borderRadius:10,overflow:"hidden",border:"2px solid rgba(255,255,255,0.2)",flexShrink:0,cursor:"pointer"}}
+              onMouseEnter={e=>{const ov=e.currentTarget.querySelector(".cm-ov") as HTMLElement; if(ov) ov.style.opacity="1";}}
+              onMouseLeave={e=>{const ov=e.currentTarget.querySelector(".cm-ov") as HTMLElement; if(ov) ov.style.opacity="0";}}>
+              <img src={url} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} />
+              <div className="cm-ov" style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.55)",display:"flex",alignItems:"center",justifyContent:"center",gap:5,opacity:0,transition:"opacity 0.18s"}}>
+                <button onClick={() => setPreview(url)} style={{border:"none",borderRadius:7,fontSize:10,padding:"4px 8px",cursor:"pointer",fontWeight:700,background:"rgba(255,255,255,0.92)",color:"#1e293b"}}>ดู</button>
+                <button onClick={() => remove(url)} style={{border:"none",borderRadius:7,fontSize:10,padding:"4px 8px",cursor:"pointer",fontWeight:700,background:"rgba(239,68,68,0.9)",color:"white"}}>ลบ</button>
+              </div>
             </div>
-          </div>
-        ))}
-        {covers.length < 5 && (
-          <label className="up-cm-add">
-            {uploading ? <span className="up-cm-spin">⏳</span> : <><span style={{fontSize:22}}>+</span><span style={{fontSize:11,marginTop:2}}>เพิ่มรูป</span></>}
-            <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={upload} disabled={uploading} />
-          </label>
-        )}
+          ))}
+          {covers.length < 5 && (
+            <label style={{width:110,height:68,borderRadius:10,border:"2px dashed rgba(167,243,208,0.6)",background:"rgba(16,185,129,0.1)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#6ee7b7",fontWeight:700,flexShrink:0}}>
+              {uploading ? <span>⏳</span> : <><span style={{fontSize:22}}>+</span><span style={{fontSize:11,marginTop:2}}>เพิ่มรูป</span></>}
+              <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={upload} disabled={uploading} />
+            </label>
+          )}
+        </div>
+        <p style={{fontSize:11,color:"rgba(255,255,255,0.45)",margin:"10px 0 0"}}>สลับอัตโนมัติทุก 4 วินาที · สูงสุด 5 รูป · ขนาดแนะนำ 1920×800px</p>
       </div>
-      <p className="up-cm-hint">คลิกรูปเพื่อดูตัวอย่าง · สลับอัตโนมัติทุก 4 วินาที · สูงสุด 5 รูป</p>
-    </div>
+    </>
   );
 }
 
@@ -174,7 +191,7 @@ function UserListModal({ title, users, onClose }: { title: string; users: Follow
             : users.map(u => {
                 const name = u.displayName || u.firstName;
                 return (
-                  <Link key={u.id} href={`/user/${u.username}`} onClick={onClose}
+                  <Link key={u.id} href={"/user/" + u.username} onClick={onClose}
                     style={{display:"flex",alignItems:"center",gap:12,padding:"10px 8px",borderRadius:12,textDecoration:"none",color:"inherit"}}
                     onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#f8fafc"}
                     onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>
@@ -205,7 +222,7 @@ function ModernTripCard({ trip, ownerAvatar, ownerName }: { trip: TripCard; owne
   const [hovered, setHovered] = useState(false);
   const province = trip.province?.split(" (")[0] ?? trip.location?.split(",").pop()?.trim() ?? "";
   return (
-    <Link href={`/trips/${trip.slug}`}
+    <Link href={"/trips/" + trip.slug}
       style={{
         display:"flex", flexDirection:"column", borderRadius:20, overflow:"hidden",
         background:"rgba(255,255,255,0.88)", backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)",
@@ -225,7 +242,7 @@ function ModernTripCard({ trip, ownerAvatar, ownerName }: { trip: TripCard; owne
         {province && <span style={{position:"absolute",top:10,left:10,background:"rgba(255,255,255,.88)",color:"#0f172a",fontSize:11,fontWeight:800,padding:"4px 10px",borderRadius:999,backdropFilter:"blur(6px)"}}>
           {province}
         </span>}
-        {trip.mood && <span style={{position:"absolute",bottom:10,left:10,background:"rgba(99,102,241,.85)",color:"#fff",fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:999,backdropFilter:"blur(4px)"}}>
+        {trip.mood && <span style={{position:"absolute",bottom:10,left:10,background:"rgba(99,102,241,.85)",color:"#fff",fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:999}}>
           {trip.mood}
         </span>}
       </div>
@@ -252,7 +269,7 @@ function ModernTripCard({ trip, ownerAvatar, ownerName }: { trip: TripCard; owne
   );
 }
 
-// ── Inner component (uses useSearchParams) ───────────────────
+// ── Inner component ──────────────────────────────────────────
 function UserProfileInner() {
   const { user: me } = useAuth();
   const params = useParams();
@@ -272,8 +289,8 @@ function UserProfileInner() {
   const [followModal, setFollowModal] = useState<"followers"|"following"|null>(null);
   const [followUsers, setFollowUsers] = useState<FollowUser[]>([]);
   const [followLoading, setFollowLoading] = useState(false);
+  const [showCoverMgr, setShowCoverMgr] = useState(false);
 
-  // Redirect owner to dashboard (unless ?preview=true)
   useEffect(() => {
     if (me?.username && username && me.username === username && !isPreviewMode) {
       router.replace("/dashboard");
@@ -283,7 +300,7 @@ function UserProfileInner() {
   useEffect(() => {
     if (!username) return;
     setLoading(true);
-    fetch(`/api/users/${encodeURIComponent(username)}`)
+    fetch("/api/users/" + encodeURIComponent(username))
       .then(r => r.json())
       .then(data => {
         if (!data.user) { setNotFound(true); setLoading(false); return; }
@@ -297,7 +314,7 @@ function UserProfileInner() {
 
   useEffect(() => {
     if (activeTab !== "reviews" || !username) return;
-    fetch(`/api/users/${encodeURIComponent(username)}/reviews`)
+    fetch("/api/users/" + encodeURIComponent(username) + "/reviews")
       .then(r => r.json())
       .then(data => { setReviews(data.reviews ?? []); setReviewsOwn(data.isOwn ?? false); })
       .catch(() => {});
@@ -306,7 +323,7 @@ function UserProfileInner() {
   const openFollowModal = async (type: "followers"|"following") => {
     setFollowModal(type); setFollowLoading(true);
     try {
-      const res = await fetch(`/api/users/${encodeURIComponent(username)}/followers?type=${type}`);
+      const res = await fetch("/api/users/" + encodeURIComponent(username) + "/followers?type=" + type);
       setFollowUsers((await res.json()).users ?? []);
     } catch {}
     setFollowLoading(false);
@@ -314,7 +331,7 @@ function UserProfileInner() {
 
   const toggleReviewHidden = async (reviewId: string) => {
     try {
-      const res = await fetch(`/api/reviews/${reviewId}/hide`, { method: "POST" });
+      const res = await fetch("/api/reviews/" + reviewId + "/hide", { method: "POST" });
       if (res.ok) {
         const data = await res.json();
         setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, isHidden: data.isHidden } : r));
@@ -322,10 +339,7 @@ function UserProfileInner() {
     } catch {}
   };
 
-  // While redirecting owner, show nothing
-  if (me?.username && username && me.username === username && !isPreviewMode) {
-    return null;
-  }
+  if (me?.username && username && me.username === username && !isPreviewMode) return null;
 
   if (loading) return (
     <div style={{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center",color:"#94a3b8",fontSize:16}}>
@@ -346,27 +360,27 @@ function UserProfileInner() {
 
   return (
     <div className="up-page">
-      {/* ── Preview Mode Banner ────────────────────────────────── */}
+
+      {/* Preview Mode Banner */}
       {isPreviewMode && (
         <div style={{
-          position:"sticky", top:0, zIndex:100,
+          position:"sticky", top:0, zIndex:300,
           background:"linear-gradient(90deg,#7c3aed,#4f46e5)",
-          color:"#fff", padding:"12px 20px",
+          color:"#fff", padding:"11px 20px",
           display:"flex", alignItems:"center", justifyContent:"space-between", gap:12,
           boxShadow:"0 2px 16px rgba(99,102,241,0.35)"
         }}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <span style={{fontSize:20}}>👁</span>
+            <span style={{fontSize:18}}>👁</span>
             <div>
-              <div style={{fontWeight:800,fontSize:14}}>โหมดพรีวิว — นี่คือสิ่งที่คนอื่นเห็นโปรไฟล์ของคุณ</div>
-              <div style={{fontSize:12,opacity:0.82}}>Preview Mode — This is how others see your profile</div>
+              <div style={{fontWeight:800,fontSize:13}}>โหมดพรีวิว — นี่คือสิ่งที่คนอื่นเห็นโปรไฟล์ของคุณ</div>
+              <div style={{fontSize:11,opacity:0.78}}>Preview Mode — This is how others see your profile</div>
             </div>
           </div>
           <Link href="/dashboard" style={{
-            background:"rgba(255,255,255,0.18)", border:"1.5px solid rgba(255,255,255,0.35)",
-            color:"#fff", textDecoration:"none", fontWeight:700, fontSize:13,
-            padding:"7px 16px", borderRadius:10, whiteSpace:"nowrap",
-            display:"flex", alignItems:"center", gap:6
+            background:"rgba(255,255,255,0.15)", border:"1.5px solid rgba(255,255,255,0.3)",
+            color:"#fff", textDecoration:"none", fontWeight:700, fontSize:12,
+            padding:"6px 14px", borderRadius:9, whiteSpace:"nowrap",
           }}>
             ← กลับแดชบอร์ด
           </Link>
@@ -375,59 +389,86 @@ function UserProfileInner() {
 
       {followModal && (
         <UserListModal
-          title={followModal === "followers"
-            ? `ผู้ติดตาม (${user._count?.followers ?? 0})`
-            : `กำลังติดตาม (${user._count?.following ?? 0})`}
+          title={followModal === "followers" ? "ผู้ติดตาม (" + (user._count?.followers ?? 0) + ")" : "กำลังติดตาม (" + (user._count?.following ?? 0) + ")"}
           users={followLoading ? [] : followUsers}
           onClose={() => { setFollowModal(null); setFollowUsers([]); }}
         />
       )}
 
-      {/* ── Hero Cover ─────────────────────────────────────────── */}
+      {/* ── Hero Cover ── */}
       <div className="up-hero">
         <CoverSlideshow images={covers} defaultCover={user.coverUrl} />
 
-        {/* Avatar pinned to bottom-left of hero */}
+        {/* Avatar bottom-left */}
         <div className="up-hero-avatar-wrap">
           {user.avatarUrl
             ? <img src={user.avatarUrl} alt={displayName} className="up-hero-avatar" />
             : <div className="up-hero-avatar-circle">{displayName.charAt(0).toUpperCase()}</div>}
         </div>
+
+        {/* Edit Cover button — owner only, bottom-right */}
+        {isOwnProfile && (
+          <button
+            onClick={() => setShowCoverMgr(v => !v)}
+            style={{
+              position:"absolute", bottom:14, right:16, zIndex:10,
+              display:"flex", alignItems:"center", gap:7,
+              background: showCoverMgr ? "rgba(16,185,129,0.92)" : "rgba(15,23,42,0.62)",
+              backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)",
+              border: showCoverMgr ? "1.5px solid rgba(52,211,153,0.7)" : "1.5px solid rgba(255,255,255,0.2)",
+              color:"#fff", fontSize:12, fontWeight:700, padding:"7px 14px", borderRadius:999,
+              cursor:"pointer", transition:"all 0.2s", fontFamily:"inherit",
+            }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+            {showCoverMgr ? "ปิด" : "จัดการรูปปก (" + covers.length + "/5)"}
+          </button>
+        )}
+
+        {/* Cover Manager Panel — slides up from bottom of hero */}
+        {isOwnProfile && showCoverMgr && (
+          <CoverManagerPanel
+            username={username}
+            covers={covers}
+            onUpdate={setCovers}
+            onClose={() => setShowCoverMgr(false)}
+          />
+        )}
       </div>
 
-      {/* ── Profile Body ───────────────────────────────────────── */}
+      {/* ── Profile Body ── */}
       <div className="up-body">
 
-        {/* Name + action row */}
+        {/* Name row */}
         <div className="up-name-row">
           <div className="up-name-col">
             <h1 className="up-displayname">{displayName}</h1>
-            <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",marginTop:3}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginTop:4}}>
               <span className="up-username">@{user.username}</span>
-              {joinYear && <span className="up-since">สมาชิกตั้งแต่ {joinYear}</span>}
+              {joinYear && <span className="up-since">· สมาชิกตั้งแต่ {joinYear}</span>}
             </div>
           </div>
-          {/* Action buttons */}
-          <div style={{display:"flex",gap:8,flexShrink:0,flexWrap:"wrap"}}>
-            {isOwnProfile && isPreviewMode && (
-              <Link href="/dashboard/edit-profile" className="up-action-btn up-action-edit">
-                ✏️ แก้ไขโปรไฟล์
-              </Link>
-            )}
-          </div>
+
+          {/* Edit Profile button — owner only */}
+          {isOwnProfile && (
+            <Link href="/dashboard/edit-profile" className="up-edit-profile-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z"/>
+              </svg>
+              <span>แก้ไขโปรไฟล์</span>
+            </Link>
+          )}
         </div>
 
-        {/* Bio — prominent, shown right below name */}
+        {/* Bio card */}
         {!user.isPrivate && user.bio && (
           <div className="up-bio-card">
             <div className="up-bio-label">เกี่ยวกับฉัน</div>
             <p className="up-bio-text">{user.bio}</p>
           </div>
-        )}
-
-        {/* Cover Manager — owner only (always visible when in preview mode too) */}
-        {isOwnProfile && (
-          <CoverManager username={username} covers={covers} onUpdate={setCovers} />
         )}
 
         {/* Stats */}
@@ -456,24 +497,22 @@ function UserProfileInner() {
           </div>
         ) : (
           <>
-            {/* Contact row */}
             {(user.email || user.phone || user.lineId || user.facebook || user.instagram || user.tiktok) && (
               <div className="up-contact">
-                {user.email     && <a href={`mailto:${user.email}`} className="up-contact-item">📧 {user.email}</a>}
+                {user.email     && <a href={"mailto:" + user.email} className="up-contact-item">📧 {user.email}</a>}
                 {user.phone     && <span className="up-contact-item">📞 {user.phone}</span>}
                 {user.lineId    && <span className="up-contact-item">💬 LINE: {user.lineId}</span>}
-                {user.facebook  && <a href={user.facebook.startsWith("http")?user.facebook:`https://facebook.com/${user.facebook}`} target="_blank" rel="noopener" className="up-contact-item">📘 {user.facebook}</a>}
-                {user.instagram && <a href={`https://instagram.com/${user.instagram.replace("@","")}`} target="_blank" rel="noopener" className="up-contact-item">📷 {user.instagram}</a>}
-                {user.tiktok    && <a href={`https://tiktok.com/@${user.tiktok.replace("@","")}`} target="_blank" rel="noopener" className="up-contact-item">🎵 {user.tiktok}</a>}
+                {user.facebook  && <a href={user.facebook.startsWith("http")?user.facebook:"https://facebook.com/"+user.facebook} target="_blank" rel="noopener" className="up-contact-item">📘 {user.facebook}</a>}
+                {user.instagram && <a href={"https://instagram.com/"+user.instagram.replace("@","")} target="_blank" rel="noopener" className="up-contact-item">📷 {user.instagram}</a>}
+                {user.tiktok    && <a href={"https://tiktok.com/@"+user.tiktok.replace("@","")} target="_blank" rel="noopener" className="up-contact-item">🎵 {user.tiktok}</a>}
               </div>
             )}
 
-            {/* Tabs */}
             <div className="up-tab-bar">
-              <button className={`up-tab${activeTab==="trips"?" active":""}`} onClick={() => setActiveTab("trips")}>
+              <button className={"up-tab" + (activeTab==="trips"?" active":"")} onClick={() => setActiveTab("trips")}>
                 ✈️ ทริป <span className="up-tab-count">{trips.length}</span>
               </button>
-              <button className={`up-tab${activeTab==="reviews"?" active":""}`} onClick={() => setActiveTab("reviews")}>
+              <button className={"up-tab" + (activeTab==="reviews"?" active":"")} onClick={() => setActiveTab("reviews")}>
                 ⭐ รีวิว
               </button>
             </div>
@@ -508,11 +547,11 @@ function UserProfileInner() {
                 ) : (
                   <div style={{display:"flex",flexDirection:"column",gap:12}}>
                     {reviews.map(rv => {
-                      const dest = rv.trip ? `/trips/${rv.trip.slug}` : rv.place ? `/place/${rv.place.slug}` : "#";
+                      const dest = rv.trip ? "/trips/"+rv.trip.slug : rv.place ? "/place/"+rv.place.slug : "#";
                       const destTitle = rv.trip?.title ?? rv.place?.title ?? "Content";
                       const coverUrl = rv.trip?.coverUrl ?? rv.place?.coverUrl ?? null;
                       return (
-                        <div key={rv.id} style={{background:rv.isHidden?"rgba(248,250,252,0.88)":"rgba(255,255,255,0.88)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",border:`1.5px solid ${rv.isHidden?"#e2e8f0":"#f1f5f9"}`,borderRadius:16,overflow:"hidden",opacity:rv.isHidden?0.6:1}}>
+                        <div key={rv.id} style={{background:rv.isHidden?"rgba(248,250,252,0.88)":"rgba(255,255,255,0.88)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",border:"1.5px solid "+(rv.isHidden?"#e2e8f0":"#f1f5f9"),borderRadius:16,overflow:"hidden",opacity:rv.isHidden?0.6:1}}>
                           <div style={{display:"flex",alignItems:"stretch"}}>
                             {coverUrl && <div style={{width:80,flexShrink:0,overflow:"hidden"}}><img src={coverUrl} alt={destTitle} style={{width:"100%",height:"100%",objectFit:"cover"}} /></div>}
                             <div style={{flex:1,padding:"12px 14px"}}>
@@ -521,7 +560,7 @@ function UserProfileInner() {
                                 <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
                                   {rv.isHidden && <span style={{fontSize:10,fontWeight:800,background:"#fef2f2",color:"#b91c1c",padding:"2px 8px",borderRadius:999}}>ซ่อน</span>}
                                   {reviewsOwn && (
-                                    <button onClick={() => toggleReviewHidden(rv.id)} style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:999,border:`1px solid ${rv.isHidden?"#bbf7d0":"#fecaca"}`,background:rv.isHidden?"#f0fdf4":"#fff5f5",color:rv.isHidden?"#15803d":"#b91c1c",cursor:"pointer",fontFamily:"inherit"}}>
+                                    <button onClick={() => toggleReviewHidden(rv.id)} style={{fontSize:11,fontWeight:700,padding:"3px 10px",borderRadius:999,border:"1px solid "+(rv.isHidden?"#bbf7d0":"#fecaca"),background:rv.isHidden?"#f0fdf4":"#fff5f5",color:rv.isHidden?"#15803d":"#b91c1c",cursor:"pointer",fontFamily:"inherit"}}>
                                       {rv.isHidden ? "แสดง" : "ซ่อน"}
                                     </button>
                                   )}
@@ -552,17 +591,13 @@ function UserProfileInner() {
       <style jsx>{`
         .up-page { min-height: 100vh; background: transparent; padding-bottom: 60px; }
 
-        /* Hero */
         .up-hero {
-          width: 100%; height: 280px; position: relative; overflow: hidden;
-          background: #1a3a2a;
+          width: 100%; height: 280px; position: relative; overflow: hidden; background: #1a3a2a;
         }
-        .up-hero-avatar-wrap {
-          position: absolute; bottom: -40px; left: 28px; z-index: 10;
-        }
+        .up-hero-avatar-wrap { position: absolute; bottom: -42px; left: 24px; z-index: 10; }
         .up-hero-avatar, .up-hero-avatar-circle {
-          width: 96px; height: 96px; border-radius: 50%;
-          border: 4px solid white; box-shadow: 0 6px 24px rgba(0,0,0,0.28); display: block;
+          width: 92px; height: 92px; border-radius: 50%;
+          border: 4px solid white; box-shadow: 0 6px 24px rgba(0,0,0,0.3); display: block;
         }
         .up-hero-avatar { object-fit: cover; }
         .up-hero-avatar-circle {
@@ -571,31 +606,30 @@ function UserProfileInner() {
           color: white; font-size: 34px; font-weight: 900;
         }
 
-        /* Body */
-        .up-body { max-width: 860px; margin: 0 auto; padding: 52px 20px 0; }
+        .up-body { max-width: 860px; margin: 0 auto; padding: 56px 20px 0; }
 
         /* Name row */
         .up-name-row {
           display: flex; align-items: flex-start; justify-content: space-between;
-          gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+          gap: 12px; margin-bottom: 18px; flex-wrap: wrap;
         }
         .up-name-col { flex: 1; min-width: 0; }
-        .up-displayname { font-size: 24px; font-weight: 900; color: #0f172a; margin: 0 0 0; line-height: 1.2; }
+        .up-displayname { font-size: 24px; font-weight: 900; color: #0f172a; margin: 0; line-height: 1.2; }
         .up-username { font-size: 13px; color: #64748b; font-weight: 600; }
         .up-since { font-size: 12px; color: #94a3b8; }
 
-        /* Action buttons */
-        .up-action-btn {
-          display: inline-flex; align-items: center; gap: 6px;
-          padding: 8px 16px; border-radius: 11px; font-size: 13px; font-weight: 700;
-          text-decoration: none; border: 1.5px solid; cursor: pointer;
-          transition: opacity 0.15s;
+        /* Edit profile button — redesigned */
+        .up-edit-profile-btn {
+          display: inline-flex; align-items: center; gap: 7px;
+          padding: 9px 18px; border-radius: 12px;
+          background: linear-gradient(135deg, #667eea 0%, #4facfe 100%);
+          color: #fff; font-weight: 700; font-size: 13px;
+          text-decoration: none; flex-shrink: 0; white-space: nowrap;
+          box-shadow: 0 4px 14px rgba(79,172,254,0.35);
+          transition: opacity 0.15s, transform 0.15s;
+          border: none;
         }
-        .up-action-btn:hover { opacity: 0.82; }
-        .up-action-edit {
-          background: rgba(255,255,255,0.88); backdrop-filter: blur(8px);
-          color: #475569; border-color: #e2e8f0;
-        }
+        .up-edit-profile-btn:hover { opacity: 0.88; transform: translateY(-1px); }
 
         /* Bio card */
         .up-bio-card {
@@ -613,56 +647,6 @@ function UserProfileInner() {
           white-space: pre-wrap;
         }
 
-        /* Cover Manager */
-        .up-cover-manager {
-          background: rgba(255,255,255,0.88); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-          border: 1.5px solid rgba(16,185,129,0.2); border-radius: 16px;
-          padding: 14px 16px 12px; margin-bottom: 20px;
-        }
-        .up-cm-header { font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 12px; }
-        .up-cm-thumbs { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        .up-cm-thumb {
-          position: relative; width: 110px; height: 70px; border-radius: 10px;
-          overflow: hidden; border: 2px solid #e2e8f0; flex-shrink: 0; cursor: pointer;
-        }
-        .up-cm-thumb-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .up-cm-thumb-overlay {
-          position: absolute; inset: 0; background: rgba(0,0,0,0.52);
-          display: flex; align-items: center; justify-content: center; gap: 5px;
-          opacity: 0; transition: opacity 0.18s;
-        }
-        .up-cm-thumb:hover .up-cm-thumb-overlay { opacity: 1; }
-        .up-cm-eye, .up-cm-del {
-          border: none; border-radius: 8px; font-size: 10px; padding: 4px 8px;
-          cursor: pointer; font-family: inherit; font-weight: 700;
-        }
-        .up-cm-eye { background: rgba(255,255,255,0.92); color: #1e293b; }
-        .up-cm-del { background: rgba(239,68,68,0.9); color: white; }
-        .up-cm-add {
-          width: 110px; height: 70px; border-radius: 10px;
-          border: 2px dashed #a7f3d0; background: rgba(240,253,244,0.7);
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          cursor: pointer; color: #059669; font-weight: 700; transition: background 0.15s; flex-shrink: 0;
-        }
-        .up-cm-add:hover { background: rgba(209,250,229,0.9); }
-        .up-cm-spin { font-size: 18px; }
-        .up-cm-hint { font-size: 11px; color: #94a3b8; margin: 8px 0 0; }
-
-        /* Preview overlay */
-        .up-preview-overlay {
-          position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 9999;
-          display: flex; align-items: center; justify-content: center; padding: 20px; cursor: pointer;
-        }
-        .up-preview-img {
-          max-width: 92vw; max-height: 82vh; border-radius: 12px;
-          object-fit: contain; box-shadow: 0 20px 60px rgba(0,0,0,0.4); cursor: default;
-        }
-        .up-preview-close {
-          position: fixed; top: 20px; right: 24px;
-          background: rgba(255,255,255,0.15); border: none; color: white; font-size: 16px;
-          width: 38px; height: 38px; border-radius: 50%; cursor: pointer; font-weight: 900;
-        }
-
         /* Stats */
         .up-stats {
           display: flex; border: 1px solid rgba(226,232,240,0.6); border-radius: 18px; overflow: hidden;
@@ -673,7 +657,7 @@ function UserProfileInner() {
         .up-stat { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 18px 12px; border-right: 1px solid #e2e8f0; }
         .up-stat:last-child { border-right: none; }
         .up-stat strong { font-size: 24px; font-weight: 900; color: #0f172a; }
-        .up-stat span { font-size: 12px; color: #64748b; margin-top: 3px; text-align: center; }
+        .up-stat span { font-size: 12px; color: #64748b; margin-top: 3px; }
         .up-stat-btn { background: none; border: none; cursor: pointer; font-family: inherit; transition: background 0.15s; }
         .up-stat-btn:hover { background: rgba(240,253,244,0.8); }
         .up-stat-btn:hover strong { color: #10b981; }
@@ -705,24 +689,23 @@ function UserProfileInner() {
           color: #64748b; font-size: 14px;
         }
 
-        /* Trip grid */
         .up-trips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
 
         @media (max-width: 640px) {
           .up-hero { height: 200px; }
           .up-hero-avatar-wrap { bottom: -36px; left: 16px; }
-          .up-hero-avatar, .up-hero-avatar-circle { width: 80px; height: 80px; font-size: 28px; }
-          .up-body { padding-top: 46px; }
+          .up-hero-avatar, .up-hero-avatar-circle { width: 78px; height: 78px; font-size: 26px; }
+          .up-body { padding-top: 48px; }
           .up-displayname { font-size: 19px; }
           .up-trips-grid { grid-template-columns: 1fr 1fr; }
-          .up-cm-thumb, .up-cm-add { width: 86px; height: 56px; }
+          .up-edit-profile-btn span { display: none; }
+          .up-edit-profile-btn { padding: 9px 12px; border-radius: 50%; }
         }
       `}</style>
     </div>
   );
 }
 
-// ── Exported page with Suspense wrapper ──────────────────────
 export default function UserProfilePage() {
   return (
     <Suspense fallback={<div style={{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center",color:"#94a3b8"}}>Loading...</div>}>
