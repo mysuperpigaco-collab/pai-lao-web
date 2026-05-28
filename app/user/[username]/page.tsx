@@ -624,8 +624,9 @@ function UserProfileInner() {
         .up-avatar-row {
           max-width: 900px; margin: 0 auto; padding: 0 28px;
           height: 0; display: flex; align-items: flex-start;
+          position: relative; z-index: 20;
         }
-        .up-avatar-wrap { margin-top: -50px; position: relative; z-index: 10; }
+        .up-avatar-wrap { margin-top: -50px; }
         .up-avatar, .up-avatar-circle {
           width: 96px; height: 96px; border-radius: 50%;
           border: 4px solid white; box-shadow: 0 6px 24px rgba(0,0,0,0.22); display: block;
@@ -710,7 +711,7 @@ function UserProfileInner() {
           .up-hero-wrapper { padding: 12px 12px 0; }
           .up-hero { height: 200px; border-radius: 16px; }
           .up-avatar-row { padding: 0 20px; }
-          .up-avatar-wrap { margin-top: -42px; position: relative; z-index: 10; }
+          .up-avatar-wrap { margin-top: -42px; }
           .up-avatar, .up-avatar-circle { width: 80px; height: 80px; font-size: 28px; border-width: 3px; }
           .up-body { padding-top: 52px; padding-left: 12px; padding-right: 12px; }
           .up-displayname { font-size: 19px; }
