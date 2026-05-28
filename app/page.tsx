@@ -422,18 +422,6 @@ export default function HomePage() {
 
   return (
     <>
-      {/* ── Background image เฉพาะหน้าแรก — ลบ <style> นี้เพื่อย้อนกลับ ── */}
-      <style>{`
-        html {
-          background-image: url('/images/hero-bg.png') !important;
-          background-size: cover !important;
-          background-position: center 60% !important;
-          background-attachment: fixed !important;
-          background-color: #1a2a1a !important;
-        }
-        body { background: transparent !important; }
-      `}</style>
-
     <main style={{ maxWidth: 1200, margin: "0 auto", padding: "36px 20px 80px" }}>
 
       {/* ─── Spotlight header ─── */}
