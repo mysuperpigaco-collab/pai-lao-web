@@ -373,12 +373,14 @@ export default function PlannerPage() {
   };
 
   const doSearch = useCallback(async () => {
-    if (!sQ.trim() && !sProv) { setPlaceResults([]); return; }
+    if (!sQ.trim() && !sProv && !sCat) { setPlaceResults([]); return; }
     setSearching(true);
     try {
       const p = new URLSearchParams();
       if (sQ)    p.set("q", sQ);
-      if (sProv) p.set("province", sProv);
+      // Strip English suffix e.g. "กรุงเทพมหานคร (Bangkok)" → "กรุงเทพมหานคร"
+      const provClean = sProv ? sProv.replace(/\s*\(.*?\)\s*$/, "").trim() : "";
+      if (provClean) p.set("province", provClean);
       if (sDist) p.set("district", sDist);
       if (sCat)  p.set("category", sCat);
       p.set("limit", "20");
