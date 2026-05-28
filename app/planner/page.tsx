@@ -259,7 +259,7 @@ export default function PlannerPage() {
 
   const addStop = async (stop: { name: string; province?: string; district?: string; googleMapsUrl?: string; stopType?: string; placeId?: string; day?: number; arrivalTime?: string; duration?: number }) => {
     if (!activePlan) return;
-    setAddingToStop(stop.name);
+    setAddingToStop(stop.placeId ?? stop.name);
     const res = await fetch(`/api/planner/${activePlan.id}`, {
       method: "PUT", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "add-stop", day: selectedDay, ...stop }),
@@ -1026,17 +1026,17 @@ export default function PlannerPage() {
                       <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>
                         📍 {p.province}{p.district ? ` · ${p.district}` : ""} &nbsp;·&nbsp; {p.category}
                       </div>
-                      <button disabled={!activePlan || addingToStop === p.title} onClick={() => addStop({
+                      <button disabled={!activePlan || addingToStop === p.id} onClick={() => addStop({
                         name: p.title, province: p.province, district: p.district,
                         googleMapsUrl: p.googleMapsUrl, stopType: "ATTRACTION", placeId: p.id,
                       })} style={{
                         width: "100%", padding: "7px", borderRadius: 10, border: "none",
-                        background: !activePlan ? "#e2e8f0" : addingToStop === p.title ? "#93c5fd" : "linear-gradient(135deg,#3b82f6,#6366f1)",
+                        background: !activePlan ? "#e2e8f0" : addingToStop === p.id ? "#93c5fd" : "linear-gradient(135deg,#3b82f6,#6366f1)",
                         color: !activePlan ? "#94a3b8" : "#fff",
                         fontWeight: 700, fontSize: 12,
                         cursor: activePlan ? "pointer" : "not-allowed", fontFamily: "inherit"
                       }}>
-                        {!activePlan ? "เลือกแผนก่อน · Select plan first" : addingToStop === p.title ? "⏳ กำลังเพิ่ม..." : "+ เพิ่มในแผน · Add to Plan"}
+                        {!activePlan ? "เลือกแผนก่อน · Select plan first" : addingToStop === p.id ? "⏳ กำลังเพิ่ม..." : "+ เพิ่มในแผน · Add to Plan"}
                       </button>
                     </div>
                   </div>
@@ -1123,17 +1123,17 @@ export default function PlannerPage() {
                           <div style={{ fontWeight: 600, fontSize: 12, color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{stop.placeName}</div>
                           <div style={{ fontSize: 10, color: "#94a3b8" }}>{[stop.province, stop.district].filter(Boolean).join(" · ")}</div>
                         </div>
-                        <button disabled={!activePlan || addingToStop === stop.placeName} onClick={() => addStop({
+                        <button disabled={!activePlan || addingToStop === (stop.placeId ?? stop.placeName)} onClick={() => addStop({
                           name: stop.placeName, province: stop.province, district: stop.district,
                           googleMapsUrl: stop.googleMapsUrl ?? undefined,
                           stopType: stop.stopType ?? "ATTRACTION", placeId: stop.placeId ?? undefined,
                         })} style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 10, border: "none",
-                          background: !activePlan ? "#e2e8f0" : addingToStop === stop.placeName ? "#93c5fd" : "#3b82f6",
+                          background: !activePlan ? "#e2e8f0" : addingToStop === (stop.placeId ?? stop.placeName) ? "#93c5fd" : "#3b82f6",
                           color: !activePlan ? "#94a3b8" : "#fff",
                           fontWeight: 900, fontSize: 16, cursor: activePlan ? "pointer" : "not-allowed",
                           fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center"
                         }}>
-                          {addingToStop === stop.placeName ? "⏳" : "+"}
+                          {addingToStop === (stop.placeId ?? stop.placeName) ? "⏳" : "+"}
                         </button>
                       </div>
                     );
