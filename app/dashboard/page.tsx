@@ -565,7 +565,7 @@ export default function DashboardPage() {
                       </div>
                     ))}
                   </div>
-                  <style>{"@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
+                  <style>{`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
                   </div>
                 ) : savedPlaces.length > 0 ? (
                   <>
@@ -622,7 +622,7 @@ export default function DashboardPage() {
                       </div>
                     ))}
                   </div>
-                  <style>{"@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
+                  <style>{`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
                 </div>
               ) : stories.length > 0 ? (
                 <>
@@ -683,7 +683,7 @@ export default function DashboardPage() {
       </div>
 
       <style jsx>{`
-        .dp-page { min-height: 100vh; background: #f8fafc; padding: 36px 0 80px; }
+        .dp-page { min-height: 100vh; background: transparent; padding: 36px 0 80px; }
         .dp-container { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
 
         .dp-page-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; }
@@ -707,7 +707,7 @@ export default function DashboardPage() {
         .dp-grid { display: grid; grid-template-columns: 290px 1fr; gap: 28px; align-items: start; }
         .dp-sidebar { position: sticky; top: 100px; }
 
-        .dp-card { background: white; border-radius: 24px; padding: 22px; border: 1px solid #f1f5f9; box-shadow: 0 2px 12px rgba(15,23,42,0.04); }
+        .dp-card { background: rgba(255,255,255,0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 24px; padding: 22px; border: 1px solid #f1f5f9; box-shadow: 0 2px 12px rgba(15,23,42,0.04); }
         .sb-title { font-size: 14px; font-weight: 900; color: #1e293b; margin: 0 0 14px; }
         .sb-title small { font-size: 11px; color: #94a3b8; font-weight: 400; margin-left: 5px; }
 
