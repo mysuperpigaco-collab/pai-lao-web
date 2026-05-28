@@ -44,8 +44,10 @@ export default function Navbar() {
       <style>{`
         .nb-nav {
           position: sticky; top: 0; z-index: 1000;
-          background: linear-gradient(135deg, #059669 0%, #0891b2 100%);
-          box-shadow: 0 2px 16px rgba(5,150,105,0.25);
+          background: linear-gradient(135deg, rgba(5,150,105,0.80) 0%, rgba(8,145,178,0.80) 100%);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          box-shadow: 0 2px 16px rgba(5,150,105,0.18);
         }
         .nb-inner {
           max-width: 1200px; margin: 0 auto; padding: 0 16px;
@@ -322,10 +324,4 @@ export default function Navbar() {
         {!user && !isLoading && (
           <>
             <Link href="/login"  className="nb-m-link" onClick={() => setMenuOpen(false)}>🔑 เข้าสู่ระบบ</Link>
-            <Link href="/signup" className="nb-m-link" onClick={() => setMenuOpen(false)}>✨ สมัครสมาชิก</Link>
-          </>
-        )}
-      </div>
-    </nav>
-  );
-}
+            <Link href="/signup" className="nb-m-link" onClick={() => setMenuOpen(fa

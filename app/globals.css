@@ -23,8 +23,8 @@
   --pl-gradient: linear-gradient(to right, #4facfe, #43e97b);
 
   /* Neutral */
-  --pl-white:        #ffffff;
-  --pl-bg:           #f8fafc;
+  --pl-white:        rgba(255,255,255,0.88);
+  --pl-bg:           rgba(248,250,252,0.82);
   --pl-border:       #e2e8f0;
   --pl-border-soft:  #dbe7f3;
 
@@ -298,5 +298,4 @@ body {
   .interest-grid{ grid-template-columns: 1fr; }
   .signup-card     { padding: 30px 20px; border-radius: 30px; }
   .navbar          { padding: 20px; }
-  .section-divider { grid-column: span 1; }
-}
+  .section-divid
