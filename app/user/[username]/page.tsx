@@ -327,7 +327,49 @@ function UserProfileInner() {
   if (me?.username && username && me.username === username && !isPreviewMode) return null;
 
   if (loading) return (
-    <div style={{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center",color:"#94a3b8",fontSize:16}}>Loading...</div>
+    <div style={{minHeight:"100vh", background:"transparent"}}>
+      <style>{`@keyframes _upsh{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
+      {/* Hero skeleton */}
+      <div style={{maxWidth:900,margin:"0 auto",padding:"18px 20px 0"}}>
+        <div style={{height:280,borderRadius:22,background:"linear-gradient(90deg,#e2e8f0 0%,#f1f5f9 45%,#e2e8f0 90%)",backgroundSize:"200% 100%",animation:"_upsh 1.5s ease infinite"}} />
+      </div>
+      {/* Avatar + name skeleton */}
+      <div style={{maxWidth:900,margin:"0 auto",padding:"0 28px"}}>
+        <div style={{height:0,display:"flex",alignItems:"flex-start",position:"relative",zIndex:20}}>
+          <div style={{marginTop:-50,width:96,height:96,borderRadius:"50%",border:"4px solid #fff",background:"linear-gradient(90deg,#e2e8f0 0%,#f1f5f9 45%,#e2e8f0 90%)",backgroundSize:"200% 100%",animation:"_upsh 1.5s ease infinite",boxShadow:"0 6px 24px rgba(0,0,0,0.12)"}} />
+        </div>
+      </div>
+      <div style={{maxWidth:900,margin:"0 auto",padding:"62px 20px 0"}}>
+        <div style={{height:28,width:160,borderRadius:8,background:"linear-gradient(90deg,#e2e8f0 0%,#f1f5f9 45%,#e2e8f0 90%)",backgroundSize:"200% 100%",animation:"_upsh 1.5s ease infinite",marginBottom:8}} />
+        <div style={{height:16,width:120,borderRadius:6,background:"linear-gradient(90deg,#e2e8f0 0%,#f1f5f9 45%,#e2e8f0 90%)",backgroundSize:"200% 100%",animation:"_upsh 1.5s ease infinite 0.1s",marginBottom:20}} />
+        <div style={{height:80,borderRadius:16,background:"linear-gradient(90deg,#e2e8f0 0%,#f1f5f9 45%,#e2e8f0 90%)",backgroundSize:"200% 100%",animation:"_upsh 1.5s ease infinite 0.05s",marginBottom:20}} />
+        <div style={{display:"flex",gap:24,marginBottom:24}}>
+          {[0,1,2].map(i=>(
+            <div key={i} style={{textAlign:"center"}}>
+              <div style={{height:28,width:40,borderRadius:6,background:"linear-gradient(90deg,#e2e8f0 0%,#f1f5f9 45%,#e2e8f0 90%)",backgroundSize:"200% 100%",animation:`_upsh 1.5s ease infinite ${i*0.1}s`,marginBottom:6}} />
+              <div style={{height:12,width:44,borderRadius:4,background:"linear-gradient(90deg,#e2e8f0 0%,#f1f5f9 45%,#e2e8f0 90%)",backgroundSize:"200% 100%",animation:`_upsh 1.5s ease infinite ${i*0.1+0.1}s`}} />
+            </div>
+          ))}
+        </div>
+        <div style={{display:"flex",gap:8,marginBottom:24}}>
+          {[80,60,90,70].map((w,i)=>(
+            <div key={i} style={{height:32,width:w,borderRadius:999,background:"linear-gradient(90deg,#e2e8f0 0%,#f1f5f9 45%,#e2e8f0 90%)",backgroundSize:"200% 100%",animation:`_upsh 1.5s ease infinite ${i*0.08}s`}} />
+          ))}
+        </div>
+        {/* Tab bar skeleton */}
+        <div style={{display:"flex",gap:8,borderBottom:"2px solid #f1f5f9",marginBottom:24,paddingBottom:12}}>
+          {[60,50,48].map((w,i)=>(
+            <div key={i} style={{height:20,width:w,borderRadius:4,background:"linear-gradient(90deg,#e2e8f0 0%,#f1f5f9 45%,#e2e8f0 90%)",backgroundSize:"200% 100%",animation:`_upsh 1.5s ease infinite ${i*0.1}s`}} />
+          ))}
+        </div>
+        {/* Cards skeleton */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+          {[0,1,2,3,4,5].map(i=>(
+            <div key={i} style={{height:180,borderRadius:14,background:"linear-gradient(90deg,#e2e8f0 0%,#f1f5f9 45%,#e2e8f0 90%)",backgroundSize:"200% 100%",animation:`_upsh 1.5s ease infinite ${i*0.07}s`}} />
+          ))}
+        </div>
+      </div>
+    </div>
   );
   if (notFound || !user) return (
     <div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12}}>
@@ -561,50 +603,35 @@ function UserProfileInner() {
           </>
         )}
 
-        {/* Bottom spacer for sticky bar */}
-        {isOwnProfile && <div style={{height:80}} />}
+        {/* ── Owner action buttons — inline in page ── */}
+        {isOwnProfile && (
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginTop:32,paddingBottom:48}}>
+            <Link href="/dashboard" style={{
+              display:"inline-flex", alignItems:"center", justifyContent:"center",
+              padding:"10px 28px", borderRadius:999,
+              background:"#f8fafc", border:"1.5px solid #e2e8f0",
+              color:"#475569", fontWeight:700, fontSize:14,
+              textDecoration:"none",
+            }}>
+              ยกเลิก
+            </Link>
+            <Link href="/dashboard/edit-profile" style={{
+              display:"inline-flex", alignItems:"center", justifyContent:"center", gap:7,
+              padding:"10px 28px", borderRadius:999,
+              background:"linear-gradient(135deg,#10b981,#059669)",
+              color:"#fff", fontWeight:700, fontSize:14,
+              textDecoration:"none",
+              boxShadow:"0 4px 14px rgba(16,185,129,0.35)",
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z"/>
+              </svg>
+              แก้ไขโปรไฟล์
+            </Link>
+          </div>
+        )}
       </div>
-
-      {/* ── Sticky Bottom Action Bar — owner only ── */}
-      {isOwnProfile && (
-        <div style={{
-          position:"fixed", bottom:0, left:0, right:0, zIndex:200,
-          background:"rgba(255,255,255,0.95)", backdropFilter:"blur(14px)", WebkitBackdropFilter:"blur(14px)",
-          borderTop:"1px solid #e2e8f0",
-          padding:"12px 20px",
-          display:"flex", alignItems:"center", justifyContent:"center", gap:12,
-          boxShadow:"0 -4px 24px rgba(15,23,42,0.08)",
-        }}>
-          <Link href="/dashboard" style={{
-            display:"inline-flex", alignItems:"center", justifyContent:"center",
-            padding:"10px 28px", borderRadius:999,
-            background:"#f8fafc", border:"1.5px solid #e2e8f0",
-            color:"#475569", fontWeight:700, fontSize:14,
-            textDecoration:"none", transition:"all 0.15s",
-          }}
-          onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background="#f1f5f9"}
-          onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background="#f8fafc"}>
-            ยกเลิก
-          </Link>
-          <Link href="/dashboard/edit-profile" style={{
-            display:"inline-flex", alignItems:"center", justifyContent:"center", gap:7,
-            padding:"10px 28px", borderRadius:999,
-            background:"linear-gradient(135deg,#10b981,#059669)",
-            color:"#fff", fontWeight:700, fontSize:14,
-            textDecoration:"none",
-            boxShadow:"0 4px 14px rgba(16,185,129,0.35)",
-            transition:"all 0.15s",
-          }}
-          onMouseEnter={e=>(e.currentTarget as HTMLElement).style.opacity="0.88"}
-          onMouseLeave={e=>(e.currentTarget as HTMLElement).style.opacity="1"}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z"/>
-            </svg>
-            แก้ไขโปรไฟล์
-          </Link>
-        </div>
-      )}
 
       <style jsx>{`
         .up-page { min-height: 100vh; background: transparent; padding-bottom: 0; }
