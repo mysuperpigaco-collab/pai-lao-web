@@ -23,6 +23,10 @@ const NAV_ADMIN = [
     { href: "/admin/trips",     icon: "🗺️", label: "ทริปทั้งหมด" },
     { href: "/admin/places",    icon: "📍", label: "สถานที่" },
   ]},
+  { group: "V2 Features", items: [
+    { href: "/admin/missions",   icon: "🎯", label: "ภารกิจ" },
+    { href: "/admin/promotions", icon: "🎁", label: "โปรโมชั่น" },
+  ]},
   { group: "ชุมชน", items: [
     { href: "/admin/users",   icon: "👥", label: "ผู้ใช้งาน" },
     { href: "/admin/reports", icon: "🚩", label: "รายงาน", alert: true },
