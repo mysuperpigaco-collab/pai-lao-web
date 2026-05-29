@@ -71,6 +71,8 @@ model User {
   postBannedUntil DateTime?  // ห้ามโพสจนถึงวันที่นี้ (null = ไม่ถูกแบน)
   bannedUntil     DateTime?  // บัญชีถูกระงับจนถึงวันที่นี้ (null = ไม่ถูกแบน)
   banReason       String?    // เหตุผลที่ถูกแบน
+  resetToken      String?    // token สำหรับรีเซ็ตรหัสผ่าน
+  resetTokenExp   DateTime?  // วันหมดอายุ token
 
   // Privacy settings
   profilePrivacy  String    @default("PUBLIC")  // PUBLIC | PRIVATE
@@ -248,7 +250,6 @@ model TimelineStop {
   googleMapsUrl String?  // Google Maps URL
   tips          String?  // เคล็ดลับ/ข้อควรรู้
 
-  shareToPlace  Boolean  @default(false)  // แชร์รูปนี้ให้แสดงในหน้าสถานที่
   placeId     String?
   place       Place?  @relation(fields: [placeId], references: [id], onDelete: SetNull)
 
