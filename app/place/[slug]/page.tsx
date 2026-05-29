@@ -100,6 +100,24 @@ export default async function PlaceDetailPage({ params }: Props) {
     })),
   }));
 
+  // Community photos from trips (only for unclaimed places)
+  const communityStops = !place.business
+    ? await prisma.timelineStop.findMany({
+        where: { placeId: place.id },
+        include: {
+          trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true } } } },
+        },
+      })
+    : [];
+
+  const communityStopsSorted = communityStops
+    .filter(s => s.images.length > 0)
+    .sort((a, b) => (b.trip?._count.likes ?? 0) - (a.trip?._count.likes ?? 0));
+
+  const communityImages = communityStopsSorted.flatMap(s => s.images);
+  const realCoverUrl = (place.coverUrl && place.coverUrl !== "/images/default-place.svg") ? place.coverUrl : null;
+  const communityCover = !realCoverUrl && communityImages.length > 0 ? communityImages[0] : null;
+
   return (
     <div className="pd-page">
       <div className="pd-hero-wrap">
@@ -110,8 +128,8 @@ export default async function PlaceDetailPage({ params }: Props) {
               <span>สถานที่ทั้งหมด · All Places</span>
             </Link>
           </div>
-          {place.coverUrl
-            ? <img src={place.coverUrl} alt={place.title} className="pd-hero-img" />
+          {(realCoverUrl || communityCover)
+            ? <img src={realCoverUrl || communityCover!} alt={place.title} className="pd-hero-img" />
             : <div className="pd-hero-img" style={{ background: "linear-gradient(135deg,#10b981,#06b6d4)" }} />
           }
           <div className="pd-hero-overlay">
@@ -119,11 +137,11 @@ export default async function PlaceDetailPage({ params }: Props) {
               <div className="pd-hero-badges">
                 <span className="pd-badge">{catIcon} {catLabel}</span>
                 {place.business?.isVerified && (
-                  <span className="pd-badge pd-badge-green">✓ Verified Business</span>
+                  <span className="pd-badge pd-badge-green">&#10003; Verified Business</span>
                 )}
                 {place.business
-                  ? <span className="pd-badge" style={{ background: "rgba(16,185,129,0.75)" }}>🏢 มีเจ้าของ</span>
-                  : <span className="pd-badge" style={{ background: "rgba(100,116,139,0.7)" }}>⭕ ยังไม่มีเจ้าของ</span>
+                  ? <span className="pd-badge" style={{ background: "rgba(16,185,129,0.75)" }}>&#127970; มีเจ้าของ</span>
+                  : <span className="pd-badge" style={{ background: "rgba(100,116,139,0.7)" }}>&#9711; ยังไม่มีเจ้าของ</span>
                 }
                 {isOwner && (
                   <span className="pd-badge" style={{ background: "rgba(245,158,11,0.7)" }}>
@@ -132,17 +150,17 @@ export default async function PlaceDetailPage({ params }: Props) {
                 )}
                 {place.petPolicy === "NOT_ALLOWED" && (
                   <span className="pd-badge" style={{ background: "rgba(185,28,28,0.75)", fontSize: 11 }}>
-                    🚫 ห้ามนำสัตว์เลี้ยง
+                    &#128683; ห้ามนำสัตว์เลี้ยง
                   </span>
                 )}
                 {place.petPolicy === "ALLOWED" && (
                   <span className="pd-badge" style={{ background: "rgba(21,128,61,0.75)", fontSize: 11 }}>
-                    🐾 สัตว์เลี้ยงเข้าได้
+                    &#128062; สัตว์เลี้ยงเข้าได้
                   </span>
                 )}
                 {place.petPolicy === "CONDITIONS" && (
                   <span className="pd-badge" style={{ background: "rgba(146,64,14,0.75)", fontSize: 11 }}>
-                    ⚠️ สัตว์เลี้ยงได้บางส่วน
+                    &#9888;&#65039; สัตว์เลี้ยงได้บางส่วน
                   </span>
                 )}
               </div>
@@ -178,12 +196,9 @@ export default async function PlaceDetailPage({ params }: Props) {
                 <p className="pd-description">{place.description}</p>
               </div>
             )}
-            {/* ── Amenities + Pet Policy ── */}
             {((place.amenities?.length > 0) || place.petPolicy) && (
               <div className="pd-card">
                 <h2>สิ่งอำนวยความสะดวก <span style={{ fontSize: 14, fontWeight: 600, color: "#94a3b8" }}>Facilities</span></h2>
-
-                {/* Pet Policy banner */}
                 {place.petPolicy && (
                   <div style={{
                     display: "inline-flex", alignItems: "center", gap: 8,
@@ -207,8 +222,6 @@ export default async function PlaceDetailPage({ params }: Props) {
                     </div>
                   </div>
                 )}
-
-                {/* Amenity chips */}
                 {place.amenities?.length > 0 && (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                     {place.amenities.map((key: string) => {
@@ -246,6 +259,31 @@ export default async function PlaceDetailPage({ params }: Props) {
                 </div>
               </div>
             )}
+
+            {communityImages.length > 0 && (
+              <div className="pd-card">
+                <h2>
+                  📸 รูปจากนักเดินทาง
+                  <span style={{ fontSize: 14, fontWeight: 600, color: "#94a3b8" }}> Community Photos</span>
+                </h2>
+                <p style={{ fontSize: 12, color: "#94a3b8", marginTop: -8, marginBottom: 12 }}>
+                  รูปภาพที่นักเดินทางแชร์จากทริปของพวกเขา · Photos shared by travelers from their trips
+                </p>
+                <div className="pd-gallery">
+                  {communityImages.slice(0, 9).map((img, i) => (
+                    <div key={i} className="pd-gal-item">
+                      <img src={img} alt={"Community photo " + (i + 1)} />
+                    </div>
+                  ))}
+                </div>
+                {communityImages.length > 9 && (
+                  <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 8 }}>
+                    +{communityImages.length - 9} รูปเพิ่มเติม
+                  </p>
+                )}
+              </div>
+            )}
+
             {place.googleMapsUrl && (
               <div className="pd-card pd-map-card">
                 <h2>แผนที่ Map</h2>
@@ -273,7 +311,6 @@ export default async function PlaceDetailPage({ params }: Props) {
           </div>
 
           <aside className="pd-sidebar">
-            {/* Stats boxes */}
             <div className="pd-side-card" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
               <div style={{ textAlign: "center", padding: "10px 0", borderRight: "1px solid #f1f5f9", borderBottom: "1px solid #f1f5f9" }}>
                 <div style={{ fontSize: 22, fontWeight: 900, color: "#0f172a" }}>{place._count.reviews}</div>
@@ -293,7 +330,6 @@ export default async function PlaceDetailPage({ params }: Props) {
               </div>
             </div>
 
-            {/* Like + Bookmark row */}
             <div style={{ display: "flex", gap: 8 }}>
               <PlaceLikeButton placeId={place.id} initialLiked={initialLiked} initialCount={likeCount} businessOwnerId={place.business?.userId ?? null} />
               <PlaceBookmarkButton placeId={place.id} initialSaved={initialSaved} />
@@ -435,7 +471,7 @@ export default async function PlaceDetailPage({ params }: Props) {
             />
 
             {isOwner && (
-              <Link href={`/business/places/${slug}/edit`} className="pd-edit-btn">
+              <Link href={"/business/places/" + slug + "/edit"} className="pd-edit-btn">
                 &#x270F;&#xFE0F; แก้ไขสถานที่ · Edit Place
               </Link>
             )}
