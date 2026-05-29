@@ -6,6 +6,8 @@ import { getCurrentUser } from "@/lib/auth";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const placeId = searchParams.get("placeId");
+  const province = searchParams.get("province");
+  const district = searchParams.get("district");
   const now = new Date();
 
   const promotions = await prisma.promotion.findMany({
@@ -14,13 +16,19 @@ export async function GET(req: NextRequest) {
       startDate: { lte: now },
       endDate: { gt: now },
       ...(placeId ? { placeId } : {}),
+      ...(province || district ? {
+        place: {
+          ...(province ? { province: { contains: province, mode: "insensitive" } } : {}),
+          ...(district ? { district: { contains: district, mode: "insensitive" } } : {}),
+        },
+      } : {}),
     },
     include: {
-      place: { select: { id: true, title: true, slug: true, coverUrl: true, province: true } },
+      place: { select: { id: true, title: true, slug: true, coverUrl: true, province: true, district: true } },
       business: { select: { id: true, businessName: true, logoUrl: true } },
     },
     orderBy: { endDate: "asc" },
-    take: 20,
+    take: 50,
   });
   return NextResponse.json({ promotions });
 }
