@@ -23,8 +23,8 @@
   --pl-gradient: linear-gradient(to right, #4facfe, #43e97b);
 
   /* Neutral */
-  --pl-white:        #ffffff;
-  --pl-bg:           #f8fafc;
+  --pl-white:        rgba(255,255,255,0.88);
+  --pl-bg:           rgba(248,250,252,0.82);
   --pl-border:       #e2e8f0;
   --pl-border-soft:  #dbe7f3;
 
@@ -66,15 +66,23 @@
 }
 
 html, body {
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
+}
+
+html {
+  background-image: url('/images/hero-bg.png');
+  background-size: cover;
+  background-position: center 60%;
+  background-attachment: fixed;
+  background-color: #1a3a2a;
 }
 
 body {
   font-family: 'Sarabun', sans-serif;
   font-size: 16px;
   line-height: 1.7;
-  background: var(--pl-bg);
+  background: transparent;
   color: var(--pl-text-primary);
 }
 
@@ -287,7 +295,7 @@ body {
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .manage-grid     { grid-template-columns: 1fr; }
-  .interest-grid   { grid-template-columns: 1fr; }
+  .interest-grid{ grid-template-columns: 1fr; }
   .signup-card     { padding: 30px 20px; border-radius: 30px; }
   .navbar          { padding: 20px; }
   .section-divider { grid-column: span 1; }
