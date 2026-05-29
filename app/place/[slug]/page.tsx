@@ -114,7 +114,7 @@ export default async function PlaceDetailPage({ params }: Props) {
     .filter(s => s.images.length > 0)
     .sort((a, b) => (b.trip?._count.likes ?? 0) - (a.trip?._count.likes ?? 0));
 
-  const communityImages = communityStopsSorted.flatMap(s => s.images);
+  const communityImages = communityStopsSorted.flatMap(s => s.images).filter(img => img && !img.includes("default-place.svg"));
   const realCoverUrl = (place.coverUrl && place.coverUrl !== "/images/default-place.svg") ? place.coverUrl : null;
   const communityCover = !realCoverUrl && communityImages.length > 0 ? communityImages[0] : null;
 
