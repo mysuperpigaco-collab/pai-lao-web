@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { getDistricts } from "@/data/thailand";
 
 type Promotion = {
   id: string;
@@ -273,18 +274,23 @@ export default function PromotionsPage() {
               <option value="">ทุกจังหวัด</option>
               {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
-            <input
-              type="text"
-              placeholder="อำเภอ/เขต (ไม่บังคับ)"
+            <select
               value={district}
               onChange={e => setDistrict(e.target.value)}
+              disabled={!province}
               style={{
                 flex: "1 1 150px", minWidth: 150, padding: "10px 16px",
                 borderRadius: 10, border: "none",
                 fontSize: 14, outline: "none",
                 background: "rgba(255,255,255,0.95)",
+                color: district ? "#111827" : "#9ca3af",
+                opacity: province ? 1 : 0.6,
+                cursor: province ? "pointer" : "not-allowed",
               }}
-            />
+            >
+              <option value="">{province ? "ทุกอำเภอ" : "เลือกจังหวัดก่อน"}</option>
+              {province && getDistricts(province).map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
             {(province || district || search) && (
               <button
                 onClick={() => { setProvince(""); setDistrict(""); setSearch(""); }}

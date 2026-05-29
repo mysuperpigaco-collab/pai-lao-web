@@ -271,8 +271,8 @@ export default function Navbar() {
               {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && user.role !== "BUSINESS" && (
                 <Link href="/planner" className="nb-plan-btn">📅 วางแผนเที่ยว <span style={{fontSize:12,opacity:0.85,fontWeight:700}}>Planner</span></Link>
               )}
-              {siteSettings.missionsEnabled === "true" && <Link href="/missions" className="nb-link">🎯 ภารกิจ</Link>}
-              {siteSettings.promotionsEnabled === "true" && <Link href="/promotions" className="nb-link">🎁 โปรโมชั่น</Link>}
+              {siteSettings.missionsEnabled === "true" && <Link href="/missions" className="nb-link">🎯 ภารกิจ <span style={{fontSize:11,opacity:0.8,fontWeight:600}}>Missions</span></Link>}
+              {siteSettings.promotionsEnabled === "true" && <Link href="/promotions" className="nb-link">🎁 โปรโมชั่น <span style={{fontSize:11,opacity:0.8,fontWeight:600}}>Deals</span></Link>}
               {/* Write / Add Place */}
               {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && (
                 user.role === "BUSINESS" ? (
@@ -323,8 +323,8 @@ export default function Navbar() {
         <Link href="/"      className="nb-m-link" onClick={() => setMenuOpen(false)}>🏠 หน้าแรก</Link>
         <Link href="/place" className="nb-m-link" onClick={() => setMenuOpen(false)}>🗺️ สถานที่</Link>
         <Link href="/trips" className="nb-m-link" onClick={() => setMenuOpen(false)}>✈️ ทริป</Link>
-        {siteSettings.missionsEnabled === "true" && <Link href="/missions" className="nb-m-link" onClick={() => setMenuOpen(false)}>🎯 ภารกิจ</Link>}
-        {siteSettings.promotionsEnabled === "true" && <Link href="/promotions" className="nb-m-link" onClick={() => setMenuOpen(false)}>🎁 โปรโมชั่น</Link>}
+        {siteSettings.missionsEnabled === "true" && <Link href="/missions" className="nb-m-link" onClick={() => setMenuOpen(false)}>🎯 ภารกิจ · Missions</Link>}
+        {siteSettings.promotionsEnabled === "true" && <Link href="/promotions" className="nb-m-link" onClick={() => setMenuOpen(false)}>🎁 โปรโมชั่น · Deals</Link>}
         {user && (
           <button className="nb-m-logout" onClick={() => { logout(); setMenuOpen(false); }}>
             ออกจากระบบ
@@ -333,10 +333,4 @@ export default function Navbar() {
         {!user && !isLoading && (
           <>
             <Link href="/login"  className="nb-m-link" onClick={() => setMenuOpen(false)}>🔑 เข้าสู่ระบบ</Link>
-            <Link href="/signup" className="nb-m-link" onClick={() => setMenuOpen(false)}>✨ สมัครสมาชิก</Link>
-          </>
-        )}
-      </div>
-    </nav>
-  );
-}
+            <Link href="/signup
