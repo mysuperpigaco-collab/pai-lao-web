@@ -20,7 +20,6 @@ export default function MissionSubmitBox({ placeId, missions }: Props) {
   const [selected, setSelected] = useState<Mission | null>(missions.length === 1 ? missions[0] : null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [text, setText] = useState("");
-  const [visitedAt, setVisitedAt] = useState(""); // datetime-local value
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -46,12 +45,11 @@ export default function MissionSubmitBox({ placeId, missions }: Props) {
   async function submit() {
     if (!selected) return;
     if (photos.length === 0) { setError("กรุณาอัปโหลดรูปภาพอย่างน้อย 1 รูป"); return; }
-    if (!visitedAt) { setError("กรุณาระบุวันและเวลาที่ไปสถานที่"); return; }
     setSubmitting(true); setError("");
     const res = await fetch(`/api/missions/${selected.id}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ photoUrls: photos, reviewText: text, placeId, visitedAt }),
+      body: JSON.stringify({ photoUrls: photos, reviewText: text, placeId }),
     });
     if (res.ok) {
       setDone(true);
@@ -118,27 +116,6 @@ export default function MissionSubmitBox({ placeId, missions }: Props) {
             </div>
           ) : (
             <>
-              {/* Visit date-time */}
-              <div style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#92400e", marginBottom: 6 }}>
-                  🕐 วันและเวลาที่ไปสถานที่ *
-                </div>
-                <input
-                  type="datetime-local"
-                  value={visitedAt}
-                  onChange={e => setVisitedAt(e.target.value)}
-                  max={new Date().toISOString().slice(0, 16)}
-                  style={{
-                    width: "100%", padding: "9px 12px", borderRadius: 8,
-                    border: "1.5px solid #fde68a", fontSize: 13,
-                    background: "white", color: "#1e293b", boxSizing: "border-box",
-                  }}
-                />
-                <div style={{ fontSize: 11, color: "#a16207", marginTop: 4 }}>
-                  ระบุวันเวลาที่คุณไปถึงสถานที่จริง เพื่อให้แอดมินตรวจสอบ
-                </div>
-              </div>
-
               {/* Photo upload */}
               <div style={{ marginBottom: 12 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: "#92400e", marginBottom: 6 }}>📸 อัปโหลดรูปหลักฐาน *</div>

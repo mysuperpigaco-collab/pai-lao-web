@@ -12,7 +12,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     const { id } = await params;
-    const { photoUrls, reviewText, placeId, visitedAt } = await req.json();
+    const { photoUrls, reviewText, placeId } = await req.json();
 
     if (!photoUrls || photoUrls.length === 0) {
       return NextResponse.json({ error: "กรุณาอัปโหลดรูปภาพอย่างน้อย 1 รูป" }, { status: 400 });
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         photoUrls,
         reviewText: reviewText || null,
         placeId: placeId || null,
-        visitedAt: visitedAt ? new Date(visitedAt) : null,
+        visitedAt: new Date(),
         submittedAt: new Date(),
       },
       update: {
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         photoUrls,
         reviewText: reviewText || null,
         placeId: placeId || null,
-        visitedAt: visitedAt ? new Date(visitedAt) : null,
+        visitedAt: new Date(),
         submittedAt: new Date(),
       },
     });
