@@ -524,6 +524,7 @@ export default function ExplorerSection() {
           </>
         )}
       </div>
-    </section>
+    </div>
   );
 }
+    
