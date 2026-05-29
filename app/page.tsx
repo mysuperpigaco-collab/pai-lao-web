@@ -3,6 +3,8 @@
 import { useState, useEffect, CSSProperties } from "react";
 import Link from "next/link";
 import TripSlider from "@/components/home/TripSlider";
+import MissionSection from "@/components/home/MissionSection";
+import PromotionSection from "@/components/home/PromotionSection";
 import ExplorerSection from "@/components/home/ExplorerSection";
 import AutoGridSection from "@/components/home/AutoGridSection";
 import { useAuth } from "@/context/AuthContext";
@@ -585,6 +587,8 @@ export default function HomePage() {
       </div>
 
       {/* ─── Explorer ─── */}
+      <MissionSection />
+      <PromotionSection />
       <ExplorerSection />
 
       {/* ─── Must-See ─── */}

@@ -265,6 +265,8 @@ export default function Navbar() {
               {/* Plan button — desktop only, for USER role */}
               {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && user.role !== "BUSINESS" && (
                 <Link href="/planner" className="nb-plan-btn">📅 วางแผนเที่ยว <span style={{fontSize:12,opacity:0.85,fontWeight:700}}>Planner</span></Link>
+              <Link href="/missions" className="nb-link">🎯 ภารกิจ</Link>
+              <Link href="/promotions" className="nb-link">🎁 โปรโมชั่น</Link>
               )}
               {/* Write / Add Place */}
               {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && (
@@ -316,6 +318,8 @@ export default function Navbar() {
         <Link href="/"      className="nb-m-link" onClick={() => setMenuOpen(false)}>🏠 หน้าแรก</Link>
         <Link href="/place" className="nb-m-link" onClick={() => setMenuOpen(false)}>🗺️ สถานที่</Link>
         <Link href="/trips" className="nb-m-link" onClick={() => setMenuOpen(false)}>✈️ ทริป</Link>
+        <Link href="/missions" className="nb-m-link" onClick={() => setMenuOpen(false)}>🎯 ภารกิจ</Link>
+        <Link href="/promotions" className="nb-m-link" onClick={() => setMenuOpen(false)}>🎁 โปรโมชั่น</Link>
         {user && (
           <button className="nb-m-logout" onClick={() => { logout(); setMenuOpen(false); }}>
             ออกจากระบบ
