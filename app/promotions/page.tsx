@@ -204,7 +204,7 @@ export default function PromotionsPage() {
       }}>
         {/* BG image + warm overlay */}
         <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/images/hero-bg.png')", backgroundSize: "cover", backgroundPosition: "center 60%" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(146,64,14,0.88) 0%, rgba(180,83,9,0.85) 30%, rgba(217,119,6,0.82) 60%, rgba(239,68,68,0.80) 100%)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(146,64,14,0.65) 0%, rgba(180,83,9,0.60) 30%, rgba(217,119,6,0.58) 60%, rgba(239,68,68,0.55) 100%)" }} />
         <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle,rgba(255,255,255,0.06) 1px,transparent 1px)", backgroundSize: "28px 28px" }} />
         <div style={{ position: "absolute", top: -80, right: -80, width: 250, height: 250, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
         <div style={{ position: "absolute", bottom: -50, left: -50, width: 180, height: 180, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />

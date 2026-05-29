@@ -297,7 +297,7 @@ export default function MissionsPage() {
       }}>
         {/* BG image + dark overlay */}
         <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/images/hero-bg.png')", backgroundSize: "cover", backgroundPosition: "center 60%" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(6,78,59,0.88) 0%, rgba(6,95,70,0.85) 40%, rgba(4,120,87,0.82) 100%)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(6,78,59,0.65) 0%, rgba(6,95,70,0.60) 40%, rgba(4,120,87,0.58) 100%)" }} />
         {/* Decorative circles */}
         <div style={{ position: "absolute", top: -60, right: -60, width: 220, height: 220, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
         <div style={{ position: "absolute", bottom: -40, left: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
