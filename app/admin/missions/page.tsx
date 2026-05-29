@@ -37,7 +37,7 @@ function PlaceSearch({ onSelect }: { onSelect: (p: PlaceSuggestion) => void }) {
     clearTimeout(timer.current);
     if (!val.trim()) { setResults([]); setOpen(false); return; }
     timer.current = setTimeout(async () => {
-      const res = await fetch(`/api/places?search=${encodeURIComponent(val)}&limit=8`);
+      const res = await fetch(`/api/admin/place-search?q=${encodeURIComponent(val)}`);
       const d = await res.json();
       setResults(d.places || []);
       setOpen(true);
