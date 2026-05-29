@@ -99,3 +99,22 @@ export async function PUT(req: NextRequest) {
   }
   return NextResponse.json({ error: "action ไม่ถูกต้อง" }, { status: 400 });
 }
+
+// PATCH /api/admin/missions — toggle mission status ACTIVE <-> INACTIVE
+export async function PATCH(req: NextRequest) {
+  const session = await getCurrentUser();
+  if (!adminGuard(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  const { missionId } = await req.json();
+  if (!missionId) return NextResponse.json({ error: "ข้อมูลไม่ครบ" }, { status: 400 });
+
+  const mission = await prisma.mission.findUnique({ where: { id: missionId } });
+  if (!mission) return NextResponse.json({ error: "ไม่พบภารกิจ" }, { status: 404 });
+
+  const newStatus = mission.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+  const updated = await prisma.mission.update({
+    where: { id: missionId },
+    data: { status: newStatus },
+  });
+  return NextResponse.json({ ok: true, status: updated.status });
+}

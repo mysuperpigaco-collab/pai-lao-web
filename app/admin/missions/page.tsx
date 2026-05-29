@@ -1,133 +1,333 @@
 "use client";
 import { useEffect, useState } from "react";
 
-type Mission = { id: string; title: string; status: string; endDate: string; rewardPoints: number; _count: { participants: number }; place?: { title: string } };
-type Submission = { id: string; status: string; photoUrls: string[]; reviewText?: string; submittedAt: string; user: { username: string; displayName: string; avatarUrl?: string }; mission: { title: string; rewardPoints: number; badgeLabel?: string } };
+type Mission = {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  rewardPoints: number;
+  badgeLabel?: string;
+  startDate: string;
+  endDate: string;
+  maxSlots?: number;
+  province?: string;
+  place?: { id: string; title: string; slug: string } | null;
+  createdAt: string;
+  _count: { participants: number };
+};
+
+type Submission = {
+  id: string;
+  status: string;
+  photoUrls: string[];
+  reviewText?: string;
+  submittedAt?: string;
+  user: { id: string; username: string; displayName?: string; avatarUrl?: string };
+  mission: { id: string; title: string; rewardPoints: number; badgeLabel?: string };
+};
+
+function Toast({ msg, ok, onClose }: { msg: string; ok: boolean; onClose: () => void }) {
+  useEffect(() => { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); }, [onClose]);
+  return (
+    <div style={{
+      position: "fixed", bottom: 24, right: 24, zIndex: 9999,
+      background: ok ? "#059669" : "#dc2626",
+      color: "#fff", padding: "12px 20px", borderRadius: 10,
+      boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+      fontWeight: 600, fontSize: 14,
+    }}>{msg}</div>
+  );
+}
 
 export default function AdminMissionsPage() {
   const [tab, setTab] = useState<"missions" | "submissions">("missions");
   const [missions, setMissions] = useState<Mission[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [toggling, setToggling] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title: "", description: "", reward: "", rewardPoints: "0", badgeLabel: "", startDate: "", endDate: "", maxSlots: "" });
-  const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState("");
-  const [processing, setProcessing] = useState<string | null>(null);
+  const [form, setForm] = useState({
+    title: "", description: "", coverUrl: "", placeId: "", province: "",
+    reward: "", rewardPoints: 0, badgeLabel: "",
+    startDate: "", endDate: "", maxSlots: "",
+  });
 
-  useEffect(() => {
-    fetch(`/api/admin/missions?tab=${tab}`).then(r => r.json()).then(d => {
-      if (tab === "missions") setMissions(d.missions || []);
-      else setSubmissions(d.submissions || []);
-    });
-  }, [tab]);
+  const showMsg = (msg: string, ok: boolean) => setToast({ msg, ok });
 
-  const createMission = async () => {
-    if (!form.title || !form.startDate || !form.endDate) { setMsg("กรุณากรอกข้อมูลให้ครบ"); return; }
-    setSaving(true);
-    const res = await fetch("/api/admin/missions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, rewardPoints: Number(form.rewardPoints) }) });
+  const fetchData = async () => {
+    setLoading(true);
+    const res = await fetch(`/api/admin/missions?tab=${tab}`);
     const data = await res.json();
-    if (res.ok) { setMsg("✅ สร้างภารกิจสำเร็จ"); setShowForm(false); setMissions(p => [data.mission, ...p]); }
-    else setMsg("❌ " + (data.error || "เกิดข้อผิดพลาด"));
-    setSaving(false);
+    if (tab === "missions") setMissions(data.missions || []);
+    else setSubmissions(data.submissions || []);
+    setLoading(false);
   };
 
-  const handleSubmission = async (participantId: string, action: "APPROVE" | "REJECT", adminNote = "") => {
-    setProcessing(participantId);
-    await fetch("/api/admin/missions", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ participantId, action, adminNote }) });
-    setSubmissions(p => p.filter(s => s.id !== participantId));
-    setProcessing(null);
+  useEffect(() => { fetchData(); }, [tab]);
+
+  const handleToggle = async (missionId: string) => {
+    setToggling(missionId);
+    try {
+      const res = await fetch("/api/admin/missions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ missionId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMissions(prev => prev.map(m => m.id === missionId ? { ...m, status: data.status } : m));
+        showMsg(data.status === "ACTIVE" ? "เปิดภารกิจแล้ว ✓" : "ปิดภารกิจแล้ว", true);
+      } else {
+        showMsg(data.error || "เกิดข้อผิดพลาด", false);
+      }
+    } catch {
+      showMsg("เชื่อมต่อไม่ได้", false);
+    } finally {
+      setToggling(null);
+    }
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await fetch("/api/admin/missions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...form, rewardPoints: Number(form.rewardPoints), maxSlots: form.maxSlots ? Number(form.maxSlots) : null }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showMsg("สร้างภารกิจสำเร็จ!", true);
+      setShowForm(false);
+      setForm({ title: "", description: "", coverUrl: "", placeId: "", province: "", reward: "", rewardPoints: 0, badgeLabel: "", startDate: "", endDate: "", maxSlots: "" });
+      fetchData();
+    } else {
+      showMsg(data.error || "เกิดข้อผิดพลาด", false);
+    }
+  };
+
+  const handleReview = async (participantId: string, action: "APPROVE" | "REJECT") => {
+    const res = await fetch("/api/admin/missions", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ participantId, action }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showMsg(action === "APPROVE" ? "อนุมัติแล้ว + ให้แต้ม" : "ปฏิเสธแล้ว", true);
+      setSubmissions(prev => prev.filter(s => s.id !== participantId));
+    } else {
+      showMsg(data.error || "เกิดข้อผิดพลาด", false);
+    }
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%", padding: "10px 14px", border: "1px solid #d1d5db",
+    borderRadius: 8, fontSize: 14, outline: "none", boxSizing: "border-box",
   };
 
   return (
-    <div style={{ padding: "32px 24px", maxWidth: "1000px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-        <h1 style={{ fontSize: "24px", fontWeight: 900, margin: 0 }}>จัดการภารกิจ</h1>
-        <button onClick={() => setShowForm(!showForm)} style={{ padding: "10px 20px", background: "linear-gradient(135deg,#667eea,#4facfe)", color: "#fff", borderRadius: "12px", fontWeight: 700, border: "none", cursor: "pointer" }}>+ สร้างภารกิจ</button>
+    <div style={{ maxWidth: 1000, margin: "0 auto", padding: "32px 24px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: "#111827", margin: 0 }}>🎯 จัดการภารกิจ</h1>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          style={{
+            background: showForm ? "#f3f4f6" : "#10b981", color: showForm ? "#374151" : "#fff",
+            border: "none", padding: "10px 20px", borderRadius: 10,
+            fontWeight: 600, fontSize: 14, cursor: "pointer",
+          }}
+        >
+          {showForm ? "ยกเลิก" : "+ สร้างภารกิจ"}
+        </button>
       </div>
 
-      {msg && <p style={{ fontWeight: 700, color: msg.startsWith("✅") ? "#15803d" : "#dc2626", marginBottom: "16px" }}>{msg}</p>}
-
+      {/* Create form */}
       {showForm && (
-        <div style={{ background: "#fff", borderRadius: "16px", padding: "24px", border: "1.5px solid #e2e8f0", marginBottom: "24px" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: 800, margin: "0 0 16px" }}>สร้างภารกิจใหม่</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-            {[["ชื่อภารกิจ *", "title"], ["รางวัล", "reward"], ["แต้มที่ได้รับ", "rewardPoints"], ["ชื่อ Badge", "badgeLabel"], ["จำนวนสูงสุด (คน)", "maxSlots"]].map(([label, key]) => (
-              <div key={key}>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>{label}</label>
-                <input value={form[key as keyof typeof form]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", fontSize: "13px", boxSizing: "border-box" }} />
-              </div>
-            ))}
+        <form onSubmit={handleCreate} style={{
+          background: "#fff", borderRadius: 16, padding: 24,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.08)", marginBottom: 28,
+        }}>
+          <h3 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 20px" }}>สร้างภารกิจใหม่</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div style={{ gridColumn: "1/-1" }}>
+              <label style={{ fontSize: 13, color: "#374151", fontWeight: 600 }}>ชื่อภารกิจ *</label>
+              <input style={inputStyle} value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
+            </div>
+            <div style={{ gridColumn: "1/-1" }}>
+              <label style={{ fontSize: 13, color: "#374151", fontWeight: 600 }}>คำอธิบาย *</label>
+              <textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} required />
+            </div>
+            <div>
+              <label style={{ fontSize: 13, color: "#374151", fontWeight: 600 }}>URL รูปปก</label>
+              <input style={inputStyle} value={form.coverUrl} onChange={e => setForm(f => ({ ...f, coverUrl: e.target.value }))} />
+            </div>
+            <div>
+              <label style={{ fontSize: 13, color: "#374151", fontWeight: 600 }}>จังหวัด</label>
+              <input style={inputStyle} value={form.province} onChange={e => setForm(f => ({ ...f, province: e.target.value }))} />
+            </div>
+            <div>
+              <label style={{ fontSize: 13, color: "#374151", fontWeight: 600 }}>วันเริ่ม *</label>
+              <input type="date" style={inputStyle} value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} required />
+            </div>
+            <div>
+              <label style={{ fontSize: 13, color: "#374151", fontWeight: 600 }}>วันสิ้นสุด *</label>
+              <input type="date" style={inputStyle} value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} required />
+            </div>
+            <div>
+              <label style={{ fontSize: 13, color: "#374151", fontWeight: 600 }}>แต้มรางวัล</label>
+              <input type="number" style={inputStyle} value={form.rewardPoints} onChange={e => setForm(f => ({ ...f, rewardPoints: Number(e.target.value) }))} />
+            </div>
+            <div>
+              <label style={{ fontSize: 13, color: "#374151", fontWeight: 600 }}>Badge Label</label>
+              <input style={inputStyle} value={form.badgeLabel} onChange={e => setForm(f => ({ ...f, badgeLabel: e.target.value }))} placeholder="เช่น นักเดินทางมือทอง" />
+            </div>
+            <div>
+              <label style={{ fontSize: 13, color: "#374151", fontWeight: 600 }}>รางวัลพิเศษ</label>
+              <input style={inputStyle} value={form.reward} onChange={e => setForm(f => ({ ...f, reward: e.target.value }))} placeholder="เช่น บัตรกำนัล 500 บาท" />
+            </div>
+            <div>
+              <label style={{ fontSize: 13, color: "#374151", fontWeight: 600 }}>จำนวนสูงสุด</label>
+              <input type="number" style={inputStyle} value={form.maxSlots} onChange={e => setForm(f => ({ ...f, maxSlots: e.target.value }))} placeholder="ไม่จำกัด = เว้นว่าง" />
+            </div>
           </div>
-          <div style={{ marginTop: "12px" }}>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>รายละเอียด</label>
-            <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={3} style={{ width: "100%", padding: "10px 12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", fontSize: "13px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }} />
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "12px" }}>
-            {[["วันเริ่ม *", "startDate"], ["วันหมดอายุ *", "endDate"]].map(([label, key]) => (
-              <div key={key}>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>{label}</label>
-                <input type="date" value={form[key as keyof typeof form]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", fontSize: "13px", boxSizing: "border-box" }} />
-              </div>
-            ))}
-          </div>
-          <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
-            <button onClick={createMission} disabled={saving} style={{ padding: "10px 24px", background: "linear-gradient(135deg,#667eea,#4facfe)", color: "#fff", borderRadius: "10px", fontWeight: 700, border: "none", cursor: "pointer" }}>{saving ? "กำลังสร้าง..." : "สร้างภารกิจ"}</button>
-            <button onClick={() => setShowForm(false)} style={{ padding: "10px 20px", background: "#f1f5f9", color: "#64748b", borderRadius: "10px", fontWeight: 700, border: "none", cursor: "pointer" }}>ยกเลิก</button>
-          </div>
-        </div>
+          <button type="submit" style={{
+            marginTop: 20, background: "#10b981", color: "#fff",
+            border: "none", padding: "11px 28px", borderRadius: 10,
+            fontWeight: 700, fontSize: 14, cursor: "pointer",
+          }}>
+            สร้างภารกิจ
+          </button>
+        </form>
       )}
 
-      <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 20, background: "#f3f4f6", borderRadius: 10, padding: 4, width: "fit-content" }}>
         {(["missions", "submissions"] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{ padding: "8px 20px", borderRadius: "999px", fontWeight: 700, fontSize: "13px", border: "none", cursor: "pointer", background: tab === t ? "#0f172a" : "#f1f5f9", color: tab === t ? "#fff" : "#64748b" }}>
-            {t === "missions" ? "ภารกิจทั้งหมด" : `ผลงานรอตรวจ (${submissions.length})`}
+          <button key={t} onClick={() => setTab(t)} style={{
+            padding: "8px 18px", border: "none", borderRadius: 8, cursor: "pointer",
+            fontWeight: 600, fontSize: 14,
+            background: tab === t ? "#fff" : "transparent",
+            color: tab === t ? "#059669" : "#6b7280",
+            boxShadow: tab === t ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+            transition: "all 0.2s",
+          }}>
+            {t === "missions" ? "🎯 ภารกิจทั้งหมด" : "📋 รอตรวจสอบ"}
+            {t === "submissions" && submissions.length > 0 && (
+              <span style={{ marginLeft: 6, background: "#ef4444", color: "#fff", borderRadius: 10, padding: "1px 7px", fontSize: 11 }}>
+                {submissions.length}
+              </span>
+            )}
           </button>
         ))}
       </div>
 
-      {tab === "missions" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      {loading ? (
+        <div style={{ textAlign: "center", padding: 60, color: "#6b7280" }}>กำลังโหลด...</div>
+      ) : tab === "missions" ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {missions.length === 0 && <div style={{ textAlign: "center", padding: 60, color: "#6b7280" }}>ยังไม่มีภารกิจ</div>}
           {missions.map(m => (
-            <div key={m.id} style={{ background: "#fff", borderRadius: "12px", padding: "16px 20px", border: "1.5px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ fontWeight: 800, fontSize: "15px" }}>{m.title}</div>
-                {m.place && <div style={{ fontSize: "12px", color: "#2563eb" }}>📍 {m.place.title}</div>}
-                <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>หมดอายุ {new Date(m.endDate).toLocaleDateString("th-TH")} · {m._count.participants} คนร่วม · +{m.rewardPoints} แต้ม</div>
+            <div key={m.id} style={{
+              background: "#fff", borderRadius: 14, padding: "18px 20px",
+              boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
+              display: "flex", alignItems: "center", gap: 16,
+              opacity: m.status === "INACTIVE" ? 0.65 : 1,
+              transition: "opacity 0.2s",
+            }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontWeight: 700, fontSize: 15, color: "#111827" }}>{m.title}</span>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, borderRadius: 10, padding: "2px 8px",
+                    background: m.status === "ACTIVE" ? "#d1fae5" : "#f3f4f6",
+                    color: m.status === "ACTIVE" ? "#059669" : "#6b7280",
+                  }}>
+                    {m.status === "ACTIVE" ? "เปิด" : "ปิด"}
+                  </span>
+                </div>
+                <div style={{ fontSize: 13, color: "#6b7280" }}>
+                  {m.province && `📍 ${m.province} · `}
+                  👥 {m._count.participants}{m.maxSlots ? `/${m.maxSlots}` : ""} คน ·{" "}
+                  ⭐ {m.rewardPoints} แต้ม ·{" "}
+                  หมดวันที่ {new Date(m.endDate).toLocaleDateString("th-TH")}
+                </div>
               </div>
-              <span style={{ fontSize: "11px", fontWeight: 700, padding: "4px 12px", borderRadius: "999px", background: m.status === "ACTIVE" ? "#f0fdf4" : "#f8fafc", color: m.status === "ACTIVE" ? "#059669" : "#94a3b8" }}>{m.status}</span>
+              {/* Toggle switch */}
+              <button
+                onClick={() => handleToggle(m.id)}
+                disabled={toggling === m.id}
+                title={m.status === "ACTIVE" ? "คลิกเพื่อปิด" : "คลิกเพื่อเปิด"}
+                style={{
+                  width: 52, height: 28, borderRadius: 14, border: "none", cursor: "pointer",
+                  background: m.status === "ACTIVE" ? "#10b981" : "#d1d5db",
+                  position: "relative", flexShrink: 0, transition: "background 0.2s",
+                  opacity: toggling === m.id ? 0.5 : 1,
+                }}
+              >
+                <div style={{
+                  width: 22, height: 22, borderRadius: "50%", background: "#fff",
+                  position: "absolute", top: 3,
+                  left: m.status === "ACTIVE" ? 27 : 3,
+                  transition: "left 0.2s",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                }} />
+              </button>
             </div>
           ))}
-          {missions.length === 0 && <div style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>ยังไม่มีภารกิจ</div>}
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {submissions.length === 0 && <div style={{ textAlign: "center", padding: 60, color: "#6b7280" }}>ไม่มีผลงานรอตรวจ</div>}
+          {submissions.map(s => (
+            <div key={s.id} style={{
+              background: "#fff", borderRadius: 14, padding: 20,
+              boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 15 }}>{s.mission.title}</div>
+                  <div style={{ fontSize: 13, color: "#6b7280" }}>
+                    โดย {s.user.displayName || s.user.username}
+                    {s.submittedAt && ` · ${new Date(s.submittedAt).toLocaleDateString("th-TH")}`}
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => handleReview(s.id, "APPROVE")} style={{
+                    background: "#10b981", color: "#fff", border: "none",
+                    padding: "8px 16px", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer",
+                  }}>
+                    อนุมัติ ✓
+                  </button>
+                  <button onClick={() => handleReview(s.id, "REJECT")} style={{
+                    background: "#fee2e2", color: "#dc2626", border: "none",
+                    padding: "8px 16px", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer",
+                  }}>
+                    ปฏิเสธ
+                  </button>
+                </div>
+              </div>
+              {s.reviewText && (
+                <div style={{ fontSize: 14, color: "#374151", background: "#f9fafb", borderRadius: 8, padding: "10px 14px", marginBottom: 12 }}>
+                  {s.reviewText}
+                </div>
+              )}
+              {s.photoUrls?.length > 0 && (
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {s.photoUrls.map((url, i) => (
+                    <a key={i} href={url} target="_blank" rel="noreferrer">
+                      <img src={url} alt="" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: "1px solid #e5e7eb" }} />
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
-      {tab === "submissions" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          {submissions.map(s => (
-            <div key={s.id} style={{ background: "#fff", borderRadius: "16px", padding: "20px", border: "1.5px solid #e2e8f0" }}>
-              <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "12px" }}>
-                {s.user.avatarUrl
-                  ? <img src={s.user.avatarUrl} style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" }} />
-                  : <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "linear-gradient(135deg,#667eea,#4facfe)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700 }}>{s.user.displayName?.[0]}</div>
-                }
-                <div>
-                  <div style={{ fontWeight: 700 }}>{s.user.displayName} <span style={{ color: "#64748b", fontWeight: 400, fontSize: "12px" }}>@{s.user.username}</span></div>
-                  <div style={{ fontSize: "12px", color: "#2563eb" }}>ภารกิจ: {s.mission.title}</div>
-                </div>
-              </div>
-              {s.reviewText && <p style={{ fontSize: "13px", color: "#334155", marginBottom: "12px", background: "#f8fafc", padding: "10px 12px", borderRadius: "10px" }}>{s.reviewText}</p>}
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "14px" }}>
-                {s.photoUrls.map((url, i) => <img key={i} src={url} style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "10px", border: "2px solid #e2e8f0" }} />)}
-              </div>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <button onClick={() => handleSubmission(s.id, "APPROVE")} disabled={processing === s.id} style={{ padding: "8px 20px", background: "#10b981", color: "#fff", borderRadius: "10px", fontWeight: 700, border: "none", cursor: "pointer" }}>✅ อนุมัติ (+{s.mission.rewardPoints} แต้ม)</button>
-                <button onClick={() => handleSubmission(s.id, "REJECT")} disabled={processing === s.id} style={{ padding: "8px 20px", background: "#fee2e2", color: "#dc2626", borderRadius: "10px", fontWeight: 700, border: "none", cursor: "pointer" }}>❌ ปฏิเสธ</button>
-              </div>
-            </div>
-          ))}
-          {submissions.length === 0 && <div style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>ไม่มีผลงานรอตรวจ</div>}
-        </div>
-      )}
+      {toast && <Toast msg={toast.msg} ok={toast.ok} onClose={() => setToast(null)} />}
     </div>
   );
 }

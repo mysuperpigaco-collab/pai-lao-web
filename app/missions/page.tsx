@@ -15,7 +15,7 @@ type Mission = {
   endDate: string;
   maxSlots?: number;
   province?: string;
-  place?: { id: string; title: string; slug: string; coverUrl?: string; province?: string };
+  place?: { id: string; title: string; slug: string; coverUrl?: string };
   _count: { participants: number };
   participants?: { status: string }[];
 };
@@ -26,62 +26,215 @@ function timeLeft(endDate: string) {
   const days = Math.floor(diff / 86400000);
   const hours = Math.floor((diff % 86400000) / 3600000);
   if (days > 0) return `เหลือ ${days} วัน`;
-  return `เหลือ ${hours} ชั่วโมง`;
+  return `เหลือ ${hours} ชม.`;
 }
 
-function MissionCard({ mission, onJoin, joining }: { mission: Mission; onJoin: (id: string) => void; joining: string | null }) {
+const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> = {
+  JOINED:    { label: "รับแล้ว",    color: "#2563eb", bg: "#dbeafe" },
+  SUBMITTED: { label: "รอตรวจ",    color: "#b45309", bg: "#fef3c7" },
+  APPROVED:  { label: "ผ่านแล้ว!", color: "#059669", bg: "#d1fae5" },
+  REJECTED:  { label: "ไม่ผ่าน",   color: "#dc2626", bg: "#fee2e2" },
+};
+
+function SkeletonCard() {
+  return (
+    <div style={{
+      background: "#fff",
+      borderRadius: 16,
+      overflow: "hidden",
+      boxShadow: "0 1px 8px rgba(0,0,0,0.06)",
+      animation: "pulse 1.5s ease-in-out infinite",
+    }}>
+      <div style={{ height: 180, background: "#e5e7eb" }} />
+      <div style={{ padding: "16px 20px 20px" }}>
+        <div style={{ height: 14, background: "#e5e7eb", borderRadius: 6, width: "40%", marginBottom: 10 }} />
+        <div style={{ height: 20, background: "#e5e7eb", borderRadius: 6, width: "80%", marginBottom: 8 }} />
+        <div style={{ height: 14, background: "#e5e7eb", borderRadius: 6, width: "60%", marginBottom: 20 }} />
+        <div style={{ height: 40, background: "#e5e7eb", borderRadius: 10 }} />
+      </div>
+    </div>
+  );
+}
+
+function Toast({ message, type, onClose }: { message: string; type: "success" | "error"; onClose: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 3000);
+    return () => clearTimeout(t);
+  }, [onClose]);
+  return (
+    <div style={{
+      position: "fixed", bottom: 24, right: 24, zIndex: 9999,
+      background: type === "success" ? "#059669" : "#dc2626",
+      color: "#fff", padding: "14px 20px", borderRadius: 12,
+      boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+      display: "flex", alignItems: "center", gap: 10,
+      fontSize: 15, fontWeight: 600,
+      animation: "slideUp 0.3s ease",
+    }}>
+      <span>{type === "success" ? "✓" : "✕"}</span>
+      {message}
+    </div>
+  );
+}
+
+function MissionCard({ mission, onJoin, joining }: {
+  mission: Mission;
+  onJoin: (id: string) => void;
+  joining: string | null;
+}) {
   const myStatus = mission.participants?.[0]?.status;
   const isFull = mission.maxSlots ? mission._count.participants >= mission.maxSlots : false;
   const expired = new Date(mission.endDate) < new Date();
-
-  const statusBadge = () => {
-    if (!myStatus) return null;
-    const map: Record<string, [string, string]> = {
-      JOINED: ["#eff6ff", "#2563eb"],
-      SUBMITTED: ["#fefce8", "#a16207"],
-      APPROVED: ["#f0fdf4", "#059669"],
-      REJECTED: ["#fff5f5", "#dc2626"],
-    };
-    const labels: Record<string, string> = { JOINED: "รับแล้ว", SUBMITTED: "รอตรวจ", APPROVED: "ผ่านแล้ว!", REJECTED: "ไม่ผ่าน" };
-    const [bg, color] = map[myStatus] || ["#f8fafc", "#64748b"];
-    return <span style={{ fontSize: "11px", fontWeight: 700, background: bg, color, padding: "3px 10px", borderRadius: "999px" }}>{labels[myStatus]}</span>;
-  };
+  const s = myStatus ? STATUS_MAP[myStatus] : null;
+  const tl = timeLeft(mission.endDate);
+  const isUrgent = !expired && new Date(mission.endDate).getTime() - Date.now() < 3 * 86400000;
 
   return (
-    <div style={{ background: "#fff", borderRadius: "20px", overflow: "hidden", border: "1px solid #f1f5f9", boxShadow: "0 2px 16px rgba(15,23,42,0.06)" }}>
-      <div style={{ height: "140px", background: mission.coverUrl ? `url(${mission.coverUrl}) center/cover` : "linear-gradient(135deg,#667eea,#4facfe)", position: "relative" }}>
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom,transparent 40%,rgba(0,0,0,0.55))" }} />
-        <div style={{ position: "absolute", bottom: "10px", left: "12px", right: "12px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-          <span style={{ fontSize: "11px", fontWeight: 700, color: "#fff", background: "rgba(0,0,0,0.35)", padding: "3px 10px", borderRadius: "999px" }}>{expired ? "หมดอายุ" : timeLeft(mission.endDate)}</span>
-          {mission.rewardPoints > 0 && <span style={{ fontSize: "11px", fontWeight: 700, color: "#fbbf24", background: "rgba(0,0,0,0.4)", padding: "3px 10px", borderRadius: "999px" }}>+{mission.rewardPoints} แต้ม</span>}
+    <div style={{
+      background: "#fff",
+      borderRadius: 16,
+      overflow: "hidden",
+      boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
+      transition: "transform 0.2s, box-shadow 0.2s",
+      cursor: "default",
+      display: "flex",
+      flexDirection: "column",
+    }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)";
+        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 24px rgba(0,0,0,0.12)";
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 12px rgba(0,0,0,0.07)";
+      }}
+    >
+      {/* Cover */}
+      <div style={{ position: "relative", height: 180, background: "linear-gradient(135deg,#f0fdf4,#dcfce7)", flexShrink: 0 }}>
+        {mission.coverUrl ? (
+          <img src={mission.coverUrl} alt={mission.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48 }}>
+            🎯
+          </div>
+        )}
+        {/* Time badge */}
+        <div style={{
+          position: "absolute", top: 10, right: 10,
+          background: isUrgent ? "#ef4444" : expired ? "#9ca3af" : "rgba(0,0,0,0.55)",
+          color: "#fff", borderRadius: 20, padding: "4px 10px",
+          fontSize: 12, fontWeight: 700,
+        }}>
+          {tl}
         </div>
+        {/* Status badge */}
+        {s && (
+          <div style={{
+            position: "absolute", top: 10, left: 10,
+            background: s.bg, color: s.color, borderRadius: 20,
+            padding: "4px 10px", fontSize: 12, fontWeight: 700,
+          }}>
+            {s.label}
+          </div>
+        )}
       </div>
-      <div style={{ padding: "14px 16px 16px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
-          <h3 style={{ fontSize: "15px", fontWeight: 800, color: "#0f172a", margin: 0, lineHeight: 1.3 }}>{mission.title}</h3>
-          {statusBadge()}
+
+      {/* Body */}
+      <div style={{ padding: "16px 20px 20px", flex: 1, display: "flex", flexDirection: "column" }}>
+        {/* Province / place */}
+        {(mission.province || mission.place) && (
+          <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 6 }}>
+            📍 {mission.place ? mission.place.title : mission.province}
+          </div>
+        )}
+
+        <div style={{ fontWeight: 700, fontSize: 16, color: "#111827", marginBottom: 6, lineHeight: 1.4 }}>
+          {mission.title}
         </div>
-        <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 10px", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{mission.description}</p>
-        <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "12px", flexWrap: "wrap" }}>
-          {mission.place && <span style={{ fontSize: "11px", color: "#2563eb", fontWeight: 600 }}>📍 {mission.place.title}</span>}
-          {mission.badgeLabel && <span style={{ fontSize: "11px", background: "#fef3c7", color: "#92400e", padding: "2px 8px", borderRadius: "999px", fontWeight: 600 }}>🏅 {mission.badgeLabel}</span>}
-          <span style={{ fontSize: "11px", color: "#94a3b8" }}>{mission._count.participants}{mission.maxSlots ? `/${mission.maxSlots}` : ""} คน</span>
+        <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 14, flex: 1, lineHeight: 1.6,
+          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+        }}>
+          {mission.description}
         </div>
-        {!myStatus && !expired && !isFull && (
-          <button onClick={() => onJoin(mission.id)} disabled={joining === mission.id} style={{ width: "100%", padding: "10px", borderRadius: "12px", background: "linear-gradient(135deg,#2563eb,#10b981)", color: "#fff", fontWeight: 700, fontSize: "13px", border: "none", cursor: joining === mission.id ? "wait" : "pointer" }}>
+
+        {/* Rewards row */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+          {mission.rewardPoints > 0 && (
+            <span style={{ background: "#fef3c7", color: "#b45309", borderRadius: 20, padding: "3px 10px", fontSize: 12, fontWeight: 600 }}>
+              ⭐ {mission.rewardPoints} แต้ม
+            </span>
+          )}
+          {mission.badgeLabel && (
+            <span style={{ background: "#ede9fe", color: "#7c3aed", borderRadius: 20, padding: "3px 10px", fontSize: 12, fontWeight: 600 }}>
+              🏅 {mission.badgeLabel}
+            </span>
+          )}
+          {mission.reward && (
+            <span style={{ background: "#fce7f3", color: "#be185d", borderRadius: 20, padding: "3px 10px", fontSize: 12, fontWeight: 600 }}>
+              🎁 {mission.reward}
+            </span>
+          )}
+        </div>
+
+        {/* Slots */}
+        {mission.maxSlots && (
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#6b7280", marginBottom: 4 }}>
+              <span>ผู้เข้าร่วม</span>
+              <span style={{ fontWeight: 600, color: isFull ? "#ef4444" : "#111827" }}>
+                {mission._count.participants}/{mission.maxSlots}
+              </span>
+            </div>
+            <div style={{ height: 6, background: "#f3f4f6", borderRadius: 3, overflow: "hidden" }}>
+              <div style={{
+                height: "100%", borderRadius: 3,
+                width: `${Math.min(100, (mission._count.participants / mission.maxSlots) * 100)}%`,
+                background: isFull ? "#ef4444" : "#10b981",
+                transition: "width 0.5s ease",
+              }} />
+            </div>
+          </div>
+        )}
+
+        {/* Action */}
+        {expired ? (
+          <div style={{ textAlign: "center", fontSize: 13, color: "#9ca3af", padding: "10px 0" }}>
+            ภารกิจสิ้นสุดแล้ว
+          </div>
+        ) : myStatus === "JOINED" ? (
+          <Link href={`/missions/${mission.id}/submit`} style={{
+            display: "block", textAlign: "center",
+            background: "linear-gradient(135deg,#059669,#10b981)",
+            color: "#fff", padding: "11px 0", borderRadius: 10,
+            fontWeight: 600, fontSize: 14, textDecoration: "none",
+          }}>
+            ส่งผลงาน →
+          </Link>
+        ) : myStatus ? (
+          <div style={{
+            textAlign: "center", padding: "11px 0", borderRadius: 10,
+            background: s?.bg, color: s?.color, fontWeight: 600, fontSize: 14,
+          }}>
+            {s?.label}
+          </div>
+        ) : isFull ? (
+          <div style={{ textAlign: "center", padding: "11px 0", fontSize: 13, color: "#9ca3af" }}>
+            เต็มแล้ว
+          </div>
+        ) : (
+          <button
+            onClick={() => onJoin(mission.id)}
+            disabled={joining === mission.id}
+            style={{
+              width: "100%", padding: "11px 0", border: "none", borderRadius: 10,
+              background: joining === mission.id ? "#d1fae5" : "linear-gradient(135deg,#10b981,#059669)",
+              color: joining === mission.id ? "#059669" : "#fff",
+              fontWeight: 600, fontSize: 14, cursor: joining === mission.id ? "default" : "pointer",
+              transition: "all 0.2s",
+            }}
+          >
             {joining === mission.id ? "กำลังรับ..." : "รับภารกิจ"}
           </button>
-        )}
-        {!myStatus && (isFull || expired) && (
-          <div style={{ textAlign: "center", fontSize: "12px", color: "#94a3b8", padding: "8px 0" }}>{isFull ? "ภารกิจเต็มแล้ว" : "ภารกิจหมดอายุ"}</div>
-        )}
-        {myStatus === "JOINED" && (
-          <Link href={`/missions/${mission.id}/submit`} style={{ display: "block", textAlign: "center", padding: "10px", borderRadius: "12px", background: "#eff6ff", color: "#2563eb", fontWeight: 700, fontSize: "13px", textDecoration: "none" }}>
-            ส่งผลงาน
-          </Link>
-        )}
-        {myStatus === "APPROVED" && (
-          <div style={{ textAlign: "center", fontSize: "13px", fontWeight: 700, color: "#059669", padding: "8px 0" }}>ได้รับรางวัลแล้ว!</div>
         )}
       </div>
     </div>
@@ -93,67 +246,170 @@ export default function MissionsPage() {
   const [missions, setMissions] = useState<Mission[]>([]);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState<string | null>(null);
-  const [tab, setTab] = useState<"ACTIVE" | "EXPIRED">("ACTIVE");
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    fetch(`/api/missions?status=${tab === "ACTIVE" ? "ACTIVE" : "ACTIVE"}`)
+    fetch("/api/missions")
       .then(r => r.json())
-      .then(d => { setMissions(d.missions || []); setLoading(false); });
-  }, [tab]);
+      .then(d => { setMissions(d.missions || []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
 
-  const handleJoin = async (missionId: string) => {
-    if (!user) { alert("กรุณาเข้าสู่ระบบก่อน"); return; }
-    setJoining(missionId);
-    const res = await fetch(`/api/missions/${missionId}/join`, { method: "POST" });
-    const data = await res.json();
-    if (!res.ok) { alert(data.error || "เกิดข้อผิดพลาด"); }
-    else {
-      setMissions(prev => prev.map(m => m.id === missionId
-        ? { ...m, participants: [{ status: "JOINED" }], _count: { participants: m._count.participants + 1 } }
-        : m
-      ));
-    }
-    setJoining(null);
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type });
   };
 
-  const active = missions.filter(m => new Date(m.endDate) > new Date());
-  const expired = missions.filter(m => new Date(m.endDate) <= new Date());
-  const display = tab === "ACTIVE" ? active : expired;
+  const handleJoin = async (missionId: string) => {
+    if (!user) {
+      window.location.href = "/login?redirect=/missions";
+      return;
+    }
+    setJoining(missionId);
+    try {
+      const res = await fetch(`/api/missions/${missionId}/join`, { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        setMissions(prev => prev.map(m =>
+          m.id === missionId
+            ? { ...m, participants: [{ status: "JOINED" }], _count: { participants: m._count.participants + 1 } }
+            : m
+        ));
+        showToast("รับภารกิจสำเร็จ! โชคดีนะ 🎯", "success");
+      } else {
+        showToast(data.error || "เกิดข้อผิดพลาด", "error");
+      }
+    } catch {
+      showToast("เชื่อมต่อไม่ได้ กรุณาลองใหม่", "error");
+    } finally {
+      setJoining(null);
+    }
+  };
+
+  const activeMissions = missions.filter(m => new Date(m.endDate) >= new Date());
+  const expiredMissions = missions.filter(m => new Date(m.endDate) < new Date());
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
-      <div style={{ background: "linear-gradient(135deg,#667eea 0%,#4facfe 50%,#43e97b 100%)", padding: "48px 24px 64px", textAlign: "center", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle,rgba(255,255,255,0.12) 1px,transparent 1px)", backgroundSize: "24px 24px" }} />
-        <div style={{ position: "relative" }}>
-          <div style={{ fontSize: "40px", marginBottom: "12px" }}>🎯</div>
-          <h1 style={{ fontSize: "28px", fontWeight: 900, color: "#fff", margin: "0 0 8px", textShadow: "0 2px 12px rgba(0,0,0,0.2)" }}>ภารกิจพิเศษ</h1>
-          <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.85)", margin: 0 }}>ไปสำรวจสถานที่ ถ่ายรูป รีวิว รับแต้มและ Badge</p>
+    <>
+      <style>{`
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+      `}</style>
+
+      {/* Hero */}
+      <div style={{
+        background: "linear-gradient(135deg, #064e3b 0%, #065f46 40%, #047857 100%)",
+        position: "relative",
+        overflow: "hidden",
+        padding: "64px 24px 56px",
+        textAlign: "center",
+        color: "#fff",
+      }}>
+        {/* Decorative circles */}
+        <div style={{ position: "absolute", top: -60, right: -60, width: 220, height: 220, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
+        <div style={{ position: "absolute", bottom: -40, left: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
+        <div style={{ position: "absolute", top: "50%", left: "10%", width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.04)", transform: "translateY(-50%)" }} />
+
+        <div style={{ position: "relative", maxWidth: 600, margin: "0 auto" }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🎯</div>
+          <h1 style={{ fontSize: 32, fontWeight: 800, margin: "0 0 12px", letterSpacing: -0.5 }}>
+            ภารกิจ
+          </h1>
+          <p style={{ fontSize: 16, opacity: 0.85, lineHeight: 1.6, margin: "0 0 32px" }}>
+            เดินทาง ถ่ายภาพ และสะสมแต้มจากสถานที่จริง<br />พิสูจน์ว่าคุณคือนักเดินทางตัวจริง
+          </p>
+
+          {/* Stats */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 32, flexWrap: "wrap" }}>
+            <div>
+              <div style={{ fontSize: 28, fontWeight: 800 }}>{activeMissions.length}</div>
+              <div style={{ fontSize: 13, opacity: 0.75 }}>ภารกิจพร้อมรับ</div>
+            </div>
+            <div style={{ width: 1, background: "rgba(255,255,255,0.2)", alignSelf: "stretch" }} />
+            <div>
+              <div style={{ fontSize: 28, fontWeight: 800 }}>
+                {missions.reduce((s, m) => s + m.rewardPoints, 0).toLocaleString()}
+              </div>
+              <div style={{ fontSize: 13, opacity: 0.75 }}>แต้มรวมทั้งหมด</div>
+            </div>
+            <div style={{ width: 1, background: "rgba(255,255,255,0.2)", alignSelf: "stretch" }} />
+            <div>
+              <div style={{ fontSize: 28, fontWeight: 800 }}>
+                {missions.reduce((s, m) => s + m._count.participants, 0).toLocaleString()}
+              </div>
+              <div style={{ fontSize: 13, opacity: 0.75 }}>ผู้เข้าร่วมทั้งหมด</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "0 16px" }}>
-        <div style={{ display: "flex", gap: "8px", margin: "-28px 0 24px", justifyContent: "center" }}>
-          {(["ACTIVE", "EXPIRED"] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{ padding: "10px 24px", borderRadius: "999px", fontWeight: 700, fontSize: "13px", border: "none", cursor: "pointer", background: tab === t ? "#0f172a" : "#fff", color: tab === t ? "#fff" : "#64748b", boxShadow: "0 2px 8px rgba(15,23,42,0.1)" }}>
-              {t === "ACTIVE" ? `ภารกิจเปิดอยู่ (${active.length})` : `หมดอายุ (${expired.length})`}
-            </button>
-          ))}
-        </div>
+      {/* Main */}
+      <div style={{ minHeight: "60vh", background: "#f8fafb", padding: "40px 24px 80px" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
-        {loading ? (
-          <div style={{ textAlign: "center", padding: "60px 0", color: "#94a3b8" }}>กำลังโหลด...</div>
-        ) : display.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px 0", color: "#94a3b8" }}>
-            <div style={{ fontSize: "40px", marginBottom: "12px" }}>🎯</div>
-            <div>{tab === "ACTIVE" ? "ยังไม่มีภารกิจในขณะนี้" : "ไม่มีภารกิจที่หมดอายุ"}</div>
-          </div>
-        ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: "16px", paddingBottom: "48px" }}>
-            {display.map(m => <MissionCard key={m.id} mission={m} onJoin={handleJoin} joining={joining} />)}
-          </div>
-        )}
+          {loading ? (
+            <>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "#111827", marginBottom: 20 }}>ภารกิจที่เปิดรับ</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 20 }}>
+                {[1,2,3,4].map(i => <SkeletonCard key={i} />)}
+              </div>
+            </>
+          ) : missions.length === 0 ? (
+            <div style={{
+              textAlign: "center", padding: "80px 24px",
+              background: "#fff", borderRadius: 20,
+              boxShadow: "0 1px 8px rgba(0,0,0,0.05)",
+            }}>
+              <div style={{ fontSize: 64, marginBottom: 16 }}>🗺️</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#111827", marginBottom: 8 }}>ยังไม่มีภารกิจในขณะนี้</div>
+              <div style={{ fontSize: 14, color: "#6b7280" }}>กลับมาใหม่เร็วๆ นี้ ทีมงานกำลังเตรียมภารกิจสุดพิเศษ</div>
+            </div>
+          ) : (
+            <>
+              {/* Active missions */}
+              {activeMissions.length > 0 && (
+                <div style={{ marginBottom: 48, animation: "fadeIn 0.5s ease" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                    <div style={{ width: 4, height: 24, background: "#10b981", borderRadius: 2 }} />
+                    <h2 style={{ fontSize: 20, fontWeight: 700, color: "#111827", margin: 0 }}>
+                      ภารกิจที่เปิดรับ
+                    </h2>
+                    <span style={{ background: "#d1fae5", color: "#059669", borderRadius: 20, padding: "2px 10px", fontSize: 13, fontWeight: 600 }}>
+                      {activeMissions.length} ภารกิจ
+                    </span>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 20 }}>
+                    {activeMissions.map(m => (
+                      <MissionCard key={m.id} mission={m} onJoin={handleJoin} joining={joining} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Expired missions */}
+              {expiredMissions.length > 0 && (
+                <div style={{ animation: "fadeIn 0.5s ease" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                    <div style={{ width: 4, height: 24, background: "#9ca3af", borderRadius: 2 }} />
+                    <h2 style={{ fontSize: 20, fontWeight: 700, color: "#6b7280", margin: 0 }}>
+                      ภารกิจที่ผ่านมาแล้ว
+                    </h2>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 20, opacity: 0.7 }}>
+                    {expiredMissions.map(m => (
+                      <MissionCard key={m.id} mission={m} onJoin={handleJoin} joining={joining} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+      )}
+    </>
   );
 }

@@ -40,3 +40,22 @@ export async function PUT(req: NextRequest) {
   });
   return NextResponse.json({ ok: true, promotion: updated });
 }
+
+// PATCH /api/admin/promotions — toggle promotion status ACTIVE <-> INACTIVE
+export async function PATCH(req: NextRequest) {
+  const session = await getCurrentUser();
+  if (!adminGuard(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  const { promotionId } = await req.json();
+  if (!promotionId) return NextResponse.json({ error: "ข้อมูลไม่ครบ" }, { status: 400 });
+
+  const promo = await prisma.promotion.findUnique({ where: { id: promotionId } });
+  if (!promo) return NextResponse.json({ error: "ไม่พบโปรโมชั่น" }, { status: 404 });
+
+  const newStatus = promo.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+  const updated = await prisma.promotion.update({
+    where: { id: promotionId },
+    data: { status: newStatus },
+  });
+  return NextResponse.json({ ok: true, status: updated.status });
+}
