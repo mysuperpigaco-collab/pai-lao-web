@@ -508,5 +508,22 @@ export default function ExplorerSection() {
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 8,
-                  padd
+                  padding: "10px 24px",
+                  background: "linear-gradient(135deg, #0f766e, #047857)",
+                  color: "white",
+                  borderRadius: 999,
+                  textDecoration: "none",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  boxShadow: "0 4px 14px rgba(15,118,110,0.35)",
+                }}
+              >
+                ดูสถานที่ทั้งหมดใน{province.split(" (")[0]} · See all →
+              </Link>
+            </div>
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
