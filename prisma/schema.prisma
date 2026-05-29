@@ -58,9 +58,7 @@ model User {
   gender      Gender?
   avatarUrl      String?
   coverUrl       String?
-  profileCovers  String[]
-  missions       Mission[]
-  promotions     Promotion[]   // รูปสไลด์โชว์ปกโปรไฟล์ สูงสุด 5 รูป
+  profileCovers  String[]   // รูปสไลด์โชว์ปกโปรไฟล์ สูงสุด 5 รูป
   bio            String?
 
   lineId      String?
@@ -75,9 +73,9 @@ model User {
   banReason       String?    // เหตุผลที่ถูกแบน
   resetToken      String?    // token สำหรับรีเซ็ตรหัสผ่าน
   resetTokenExp   DateTime?  // วันหมดอายุ token
-  missionsCreated    Mission[]           @relation("MissionCreator")
+  missionsCreated       Mission[]            @relation("MissionCreator")
   missionParticipations MissionParticipant[]
-  points             Int      @default(0)  // แต้มสะสม
+  points                Int      @default(0)
 
   // Privacy settings
   profilePrivacy  String    @default("PUBLIC")  // PUBLIC | PRIVATE
@@ -463,7 +461,7 @@ model PlaceClaim {
   placeId     String
   place       Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
   businessId  String
-  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  business    Business @relation("BusinessPromotions", fields: [businessId], references: [id], onDelete: Cascade)
   status      String   @default("PENDING") // PENDING | APPROVED | REJECTED
   message     String?  // ข้อความยืนยันจากเจ้าของ
   adminNote   String?  // หมายเหตุจากแอดมิน
@@ -482,7 +480,7 @@ model Mission {
   description  String
   coverUrl     String?
   placeId      String?
-  place        Place?   @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  place        Place?   @relation("MissionPlace", fields: [placeId], references: [id], onDelete: SetNull)
   province     String?
   reward       String?  // รางวัล เช่น "50 แต้ม" หรือ "Badge นักสำรวจ"
   rewardPoints Int      @default(0)
@@ -527,9 +525,9 @@ model MissionParticipant {
 model Promotion {
   id          String   @id @default(uuid())
   businessId  String
-  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  business    Business @relation("BusinessPromotions", fields: [businessId], references: [id], onDelete: Cascade)
   placeId     String?
-  place       Place?   @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  place       Place?   @relation("PromotionPlace", fields: [placeId], references: [id], onDelete: SetNull)
   title       String
   description String
   coverUrl    String?
