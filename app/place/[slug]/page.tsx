@@ -8,7 +8,6 @@ import PlaceBookmarkButton from "@/components/places/PlaceBookmarkButton";
 import ShareButton from "@/components/common/ShareButton";
 import ReportButton from "@/components/common/ReportButton";
 import ClaimPlaceButton from "@/components/places/ClaimPlaceButton";
-import { OwnerGallery, CommunityGallery } from "@/components/places/PlaceGallery";
 import "./place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -101,41 +100,22 @@ export default async function PlaceDetailPage({ params }: Props) {
     })),
   }));
 
-  // Community photos from trips (all places — business or not)
-  const communityStops = await prisma.timelineStop.findMany({
-    where: {
-      shareToPlace: true,
-      OR: [
-        { placeId: place.id },
-        { placeName: { equals: place.title, mode: "insensitive" }, placeId: null },
-      ],
-    },
-    include: {
-      trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true, reviews: true } } } },
-    },
-  });
+  // Community photos from trips (only for unclaimed places)
+  const communityStops = !place.business
+    ? await prisma.timelineStop.findMany({
+        where: { placeId: place.id },
+        include: {
+          trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true } } } },
+        },
+      })
+    : [];
 
-  // Sort: most-liked trip first; if tied at 0 likes, use most recent (by stop order desc)
   const communityStopsSorted = communityStops
     .filter(s => s.images.length > 0)
-    .sort((a, b) => {
-      const likesDiff = (b.trip?._count.likes ?? 0) - (a.trip?._count.likes ?? 0);
-      if (likesDiff !== 0) return likesDiff;
-      // fallback: higher id = more recent
-      return b.id.localeCompare(a.id);
-    });
+    .sort((a, b) => (b.trip?._count.likes ?? 0) - (a.trip?._count.likes ?? 0));
 
   const communityImages = communityStopsSorted.flatMap(s => s.images);
-
-  // For unclaimed places: always prefer community photo as cover (ignore placeholder coverUrl)
-  const communityCover = !place.business && communityImages.length > 0
-    ? communityImages[0]
-    : null;
-
-  // Strip section: only exclude cover when there are multiple photos
-  const communityImagesStrip = (communityCover && communityImages.length > 1)
-    ? communityImages.slice(1)
-    : communityImages;
+  const communityCover = !place.coverUrl && communityImages.length > 0 ? communityImages[0] : null;
 
   return (
     <div className="pd-page">
@@ -147,8 +127,8 @@ export default async function PlaceDetailPage({ params }: Props) {
               <span>สถานที่ทั้งหมด · All Places</span>
             </Link>
           </div>
-          {(communityCover || place.coverUrl)
-            ? <img src={communityCover || place.coverUrl} alt={place.title} className="pd-hero-img" />
+          {(place.coverUrl || communityCover)
+            ? <img src={place.coverUrl || communityCover!} alt={place.title} className="pd-hero-img" />
             : <div className="pd-hero-img" style={{ background: "linear-gradient(135deg,#10b981,#06b6d4)" }} />
           }
           <div className="pd-hero-overlay">
@@ -269,33 +249,39 @@ export default async function PlaceDetailPage({ params }: Props) {
             {place.gallery?.length > 0 && (
               <div className="pd-card">
                 <h2>รูปภาพ Gallery</h2>
-                <OwnerGallery images={place.gallery} />
+                <div className="pd-gallery">
+                  {place.gallery.slice(0, 6).map((img, i) => (
+                    <div key={i} className="pd-gal-item">
+                      <img src={img} alt={place.title + " " + (i + 1)} />
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
-            {communityImagesStrip.length > 0 ? (
-              <div className="pd-card" style={{ overflow: "visible" }}>
+            {communityImages.length > 0 && (
+              <div className="pd-card">
                 <h2>
                   📸 รูปจากนักเดินทาง
                   <span style={{ fontSize: 14, fontWeight: 600, color: "#94a3b8" }}> Community Photos</span>
                 </h2>
-                <p style={{ fontSize: 12, color: "#94a3b8", marginTop: -8, marginBottom: 16 }}>
+                <p style={{ fontSize: 12, color: "#94a3b8", marginTop: -8, marginBottom: 12 }}>
                   รูปภาพที่นักเดินทางแชร์จากทริปของพวกเขา · Photos shared by travelers from their trips
                 </p>
-                <CommunityGallery images={communityImagesStrip} minSlots={0} />
+                <div className="pd-gallery">
+                  {communityImages.slice(0, 9).map((img, i) => (
+                    <div key={i} className="pd-gal-item">
+                      <img src={img} alt={"Community photo " + (i + 1)} />
+                    </div>
+                  ))}
+                </div>
+                {communityImages.length > 9 && (
+                  <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 8 }}>
+                    +{communityImages.length - 9} รูปเพิ่มเติม
+                  </p>
+                )}
               </div>
-            ) : !place.business ? (
-              <div className="pd-card" style={{ overflow: "visible" }}>
-                <h2>
-                  📸 รูปจากนักเดินทาง
-                  <span style={{ fontSize: 14, fontWeight: 600, color: "#94a3b8" }}> Community Photos</span>
-                </h2>
-                <p style={{ fontSize: 12, color: "#94a3b8", marginTop: -8, marginBottom: 16 }}>
-                  รูปภาพที่นักเดินทางแชร์จากทริปของพวกเขา · Photos shared by travelers from their trips
-                </p>
-                <CommunityGallery images={[]} minSlots={4} />
-              </div>
-            ) : null}
+            )}
 
             {place.googleMapsUrl && (
               <div className="pd-card pd-map-card">
