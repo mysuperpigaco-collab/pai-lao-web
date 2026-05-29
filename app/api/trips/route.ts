@@ -53,7 +53,7 @@ export async function GET(request: Request) {
         select: {
           id: true, slug: true, title: true, subtitle: true,
           coverUrl: true, mood: true, budget: true, location: true,
-          tags: true, createdAt: true, isPublished: true,
+          tags: true, createdAt: true, isPublished: true, viewCount: true,
           approvalStatus: true, rejectionReason: true,
           author: { select: { id: true, username: true, displayName: true, firstName: true, avatarUrl: true } },
           _count: { select: { reviews: true, bookmarks: true, likes: true } },
@@ -76,7 +76,31 @@ export async function GET(request: Request) {
       };
     });
 
-    return NextResponse.json({ trips: tripsFlat, total, page, totalPages: Math.ceil(total / limit) });
+    // ถ้าเป็น mine=1 ให้ตรวจว่ามี PendingEdit รออยู่สำหรับทริปไหนบ้าง
+    let pendingEditTripIds = new Set<string>();
+    if (mine) {
+      const tripIds = tripsFlat.map((t: any) => t.id).filter(Boolean);
+      if (tripIds.length > 0) {
+        const sessionForPending = await getCurrentUser();
+      const pending = await (prisma as any).pendingEdit.findMany({
+          where: {
+            targetType: "TRIP",
+            targetId: { in: tripIds },
+            status: "PENDING",
+            ...(sessionForPending ? { submittedById: sessionForPending.userId } : {}),
+          },
+          select: { targetId: true },
+        });
+        pending.forEach((p: any) => pendingEditTripIds.add(p.targetId));
+      }
+    }
+
+    const tripsWithPending = tripsFlat.map((t: any) => ({
+      ...t,
+      hasPendingEdit: pendingEditTripIds.has(t.id),
+    }));
+
+    return NextResponse.json({ trips: tripsWithPending, total, page, totalPages: Math.ceil(total / limit) });
   } catch (error) {
     console.error("GET /api/trips:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
@@ -133,7 +157,7 @@ export async function POST(request: Request) {
         coverUrl:    coverUrl    ?? "",
         gallery:     gallery     ?? [],
         mood:        mood        ?? "ทั่วไป",
-        budget:      budget      ? Number(budget) : null,
+        budget:      budget      ? Math.round(Number(budget)) : null,
         location:    location    ?? "",
         tags:        tags        ?? [],
         youtubeUrl:    youtubeUrl    ?? null,
@@ -157,10 +181,11 @@ export async function POST(request: Request) {
             transport:   stop.transport   ?? null,
             duration:    stop.duration    ?? null,
             cost:        stop.cost          ?? null,
-            images:      stop.images        ?? (stop.image ? [stop.image] : []),
+            images:        stop.images        ?? (stop.image ? [stop.image] : []),
             stopType:      stop.stopType      ?? null,
             googleMapsUrl: stop.googleMapsUrl ?? null,
             tips:          stop.tips          ?? null,
+            shareToPlace:  stop.shareToPlace  ?? false,
           })),
         } : undefined,
       },

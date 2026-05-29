@@ -26,8 +26,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "ไฟล์ต้องไม่เกิน 5MB" }, { status: 400 });
     }
 
-    const ext      = file.name.split(".").pop() ?? "jpg";
-    const filename = `${folder}/${session.userId}/${Date.now()}.${ext}`;
+    // Sanitize extension — อนุญาตเฉพาะ image extensions ที่รู้จัก
+    const ALLOWED_EXTS = ["jpg", "jpeg", "png", "webp", "gif", "avif"];
+    const rawExt = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+    const ext = ALLOWED_EXTS.includes(rawExt) ? rawExt : "jpg";
+    const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, ""); // ป้องกัน path traversal
+    const filename = `${safeFolder}/${session.userId}/${Date.now()}.${ext}`;
     const buffer   = Buffer.from(await file.arrayBuffer());
 
     const { error } = await supabaseAdmin.storage
