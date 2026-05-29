@@ -482,4 +482,3 @@ export default async function PlaceDetailPage({ params }: Props) {
     </div>
   );
 }
-                                 
