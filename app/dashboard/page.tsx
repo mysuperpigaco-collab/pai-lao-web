@@ -78,7 +78,7 @@ function NoticeCard({ n, onDismiss }: { n: Notice; onDismiss: (id: string) => vo
 }
 
 export default function DashboardPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user } = useAuth();
   const [activeTab, setActiveTab]   = useState<"my-stories" | "saved" | "saved-places">("my-stories");
   const [myTrips, setMyTrips]       = useState<TripItem[]>([]);
   const [bookmarks, setBookmarks]   = useState<BookmarkItem[]>([]);
@@ -251,12 +251,262 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* ─── Draft trip banner ─── */}
+        {draftTrips.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            {draftTrips.length === 2 && (
+              <div style={{ fontSize: 12, color: "#b45309", fontWeight: 700, marginBottom: 8, padding: "6px 12px", background: "#fef9c3", borderRadius: 8, border: "1px solid #fde68a" }}>
+                ⚠️ คุณมีดราฟเต็ม 2 อัน กรุณาส่งหรือลบก่อนสร้างทริปใหม่
+              </div>
+            )}
+            {draftTrips.map(draftTrip => (
+              <div key={draftTrip.id} style={{
+                background: "linear-gradient(135deg, #fefce8, #fffbeb)",
+                border: "2px solid #fde68a", borderRadius: 20,
+                padding: "18px 20px", marginBottom: 10,
+                display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap",
+                boxShadow: "0 4px 16px rgba(245,158,11,0.12)",
+              }}>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,#f59e0b,#fbbf24)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
+                  📝
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: "#78350f", marginBottom: 2 }}>
+                    บันทึกทริปที่ยังไม่เสร็จ
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#92400e", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    📍 {draftTrip.title}
+                  </div>
+                  {draftTrip.timeline && draftTrip.timeline.length > 0 && (
+                    <div style={{ fontSize: 11, color: "#a16207", marginTop: 2 }}>
+                      {draftTrip.timeline.length} จุดแวะที่บันทึกไว้
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                  <Link href={`/trips/${draftTrip.slug}/edit`} style={{
+                    padding: "9px 18px", borderRadius: 12, background: "linear-gradient(135deg,#f59e0b,#d97706)",
+                    color: "#fff", fontWeight: 800, fontSize: 13, textDecoration: "none",
+                    display: "flex", alignItems: "center", gap: 6,
+                  }}>
+                    ✏️ แก้ไขและเผยแพร่
+                  </Link>
+                  <button
+                    onClick={() => {
+                      if (!confirm("ลบบันทึกชั่วคราวนี้ออกใช่ไหม?")) return;
+                      fetch(`/api/trips/draft?id=${draftTrip.id}`, { method: "DELETE" })
+                        .then(() => setDraftTrips(prev => prev.filter(d => d.id !== draftTrip.id)))
+                        .catch(() => {});
+                    }}
+                    style={{ padding: "9px 12px", borderRadius: 12, background: "#fef3c7", border: "1.5px solid #fde68a", color: "#92400e", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+                  >
+                    🗑️ ลบ
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ─── Notification boxes ─── */}
+        {visibleNotices.length > 0 && (
+          <div className="dp-notices">
+            {visibleNotices.map(n => <NoticeCard key={n.id} n={n} onDismiss={dismiss} />)}
+          </div>
+        )}
+
+        {/* ─── Notifications (reply + trip-owner) ─── */}
+        {(() => {
+          if (loadingNotifs) return null;
+          const allItems = [
+            ...tripReviews.map(n => ({ kind: "trip" as const, n })),
+            ...replyNotifs.map(n => ({ kind: "reply" as const, n })),
+          ];
+          // filter out dismissed
+          const visibleItems = allItems.filter(({ kind, n }) =>
+            !seenIds.has(`del:${kind === "trip" ? `tr:${n.id}` : `rp:${n.id}`}`)
+          );
+          if (visibleItems.length === 0) return null;
+
+          const unreadCount = visibleItems.filter(({ kind, n }) =>
+            !seenIds.has(kind === "trip" ? `tr:${n.id}` : `rp:${n.id}`)
+          ).length;
+
+          const dismissNotif = (key: string) => markSeen([`del:${key}`]);
+
+          return (
+            <div style={{ marginBottom: 28 }}>
+              {/* Header */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
+                <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0f172a", margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
+                  🔔 การแจ้งเตือน · Notifications
+                  {unreadCount > 0 && (
+                    <span style={{ fontSize: 11, fontWeight: 800, color: "#fff", background: "#e11d48", padding: "2px 9px", borderRadius: 999, animation: "notifPulse 2s ease-in-out infinite" }}>
+                      {unreadCount}
+                    </span>
+                  )}
+                  {unreadCount === 0 && (
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#16a34a", background: "#dcfce7", padding: "2px 9px", borderRadius: 999 }}>✓ อ่านแล้วทั้งหมด</span>
+                  )}
+                </h3>
+                <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
+                  <span style={{ fontSize: 11, color: "#94a3b8" }}>{visibleItems.length} รายการ</span>
+                  {unreadCount > 0 && (
+                    <button onClick={markAllRead} style={{ fontSize: 11, fontWeight: 700, color: "#2563eb", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 999, padding: "4px 12px", cursor: "pointer", fontFamily: "inherit" }}>
+                      ✓ อ่านทั้งหมด
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* 2-column scrollable grid */}
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: 10,
+                maxHeight: visibleItems.length > 4 ? 520 : undefined,
+                overflowY: visibleItems.length > 4 ? "auto" : undefined,
+                paddingRight: visibleItems.length > 4 ? 4 : 0,
+              }}>
+                {/* Trip-owner review notifications */}
+                {tripReviews
+                  .filter(n => !seenIds.has(`del:tr:${n.id}`))
+                  .map(notif => {
+                    const nid = `tr:${notif.id}`;
+                    const isRead = seenIds.has(nid);
+                    const reviewerName = notif.author.displayName || notif.author.firstName || "ผู้ใช้";
+                    const alreadyReplied = notif.replies.length > 0;
+                    const starStr = notif.rating ? "★".repeat(Math.round(notif.rating)) : "";
+                    return (
+                      <div
+                        key={notif.id}
+                        onClick={() => markSeen([nid])}
+                        style={{
+                          background: isRead ? "#f8fafc" : "#fffbeb",
+                          border: isRead ? "1.5px solid #e2e8f0" : "1.5px solid #fde68a",
+                          borderLeft: isRead ? "4px solid #e2e8f0" : "4px solid #f59e0b",
+                          borderRadius: 16, padding: "13px 14px",
+                          display: "flex", flexDirection: "column", gap: 8,
+                          boxShadow: isRead ? "none" : "0 2px 12px rgba(245,158,11,0.10)",
+                          transition: "all 0.3s ease",
+                          opacity: isRead ? 0.75 : 1,
+                          position: "relative",
+                        }}
+                      >
+                        {/* Delete button */}
+                        <button
+                          onClick={e => { e.stopPropagation(); dismissNotif(`tr:${notif.id}`); }}
+                          style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#94a3b8", fontFamily: "inherit", lineHeight: 1 }}
+                          title="ลบการแจ้งเตือน"
+                        >×</button>
+
+                        <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                          <div style={{ position: "relative", flexShrink: 0 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 10, background: isRead ? "#f1f5f9" : "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17 }}>✍️</div>
+                            {!isRead && <span style={{ position: "absolute", top: -2, right: -2, width: 9, height: 9, borderRadius: "50%", background: "#e11d48", border: "2px solid white" }} />}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0, paddingRight: 18 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", marginBottom: 2 }}>
+                              <span style={{ fontSize: 12, fontWeight: isRead ? 600 : 800, color: isRead ? "#475569" : "#0f172a" }}>{reviewerName}</span>
+                              {!isRead && <span style={{ fontSize: 9, fontWeight: 800, background: "#fef3c7", color: "#92400e", padding: "1px 5px", borderRadius: 999 }}>ใหม่</span>}
+                            </div>
+                            <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 2px" }}>รีวิวเรื่อง: {notif.trip.title}</p>
+                            {starStr && <p style={{ fontSize: 12, color: "#f59e0b", margin: "0 0 3px", letterSpacing: 1 }}>{starStr}</p>}
+                            <p style={{ fontSize: 11, color: isRead ? "#94a3b8" : "#374151", margin: 0, fontStyle: "italic",
+                              display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>
+                              &ldquo;{notif.text}&rdquo;
+                            </p>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4, borderTop: "1px solid rgba(0,0,0,0.05)" }}>
+                          <Link
+                            href={`/trips/${notif.trip.slug}`}
+                            onClick={() => markSeen([nid])}
+                            style={{ fontSize: 11, fontWeight: 700, color: alreadyReplied ? "#64748b" : "#2563eb", textDecoration: "none", background: alreadyReplied ? "#f1f5f9" : "#eff6ff", padding: "3px 10px", borderRadius: 999, border: `1px solid ${alreadyReplied ? "#e2e8f0" : "#bfdbfe"}` }}>
+                            {alreadyReplied ? "✓ ตอบแล้ว" : "💬 ตอบกลับ"} →
+                          </Link>
+                          <span style={{ fontSize: 10, color: "#94a3b8" }}>{new Date(notif.createdAt).toLocaleDateString("th-TH")}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                {/* Reply notifications */}
+                {replyNotifs
+                  .filter(n => !seenIds.has(`del:rp:${n.id}`))
+                  .map(notif => {
+                    const nid = `rp:${notif.id}`;
+                    const isRead = seenIds.has(nid);
+                    const dest = notif.place ? `/place/${notif.place.slug}` : notif.trip ? `/trips/${notif.trip.slug}` : "#";
+                    const destTitle = notif.place?.title ?? notif.trip?.title ?? "สถานที่";
+                    const latestReply = notif.replies[0];
+                    const replierName = latestReply?.author.displayName || latestReply?.author.firstName || "ผู้ใช้";
+                    const isOwnerReply = latestReply?.author.role === "BUSINESS";
+                    return (
+                      <div
+                        key={notif.id}
+                        style={{
+                          background: isRead ? "#f8fafc" : (isOwnerReply ? "#f0fdf4" : "#eff6ff"),
+                          border: isRead ? "1.5px solid #e2e8f0" : `1.5px solid ${isOwnerReply ? "#bbf7d0" : "#bfdbfe"}`,
+                          borderLeft: isRead ? "4px solid #e2e8f0" : `4px solid ${isOwnerReply ? "#22c55e" : "#3b82f6"}`,
+                          borderRadius: 16, padding: "13px 14px",
+                          display: "flex", flexDirection: "column", gap: 8,
+                          boxShadow: isRead ? "none" : "0 2px 12px rgba(59,130,246,0.08)",
+                          transition: "all 0.3s ease",
+                          opacity: isRead ? 0.75 : 1,
+                          position: "relative",
+                          cursor: "pointer",
+                        }}
+                        onClick={() => markSeen([nid])}
+                      >
+                        {/* Delete button */}
+                        <button
+                          onClick={e => { e.stopPropagation(); dismissNotif(`rp:${notif.id}`); }}
+                          style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#94a3b8", fontFamily: "inherit", lineHeight: 1 }}
+                          title="ลบการแจ้งเตือน"
+                        >×</button>
+
+                        <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                          <div style={{ position: "relative", flexShrink: 0 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: 10, background: isRead ? "#f1f5f9" : (isOwnerReply ? "#dcfce7" : "#dbeafe"), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17 }}>
+                              {isOwnerReply ? "🏢" : "💬"}
+                            </div>
+                            {!isRead && <span style={{ position: "absolute", top: -2, right: -2, width: 9, height: 9, borderRadius: "50%", background: "#e11d48", border: "2px solid white" }} />}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0, paddingRight: 18 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 2 }}>
+                              <span style={{ fontSize: 12, fontWeight: isRead ? 600 : 800, color: isRead ? "#475569" : "#0f172a" }}>
+                                {replierName}{isOwnerReply ? " (เจ้าของ)" : ""}
+                              </span>
+                              {!isRead && <span style={{ fontSize: 9, fontWeight: 800, background: isOwnerReply ? "#dcfce7" : "#dbeafe", color: isOwnerReply ? "#15803d" : "#1e40af", padding: "1px 5px", borderRadius: 999 }}>ใหม่</span>}
+                            </div>
+                            <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 3px" }}>ตอบกลับรีวิวของคุณ · {destTitle}</p>
+                            <p style={{ fontSize: 11, color: isRead ? "#94a3b8" : "#374151", margin: 0, fontStyle: "italic",
+                              display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>
+                              &ldquo;{latestReply?.text}&rdquo;
+                            </p>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4, borderTop: "1px solid rgba(0,0,0,0.05)" }}>
+                          <Link href={dest} onClick={() => markSeen([nid])} style={{ fontSize: 11, fontWeight: 700, color: isOwnerReply ? "#15803d" : "#2563eb", textDecoration: "none" }}>
+                            ดูรีวิว →
+                          </Link>
+                          <span style={{ fontSize: 10, color: "#94a3b8" }}>{new Date(latestReply?.createdAt ?? notif.id).toLocaleDateString("th-TH")}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* ─── Main grid ─── */}
         <div className="dp-grid">
 
           {/* ── Sidebar ── */}
           <aside className="dp-sidebar">
-            <ProfileHeader isOwner={true} loading={authLoading} user={profileUser} />
+            <ProfileHeader isOwner={true} user={profileUser} />
 
             <div className="dp-card" style={{ marginTop: "16px" }}>
               <h3 className="sb-title">บัญชีของฉัน <small>My Account</small></h3>
@@ -280,166 +530,6 @@ export default function DashboardPage() {
           {/* ── Main content ── */}
           <main className="dp-main">
             <div className="dp-card main-card">
-
-              {/* ─── Draft trip banner ─── */}
-              {draftTrips.length > 0 && (
-                <div style={{ marginBottom: 20 }}>
-                  {draftTrips.length === 2 && (
-                    <div style={{ fontSize: 12, color: "#b45309", fontWeight: 700, marginBottom: 8, padding: "6px 12px", background: "#fef9c3", borderRadius: 8, border: "1px solid #fde68a" }}>
-                      ⚠️ คุณมีดราฟเต็ม 2 อัน กรุณาส่งหรือลบก่อนสร้างทริปใหม่
-                    </div>
-                  )}
-                  {draftTrips.map(draftTrip => (
-                    <div key={draftTrip.id} style={{ background: "linear-gradient(135deg, #fefce8, #fffbeb)", border: "2px solid #fde68a", borderRadius: 20, padding: "18px 20px", marginBottom: 10, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", boxShadow: "0 4px 16px rgba(245,158,11,0.12)" }}>
-                      <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,#f59e0b,#fbbf24)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>📝</div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 900, color: "#78350f", marginBottom: 2 }}>บันทึกทริปที่ยังไม่เสร็จ</div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#92400e", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>📍 {draftTrip.title}</div>
-                        {draftTrip.timeline && draftTrip.timeline.length > 0 && (
-                          <div style={{ fontSize: 11, color: "#a16207", marginTop: 2 }}>{draftTrip.timeline.length} จุดแวะที่บันทึกไว้</div>
-                        )}
-                      </div>
-                      <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                        <Link href={`/trips/${draftTrip.slug}/edit`} style={{ padding: "9px 18px", borderRadius: 12, background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "#fff", fontWeight: 800, fontSize: 13, textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}>✏️ แก้ไขและเผยแพร่</Link>
-                        <button onClick={() => { if (!confirm("ลบบันทึกชั่วคราวนี้ออกใช่ไหม?")) return; fetch(`/api/trips/draft?id=${draftTrip.id}`, { method: "DELETE" }).then(() => setDraftTrips(prev => prev.filter(d => d.id !== draftTrip.id))).catch(() => {}); }} style={{ padding: "9px 12px", borderRadius: 12, background: "#fef3c7", border: "1.5px solid #fde68a", color: "#92400e", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>🗑️ ลบ</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* ─── Notification boxes ─── */}
-              {visibleNotices.length > 0 && (
-                <div className="dp-notices" style={{ marginBottom: 20 }}>
-                  {visibleNotices.map(n => <NoticeCard key={n.id} n={n} onDismiss={dismiss} />)}
-                </div>
-              )}
-
-              {/* ─── Notifications (reply + trip-owner) ─── */}
-              {(() => {
-                if (loadingNotifs) return null;
-                const allItems = [
-                  ...tripReviews.map(n => ({ kind: "trip" as const, n })),
-                  ...replyNotifs.map(n => ({ kind: "reply" as const, n })),
-                ];
-                const visibleItems = allItems.filter(({ kind, n }) =>
-                  !seenIds.has(`del:${kind === "trip" ? `tr:${n.id}` : `rp:${n.id}`}`)
-                );
-                if (visibleItems.length === 0) return null;
-
-                const unreadCount = visibleItems.filter(({ kind, n }) =>
-                  !seenIds.has(kind === "trip" ? `tr:${n.id}` : `rp:${n.id}`)
-                ).length;
-
-                const dismissNotif = (key: string) => markSeen([`del:${key}`]);
-
-                return (
-                  <div style={{ marginBottom: 24 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
-                      <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0f172a", margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
-                        🔔 การแจ้งเตือน · Notifications
-                        {unreadCount > 0 && (
-                          <span style={{ fontSize: 11, fontWeight: 800, color: "#fff", background: "#e11d48", padding: "2px 9px", borderRadius: 999, animation: "notifPulse 2s ease-in-out infinite" }}>
-                            {unreadCount}
-                          </span>
-                        )}
-                        {unreadCount === 0 && (
-                          <span style={{ fontSize: 11, fontWeight: 700, color: "#16a34a", background: "#dcfce7", padding: "2px 9px", borderRadius: 999 }}>✓ อ่านแล้วทั้งหมด</span>
-                        )}
-                      </h3>
-                      <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
-                        <span style={{ fontSize: 11, color: "#94a3b8" }}>{visibleItems.length} รายการ</span>
-                        {unreadCount > 0 && (
-                          <button onClick={markAllRead} style={{ fontSize: 11, fontWeight: 700, color: "#2563eb", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 999, padding: "4px 12px", cursor: "pointer", fontFamily: "inherit" }}>
-                            ✓ อ่านทั้งหมด
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    <div style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(2, 1fr)",
-                      gap: 10,
-                      maxHeight: visibleItems.length > 4 ? 520 : undefined,
-                      overflowY: visibleItems.length > 4 ? "auto" : undefined,
-                      paddingRight: visibleItems.length > 4 ? 4 : 0,
-                    }}>
-                      {tripReviews
-                        .filter(n => !seenIds.has(`del:tr:${n.id}`))
-                        .map(notif => {
-                          const nid = `tr:${notif.id}`;
-                          const isRead = seenIds.has(nid);
-                          const reviewerName = notif.author.displayName || notif.author.firstName || "ผู้ใช้";
-                          const alreadyReplied = notif.replies.length > 0;
-                          const starStr = notif.rating ? "★".repeat(Math.round(notif.rating)) : "";
-                          return (
-                            <div key={notif.id} onClick={() => markSeen([nid])} style={{ background: isRead ? "#f8fafc" : "#fffbeb", border: isRead ? "1.5px solid #e2e8f0" : "1.5px solid #fde68a", borderLeft: isRead ? "4px solid #e2e8f0" : "4px solid #f59e0b", borderRadius: 16, padding: "13px 14px", display: "flex", flexDirection: "column", gap: 8, boxShadow: isRead ? "none" : "0 2px 12px rgba(245,158,11,0.10)", transition: "all 0.3s ease", opacity: isRead ? 0.75 : 1, position: "relative" }}>
-                              <button onClick={e => { e.stopPropagation(); dismissNotif(`tr:${notif.id}`); }} style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#94a3b8", fontFamily: "inherit", lineHeight: 1 }} title="ลบการแจ้งเตือน">×</button>
-                              <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                                <div style={{ position: "relative", flexShrink: 0 }}>
-                                  <div style={{ width: 36, height: 36, borderRadius: 10, background: isRead ? "#f1f5f9" : "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17 }}>✍️</div>
-                                  {!isRead && <span style={{ position: "absolute", top: -2, right: -2, width: 9, height: 9, borderRadius: "50%", background: "#e11d48", border: "2px solid white" }} />}
-                                </div>
-                                <div style={{ flex: 1, minWidth: 0, paddingRight: 18 }}>
-                                  <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", marginBottom: 2 }}>
-                                    <span style={{ fontSize: 12, fontWeight: isRead ? 600 : 800, color: isRead ? "#475569" : "#0f172a" }}>{reviewerName}</span>
-                                    {!isRead && <span style={{ fontSize: 9, fontWeight: 800, background: "#fef3c7", color: "#92400e", padding: "1px 5px", borderRadius: 999 }}>ใหม่</span>}
-                                  </div>
-                                  <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 2px" }}>รีวิวเรื่อง: {notif.trip.title}</p>
-                                  {starStr && <p style={{ fontSize: 12, color: "#f59e0b", margin: "0 0 3px", letterSpacing: 1 }}>{starStr}</p>}
-                                  <p style={{ fontSize: 11, color: isRead ? "#94a3b8" : "#374151", margin: 0, fontStyle: "italic", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>&ldquo;{notif.text}&rdquo;</p>
-                                </div>
-                              </div>
-                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4, borderTop: "1px solid rgba(0,0,0,0.05)" }}>
-                                <Link href={`/trips/${notif.trip.slug}`} onClick={() => markSeen([nid])} style={{ fontSize: 11, fontWeight: 700, color: alreadyReplied ? "#64748b" : "#2563eb", textDecoration: "none", background: alreadyReplied ? "#f1f5f9" : "#eff6ff", padding: "3px 10px", borderRadius: 999, border: `1px solid ${alreadyReplied ? "#e2e8f0" : "#bfdbfe"}` }}>
-                                  {alreadyReplied ? "✓ ตอบแล้ว" : "💬 ตอบกลับ"} →
-                                </Link>
-                                <span style={{ fontSize: 10, color: "#94a3b8" }}>{new Date(notif.createdAt).toLocaleDateString("th-TH")}</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-
-                      {replyNotifs
-                        .filter(n => !seenIds.has(`del:rp:${n.id}`))
-                        .map(notif => {
-                          const nid = `rp:${notif.id}`;
-                          const isRead = seenIds.has(nid);
-                          const dest = notif.place ? `/place/${notif.place.slug}` : notif.trip ? `/trips/${notif.trip.slug}` : "#";
-                          const destTitle = notif.place?.title ?? notif.trip?.title ?? "สถานที่";
-                          const latestReply = notif.replies[0];
-                          const replierName = latestReply?.author.displayName || latestReply?.author.firstName || "ผู้ใช้";
-                          const isOwnerReply = latestReply?.author.role === "BUSINESS";
-                          return (
-                            <div key={notif.id} style={{ background: isRead ? "#f8fafc" : (isOwnerReply ? "#f0fdf4" : "#eff6ff"), border: isRead ? "1.5px solid #e2e8f0" : `1.5px solid ${isOwnerReply ? "#bbf7d0" : "#bfdbfe"}`, borderLeft: isRead ? "4px solid #e2e8f0" : `4px solid ${isOwnerReply ? "#22c55e" : "#3b82f6"}`, borderRadius: 16, padding: "13px 14px", display: "flex", flexDirection: "column", gap: 8, boxShadow: isRead ? "none" : "0 2px 12px rgba(59,130,246,0.08)", transition: "all 0.3s ease", opacity: isRead ? 0.75 : 1, position: "relative", cursor: "pointer" }} onClick={() => markSeen([nid])}>
-                              <button onClick={e => { e.stopPropagation(); dismissNotif(`rp:${notif.id}`); }} style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#94a3b8", fontFamily: "inherit", lineHeight: 1 }} title="ลบการแจ้งเตือน">×</button>
-                              <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                                <div style={{ position: "relative", flexShrink: 0 }}>
-                                  <div style={{ width: 36, height: 36, borderRadius: 10, background: isRead ? "#f1f5f9" : (isOwnerReply ? "#dcfce7" : "#dbeafe"), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17 }}>{isOwnerReply ? "🏢" : "💬"}</div>
-                                  {!isRead && <span style={{ position: "absolute", top: -2, right: -2, width: 9, height: 9, borderRadius: "50%", background: "#e11d48", border: "2px solid white" }} />}
-                                </div>
-                                <div style={{ flex: 1, minWidth: 0, paddingRight: 18 }}>
-                                  <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 2 }}>
-                                    <span style={{ fontSize: 12, fontWeight: isRead ? 600 : 800, color: isRead ? "#475569" : "#0f172a" }}>{replierName}{isOwnerReply ? " (เจ้าของ)" : ""}</span>
-                                    {!isRead && <span style={{ fontSize: 9, fontWeight: 800, background: isOwnerReply ? "#dcfce7" : "#dbeafe", color: isOwnerReply ? "#15803d" : "#1e40af", padding: "1px 5px", borderRadius: 999 }}>ใหม่</span>}
-                                  </div>
-                                  <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 3px" }}>ตอบกลับรีวิวของคุณ · {destTitle}</p>
-                                  <p style={{ fontSize: 11, color: isRead ? "#94a3b8" : "#374151", margin: 0, fontStyle: "italic", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>&ldquo;{latestReply?.text}&rdquo;</p>
-                                </div>
-                              </div>
-                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4, borderTop: "1px solid rgba(0,0,0,0.05)" }}>
-                                <Link href={dest} onClick={() => markSeen([nid])} style={{ fontSize: 11, fontWeight: 700, color: isOwnerReply ? "#15803d" : "#2563eb", textDecoration: "none" }}>ดูรีวิว →</Link>
-                                <span style={{ fontSize: 10, color: "#94a3b8" }}>{new Date(latestReply?.createdAt ?? notif.id).toLocaleDateString("th-TH")}</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  </div>
-                );
-              })()}
-
               <div className="tab-bar">
                 <div className="tabs">
                   {([
@@ -593,7 +683,7 @@ export default function DashboardPage() {
       </div>
 
       <style jsx>{`
-        .dp-page { min-height: 100vh; background: transparent; padding: 36px 0 80px; }
+        .dp-page { min-height: 100vh; background: #f8fafc; padding: 36px 0 80px; }
         .dp-container { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
 
         .dp-page-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; }
@@ -617,7 +707,7 @@ export default function DashboardPage() {
         .dp-grid { display: grid; grid-template-columns: 290px 1fr; gap: 28px; align-items: start; }
         .dp-sidebar { position: sticky; top: 100px; }
 
-        .dp-card { background: rgba(255,255,255,0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 24px; padding: 22px; border: 1px solid #f1f5f9; box-shadow: 0 2px 12px rgba(15,23,42,0.04); }
+        .dp-card { background: white; border-radius: 24px; padding: 22px; border: 1px solid #f1f5f9; box-shadow: 0 2px 12px rgba(15,23,42,0.04); }
         .sb-title { font-size: 14px; font-weight: 900; color: #1e293b; margin: 0 0 14px; }
         .sb-title small { font-size: 11px; color: #94a3b8; font-weight: 400; margin-left: 5px; }
 
@@ -636,3 +726,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+  

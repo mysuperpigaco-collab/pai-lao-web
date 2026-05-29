@@ -4,13 +4,11 @@ import Link from "next/link";
 import { useState } from "react";
 
 interface TripItem {
-  slug:          string;
-  title:         string;
-  coverUrl?:     string | null;
-  createdAt:     string;
-  isPublished?:  boolean;
-  approvalStatus?: string | null;  // "APPROVED" | "PENDING" | "REJECTED" | null
-  hasPendingEdit?: boolean;
+  slug:        string;
+  title:       string;
+  coverUrl?:   string | null;
+  createdAt:   string;
+  isPublished?: boolean;
 }
 
 function formatDate(iso: string) {
@@ -47,11 +45,7 @@ export default function StoryCard({
   const [deleting, setDeleting] = useState(false);
   const [confirm,  setConfirm ] = useState(false);
 
-  const approvalStatus  = story.approvalStatus;
-  const hasPendingEdit  = story.hasPendingEdit ?? false;
-  const published  = approvalStatus === "APPROVED" || (approvalStatus == null && story.isPublished !== false);
-  const isPending  = approvalStatus === "PENDING";
-  const isRejected = approvalStatus === "REJECTED";
+  const published = story.isPublished !== false;
   const imgSrc    = story.coverUrl || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=800";
 
   const handleDelete = async () => {
@@ -77,23 +71,13 @@ export default function StoryCard({
           position: "absolute", top: "10px", right: "10px",
           display: "inline-flex", alignItems: "center", gap: "5px",
           padding: "4px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: 700,
-          background: published ? "#dcfce7" : isPending ? "#fef9c3" : isRejected ? "#fee2e2" : "#f1f5f9",
-          color:      published ? "#15803d" : isPending ? "#92400e" : isRejected ? "#dc2626" : "#475569",
+          background: published ? "#dcfce7" : "#f1f5f9",
+          color:      published ? "#15803d" : "#475569",
           backdropFilter: "blur(4px)",
         }}>
-          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: published ? "#22c55e" : isPending ? "#f59e0b" : isRejected ? "#ef4444" : "#94a3b8", flexShrink: 0 }} />
-          {published ? "✅ เผยแพร่แล้ว · Published" : isPending ? "⏳ รอการตรวจสอบ · Pending" : isRejected ? "❌ ถูกปฏิเสธ · Rejected" : "📝 แบบร่าง · Draft"}
+          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: published ? "#22c55e" : "#94a3b8", flexShrink: 0 }} />
+          {published ? "เผยแพร่แล้ว · Published" : "ฉบับร่าง · Draft"}
         </span>
-        {hasPendingEdit && (
-          <span style={{
-            position: "absolute", top: "34px", right: "10px",
-            display: "inline-flex", alignItems: "center", gap: "4px",
-            padding: "3px 8px", borderRadius: "999px", fontSize: "10px", fontWeight: 700,
-            background: "#fef3c7", color: "#92400e", backdropFilter: "blur(4px)",
-          }}>
-            ✏️ รออนุมัติการแก้ไข
-          </span>
-        )}
       </div>
 
       {/* Body */}

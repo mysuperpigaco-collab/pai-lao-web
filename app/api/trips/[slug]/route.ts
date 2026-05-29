@@ -90,7 +90,7 @@ export async function PUT(request: Request, { params }: Params) {
           ...(coverUrl    !== undefined && { coverUrl }),
           ...(gallery     !== undefined && { gallery }),
           ...(mood        !== undefined && { mood }),
-          ...(budget      !== undefined && { budget: budget ? Math.round(Number(budget)) : null }),
+          ...(budget      !== undefined && { budget: budget ? Number(budget) : null }),
           ...(location    !== undefined && { location }),
           ...(tags        !== undefined && { tags }),
           ...(youtubeUrl  !== undefined && { youtubeUrl: youtubeUrl || null }),
@@ -106,10 +106,6 @@ export async function PUT(request: Request, { params }: Params) {
                 transport: stop.transport ?? null, duration: stop.duration ?? null,
                 cost: stop.cost ?? null,
                 images: stop.images ?? (stop.image ? [stop.image] : []),
-                shareToPlace:  stop.shareToPlace  ?? false,
-                placeId:       stop.placeId       ?? null,
-                stopType:      stop.stopType      ?? null,
-                googleMapsUrl: stop.googleMapsUrl ?? null,
               })),
             },
           }),
@@ -123,56 +119,29 @@ export async function PUT(request: Request, { params }: Params) {
     if ((trip as any).isDraft) {
       const { finalize } = body;
       if (finalize) {
-        // ตรวจสอบจาก request body (ไม่ใช่จาก DB ซึ่งอาจว่างสำหรับ draft)
-        const finalTitle       = title       ?? trip.title;
-        const finalDescription = description ?? trip.description;
-        const finalCoverUrl    = coverUrl    ?? trip.coverUrl;
-        if (!finalTitle || !finalDescription || !finalCoverUrl) {
+        if (!trip.title || !trip.description || !trip.coverUrl) {
           return NextResponse.json({ message: "กรุณากรอกข้อมูลให้ครบก่อนเผยแพร่ (ชื่อ คำอธิบาย รูปปก)" }, { status: 400 });
-        }
-        // ลบ timeline เก่าแล้วสร้างใหม่จาก request body
-        if (timeline !== undefined) {
-          await prisma.timelineStop.deleteMany({ where: { trip: { slug } } });
         }
         const updated = await (prisma as any).trip.update({
           where: { slug },
           data: {
             isDraft: false, approvalStatus: "PENDING",
-            title:       finalTitle,
-            description: finalDescription,
-            coverUrl:    finalCoverUrl,
+            ...(title       !== undefined && { title }),
             ...(subtitle    !== undefined && { subtitle }),
+            ...(description !== undefined && { description }),
+            ...(coverUrl    !== undefined && { coverUrl }),
             ...(gallery     !== undefined && { gallery }),
             ...(mood        !== undefined && { mood }),
-            ...(budget      !== undefined && { budget: budget ? Math.round(Number(budget)) : null }),
+            ...(budget      !== undefined && { budget: budget ? Number(budget) : null }),
             ...(location    !== undefined && { location }),
             ...(tags        !== undefined && { tags }),
             ...(youtubeUrl  !== undefined && { youtubeUrl: youtubeUrl || null }),
             ...(tiktokUrl   !== undefined && { tiktokUrl: tiktokUrl  || null }),
-            ...(timeline?.length && {
-              timeline: {
-                create: (timeline as any[]).map((stop: any, index: number) => ({
-                  order: index, date: stop.date ?? "", time: stop.time ?? "",
-                  placeName: stop.place ?? stop.placeName ?? "",
-                  province: stop.province ?? "", district: stop.district ?? "",
-                  description: stop.description ?? "",
-                  images: stop.images ?? [],
-                  stopType: stop.stopType ?? null,
-                  googleMapsUrl: stop.googleMapsUrl ?? null,
-                  shareToPlace: stop.shareToPlace ?? false,
-                  placeId: stop.placeId ?? null,
-                })),
-              },
-            }),
           },
-          include: { timeline: { orderBy: { order: "asc" } } },
         });
         return NextResponse.json({ message: "ส่งทริปเพื่อรอการอนุมัติแล้ว", trip: updated, pending: true });
       }
-      // ไม่ finalize — แค่ update draft ตรง ๆ (รวม timeline)
-      if (timeline !== undefined) {
-        await prisma.timelineStop.deleteMany({ where: { trip: { slug } } });
-      }
+      // ไม่ finalize — แค่ update draft ตรง ๆ
       const updated = await (prisma as any).trip.update({
         where: { slug },
         data: {
@@ -182,26 +151,11 @@ export async function PUT(request: Request, { params }: Params) {
           ...(coverUrl    !== undefined && { coverUrl }),
           ...(gallery     !== undefined && { gallery }),
           ...(mood        !== undefined && { mood }),
-          ...(budget      !== undefined && { budget: budget ? Math.round(Number(budget)) : null }),
+          ...(budget      !== undefined && { budget: budget ? Number(budget) : null }),
           ...(location    !== undefined && { location }),
           ...(tags        !== undefined && { tags }),
           ...(youtubeUrl  !== undefined && { youtubeUrl: youtubeUrl || null }),
           ...(tiktokUrl   !== undefined && { tiktokUrl: tiktokUrl  || null }),
-          ...(timeline?.length && {
-            timeline: {
-              create: (timeline as any[]).map((stop: any, index: number) => ({
-                order: index, date: stop.date ?? "", time: stop.time ?? "",
-                placeName: stop.place ?? stop.placeName ?? "",
-                province: stop.province ?? "", district: stop.district ?? "",
-                description: stop.description ?? "",
-                images: stop.images ?? [],
-                stopType: stop.stopType ?? null,
-                googleMapsUrl: stop.googleMapsUrl ?? null,
-                shareToPlace: stop.shareToPlace ?? false,
-                placeId: stop.placeId ?? null,
-              })),
-            },
-          }),
         },
         include: { timeline: { orderBy: { order: "asc" } } },
       });
@@ -246,13 +200,6 @@ export async function PUT(request: Request, { params }: Params) {
         submittedById: session.userId,
       },
     });
-
-    // อัปเดต coverUrl ทันทีให้ profile เห็นรูปใหม่ (content อื่นรออนุมัติ)
-    const immediateUpdate: Record<string, any> = {};
-    if (coverUrl !== undefined) immediateUpdate.coverUrl = coverUrl;
-    if (Object.keys(immediateUpdate).length > 0) {
-      await prisma.trip.update({ where: { slug }, data: immediateUpdate });
-    }
 
     return NextResponse.json({ message: "ส่งการแก้ไขสำเร็จ รอการตรวจสอบจากแอดมิน", pending: true });
   } catch (error) {

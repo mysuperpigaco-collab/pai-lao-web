@@ -1,90 +1,6 @@
 "use client";
-// ── PromotionSection ────────────────────────────────────────────
-function PromotionSection() {
-  const [promos, setPromos] = React.useState<any[]>([]);
-  const [showForm, setShowForm] = React.useState(false);
-  const [form, setForm] = React.useState({ title: "", description: "", discount: "", condition: "", startDate: "", endDate: "", coverUrl: "" });
-  const [saving, setSaving] = React.useState(false);
-  const [msg, setMsg] = React.useState("");
 
-  React.useEffect(() => {
-    fetch("/api/promotions").then(r => r.json()).then(d => setPromos(d.promotions || []));
-  }, []);
-
-  const handleSubmit = async () => {
-    if (!form.title || !form.description || !form.startDate || !form.endDate) { setMsg("กรุณากรอกข้อมูลให้ครบ"); return; }
-    setSaving(true); setMsg("");
-    const res = await fetch("/api/promotions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-    const data = await res.json();
-    if (res.ok) { setMsg("✅ ส่งคำขอเรียบร้อย รอแอดมินอนุมัติ"); setShowForm(false); setForm({ title: "", description: "", discount: "", condition: "", startDate: "", endDate: "", coverUrl: "" }); }
-    else setMsg("❌ " + (data.error || "เกิดข้อผิดพลาด"));
-    setSaving(false);
-  };
-
-  return (
-    <section style={{ marginTop: 48 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <div>
-          <h2 style={{ fontSize: "22px", fontWeight: 900, margin: 0 }}>โปรโมชั่นของร้าน</h2>
-          <p style={{ fontSize: "13px", color: "#64748b", margin: "4px 0 0" }}>ขอเพิ่มโปรโมชั่นเพื่อดึงดูดลูกค้า</p>
-        </div>
-        <button onClick={() => setShowForm(!showForm)} style={{ padding: "10px 20px", background: "linear-gradient(135deg,#f59e0b,#ef4444)", color: "#fff", borderRadius: "12px", fontWeight: 700, fontSize: "13px", border: "none", cursor: "pointer" }}>
-          {showForm ? "ยกเลิก" : "+ ขอเพิ่มโปรโมชั่น"}
-        </button>
-      </div>
-      {msg && <p style={{ fontWeight: 700, color: msg.startsWith("✅") ? "#15803d" : "#dc2626", marginBottom: 12 }}>{msg}</p>}
-      {showForm && (
-        <div style={{ background: "#fff", borderRadius: "16px", padding: "24px", border: "1.5px solid #e2e8f0", marginBottom: "20px", maxWidth: "600px" }}>
-          <h3 style={{ fontSize: "16px", fontWeight: 800, margin: "0 0 16px" }}>ข้อมูลโปรโมชั่น</h3>
-          {[
-            { label: "ชื่อโปรโมชั่น *", key: "title", placeholder: "เช่น โปรซัมเมอร์ ลด 20%" },
-            { label: "รายละเอียด *", key: "description", placeholder: "รายละเอียดโปรโมชั่น" },
-            { label: "ส่วนลด", key: "discount", placeholder: "เช่น ลด 20% หรือ ซื้อ 1 แถม 1" },
-            { label: "เงื่อนไข", key: "condition", placeholder: "เช่น เมื่อซื้อขั้นต่ำ 200 บาท" },
-          ].map(({ label, key, placeholder }) => (
-            <div key={key} style={{ marginBottom: "12px" }}>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#374151", marginBottom: "4px" }}>{label}</label>
-              {key === "description" ? (
-                <textarea value={form[key as keyof typeof form]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} rows={3} style={{ width: "100%", padding: "10px 12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", fontSize: "13px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }} />
-              ) : (
-                <input value={form[key as keyof typeof form]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} style={{ width: "100%", padding: "10px 12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", fontSize: "13px", boxSizing: "border-box" }} />
-              )}
-            </div>
-          ))}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
-            <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#374151", marginBottom: "4px" }}>วันเริ่ม *</label>
-              <input type="date" value={form.startDate} onChange={e => setForm(p => ({ ...p, startDate: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", fontSize: "13px", boxSizing: "border-box" }} />
-            </div>
-            <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#374151", marginBottom: "4px" }}>วันหมดอายุ *</label>
-              <input type="date" value={form.endDate} onChange={e => setForm(p => ({ ...p, endDate: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", fontSize: "13px", boxSizing: "border-box" }} />
-            </div>
-          </div>
-          <button onClick={handleSubmit} disabled={saving} style={{ width: "100%", padding: "12px", background: "linear-gradient(135deg,#f59e0b,#ef4444)", color: "#fff", borderRadius: "12px", fontWeight: 700, fontSize: "14px", border: "none", cursor: saving ? "wait" : "pointer" }}>
-            {saving ? "กำลังส่ง..." : "ส่งคำขอโปรโมชั่น"}
-          </button>
-        </div>
-      )}
-      {promos.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "600px" }}>
-          {promos.slice(0, 3).map((p: any) => (
-            <div key={p.id} style={{ background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: "12px", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: "14px" }}>{p.title}</div>
-                {p.discount && <div style={{ fontSize: "12px", color: "#ef4444", fontWeight: 600 }}>{p.discount}</div>}
-                <div style={{ fontSize: "11px", color: "#94a3b8" }}>{new Date(p.startDate).toLocaleDateString("th-TH")} – {new Date(p.endDate).toLocaleDateString("th-TH")}</div>
-              </div>
-              <span style={{ fontSize: "11px", fontWeight: 700, background: "#f0fdf4", color: "#059669", padding: "3px 10px", borderRadius: "999px" }}>กำลังแสดง</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import BusinessProfileCard from "@/components/business/BusinessProfileCard";
 import BusinessPlaceCard from "@/components/business/BusinessPlaceCard";
@@ -199,11 +115,7 @@ export default function BusinessDashboardPage() {
 
   if (loading) return (
     <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:"60px 20px"}}>
-        <div style={{width:52,height:52,borderRadius:"50%",border:"3px solid #e2e8f0",borderTopColor:"#10b981",animation:"_spin 0.8s linear infinite"}}/>
-        <p style={{fontSize:14,color:"#94a3b8",margin:0}}>กำลังโหลดข้อมูล...</p>
-        <style>{`@keyframes _spin{to{transform:rotate(360deg)}}`}</style>
-      </div>
+      <p style={{ color: "#94a3b8", fontSize: "16px" }}>⏳ กำลังโหลดข้อมูล...</p>
     </div>
   );
 
@@ -282,7 +194,7 @@ export default function BusinessDashboardPage() {
 
       {/* ── PLACES GRID ── */}
       {places.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "60px 20px", background: "rgba(255,255,255,0.82)", borderRadius: "24px" }}>
+        <div style={{ textAlign: "center", padding: "60px 20px", background: "#f8fafc", borderRadius: "24px" }}>
           <p style={{ fontSize: "40px", marginBottom: "12px" }}>🏞️</p>
           <h3 style={{ fontSize: "18px", fontWeight: 800, color: "#334155" }}>ยังไม่มีสถานที่</h3>
           <p style={{ color: "#64748b", fontSize: "14px", marginBottom: "24px" }}>เพิ่มสถานที่แรกของคุณเพื่อให้นักท่องเที่ยวค้นพบ</p>
@@ -386,9 +298,6 @@ export default function BusinessDashboardPage() {
           </p>
         )}
       </section>
-
-      {/* ── Promotion Request Section ───────────────────────────── */}
-      <PromotionSection />
 
       <style jsx>{`
         .dashboard-page { width: 100%; max-width: 1440px; margin: 0 auto; padding: 40px 24px 80px; }

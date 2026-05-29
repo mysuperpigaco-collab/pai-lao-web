@@ -1,11 +1,11 @@
 "use client";
 
-import { use, useState, useEffect, useRef } from "react";
+import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
-import { getDistricts, normalizeProvince, PROVINCES } from "@/data/thailand";
+import { PROVINCES, getDistricts } from "@/data/thailand";
 import {
   BackButton,
   CancelButton,
@@ -30,8 +30,6 @@ export default function EditTripPage({ params }: Props) {
   const [notFound,      setNotFound     ] = useState(false);
   const [isDraft,       setIsDraft      ] = useState(false);
   const [draftSubmitted, setDraftSubmitted] = useState(false);
-  const [isSavingTemp, setIsSavingTemp] = useState(false);
-  const [tempSaved,    setTempSaved   ] = useState(false);
 
   // ── Form state ─────────────────────────────────────────
   const [coverFile,        setCoverFile       ] = useState<File | null>(null);
@@ -52,60 +50,8 @@ export default function EditTripPage({ params }: Props) {
 
   const [timeline, setTimeline] = useState<{
     date: string; time: string; place: string; province: string; district: string;
-    description: string; imageFile: File | null; imagePreview: string | null;
-    existingImage?: string; shareToPlace: boolean; placeId: string | null;
+    description: string; imageFile: File | null; imagePreview: string | null; existingImage?: string;
   }[]>([]);
-
-  // ── Place search state ─────────────────────────────────
-  const [placeSuggestions, setPlaceSuggestions] = useState<Record<number, any[]>>({});
-  const [placeSearchLoading, setPlaceSearchLoading] = useState<Record<number, boolean>>({});
-  const [suggestForm, setSuggestForm] = useState<Record<number, { open: boolean; cat: string; saving: boolean; mapsUrl: string }>>({});
-  const placeSearchTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
-
-  const searchPlaces = (idx: number, q: string) => {
-    clearTimeout(placeSearchTimers.current[idx]);
-    if (q.trim().length < 2) { setPlaceSuggestions(p => ({ ...p, [idx]: [] })); return; }
-    placeSearchTimers.current[idx] = setTimeout(async () => {
-      setPlaceSearchLoading(l => ({ ...l, [idx]: true }));
-      const res = await fetch(`/api/places?q=${encodeURIComponent(q)}&limit=6`);
-      const data = await res.json();
-      setPlaceSuggestions(p => ({ ...p, [idx]: data.places ?? [] }));
-      setPlaceSearchLoading(l => ({ ...l, [idx]: false }));
-    }, 350);
-  };
-  const selectPlace = (idx: number, p: any) => {
-    const updated = [...timeline];
-    updated[idx].place    = p.title;
-    updated[idx].province = p.province ? normalizeProvince(p.province) : updated[idx].province;
-    updated[idx].district = p.district ?? updated[idx].district;
-    updated[idx].placeId  = p.id;
-    setTimeline(updated);
-    setPlaceSuggestions(prev => ({ ...prev, [idx]: [] }));
-  };
-  const clearPlaceLink = (idx: number) => {
-    const updated = [...timeline];
-    updated[idx].placeId = null;
-    setTimeline(updated);
-  };
-  const openSuggest  = (idx: number) => setSuggestForm(f => ({ ...f, [idx]: { open: true, cat: "NATURE", saving: false, mapsUrl: "" } }));
-  const closeSuggest = (idx: number) => setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], open: false } }));
-  const suggestPlace = async (idx: number) => {
-    const item = timeline[idx];
-    const form = suggestForm[idx];
-    setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], saving: true } }));
-    const res = await fetch("/api/places", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: item.place, province: item.province, district: item.district, category: form.cat, googleMapsUrl: form.mapsUrl || null }),
-    });
-    const data = await res.json();
-    if (res.ok && data.place) {
-      const updated = [...timeline];
-      updated[idx].placeId = data.place.id;
-      setTimeline(updated);
-      closeSuggest(idx);
-    }
-    setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], saving: false } }));
-  };
 
   // ── โหลดข้อมูลทริปที่มีอยู่ ───────────────────────────
   useEffect(() => {
@@ -126,17 +72,15 @@ export default function EditTripPage({ params }: Props) {
         setExistingGallery(t.gallery ?? []);
         setIsDraft(t.isDraft ?? false);
         setTimeline((t.timeline ?? []).map((stop: any) => ({
-          date:          stop.date           ?? today,
-          time:          stop.time           ?? "",
-          place:         stop.placeName      ?? "",
-          province:      normalizeProvince(stop.province ?? ""),
-          district:      stop.district       ?? "",
-          description:   stop.description    ?? "",
+          date:          stop.date        ?? today,
+          time:          stop.time        ?? "",
+          place:         stop.placeName   ?? "",
+          province:      stop.province    ?? "",
+          district:      stop.district    ?? "",
+          description:   stop.description ?? "",
           imageFile:     null,
-          imagePreview:  stop.images?.[0]    ?? null,
-          existingImage: stop.images?.[0]    ?? undefined,
-          shareToPlace:  stop.shareToPlace   ?? false,
-          placeId:       stop.placeId        ?? null,
+          imagePreview:  stop.images?.[0] ?? null,
+          existingImage: stop.images?.[0] ?? undefined,
         })));
       })
       .catch(() => setNotFound(true))
@@ -161,7 +105,7 @@ export default function EditTripPage({ params }: Props) {
 
   const addStop = () => setTimeline(prev => [...prev, {
     date: today, time: "", place: "", province: "", district: "", description: "",
-    imageFile: null, imagePreview: null, shareToPlace: false, placeId: null,
+    imageFile: null, imagePreview: null,
   }]);
 
   const removeStop = (i: number) => setTimeline(prev => prev.filter((_, j) => j !== i));
@@ -178,73 +122,6 @@ export default function EditTripPage({ params }: Props) {
     const files = Array.from(e.target.files || []);
     setGalleryFiles(prev => [...prev, ...files]);
     setGalleryPreviews(prev => [...prev, ...files.map(f => URL.createObjectURL(f))]);
-  };
-
-  // ── Temp Save (บันทึกชั่วคราว) ────────────────────────────
-  const saveTempDraft = async () => {
-    if (!title.trim()) { setError("กรุณาใส่ชื่อทริปก่อนบันทึก"); return; }
-    setError("");
-    setIsSavingTemp(true);
-    try {
-      // อัปโหลดรูปปกใหม่ (ถ้ามี)
-      let finalCoverUrl = existingCoverUrl;
-      if (coverFile) {
-        finalCoverUrl = await uploadFile(coverFile, "covers");
-        setExistingCoverUrl(finalCoverUrl);
-      }
-      // อัปโหลด gallery ใหม่
-      let newGalleryUrls: string[] = [];
-      if (galleryFiles.length > 0) {
-        newGalleryUrls = await uploadFiles(galleryFiles, "gallery");
-      }
-      const finalGallery = [...existingGallery, ...newGalleryUrls];
-      // อัปโหลดรูป timeline
-      const timelineData = await Promise.all(
-        timeline.map(async (stop) => {
-          let imageUrl = stop.existingImage ?? "";
-          if (stop.imageFile) {
-            imageUrl = await uploadFile(stop.imageFile, "checkpoints");
-          }
-          return {
-            date: stop.date, time: stop.time,
-            place: stop.place, province: stop.province, district: stop.district,
-            description: stop.description,
-            images: imageUrl ? [imageUrl] : [],
-            shareToPlace: stop.shareToPlace ?? false,
-          };
-        })
-      );
-      const res = await fetch(`/api/trips/${slug}`, {
-        method:  "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description: content,
-          coverUrl: finalCoverUrl,
-          gallery: finalGallery,
-          mood,
-          budget: budget || null,
-          tags: tags.split(",").map(t => t.trim()).filter(Boolean),
-          youtubeUrl: youtubeUrl.trim() || null,
-          tiktokUrl:  tiktokUrl.trim()  || null,
-          timeline: timelineData,
-          // ไม่ส่ง finalize → บันทึกเป็น draft เท่านั้น
-        }),
-      });
-      if (!res.ok) {
-        const d = await res.json();
-        setError(d.message || "เกิดข้อผิดพลาด");
-      } else {
-        setTempSaved(true);
-        setTimeout(() => setTempSaved(false), 3000);
-        setGalleryFiles([]);
-        if (newGalleryUrls.length) setExistingGallery(finalGallery);
-      }
-    } catch (err: any) {
-      setError(err.message || "บันทึกไม่สำเร็จ");
-    } finally {
-      setIsSavingTemp(false);
-    }
   };
 
   // ── Submit ─────────────────────────────────────────────
@@ -277,15 +154,13 @@ export default function EditTripPage({ params }: Props) {
             imageUrl = await uploadFile(stop.imageFile, "checkpoints");
           }
           return {
-            date:         stop.date,
-            time:         stop.time,
-            place:        stop.place,
-            province:     stop.province,
-            district:     stop.district,
-            description:  stop.description,
-            images:       imageUrl ? [imageUrl] : [],
-            shareToPlace: stop.shareToPlace ?? false,
-            placeId:      stop.placeId ?? undefined,
+            date:        stop.date,
+            time:        stop.time,
+            place:       stop.place,
+            province:    stop.province,
+            district:    stop.district,
+            description: stop.description,
+            images:      imageUrl ? [imageUrl] : [],
           };
         })
       );
@@ -329,7 +204,7 @@ export default function EditTripPage({ params }: Props) {
   if (submitted) {
     return (
       <div className="create-container" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"24px",minHeight:"60vh"}}>
-        <div style={{fontSize:"56px"}}>✅</div>
+        <div style={{fontSize:"56px"}}>⏳</div>
         <div style={{textAlign:"center"}}>
           <h2 style={{fontSize:"22px",fontWeight:700,color:"#1e293b",marginBottom:"8px"}}>ส่งคำขอแก้ไขแล้ว!</h2>
           <p style={{color:"#64748b",fontSize:"15px",maxWidth:"360px"}}>
@@ -365,11 +240,7 @@ export default function EditTripPage({ params }: Props) {
   if (isLoadingTrip) {
     return (
       <div className="create-container">
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:"60px 20px"}}>
-        <div style={{width:52,height:52,borderRadius:"50%",border:"3px solid #e2e8f0",borderTopColor:"#10b981",animation:"_spin 0.8s linear infinite"}}/>
-        <p style={{fontSize:14,color:"#94a3b8",margin:0}}>กำลังโหลดข้อมูลทริป...</p>
-        <style>{`@keyframes _spin{to{transform:rotate(360deg)}}`}</style>
-      </div>
+        <div style={{ color: "#64748b", fontSize: 18 }}>กำลังโหลดข้อมูล...</div>
       </div>
     );
   }
@@ -488,7 +359,7 @@ export default function EditTripPage({ params }: Props) {
             <div className="form-group">
               <label>งบประมาณ | <small>BUDGET (บาท)</small></label>
               <input type="number" className="form-control" value={budget}
-                onChange={e => setBudget(e.target.value)} placeholder="0" min="0" step="1" max="2000000000" />
+                onChange={e => setBudget(e.target.value)} placeholder="0" min="0" />
             </div>
 
             <div className="form-group">
@@ -554,89 +425,13 @@ export default function EditTripPage({ params }: Props) {
                     <input type="time" className="form-control" value={item.time}
                       onChange={e => updateTimeline(idx, "time", e.target.value)} />
                   </div>
-                </div>
-
-                {/* Place search (full width) */}
-                <div style={{ position: "relative", marginBottom: 12 }}>
-                  <input type="text" className="form-control"
-                    placeholder="🔍 ค้นหาสถานที่ หรือพิมพ์ชื่อจุดแวะ"
-                    value={item.place}
-                    onChange={e => { updateTimeline(idx, "place", e.target.value); clearPlaceLink(idx); searchPlaces(idx, e.target.value); }}
-                    style={{ width: "100%", boxSizing: "border-box",
-                      borderColor: item.placeId ? "#10b981" : undefined,
-                      background: item.placeId ? "#f0fdf4" : undefined }} />
-                  {item.placeId && (
-                    <div style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ fontSize: 12, color: "#10b981", fontWeight: 700 }}>🔗 เชื่อมสถานที่แล้ว</span>
-                      <button type="button" onClick={() => clearPlaceLink(idx)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 16, lineHeight: 1, padding: 0 }}>×</button>
-                    </div>
-                  )}
-                  {(placeSuggestions[idx]?.length > 0) && (
-                    <div style={{ position: "absolute", top: "110%", left: 0, right: 0, background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.1)", zIndex: 50, maxHeight: 240, overflowY: "auto" }}>
-                      {placeSuggestions[idx].map((p: any) => (
-                        <button key={p.id} type="button" onClick={() => selectPlace(idx, p)}
-                          style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none", background: "none", cursor: "pointer", textAlign: "left", borderBottom: "1px solid #f1f5f9", fontFamily: "inherit" }}
-                          onMouseEnter={e => (e.currentTarget.style.background = "#f8fafc")}
-                          onMouseLeave={e => (e.currentTarget.style.background = "none")}>
-                          {p.coverUrl && <img src={p.coverUrl} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />}
-                          <div>
-                            <div style={{ fontWeight: 700, fontSize: 13, color: "#1e293b" }}>{p.title}</div>
-                            <div style={{ fontSize: 11, color: "#64748b" }}>📍 {p.district}, {p.province}</div>
-                            <div style={{ fontSize: 10, color: p.business ? "#10b981" : "#94a3b8", fontWeight: 600 }}>{p.business ? "🏢 มีเจ้าของ" : "⭕ ยังไม่มีเจ้าของ"}</div>
-                          </div>
-                        </button>
-                      ))}
-                      <button type="button" onClick={() => setPlaceSuggestions(prev => ({ ...prev, [idx]: [] }))}
-                        style={{ display: "block", width: "100%", padding: "8px", border: "none", background: "#f8fafc", color: "#94a3b8", fontSize: 12, cursor: "pointer", fontFamily: "inherit", borderRadius: "0 0 12px 12px" }}>ปิด</button>
-                    </div>
-                  )}
-                  {placeSearchLoading[idx] && (
-                    <div style={{ position: "absolute", top: "110%", left: 0, padding: "10px 14px", background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 12, fontSize: 12, color: "#94a3b8" }}>🔍 กำลังค้นหา...</div>
-                  )}
-                </div>
-
-                {/* Suggest new place */}
-                {item.place.trim().length >= 2 && !item.placeId && (
-                  <div style={{ marginBottom: 12 }}>
-                    {!suggestForm[idx]?.open ? (
-                      <button type="button" onClick={() => openSuggest(idx)}
-                        style={{ padding: "7px 14px", borderRadius: 10, border: "1.5px dashed #10b981", background: "#f0fdf4", color: "#10b981", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}>
-                        📍 สร้าง &ldquo;{item.place}&rdquo; เป็นสถานที่แนะนำ
-                      </button>
-                    ) : (
-                      <div style={{ background: "#f0fdf4", border: "1.5px solid #6ee7b7", borderRadius: 14, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
-                        <div style={{ fontWeight: 800, fontSize: 13, color: "#065f46" }}>📍 สร้างสถานที่แนะนำ: <span style={{ color: "#10b981" }}>{item.place}</span></div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                          <label style={{ fontSize: 12, color: "#374151", fontWeight: 700, flexShrink: 0 }}>ประเภท:</label>
-                          <select value={suggestForm[idx]?.cat ?? "NATURE"}
-                            onChange={e => setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], cat: e.target.value } }))}
-                            style={{ flex: 1, minWidth: 140, padding: "7px 10px", borderRadius: 8, border: "1.5px solid #d1fae5", fontSize: 12, fontFamily: "inherit", background: "#fff" }}>
-                            <option value="NATURE">🌿 ธรรมชาติ</option>
-                            <option value="TEMPLE">🛕 วัด/ศาสนสถาน</option>
-                            <option value="CAFE">☕ คาเฟ่</option>
-                            <option value="FOOD">🍲 อาหาร</option>
-                            <option value="BEACH">🏖️ ชายหาด</option>
-                            <option value="MARKET">🛍️ ตลาด/ช้อปปิ้ง</option>
-                            <option value="ADVENTURE">🧗 กีฬา/ผจญภัย</option>
-                            <option value="MUSEUM">🏛️ พิพิธภัณฑ์</option>
-                            <option value="ACCOMMODATION">🏨 ที่พัก</option>
-                            <option value="CAMPING">⛺ แคมปิ้ง</option>
-                          </select>
-                          <button type="button" onClick={() => suggestPlace(idx)} disabled={suggestForm[idx]?.saving}
-                            style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#10b981", color: "#fff", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", opacity: suggestForm[idx]?.saving ? 0.7 : 1 }}>
-                            {suggestForm[idx]?.saving ? "⏳..." : "✓ สร้าง"}
-                          </button>
-                          <button type="button" onClick={() => closeSuggest(idx)}
-                            style={{ padding: "7px 12px", borderRadius: 8, border: "1.5px solid #d1fae5", background: "#fff", color: "#64748b", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>ยกเลิก</button>
-                        </div>
-                        <input type="text" placeholder="Google Maps URL (ไม่บังคับ)"
-                          value={suggestForm[idx]?.mapsUrl ?? ""}
-                          onChange={e => setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], mapsUrl: e.target.value } }))}
-                          style={{ padding: "8px 12px", borderRadius: 8, border: "1.5px solid #d1fae5", fontSize: 12, fontFamily: "inherit", background: "#fff" }} />
-                      </div>
-                    )}
+                  <div className="form-group" style={{ flex: 2 }}>
+                    <label>ชื่อสถานที่</label>
+                    <input type="text" className="form-control" value={item.place}
+                      onChange={e => updateTimeline(idx, "place", e.target.value)}
+                      placeholder="ชื่อสถานที่..." />
                   </div>
-                )}
+                </div>
 
                 <div className="timeline-location-row">
                   <div className="form-group" style={{ flex: 1 }}>
@@ -664,49 +459,25 @@ export default function EditTripPage({ params }: Props) {
                       onChange={e => updateTimeline(idx, "description", e.target.value)}
                       placeholder="อธิบายสถานที่นี้..." />
                   </div>
-                  <div className="form-group">
+                  <div className="form-group cp-upload-container">
                     <label>รูปภาพ</label>
-                    <div className="cp-upload-container">
                     {item.imagePreview ? (
-                      <div style={{ position: "relative", width: "100%", height: "110px", borderRadius: "20px", overflow: "hidden" }}>
-                        <img src={item.imagePreview} alt="checkpoint" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <div className="cp-preview-box">
+                        <img src={item.imagePreview} alt="checkpoint" />
                         <button type="button" onClick={() => {
                           updateTimeline(idx, "imageFile", null);
                           updateTimeline(idx, "imagePreview", null);
                           updateTimeline(idx, "existingImage", undefined);
-                        }} style={{ position: "absolute", top: 6, right: 6, width: 26, height: 26, borderRadius: "50%", background: "rgba(239,68,68,0.9)", color: "#fff", border: "none", fontSize: 14, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
-                          ×
-                        </button>
+                        }}>ลบรูป</button>
                       </div>
                     ) : (
                       <label className="cp-label">
-                        <span>🖼 เพิ่มรูป</span>
+                        📷<br />อัปโหลด
                         <input hidden type="file" accept="image/*"
                           onChange={e => handleCheckpointImage(idx, e.target.files?.[0] ?? null)} />
                       </label>
                     )}
-                    </div>
                   </div>
-                </div>
-
-                {/* Share to place toggle */}
-                <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10 }}>
-                  <input type="checkbox" id={`stp-edit-${idx}`} checked={item.shareToPlace}
-                    onChange={e => updateTimeline(idx, "shareToPlace", e.target.checked)}
-                    style={{ display: "none" }} />
-                  <div onClick={() => updateTimeline(idx, "shareToPlace", !item.shareToPlace)}
-                    style={{ width: 38, height: 22, borderRadius: 11, cursor: "pointer",
-                      background: item.shareToPlace ? "#10b981" : "#cbd5e1",
-                      transition: "background 0.2s", position: "relative", flexShrink: 0 }}>
-                    <div style={{
-                      position: "absolute", top: 3, left: item.shareToPlace ? 19 : 3,
-                      width: 16, height: 16, borderRadius: "50%", background: "#fff",
-                      transition: "left 0.2s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-                    }} />
-                  </div>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: item.shareToPlace ? "#065f46" : "#64748b" }}>
-                    {item.shareToPlace ? "✅ อนุญาตให้แสดงรูปบนหน้าสถานที่" : "อนุญาตให้แสดงรูปบนหน้าสถานที่"}
-                  </span>
                 </div>
               </div>
             ))}
@@ -719,23 +490,6 @@ export default function EditTripPage({ params }: Props) {
           {/* Submit */}
           <ActionBar>
             <CancelButton href="/dashboard" label="ยกเลิก · Discard" />
-            {isDraft && (
-              <button
-                type="button"
-                onClick={saveTempDraft}
-                disabled={isSavingTemp}
-                style={{
-                  padding: "12px 22px", borderRadius: 14,
-                  background: tempSaved ? "#d1fae5" : "#fef3c7",
-                  color: tempSaved ? "#065f46" : "#92400e",
-                  border: `1.5px solid ${tempSaved ? "#6ee7b7" : "#fcd34d"}`,
-                  fontWeight: 700, fontSize: 14, cursor: isSavingTemp ? "not-allowed" : "pointer",
-                  display: "flex", alignItems: "center", gap: 6, transition: "all .2s",
-                }}
-              >
-                {isSavingTemp ? "⏳ กำลังบันทึก..." : tempSaved ? "✅ บันทึกแล้ว!" : "💾 บันทึกชั่วคราว"}
-              </button>
-            )}
             <SaveButton label={isDraft ? "🚀 ส่งเพื่อเผยแพร่ · Submit" : "💾 บันทึกการแก้ไข · Save Changes"} loading={isLoading} />
           </ActionBar>
 
@@ -743,8 +497,8 @@ export default function EditTripPage({ params }: Props) {
       </div>
 
       <style jsx>{`
-        .create-container { padding: 50px 20px; background: transparent; min-height: 100vh; display: flex; justify-content: center; }
-        .create-card { background: rgba(255,255,255,0.88); padding: 60px; border-radius: 50px; box-shadow: 0 30px 80px rgba(0,0,0,0.08); width: 100%; max-width: 1050px; position: relative; height: fit-content; }
+        .create-container { padding: 50px 20px; background: #f0f4f8; min-height: 100vh; display: flex; justify-content: center; }
+        .create-card { background: white; padding: 60px; border-radius: 50px; box-shadow: 0 30px 80px rgba(0,0,0,0.08); width: 100%; max-width: 1050px; position: relative; height: fit-content; }
         .top-nav-actions { margin-bottom: 20px; }
         .header-text { text-align: center; margin-bottom: 40px; }
         .header-text h2 { font-size: 34px; font-weight: 900; color: #1e293b; letter-spacing: -0.5px; }

@@ -1,212 +1,56 @@
 "use client";
-import { useState, useEffect, CSSProperties } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 interface Trip {
-  slug: string; title: string; coverUrl?: string | null;
-  province?: string | null; district?: string | null; mood?: string | null;
-  author?: { displayName?: string | null; firstName: string; avatarUrl?: string | null };
+  slug: string;
+  title: string;
+  coverUrl?: string | null;
+  province?: string | null;
+  district?: string | null;
+  author?: { displayName?: string | null; firstName: string };
   _count?: { reviews: number; bookmarks: number; likes: number };
-  avgRating?: number | null; viewCount?: number; createdAt?: string;
+  avgRating?: number | null;
+  createdAt?: string;
 }
+
 interface Place {
-  id: string; slug: string; title: string; titleEn?: string | null;
-  coverUrl: string; province: string; district: string; category: string;
+  id: string;
+  slug: string;
+  title: string;
+  titleEn?: string | null;
+  coverUrl: string;
+  province: string;
+  district: string;
+  category: string;
   _count?: { reviews: number; bookmarks: number };
   business?: { businessName: string; isVerified?: boolean } | null;
-  communityCover?: string | null;
 }
 
 const TABS = [
-  { id: "recent",        icon: "✨", label: "เพิ่งไปเล่ามา",  en: "Latest Stories", type: "trip",  param: "" },
-  { id: "NATURE",        icon: "🌿", label: "ธรรมชาติ",        en: "Nature",         type: "place", param: "NATURE" },
-  { id: "CAFE",          icon: "☕", label: "คาเฟ่",           en: "Café",           type: "place", param: "CAFE" },
-  { id: "BEACH",         icon: "🏖️", label: "ชายหาด",         en: "Beach",          type: "place", param: "BEACH" },
-  { id: "ACCOMMODATION", icon: "🏨", label: "ที่พัก",          en: "Stay",           type: "place", param: "ACCOMMODATION" },
-  { id: "FOOD",          icon: "🍲", label: "อาหาร",           en: "Food",           type: "place", param: "FOOD" },
-  { id: "TEMPLE",        icon: "🛕", label: "วัด",             en: "Temple",         type: "place", param: "TEMPLE" },
-  { id: "ADVENTURE",     icon: "🧗", label: "ผจญภัย",         en: "Adventure",      type: "place", param: "ADVENTURE" },
-  { id: "MARKET",        icon: "🛍️", label: "ตลาด",           en: "Market",         type: "place", param: "MARKET" },
-  { id: "MUSEUM",        icon: "🏛️", label: "พิพิธภัณฑ์",    en: "Museum",         type: "place", param: "MUSEUM" },
-  { id: "CAMPING",       icon: "⛺", label: "แคมปิ้ง",        en: "Camping",        type: "place", param: "CAMPING" },
+  { id: "recent",        icon: "✨", label: "เพิ่งไปเล่ามา",   en: "Latest Stories",  type: "trip",  param: "" },
+  { id: "NATURE",        icon: "🌿", label: "ธรรมชาติ",         en: "Nature",          type: "place", param: "NATURE" },
+  { id: "CAFE",          icon: "☕", label: "คาเฟ่",            en: "Café",            type: "place", param: "CAFE" },
+  { id: "BEACH",         icon: "🏖️", label: "ชายหาด",          en: "Beach",           type: "place", param: "BEACH" },
+  { id: "ACCOMMODATION", icon: "🏨", label: "ที่พัก",           en: "Stay",            type: "place", param: "ACCOMMODATION" },
+  { id: "FOOD",          icon: "🍲", label: "อาหาร",            en: "Food",            type: "place", param: "FOOD" },
+  { id: "TEMPLE",        icon: "🛕", label: "วัด",              en: "Temple",          type: "place", param: "TEMPLE" },
+  { id: "ADVENTURE",     icon: "🧗", label: "ผจญภัย",          en: "Adventure",       type: "place", param: "ADVENTURE" },
+  { id: "MARKET",        icon: "🛍️", label: "ตลาด",            en: "Market",          type: "place", param: "MARKET" },
+  { id: "MUSEUM",        icon: "🏛️", label: "พิพิธภัณฑ์",     en: "Museum",          type: "place", param: "MUSEUM" },
+  { id: "CAMPING",       icon: "⛺", label: "แคมปิ้ง",         en: "Camping",         type: "place", param: "CAMPING" },
 ] as const;
 
-function fmt(n?: number) {
-  if (!n) return "0";
-  return n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "K" : String(n);
-}
-
-const S: Record<string, CSSProperties> = {
-  root:    { marginTop: 20, maxWidth: "100%", overflowX: "clip" },
-  tabWrap: { display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 22, scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } as CSSProperties,
-  tabBase: { flexShrink: 0, display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 2, padding: "10px 16px", borderRadius: 14, minWidth: 72, border: "none", cursor: "pointer", fontFamily: "inherit", background: "#f1f5f9", color: "#475569", transition: "all .2s" },
-  tabActive: { background: "#0f172a", color: "#fff", boxShadow: "0 4px 14px rgba(15,23,42,.25)" },
-  tabIcon: { fontSize: 20, lineHeight: 1 },
-  tabTh:   { fontSize: 12, fontWeight: 700 },
-  tabEn:   { fontSize: 11, fontWeight: 700, opacity: 0.75 },
-  empty:   { textAlign: "center", padding: 52, color: "#94a3b8", fontSize: 15 },
-  grid5:   { display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 16 },
-  grid4:   { display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 },
-  card:    { display: "flex", flexDirection: "column", borderRadius: 20, overflow: "hidden", background: "#fff", textDecoration: "none", color: "inherit", boxShadow: "0 2px 12px rgba(15,23,42,.06)", border: "1px solid #f1f5f9", transition: "transform .22s ease, box-shadow .22s ease", minWidth: 0 },
-  imgWrap: { position: "relative", height: 164, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 },
-  imgEl:   { width: "100%", height: "100%", objectFit: "cover", display: "block" },
-  grad:    { position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(15,23,42,.55) 0%, transparent 55%)", pointerEvents: "none" },
-  chipProv: { position: "absolute", top: 10, left: 10, background: "rgba(255,255,255,.88)", color: "#0f172a", fontSize: 11, fontWeight: 800, padding: "4px 10px", borderRadius: 999, backdropFilter: "blur(6px)", boxShadow: "0 2px 6px rgba(0,0,0,.12)", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
-  chipRate: { position: "absolute", top: 10, right: 10, background: "rgba(251,191,36,.92)", color: "#1e293b", fontSize: 10, fontWeight: 800, padding: "4px 9px", borderRadius: 999 },
-  chipMood: { position: "absolute", bottom: 10, left: 10, background: "rgba(99,102,241,.85)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 999, backdropFilter: "blur(4px)", maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
-  chipGreen:{ position: "absolute", top: 10, right: 10, background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "4px 9px", borderRadius: 999 },
-  body:    { padding: "12px 14px 13px", flex: 1, display: "flex", flexDirection: "column", gap: 6 },
-  title:   { fontSize: 14, fontWeight: 800, color: "#1e293b", margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", lineHeight: 1.35 } as CSSProperties,
-  footer:  { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, marginTop: "auto", paddingTop: 6, borderTop: "1px solid #f1f5f9" },
-  author:  { display: "flex", alignItems: "center", gap: 6, minWidth: 0, overflow: "hidden" },
-  avatarImg: { width: 22, height: 22, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1.5px solid #e2e8f0", display: "block" },
-  avatarPh:  { width: 22, height: 22, borderRadius: "50%", flexShrink: 0, background: "linear-gradient(135deg,#10b981,#06b6d4)", color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" },
-  authorName: { fontSize: 11, fontWeight: 700, color: "#475569", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
-  stats:   { display: "flex", gap: 6, flexShrink: 0, fontSize: 11, fontWeight: 700, color: "#94a3b8" },
-  loc:     { fontSize: 11, color: "#64748b", fontWeight: 600 },
-  seeAll:  { display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 28px", borderRadius: 14, background: "linear-gradient(135deg,#0f172a,#1e3a8a)", color: "#fff", textDecoration: "none", fontWeight: 800, fontSize: 14, boxShadow: "0 4px 14px rgba(15,23,42,.18)" },
-};
-
-function useColumns(cols5: number, cols4: number) {
-  const [cols, setCols] = useState({ trip: cols5, place: cols4 });
-  useEffect(() => {
-    function update() {
-      const w = window.innerWidth;
-      setCols({
-        trip:  w <= 640 ? 2 : w <= 900 ? 3 : w <= 1200 ? 4 : cols5,
-        place: w <= 640 ? 2 : w <= 900 ? 3 : cols4,
-      });
-    }
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [cols5, cols4]);
-  return cols;
-}
-
-function TripCard({ trip }: { trip: Trip }) {
-  const province = trip.province?.split(" (")[0] ?? "";
-  const author   = trip.author?.displayName || trip.author?.firstName || "";
-  const avatar   = trip.author?.avatarUrl;
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <Link href={`/trips/${trip.slug}`} style={{ ...S.card, ...(hovered ? { transform: "translateY(-6px)", boxShadow: "0 16px 36px rgba(15,23,42,.13)" } : {}) }}
-      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <div style={S.imgWrap}>
-        {trip.coverUrl
-          ? <img src={trip.coverUrl} alt={trip.title} loading="lazy" style={{ ...S.imgEl, transform: hovered ? "scale(1.06)" : "scale(1)", transition: "transform .35s ease" }} />
-          : <div style={{ ...S.imgEl, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>🗺️</div>
-        }
-        {province && <span style={S.chipProv}>{province}</span>}
-        {trip.avgRating != null && trip.avgRating > 0 && <span style={S.chipRate}>⭐ {trip.avgRating.toFixed(1)}</span>}
-        {trip.mood && <span style={S.chipMood}>{trip.mood}</span>}
-        <div style={S.grad} />
-      </div>
-      <div style={S.body}>
-        <h4 style={S.title}>{trip.title}</h4>
-        <div style={S.footer}>
-          <div style={S.author}>
-            {avatar
-              ? <img src={avatar} alt={author} style={S.avatarImg} />
-              : <div style={S.avatarPh}>{author?.[0] ?? "?"}</div>
-            }
-            <span style={S.authorName}>{author}</span>
-          </div>
-          <div style={S.stats}>
-            <span>👁 {fmt(trip.viewCount)}</span>
-            <span>❤️ {fmt(trip._count?.likes)}</span>
-            <span>💬 {fmt(trip._count?.reviews)}</span>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function PlaceCard({ place }: { place: Place }) {
-  const [hovered, setHovered] = useState(false);
-  const [imgError, setImgError] = useState(false);
-  const prov = place.province?.split(" (")[0] ?? place.province;
-  // Unclaimed places prefer community photo over placeholder coverUrl
-  const displayImg = (!place.business && place.communityCover)
-    ? place.communityCover
-    : (place.coverUrl || place.communityCover || "");
-  return (
-    <Link href={`/place/${place.slug}`} style={{ ...S.card, ...(hovered ? { transform: "translateY(-6px)", boxShadow: "0 16px 36px rgba(15,23,42,.13)" } : {}) }}
-      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <div style={S.imgWrap}>
-        <img src={imgError ? "/images/default-place.svg" : displayImg} alt={place.title} loading="lazy"
-          style={{ ...S.imgEl, transform: hovered ? "scale(1.06)" : "scale(1)", transition: "transform .35s ease" }}
-          onError={() => setImgError(true)} />
-        {prov && <span style={S.chipProv}>{prov}</span>}
-        {place.business?.isVerified && <span style={S.chipGreen}>✓ Verified</span>}
-        <div style={S.grad} />
-      </div>
-      <div style={S.body}>
-        <h4 style={S.title}>{place.title}</h4>
-        {place.titleEn && <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0 }}>{place.titleEn}</p>}
-        <div style={S.footer}>
-          <span style={S.loc}>📍 {[place.district, prov].filter(Boolean).join(", ")}</span>
-          <div style={S.stats}>
-            {(place._count?.reviews ?? 0) > 0 && <span>⭐ {place._count!.reviews}</span>}
-            {(place._count?.bookmarks ?? 0) > 0 && <span>🔖 {place._count!.bookmarks}</span>}
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-
-// ── Skeleton Grid ─────────────────────────────────────────────────────────────
-function SkeletonGrid({ cols }: { cols: number }) {
-  return (
-    <>
-      <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols},1fr)`, gap: 16 }}>
-        {Array.from({ length: cols * 2 }).map((_, i) => (
-          <div key={i} style={{ borderRadius: 20, overflow: "hidden", border: "1px solid #f1f5f9", background: "white" }}>
-            {/* Image area */}
-            <div style={{ position: "relative", paddingBottom: "62%", background: "#f1f5f9", overflow: "hidden" }}>
-              <div style={{
-                position: "absolute", inset: 0,
-                background: "linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 45%, #f1f5f9 90%)",
-                backgroundSize: "200% 100%",
-                animation: `skshimmer 1.5s ease infinite ${(i * 0.08).toFixed(2)}s`,
-              }} />
-              {/* Chip placeholder */}
-              <div style={{ position: "absolute", top: 10, left: 10, width: 56, height: 18, borderRadius: 999, background: "#e2e8f0", overflow: "hidden" }}>
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 45%, #e2e8f0 90%)", backgroundSize: "200% 100%", animation: `skshimmer 1.5s ease infinite ${(i * 0.08 + 0.15).toFixed(2)}s` }} />
-              </div>
-            </div>
-            {/* Footer */}
-            <div style={{ padding: "9px 12px", display: "flex", alignItems: "center", gap: 8, borderTop: "1px solid #f8fafc" }}>
-              <div style={{ flex: 1, height: 9, borderRadius: 6, background: "#f1f5f9", overflow: "hidden", position: "relative" }}>
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 45%, #f1f5f9 90%)", backgroundSize: "200% 100%", animation: `skshimmer 1.5s ease infinite ${(i * 0.08 + 0.25).toFixed(2)}s` }} />
-              </div>
-              <div style={{ width: 36, height: 9, borderRadius: 6, background: "#f1f5f9", overflow: "hidden", position: "relative" }}>
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 45%, #f1f5f9 90%)", backgroundSize: "200% 100%", animation: `skshimmer 1.5s ease infinite ${(i * 0.08 + 0.35).toFixed(2)}s` }} />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      <style>{`
-        @keyframes skshimmer {
-          0%   { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-      `}</style>
-    </>
-  );
+function formatDate(iso?: string) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export default function AutoGridSection() {
   const [activeTab, setActiveTab] = useState("recent");
-  const [trips,   setTrips  ] = useState<Trip[]>([]);
-  const [places,  setPlaces ] = useState<Place[]>([]);
+  const [trips,  setTrips ] = useState<Trip[]>([]);
+  const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(true);
-  const cols = useColumns(5, 4);
 
   const tab = TABS.find(t => t.id === activeTab)!;
 
@@ -214,52 +58,232 @@ export default function AutoGridSection() {
     setLoading(true);
     if (tab.type === "trip") {
       fetch("/api/trips?limit=20&sort=recent")
-        .then(r => r.json()).then(d => { setTrips(d.trips ?? []); setLoading(false); })
+        .then(r => r.json())
+        .then(d => { setTrips(d.trips ?? []); setLoading(false); })
         .catch(() => setLoading(false));
     } else {
       fetch(`/api/places?limit=12&category=${tab.param}&sort=popular`)
-        .then(r => r.json()).then(d => { setPlaces(d.places ?? []); setLoading(false); })
+        .then(r => r.json())
+        .then(d => { setPlaces(d.places ?? []); setLoading(false); })
         .catch(() => setLoading(false));
     }
   }, [activeTab]);
 
   return (
-    <div style={S.root}>
-      {/* Tabs */}
-      <div style={S.tabWrap}>
+    <div className="ag-root" style={{maxWidth:"100%",overflowX:"clip"}}>
+      {/* ── Tab strip ── */}
+      <div className="ag-tabs" style={{display:"flex",flexWrap:"nowrap",overflowX:"auto",WebkitOverflowScrolling:"touch",gap:8,marginBottom:22,paddingBottom:4,scrollbarWidth:"none"}}>
         {TABS.map(t => (
-          <button key={t.id} onClick={() => setActiveTab(t.id)}
-            style={{ ...S.tabBase, ...(activeTab === t.id ? S.tabActive : {}) }}>
-            <span style={S.tabIcon}>{t.icon}</span>
-            <span style={S.tabTh}>{t.label}</span>
-            <span style={{ ...S.tabEn, ...(activeTab === t.id ? { opacity: 0.9 } : {}) }}>{t.en}</span>
+          <button
+            key={t.id}
+            onClick={() => setActiveTab(t.id)}
+            className={`ag-tab${activeTab === t.id ? " ag-tab-active" : ""}`}
+          >
+            <span className="ag-tab-icon">{t.icon}</span>
+            <span className="ag-tab-th">{t.label}</span>
+            <span className="ag-tab-en">{t.en}</span>
           </button>
         ))}
       </div>
 
-      {/* Content */}
+      {/* ── Content ── */}
       {loading ? (
-        <SkeletonGrid cols={tab.type === "trip" ? cols.trip : cols.place} />
+        <div className="ag-loading">⏳ กำลังโหลด... <span className="ag-muted">Loading...</span></div>
       ) : tab.type === "trip" ? (
-        trips.length === 0 ? <div style={S.empty}>ยังไม่มีเรื่องเล่า</div> : (
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols.trip},1fr)`, gap: 16 }}>
-            {trips.map(t => <TripCard key={t.slug} trip={t} />)}
+        trips.length === 0 ? (
+          <div className="ag-loading">ยังไม่มีเรื่องเล่า · No stories yet</div>
+        ) : (
+          <div className="ag-grid ag-grid-5" style={{maxWidth:"100%"}}>
+            {trips.map(trip => (
+              <Link key={trip.slug} href={`/trips/${trip.slug}`} className="ag-card" style={{minWidth:0,width:"100%"}}>
+                <div className="ag-img">
+                  {trip.coverUrl
+                    ? <img src={trip.coverUrl} alt={trip.title} loading="lazy" />
+                    : <div className="ag-img-ph">🗺️</div>
+                  }
+                  {trip.avgRating != null && trip.avgRating > 0 && (
+                    <span className="ag-badge-rating">⭐ {trip.avgRating.toFixed(1)}</span>
+                  )}
+                  <div className="ag-badge-row">
+                    {(trip._count?.likes ?? 0) > 0 && (
+                      <span className="ag-badge-dark">❤️ {trip._count!.likes}</span>
+                    )}
+                    {(trip._count?.reviews ?? 0) > 0 && (
+                      <span className="ag-badge-dark">💬 {trip._count!.reviews}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="ag-body">
+                  <h4 className="ag-title">{trip.title}</h4>
+                  <p className="ag-loc">
+                    {trip.province ? `📍 ${trip.province}` : ""}
+                    {trip.author ? ` · ${trip.author.displayName || trip.author.firstName}` : ""}
+                  </p>
+                  {trip.createdAt && (
+                    <p className="ag-date">{formatDate(trip.createdAt)}</p>
+                  )}
+                </div>
+              </Link>
+            ))}
           </div>
         )
       ) : (
-        places.length === 0 ? <div style={S.empty}>ยังไม่มีสถานที่</div> : (
+        places.length === 0 ? (
+          <div className="ag-loading">ยังไม่มีสถานที่ในหมวดนี้ · No places yet</div>
+        ) : (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols.place},1fr)`, gap: 16 }}>
-              {places.map(p => <PlaceCard key={p.slug} place={p} />)}
+            <div className="ag-grid ag-grid-4" style={{maxWidth:"100%"}}>
+              {places.map(place => (
+                <Link key={place.slug} href={`/place/${place.slug}`} className="ag-card" style={{minWidth:0,width:"100%"}}>
+                  <div className="ag-img">
+                    <img src={place.coverUrl} alt={place.title} loading="lazy" onError={(e)=>{const i=e.currentTarget;i.onerror=null;i.src="/images/default-place.svg";}} />
+                    {place.business?.isVerified && (
+                      <span className="ag-badge-green">✓ Verified</span>
+                    )}
+                    {(place._count?.reviews ?? 0) > 0 && (
+                      <span className="ag-badge-dark">⭐ {place._count!.reviews}</span>
+                    )}
+                  </div>
+                  <div className="ag-body">
+                    <h4 className="ag-title">{place.title}</h4>
+                    {place.titleEn && <p className="ag-en">{place.titleEn}</p>}
+                    <p className="ag-loc">📍 {[place.district, place.province].filter(Boolean).join(", ")}</p>
+                  </div>
+                </Link>
+              ))}
             </div>
             <div style={{ textAlign: "center", marginTop: 28 }}>
-              <Link href={`/place?category=${tab.param}&sort=popular`} style={S.seeAll}>
+              <Link
+                href={`/place?category=${tab.param}&sort=popular`}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "12px 28px", borderRadius: 14,
+                  background: "linear-gradient(135deg, #0f172a, #1e3a8a)",
+                  color: "white", textDecoration: "none",
+                  fontWeight: 800, fontSize: 14,
+                  boxShadow: "0 4px 14px rgba(15,23,42,0.18)",
+                }}
+              >
                 ดูสถานที่{tab.label}ทั้งหมด · See all {tab.en} →
               </Link>
             </div>
           </>
         )
       )}
+
+      <style jsx>{`
+        .ag-root { margin-top: 20px; }
+
+        /* Tabs */
+        .ag-tabs {
+          display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 22px;
+          overflow-x: auto; padding-bottom: 4px;
+          -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        }
+        .ag-tabs::-webkit-scrollbar { display: none; }
+        .ag-tab {
+          display: inline-flex; flex-direction: column; align-items: center;
+          gap: 2px; padding: 10px 16px; border-radius: 14px;
+          border: none; cursor: pointer; font-family: inherit;
+          background: #f1f5f9; color: #475569;
+          transition: all 0.2s; flex-shrink: 0; min-width: 72px;
+        }
+        .ag-tab:hover:not(.ag-tab-active) { background: #e2e8f0; }
+        .ag-tab-active {
+          background: #0f172a; color: #fff;
+          box-shadow: 0 4px 14px rgba(15,23,42,0.25);
+        }
+        .ag-tab-icon { font-size: 20px; line-height: 1; }
+        .ag-tab-th { font-size: 12px; font-weight: 700; line-height: 1.2; }
+        .ag-tab-en { font-size: 11px; font-weight: 700; opacity: 0.75; line-height: 1; }
+        .ag-tab-active .ag-tab-en { opacity: 0.9; }
+
+        /* Loading / empty */
+        .ag-loading { text-align: center; padding: 52px; color: #94a3b8; font-size: 15px; }
+        .ag-muted { font-weight: 400; }
+
+        /* Grid */
+        .ag-grid { display: grid; gap: 16px; }
+        .ag-grid-5 { grid-template-columns: repeat(5, 1fr); }
+        .ag-grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+        /* Card */
+        .ag-card {
+          background: white; border-radius: 18px; overflow: hidden;
+          text-decoration: none; color: inherit;
+          border: 1px solid #f1f5f9;
+          box-shadow: 0 2px 10px rgba(15,23,42,0.04);
+          display: flex; flex-direction: column; min-width: 0;
+          transition: all 0.2s;
+        }
+        .ag-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 10px 28px rgba(15,23,42,0.09);
+          border-color: #e0e7ff;
+        }
+
+        /* Image */
+        .ag-img {
+          position: relative; height: 140px;
+          overflow: hidden; background: #e2e8f0; flex-shrink: 0;
+        }
+        .ag-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .ag-card:hover .ag-img img { transform: scale(1.04); }
+        .ag-img-ph {
+          width: 100%; height: 100%;
+          display: flex; align-items: center; justify-content: center; font-size: 32px;
+        }
+        .ag-badge-green {
+          position: absolute; top: 8px; right: 8px;
+          background: #dcfce7; color: #15803d;
+          font-size: 10px; font-weight: 800;
+          padding: 3px 8px; border-radius: 999px;
+        }
+        .ag-badge-rating {
+          position: absolute; top: 8px; left: 8px;
+          background: rgba(251,191,36,0.92); color: #1e293b;
+          font-size: 10px; font-weight: 800;
+          padding: 3px 8px; border-radius: 999px;
+          backdrop-filter: blur(4px);
+        }
+        .ag-badge-row {
+          position: absolute; bottom: 8px; right: 8px;
+          display: flex; gap: 4px;
+        }
+        .ag-badge-dark {
+          background: rgba(15,23,42,0.65); color: white;
+          font-size: 10px; font-weight: 700;
+          padding: 3px 8px; border-radius: 999px;
+          backdrop-filter: blur(4px);
+        }
+
+        /* Body */
+        .ag-body { padding: 11px 13px 13px; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+        .ag-title {
+          font-size: 14px; font-weight: 800; color: #1e293b; margin: 0;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .ag-en {
+          font-size: 12px; color: #64748b; font-style: italic; margin: 0;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .ag-loc { font-size: 12px; font-weight: 600; color: #64748b; margin: 0; }
+        .ag-date { font-size: 11px; font-weight: 600; color: #94a3b8; margin: 0; margin-top: 2px; }
+
+        /* Responsive */
+        @media (max-width: 1200px) { .ag-grid-5 { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 900px)  {
+          .ag-grid-5 { grid-template-columns: repeat(3, 1fr); }
+          .ag-grid-4 { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 640px)  {
+          .ag-grid-5, .ag-grid-4 { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+          .ag-tab { padding: 7px 10px; min-width: 58px; }
+          .ag-tab-icon { font-size: 17px; }
+          .ag-tab-th { font-size: 11px; }
+          .ag-img { height: 120px; }
+        }
+      `}</style>
     </div>
   );
 }

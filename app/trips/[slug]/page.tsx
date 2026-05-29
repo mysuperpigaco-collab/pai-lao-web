@@ -9,7 +9,6 @@ import LikeButton from "@/components/trips/LikeButton";
 import FollowButton from "@/components/trips/FollowButton";
 import ShareButton from "@/components/common/ShareButton";
 import ReportButton from "@/components/common/ReportButton";
-import { TripGallery } from "@/components/places/PlaceGallery";
 import Link from "next/link";
 import "./trip-detail.css";
 
@@ -224,7 +223,13 @@ export default async function TripDetailPage({ params }: Props) {
             {trip.gallery?.length > 0 && (
               <div className="content-card">
                 <h2>📸 รูปจากทริป</h2>
-                <TripGallery images={trip.gallery} />
+                <div className="gallery-grid-new">
+                  {trip.gallery.map((img, i) => (
+                    <div className="gallery-item" key={i}>
+                      <img src={img} alt={`${trip.title} ${i + 1}`} />
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

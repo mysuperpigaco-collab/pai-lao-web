@@ -227,18 +227,23 @@ a { text-decoration: none; }
   .pv-page { max-width: 100%; margin: 0; padding: 0; border-radius: 0; box-shadow: none; }
   .pv-print-content { padding-top: 4px; }
 
-  /* ── Brand header — appears once at top of page 1 only (not fixed) ── */
+  /* ── Fixed brand header — position:fixed repeats on EVERY printed page ──
+     JS beforeprint/afterprint adds padding-top:54px to content blocks,
+     preventing this header from overlapping content on pages 2, 3, etc. ── */
   .pv-print-header {
-    position: static;
-    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 54px;
     display: flex !important;
     align-items: center;
     gap: 10px;
-    padding: 8px 0 10px;
+    padding: 8px 0 9px;
     background: #fff !important;
     print-color-adjust: exact; -webkit-print-color-adjust: exact;
     border-bottom: 2.5px solid #10b981;
-    margin-bottom: 12px;
+    z-index: 9999;
     box-sizing: border-box;
   }
   .pv-print-logo-box {
@@ -278,10 +283,7 @@ a { text-decoration: none; }
   .pv-timeline-dot { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .pv-timeline-item { break-inside: avoid; page-break-inside: avoid; }
   .pv-day-section { break-inside: auto; }
-  .pv-day-section + .pv-day-section {
-    break-before: page; page-break-before: always;
-    padding-top: 10px;
-  }
+  .pv-day-section + .pv-day-section { break-before: page; page-break-before: always; }
   .pv-day-header { break-after: avoid; page-break-after: avoid; }
   .pv-stop-card { border: 1px solid #e2e8f0; background: #f8fafc !important; }
 

@@ -33,22 +33,7 @@ export async function GET(_req: Request, { params }: Params) {
       ? place.reviews.reduce((sum, r) => sum + r.rating, 0) / place.reviews.length
       : 0;
 
-    // ดึงรูปจาก timeline stops ของ trips ที่อนุญาตให้แสดงบนหน้าสถานที่
-    const timelinePhotos = await (prisma as any).timelineStop.findMany({
-      where: {
-        placeId: place.id,
-        shareToPlace: true,
-        images: { isEmpty: false },
-        trip: { approvalStatus: "APPROVED" },
-      },
-      select: {
-        images: true,
-        trip: { select: { slug: true, title: true, author: { select: { username: true, displayName: true, firstName: true } } } },
-      },
-      take: 20,
-    });
-
-    return NextResponse.json({ place: { ...place, avgRating: Math.round(avgRating * 10) / 10, timelinePhotos } });
+    return NextResponse.json({ place: { ...place, avgRating: Math.round(avgRating * 10) / 10 } });
   } catch (error) {
     console.error("GET /api/places/[slug]:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });

@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   if (!adminGuard(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = await req.json();
-  const { title, description, coverUrl, placeId, province, reward, rewardPoints, badgeLabel, startDate, endDate, maxSlots } = body;
+  const { title, description, coverUrl, placeId, province, district, reward, rewardPoints, badgeLabel, startDate, endDate, maxSlots } = body;
   if (!title || !description || !startDate || !endDate) {
     return NextResponse.json({ error: "กรุณากรอกข้อมูลให้ครบ" }, { status: 400 });
   }
@@ -51,10 +51,11 @@ export async function POST(req: NextRequest) {
   const mission = await prisma.mission.create({
     data: {
       title, description, coverUrl: coverUrl || null,
-      placeId: placeId || null, province: province || null,
+      placeId: placeId || null, province: province || null, district: district || null,
       reward: reward || null, rewardPoints: rewardPoints || 0,
       badgeLabel: badgeLabel || null,
-      startDate: new Date(startDate), endDate: new Date(endDate),
+      startDate: new Date(startDate),
+      endDate: new Date(endDate + "T23:59:59.000Z"),
       maxSlots: maxSlots ? Number(maxSlots) : null,
       status: "ACTIVE",
       createdById: session!.userId,

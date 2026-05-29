@@ -3,8 +3,6 @@
 import { useState, useEffect, CSSProperties } from "react";
 import Link from "next/link";
 import TripSlider from "@/components/home/TripSlider";
-import MissionSection from "@/components/home/MissionSection";
-import PromotionSection from "@/components/home/PromotionSection";
 import ExplorerSection from "@/components/home/ExplorerSection";
 import AutoGridSection from "@/components/home/AutoGridSection";
 import { useAuth } from "@/context/AuthContext";
@@ -423,7 +421,6 @@ export default function HomePage() {
   const [btnHovered, setBtnHovered] = useState(false);
 
   return (
-    <>
     <main style={{ maxWidth: 1200, margin: "0 auto", padding: "36px 20px 80px" }}>
 
       {/* ─── Spotlight header ─── */}
@@ -587,8 +584,6 @@ export default function HomePage() {
       </div>
 
       {/* ─── Explorer ─── */}
-      <MissionSection />
-      <PromotionSection />
       <ExplorerSection />
 
       {/* ─── Must-See ─── */}
@@ -614,6 +609,6 @@ export default function HomePage() {
         }
       `}</style>
     </main>
-    </>
   );
 }
+  

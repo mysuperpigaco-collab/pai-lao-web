@@ -6,8 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import {
   BackButton, CancelButton, SaveButton, ActionBar, PageTag,
 } from "@/components/ui/ActionButtons";
-import { getDistricts } from "@/data/thailand";
-import ProvinceSelect from "@/components/ui/ProvinceSelect";
+import { PROVINCES, getDistricts } from "@/data/thailand";
 import "@/components/ui/form-card.css";
 import "@/components/ui/action-buttons.css";
 
@@ -348,7 +347,10 @@ export default function CreatePlacePage() {
             <div className="ui-form-grid two-col">
               <div className="ui-field">
                 <label>จังหวัด · Province <span style={{color:"red"}}>*</span></label>
-                <ProvinceSelect className="ui-input" value={province} onChange={v => handleProvinceChange(v)} placeholder="— เลือกจังหวัด / Select Province —" required />
+                <select className="ui-input" value={province} onChange={e => handleProvinceChange(e.target.value)} required>
+                  <option value="">— เลือกจังหวัด / Select Province —</option>
+                  {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
               </div>
               <div className="ui-field">
                 <label>อำเภอ / เขต · District <span style={{color:"red"}}>*</span></label>

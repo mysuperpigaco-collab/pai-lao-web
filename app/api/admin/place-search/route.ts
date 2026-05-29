@@ -15,15 +15,13 @@ export async function GET(req: NextRequest) {
   const places = await prisma.place.findMany({
     where: {
       OR: [
-        { title:    { contains: q, mode: "insensitive" } },
+        { title: { contains: q, mode: "insensitive" } },
         { province: { contains: q, mode: "insensitive" } },
         { district: { contains: q, mode: "insensitive" } },
       ],
     },
     select: { id: true, title: true, province: true, district: true, slug: true },
     take: 10,
-    orderBy: { title: "asc" },
   });
-
   return NextResponse.json({ places });
 }

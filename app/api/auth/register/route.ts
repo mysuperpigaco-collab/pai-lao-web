@@ -26,38 +26,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // ── ตรวจรูปแบบอีเมล ──────────────────────────────────────
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json({ message: "รูปแบบอีเมลไม่ถูกต้อง" }, { status: 400 });
-    }
-
-    // ── ตรวจ username (a-z, 0-9, _ เท่านั้น, 3-30 ตัว) ────────
-    const usernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
-    if (!usernameRegex.test(username)) {
-      return NextResponse.json(
-        { message: "ชื่อผู้ใช้ต้องเป็นตัวอักษรภาษาอังกฤษ ตัวเลข หรือ _ (3-30 ตัว)" },
-        { status: 400 }
-      );
-    }
-
-    // ── ตรวจรหัสผ่าน (อย่างน้อย 8 ตัว มีทั้งตัวเลขและตัวอักษร) ─
-    if (password.length < 8) {
-      return NextResponse.json({ message: "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร" }, { status: 400 });
-    }
-    if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
-      return NextResponse.json(
-        { message: "รหัสผ่านต้องมีทั้งตัวอักษรและตัวเลข" },
-        { status: 400 }
-      );
-    }
-
-    // ── ตรวจเบอร์โทร (ตัวเลข 9-10 หลัก) ────────────────────────
-    const phoneRegex = /^[0-9]{9,10}$/;
-    if (!phoneRegex.test(phone)) {
-      return NextResponse.json({ message: "เบอร์โทรต้องเป็นตัวเลข 9-10 หลัก" }, { status: 400 });
-    }
-
     if (role === "BUSINESS" && !businessName) {
       return NextResponse.json(
         { message: "กรุณากรอกชื่อธุรกิจ" },

@@ -125,7 +125,7 @@ interface Plan {
 }
 interface PlaceResult {
   id: string; slug: string; title: string; province: string;
-  district?: string; category: string; coverUrl?: string; communityCover?: string | null; googleMapsUrl?: string;
+  district?: string; category: string; coverUrl?: string; googleMapsUrl?: string;
 }
 interface BmTrip {
   id: string; slug: string; title: string; coverUrl?: string;
@@ -259,7 +259,7 @@ export default function PlannerPage() {
 
   const addStop = async (stop: { name: string; province?: string; district?: string; googleMapsUrl?: string; stopType?: string; placeId?: string; day?: number; arrivalTime?: string; duration?: number }) => {
     if (!activePlan) return;
-    setAddingToStop(stop.placeId ?? stop.name);
+    setAddingToStop(stop.name);
     const res = await fetch(`/api/planner/${activePlan.id}`, {
       method: "PUT", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "add-stop", day: selectedDay, ...stop }),
@@ -373,14 +373,12 @@ export default function PlannerPage() {
   };
 
   const doSearch = useCallback(async () => {
-    if (!sQ.trim() && !sProv && !sCat) { setPlaceResults([]); return; }
+    if (!sQ.trim() && !sProv) { setPlaceResults([]); return; }
     setSearching(true);
     try {
       const p = new URLSearchParams();
       if (sQ)    p.set("q", sQ);
-      // Strip English suffix e.g. "กรุงเทพมหานคร (Bangkok)" → "กรุงเทพมหานคร"
-      const provClean = sProv ? sProv.replace(/\s*\(.*?\)\s*$/, "").trim() : "";
-      if (provClean) p.set("province", provClean);
+      if (sProv) p.set("province", sProv);
       if (sDist) p.set("district", sDist);
       if (sCat)  p.set("category", sCat);
       p.set("limit", "20");
@@ -432,11 +430,11 @@ export default function PlannerPage() {
   const maxEditDay = activePlan ? Math.max(activePlan.stops.reduce((m, s) => Math.max(m, s.day ?? 1), 1), editDay) : editDay;
 
   return (
-    <div style={{ minHeight: "100vh", background: "transparent" }}>
+    <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
 
       {/* ════ HEADER ════ */}
       <div style={{
-        background: "rgba(255,255,255,0.90)",
+        background: "#fff",
         borderBottom: "1px solid #e2e8f0",
         padding: "0 24px", display: "flex", alignItems: "center", gap: 16,
         height: 56, position: "sticky", top: 0, zIndex: 100,
@@ -497,7 +495,7 @@ export default function PlannerPage() {
       <div className="planner-grid" style={{ maxWidth: 1400, margin: "0 auto", width: "100%", borderLeft: "1px solid #e2e8f0", borderRight: "1px solid #e2e8f0" }}>
 
         {/* ── COL 1: Plans sidebar ── */}
-        <div className="planner-sidebar" style={{ borderRight: "1px solid #e2e8f0", background: "rgba(255,255,255,0.90)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div className="planner-sidebar" style={{ borderRight: "1px solid #e2e8f0", background: "#fff", display: "flex", flexDirection: "column", overflow: "hidden" }}>
           <div style={{ padding: "16px 14px", borderBottom: "1px solid #f1f5f9" }}>
             <button onClick={() => setShowNew(!showNew)} style={{
               width: "100%", padding: "11px 14px", borderRadius: 14,
@@ -941,7 +939,7 @@ export default function PlannerPage() {
         </div>
 
         {/* ── COL 3: Search + Bookmarks ── */}
-        <div className="planner-right" style={{ borderLeft: "1px solid #e2e8f0", background: "rgba(255,255,255,0.90)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div className="planner-right" style={{ borderLeft: "1px solid #e2e8f0", background: "#fff", display: "flex", flexDirection: "column", overflow: "hidden" }}>
           {/* Tabs */}
           <div style={{ display: "flex", padding: "0 8px", borderBottom: "2px solid #f1f5f9" }}>
             {([["search","🔍","ค้นหาสถานที่","Find Places"],["bookmarks","🔖","ทริปบุ๊คมาร์ค","Bookmarked"]] as const).map(([key, icon, th, en]) => (
@@ -1016,27 +1014,25 @@ export default function PlannerPage() {
                 )}
                 {placeResults.map(p => (
                   <div key={p.id} style={{ marginBottom: 12, border: "1px solid #e2e8f0", borderRadius: 14, overflow: "hidden", background: "#fafafa" }}>
-                    {(p.communityCover || p.coverUrl) ? (
-                      <img src={(p.communityCover || p.coverUrl)!} alt="" style={{ width: "100%", height: 80, objectFit: "cover" }} />
-                    ) : (
-                      <div style={{ width: "100%", height: 80, background: "linear-gradient(135deg,#e0f2fe,#d1fae5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>🏛️</div>
+                    {p.coverUrl && (
+                      <img src={p.coverUrl} alt="" style={{ width: "100%", height: 80, objectFit: "cover" }} />
                     )}
                     <div style={{ padding: "10px 12px" }}>
                       <div style={{ fontWeight: 700, fontSize: 13, color: "#1e293b", marginBottom: 2 }}>{p.title}</div>
                       <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>
                         📍 {p.province}{p.district ? ` · ${p.district}` : ""} &nbsp;·&nbsp; {p.category}
                       </div>
-                      <button disabled={!activePlan || addingToStop === p.id} onClick={() => addStop({
+                      <button disabled={!activePlan || addingToStop === p.title} onClick={() => addStop({
                         name: p.title, province: p.province, district: p.district,
                         googleMapsUrl: p.googleMapsUrl, stopType: "ATTRACTION", placeId: p.id,
                       })} style={{
                         width: "100%", padding: "7px", borderRadius: 10, border: "none",
-                        background: !activePlan ? "#e2e8f0" : addingToStop === p.id ? "#93c5fd" : "linear-gradient(135deg,#3b82f6,#6366f1)",
+                        background: !activePlan ? "#e2e8f0" : addingToStop === p.title ? "#93c5fd" : "linear-gradient(135deg,#3b82f6,#6366f1)",
                         color: !activePlan ? "#94a3b8" : "#fff",
                         fontWeight: 700, fontSize: 12,
                         cursor: activePlan ? "pointer" : "not-allowed", fontFamily: "inherit"
                       }}>
-                        {!activePlan ? "เลือกแผนก่อน · Select plan first" : addingToStop === p.id ? "⏳ กำลังเพิ่ม..." : "+ เพิ่มในแผน · Add to Plan"}
+                        {!activePlan ? "เลือกแผนก่อน · Select plan first" : addingToStop === p.title ? "⏳ กำลังเพิ่ม..." : "+ เพิ่มในแผน · Add to Plan"}
                       </button>
                     </div>
                   </div>
@@ -1123,17 +1119,17 @@ export default function PlannerPage() {
                           <div style={{ fontWeight: 600, fontSize: 12, color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{stop.placeName}</div>
                           <div style={{ fontSize: 10, color: "#94a3b8" }}>{[stop.province, stop.district].filter(Boolean).join(" · ")}</div>
                         </div>
-                        <button disabled={!activePlan || addingToStop === (stop.placeId ?? stop.placeName)} onClick={() => addStop({
+                        <button disabled={!activePlan || addingToStop === stop.placeName} onClick={() => addStop({
                           name: stop.placeName, province: stop.province, district: stop.district,
                           googleMapsUrl: stop.googleMapsUrl ?? undefined,
                           stopType: stop.stopType ?? "ATTRACTION", placeId: stop.placeId ?? undefined,
                         })} style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 10, border: "none",
-                          background: !activePlan ? "#e2e8f0" : addingToStop === (stop.placeId ?? stop.placeName) ? "#93c5fd" : "#3b82f6",
+                          background: !activePlan ? "#e2e8f0" : addingToStop === stop.placeName ? "#93c5fd" : "#3b82f6",
                           color: !activePlan ? "#94a3b8" : "#fff",
                           fontWeight: 900, fontSize: 16, cursor: activePlan ? "pointer" : "not-allowed",
                           fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center"
                         }}>
-                          {addingToStop === (stop.placeId ?? stop.placeName) ? "⏳" : "+"}
+                          {addingToStop === stop.placeName ? "⏳" : "+"}
                         </button>
                       </div>
                     );
@@ -1216,3 +1212,4 @@ export default function PlannerPage() {
 const lbl: React.CSSProperties = { display: "block", fontWeight: 700, fontSize: 11, color: "#64748b", marginBottom: 5, letterSpacing: "0.3px", textTransform: "uppercase" as const };
 const inp: React.CSSProperties = { width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const, color: "#1e293b" };
 const ab: React.CSSProperties  = { width: 28, height: 28, borderRadius: 8, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#64748b", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" };
+    

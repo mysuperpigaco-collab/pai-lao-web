@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
-    // ต้อง login ก่อนถึงจะ share ได้
-    const session = await getCurrentUser();
-    if (!session) return NextResponse.json({ error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
-
     const body = await req.json();
     const { tripId, placeId } = body as { tripId?: string; placeId?: string };
 
@@ -32,8 +27,8 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json({ shareCount: updated.shareCount });
     }
-  } catch (e) {
-    console.error("POST /api/shares:", e);
-    return NextResponse.json({ error: "เกิดข้อผิดพลาด" }, { status: 500 });
+  } catch (err) {
+    console.error("[POST /api/shares]", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

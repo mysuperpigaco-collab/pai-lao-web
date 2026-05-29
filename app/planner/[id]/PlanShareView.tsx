@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const STOP_LABELS: Record<string, { icon: string; label: string; color: string; bg: string }> = {
   ATTRACTION: { icon: "🏞️", label: "ที่เที่ยว",  color: "#3b82f6", bg: "#eff6ff" },
@@ -63,6 +63,30 @@ function fmtDuration(min: number) {
 export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl: string }) {
   const [copied, setCopied] = useState(false);
 
+  // ── Print header padding — prevent fixed header from overlapping content on page 2+ ──
+  useEffect(() => {
+    const HEADER_H = 54; // px — must match .pv-print-header height in CSS
+
+    const before = () => {
+      document.querySelectorAll<HTMLElement>('.pv-timeline-item, .pv-day-section, .pv-hero').forEach(el => {
+        el.dataset.ptBefore = el.style.paddingTop;
+        el.style.paddingTop = `${HEADER_H}px`;
+      });
+    };
+    const after = () => {
+      document.querySelectorAll<HTMLElement>('.pv-timeline-item, .pv-day-section, .pv-hero').forEach(el => {
+        el.style.paddingTop = el.dataset.ptBefore ?? '';
+        delete el.dataset.ptBefore;
+      });
+    };
+
+    window.addEventListener('beforeprint', before);
+    window.addEventListener('afterprint', after);
+    return () => {
+      window.removeEventListener('beforeprint', before);
+      window.removeEventListener('afterprint', after);
+    };
+  }, []);
 
   const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}`;
   const fbUrl   = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;

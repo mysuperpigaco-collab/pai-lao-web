@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowRight, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
-import { getDistricts, normalizeProvince, PROVINCES } from "@/data/thailand";
+import { PROVINCES, getDistricts } from "@/data/thailand";
 
 export default function CreateStoryPage() {
   const router   = useRouter();
@@ -19,7 +19,14 @@ export default function CreateStoryPage() {
     }
   }, [user, router]);
 
-  // (create page เริ่มใหม่เสมอ ไม่โหลด draft เก่า — ดู draft ได้ที่ dashboard)
+  // ── โหลด draft ที่มีอยู่ ──────────────────────────────────
+  useEffect(() => {
+    if (!user) return;
+    fetch("/api/trips/draft")
+      .then(r => r.json())
+      .then(d => { if (d.draft) setExistingDraft(d.draft); })
+      .catch(() => {});
+  }, [user]);
 
   if (user && (user.role === "ADMIN" || user.role === "SUPERADMIN")) {
     return null;
@@ -43,8 +50,7 @@ export default function CreateStoryPage() {
   const [timeline, setTimeline] = useState([
     { date: today, time: "", place: "", province: "", district: "", description: "",
       imageFile: null as File | null, imagePreview: null as string | null,
-      placeId: null as string | null, placeSlug: null as string | null,
-      shareToPlace: false }
+      placeId: null as string | null, placeSlug: null as string | null }
   ]);
   const [placeSuggestions, setPlaceSuggestions] = useState<Record<number, any[]>>({});
   const [placeSearchLoading, setPlaceSearchLoading] = useState<Record<number, boolean>>({});
@@ -59,8 +65,6 @@ export default function CreateStoryPage() {
   const [submitted,    setSubmitted   ] = useState(false);
   const [draftSaved,   setDraftSaved  ] = useState(false);
   const [existingDraft, setExistingDraft] = useState<{ id: string; slug: string; title: string; _count?: { timeline: number } } | null>(null);
-  const [existingCoverUrl,  setExistingCoverUrl ] = useState("");
-  const [existingGallery,   setExistingGallery  ] = useState<string[]>([]);
 
   // ── Handlers ─────────────────────────────────────────────
   const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,7 +94,7 @@ export default function CreateStoryPage() {
   };
 
   const addTimeline    = () => setTimeline([...timeline,
-    { date: today, time: "", place: "", province: "", district: "", description: "", imageFile: null, imagePreview: null, placeId: null, placeSlug: null, shareToPlace: false }]);
+    { date: today, time: "", place: "", province: "", district: "", description: "", imageFile: null, imagePreview: null, placeId: null, placeSlug: null }]);
   const removeTimeline = (i: number) => setTimeline(timeline.filter((_, idx) => idx !== i));
 
   // ── Place search for timeline stops ──────────────────────
@@ -110,8 +114,8 @@ export default function CreateStoryPage() {
   const selectPlace = (idx: number, p: any) => {
     const updated = [...timeline];
     updated[idx].place    = p.title;
-    updated[idx].province = normalizeProvince(p.province ?? "");
-    updated[idx].district = p.district ?? "";
+    updated[idx].province = p.province;
+    updated[idx].district = p.district;
     updated[idx].placeId  = p.id;
     updated[idx].placeSlug = p.slug;
     setTimeline(updated);
@@ -156,81 +160,25 @@ export default function CreateStoryPage() {
     if (!title) { setError("กรุณาใส่ชื่อทริปก่อนบันทึก"); return; }
     setError("");
     setIsSavingDraft(true);
-
     try {
-      // 1. อัปโหลดรูปปกถ้ามีไฟล์ใหม่
-      let draftCoverUrl = existingCoverUrl;
-      if (coverFile) {
-        draftCoverUrl = await uploadFile(coverFile, "trips/covers");
-        setExistingCoverUrl(draftCoverUrl);
-        setCoverPreview(draftCoverUrl);
-      }
-
-      // 2. Build timeline — upload new images, preserve existing URLs
-      const timelineData = await Promise.all(
-        timeline
-          .filter(s => s.place || s.province || s.description || s.imagePreview)
-          .map(async (stop, i) => ({
-            date: stop.date, time: stop.time,
-            place: stop.place, province: stop.province, district: stop.district,
-            description: stop.description,
-            placeId: stop.placeId ?? undefined,
-            shareToPlace: stop.shareToPlace ?? false,
-            images: stop.imageFile
-              ? [await uploadFile(stop.imageFile, `trips/timeline/${i}`)]
-              : (stop.imagePreview ? [stop.imagePreview] : []),
-          }))
-      );
-
-      const draftBody = {
-        title,
-        description: content,
-        coverUrl: draftCoverUrl || "",
-        gallery: existingGallery,
-        mood,
-        budget: budget || null,
-        location: timeline[0]?.province || "",
-        tags: tags.split(",").map((t: string) => t.trim()).filter(Boolean),
-        youtubeUrl: youtubeUrl.trim() || null,
-        tiktokUrl:  tiktokUrl.trim()  || null,
-        timeline: timelineData,
-      };
-
-      let savedDraft: any = null;
-
-      if (existingDraft?.slug) {
-        // Draft มีอยู่แล้ว → PUT อัปเดตตรง ๆ
-        const res  = await fetch(`/api/trips/${existingDraft.slug}`, {
-          method: "PUT", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(draftBody),
-        });
-        const data = await res.json();
-        if (!res.ok) { setError(data.message || "เกิดข้อผิดพลาด"); return; }
-        savedDraft = data.trip;
+      const res = await fetch("/api/trips", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, isDraft: true }),
+      });
+      const data = await res.json();
+      if (res.status === 409) {
+        // มี draft อยู่แล้ว → แสดงให้รู้
+        setExistingDraft({ id: data.draftId, slug: data.draftSlug, title });
+        setError("");
+      } else if (!res.ok) {
+        setError(data.message || "เกิดข้อผิดพลาด");
       } else {
-        // ยังไม่มี draft ในเซสชันนี้ → POST สร้างใหม่
-        const res  = await fetch("/api/trips", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...draftBody, isDraft: true }),
-        });
-        const data = await res.json();
-        if (res.status === 409) {
-          // มีดราฟเต็มแล้ว (2 อัน) → แจ้งเตือน
-          setError(data.message || "มีดราฟอยู่แล้ว 2 อัน กรุณาส่งหรือลบดราฟก่อนสร้างใหม่");
-          return;
-        } else if (!res.ok) {
-          setError(data.message || "เกิดข้อผิดพลาด"); return;
-        } else {
-          savedDraft = data.trip;
-        }
+        setExistingDraft({ id: data.trip.id, slug: data.trip.slug, title: data.trip.title });
+        setDraftSaved(true);
+        setTimeout(() => setDraftSaved(false), 3000);
       }
-
-      if (savedDraft) setExistingDraft({ id: savedDraft.id, slug: savedDraft.slug, title: savedDraft.title });
-      setDraftSaved(true);
-      setTimeout(() => setDraftSaved(false), 3000);
-    } catch (err: any) {
-      setError(err.message || "ไม่สามารถเชื่อมต่อระบบได้");
-    }
+    } catch { setError("ไม่สามารถเชื่อมต่อระบบได้"); }
     setIsSavingDraft(false);
   };
 
@@ -240,72 +188,55 @@ export default function CreateStoryPage() {
     if (!user)       { setError("กรุณาเข้าสู่ระบบก่อน"); return; }
     if (!title)      { setError("กรุณาใส่ชื่อทริป"); return; }
     if (!content)    { setError("กรุณาเขียนเรื่องเล่าโดยรวม"); return; }
-    if (!coverFile && !existingCoverUrl) { setError("กรุณาเพิ่มรูปปก"); return; }
+    if (!coverFile)  { setError("กรุณาเพิ่มรูปปก"); return; }
 
     setError("");
     setIsLoading(true);
 
     try {
-      // 1. อัปโหลดรูปปก (หรือใช้ URL เดิมจาก draft)
-      const coverUrl = coverFile
-        ? await uploadFile(coverFile, "trips/covers")
-        : existingCoverUrl;
+      // 1. อัปโหลดรูปปก
+      const coverUrl = await uploadFile(coverFile, "trips/covers");
 
-      // 2. อัปโหลด gallery ใหม่ + รวมกับ gallery เดิมจาก draft
-      const newGalleryUrls = galleryFiles.length
+      // 2. อัปโหลด gallery (ถ้ามี)
+      const galleryUrls = galleryFiles.length
         ? await uploadFiles(galleryFiles, "trips/gallery")
         : [];
-      const galleryUrls = [...existingGallery, ...newGalleryUrls];
 
       // 3. อัปโหลดรูป timeline แต่ละจุด
       const timelineData = await Promise.all(
         timeline.map(async (stop, i) => ({
-          placeId:      stop.placeId ?? undefined,
-          shareToPlace: stop.shareToPlace ?? false,
-          date:         stop.date,
-          time:         stop.time,
-          place:        stop.place,
-          province:     stop.province,
-          district:     stop.district,
-          description:  stop.description,
+          placeId: stop.placeId ?? undefined,
+          date:        stop.date,
+          time:        stop.time,
+          place:       stop.place,
+          province:    stop.province,
+          district:    stop.district,
+          description: stop.description,
           images: stop.imageFile
             ? [await uploadFile(stop.imageFile, `trips/timeline/${i}`)]
-            : (stop.imagePreview ? [stop.imagePreview] : []),
+            : [],
         }))
       );
 
-      // 4. บันทึกทริป — ถ้ามี draft อยู่แล้วให้ finalize, ถ้าไม่มีให้ POST ใหม่
-      const tripBody = {
-        title,
-        subtitle: "",
-        description: content,
-        coverUrl,
-        gallery:  galleryUrls,
-        mood,
-        budget:   budget || null,
-        location: timeline[0]?.province || "",
-        tags:       tags.split(",").map(t => t.trim()).filter(Boolean),
-        youtubeUrl: youtubeUrl.trim() || null,
-        tiktokUrl:  tiktokUrl.trim()  || null,
-        timeline: timelineData,
-      };
-
-      let res: Response;
-      if (existingDraft?.slug) {
-        // Finalize draft → PUT พร้อม finalize: true
-        res = await fetch(`/api/trips/${existingDraft.slug}`, {
-          method:  "PUT",
-          headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify({ ...tripBody, finalize: true }),
-        });
-      } else {
-        // ไม่มี draft → POST สร้างทริปใหม่ตรง ๆ
-        res = await fetch("/api/trips", {
-          method:  "POST",
-          headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify(tripBody),
-        });
-      }
+      // 4. POST ไป /api/trips
+      const res = await fetch("/api/trips", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          title,
+          subtitle: "",
+          description: content,
+          coverUrl,
+          gallery:  galleryUrls,
+          mood,
+          budget:   budget || null,
+          location: timeline[0]?.province || "",
+          tags:       tags.split(",").map(t => t.trim()).filter(Boolean),
+          youtubeUrl: youtubeUrl.trim() || null,
+          tiktokUrl:  tiktokUrl.trim()  || null,
+          timeline: timelineData,
+        }),
+      });
 
       const data = await res.json();
       if (!res.ok) { setError(data.message || "เกิดข้อผิดพลาด"); setIsLoading(false); return; }
@@ -445,7 +376,7 @@ export default function CreateStoryPage() {
             <div className="form-group">
               <label>งบประมาณ | <small>BUDGET (บาท)</small></label>
               <input type="number" className="form-control" value={budget}
-                onChange={(e) => setBudget(e.target.value)} placeholder="เช่น 2500" step="1" max="2000000000" />
+                onChange={(e) => setBudget(e.target.value)} placeholder="เช่น 2500" />
             </div>
             <div className="form-group">
               <label>สไตล์ทริป | <small>MOOD</small></label>
@@ -611,22 +542,16 @@ export default function CreateStoryPage() {
                 )}
 
                 <div className="timeline-location-row">
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <label>จังหวัด</label>
-                    <select className="form-control" value={item.province}
-                      onChange={(e) => updateTimeline(idx, "province", e.target.value)}>
-                      <option value="">-- เลือกจังหวัด --</option>
-                      {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-                    </select>
-                  </div>
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <label>อำเภอ / เขต</label>
-                    <select className="form-control" disabled={!item.province} value={item.district}
-                      onChange={(e) => updateTimeline(idx, "district", e.target.value)}>
-                      <option value="">-- เลือกอำเภอ/เขต --</option>
-                      {getDistricts(item.province).map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
-                  </div>
+                  <select className="form-control" value={item.province}
+                    onChange={(e) => updateTimeline(idx, "province", e.target.value)}>
+                    <option value="">-- เลือกจังหวัด --</option>
+                    {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                  <select className="form-control" disabled={!item.province} value={item.district}
+                    onChange={(e) => updateTimeline(idx, "district", e.target.value)}>
+                    <option value="">-- เลือกอำเภอ/เขต --</option>
+                    {getDistricts(item.province).map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
                 </div>
                 <div className="timeline-detail-row">
                   <textarea className="form-control desc-area" placeholder="เล่าบรรยากาศที่จุดนี้..."
@@ -646,24 +571,6 @@ export default function CreateStoryPage() {
                     )}
                   </div>
                 </div>
-                {/* shareToPlace toggle — only when place is linked AND has image */}
-                {item.placeId && item.imagePreview && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
-                    <input type="checkbox" id={`stp-${idx}`} checked={item.shareToPlace}
-                      onChange={e => updateTimeline(idx, "shareToPlace", e.target.checked)}
-                      style={{ display: "none" }} />
-                    <div onClick={() => updateTimeline(idx, "shareToPlace", !item.shareToPlace)}
-                      style={{ width: 38, height: 22, borderRadius: 11, background: item.shareToPlace ? "#10b981" : "#cbd5e1",
-                        position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
-                      <div style={{ position: "absolute", top: 3, left: item.shareToPlace ? 19 : 3,
-                        width: 16, height: 16, borderRadius: "50%", background: "#fff",
-                        transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
-                    </div>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: item.shareToPlace ? "#065f46" : "#64748b" }}>
-                      {item.shareToPlace ? "✅ อนุญาตให้แสดงรูปบนหน้าสถานที่" : "อนุญาตให้แสดงรูปบนหน้าสถานที่"}
-                    </span>
-                  </div>
-                )}
               </div>
             ))}
             <button type="button" className="btn-add-checkpoint-premium" onClick={addTimeline}>
@@ -740,8 +647,8 @@ export default function CreateStoryPage() {
       )}
 
       <style jsx>{`
-        .create-container{padding:50px 20px;background:transparent;min-height:100vh;display:flex;justify-content:center}
-        .create-card{background:rgba(255,255,255,0.88);padding:60px;border-radius:50px;box-shadow:0 30px 80px rgba(0,0,0,0.08);width:100%;max-width:1050px;position:relative}
+        .create-container{padding:50px 20px;background:#f0f4f8;min-height:100vh;display:flex;justify-content:center}
+        .create-card{background:white;padding:60px;border-radius:50px;box-shadow:0 30px 80px rgba(0,0,0,0.08);width:100%;max-width:1050px;position:relative}
         .top-nav-actions{margin-bottom:30px}
         .header-text{text-align:center;margin-bottom:50px}
         .header-text h2{font-size:34px;font-weight:900;color:#1e293b;letter-spacing:-0.5px}

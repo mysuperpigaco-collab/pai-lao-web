@@ -221,7 +221,7 @@ export default function EditPlacePage() {
           height: 400px;
           border-radius: 24px;
           overflow: hidden;
-          background: transparent;
+          background: #f8fafc;
           border: 2px dashed var(--pl-border, #dbe4ee);
           cursor: pointer;
           position: relative;

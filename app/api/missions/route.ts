@@ -9,11 +9,13 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status") || "ACTIVE";
 
+    // Use start of today (UTC) so missions expiring today still appear during the day
     const now = new Date();
+    const startOfToday = new Date(now.toISOString().slice(0, 10) + "T00:00:00.000Z");
     const missions = await prisma.mission.findMany({
       where: {
         status,
-        ...(status === "ACTIVE" ? { endDate: { gt: now } } : {}),
+        ...(status === "ACTIVE" ? { endDate: { gte: startOfToday } } : {}),
       },
       include: {
         place: { select: { id: true, title: true, slug: true, coverUrl: true, province: true } },

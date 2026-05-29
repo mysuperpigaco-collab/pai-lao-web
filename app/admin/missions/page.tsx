@@ -29,7 +29,7 @@ function PlaceSearch({ onSelect }: { onSelect: (p: PlaceSuggestion) => void }) {
   const [results, setResults] = useState<PlaceSuggestion[]>([]);
   const [selected, setSelected] = useState<PlaceSuggestion | null>(null);
   const [open, setOpen] = useState(false);
-  const timer = useRef<NodeJS.Timeout | undefined>(undefined);
+  const timer = useRef<NodeJS.Timeout>();
 
   const search = (val: string) => {
     setQ(val);
@@ -37,7 +37,7 @@ function PlaceSearch({ onSelect }: { onSelect: (p: PlaceSuggestion) => void }) {
     clearTimeout(timer.current);
     if (!val.trim()) { setResults([]); setOpen(false); return; }
     timer.current = setTimeout(async () => {
-      const res = await fetch(`/api/admin/place-search?q=${encodeURIComponent(val)}`);
+      const res = await fetch(`/api/places?search=${encodeURIComponent(val)}&limit=8`);
       const d = await res.json();
       setResults(d.places || []);
       setOpen(true);
@@ -232,6 +232,10 @@ export default function AdminMissionsPage() {
             <div>
               <label style={{fontSize:13,color:"#374151",fontWeight:600,display:"block",marginBottom:4}}>จังหวัด (auto-fill)</label>
               <input style={{...inputStyle,background:"#f9fafb"}} value={form.province} onChange={e=>setForm(f=>({...f,province:e.target.value}))} placeholder="จะ fill อัตโนมัติเมื่อเลือกสถานที่"/>
+            </div>
+            <div>
+              <label style={{fontSize:13,color:"#374151",fontWeight:600,display:"block",marginBottom:4}}>อำเภอ (auto-fill)</label>
+              <input style={{...inputStyle,background:"#f9fafb"}} value={form.district} onChange={e=>setForm(f=>({...f,district:e.target.value}))} placeholder="จะ fill อัตโนมัติเมื่อเลือกสถานที่"/>
             </div>
             <div>
               <label style={{fontSize:13,color:"#374151",fontWeight:600,display:"block",marginBottom:4}}>URL รูปปก</label>
