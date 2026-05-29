@@ -514,6 +514,7 @@ model MissionParticipant {
   reviewText  String?  // ข้อความรีวิว
   placeId     String?
   adminNote   String?
+  visitedAt   DateTime? // วันเวลาที่ผู้ส่งไปสถานที่จริง
   submittedAt DateTime?
   approvedAt  DateTime?
   createdAt   DateTime @default(now())
