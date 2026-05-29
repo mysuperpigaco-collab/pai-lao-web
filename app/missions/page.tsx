@@ -285,21 +285,24 @@ export default function MissionsPage() {
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
         @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
         @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-      `}</style>
+      
+        .mission-hero {
+          background: linear-gradient(135deg, #0f172a 0%, #064e3b 50%, #065f46 100%);
+          padding: 64px 24px 80px;
+          position: relative;
+          overflow: hidden;
+          text-align: center;
+          color: #fff;
+        }
+        .mission-hero-inner { position: relative; max-width: 600px; margin: 0 auto; }
+        .mission-hero-deco1 { position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; border-radius: 50%; background: rgba(255,255,255,0.04); pointer-events: none; }
+        .mission-hero-deco2 { position: absolute; bottom: -100px; left: 10%; width: 300px; height: 300px; border-radius: 50%; background: rgba(16,185,129,0.10); pointer-events: none; }`}</style>
 
       {/* Hero */}
-      <div style={{
-        position: "relative",
-        overflow: "hidden",
-        padding: "64px 24px 80px",
-        textAlign: "center",
-        color: "#fff",
-        background: "linear-gradient(135deg, #0f172a 0%, #064e3b 50%, #065f46 100%)",
-      }}>
-        <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "rgba(255,255,255,0.04)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: -100, left: "10%", width: 300, height: 300, borderRadius: "50%", background: "rgba(16,185,129,0.10)", pointerEvents: "none" }} />
-
-        <div style={{ position: "relative", maxWidth: 600, margin: "0 auto" }}>
+      <div className="mission-hero">
+        <div className="mission-hero-deco1" />
+        <div className="mission-hero-deco2" />
+        <div className="mission-hero-inner">
           <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 3, opacity: 0.7, textTransform: "uppercase", marginBottom: 8 }}>COMPLETE CHALLENGES</div>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🎯</div>
           <h1 style={{ fontSize: 32, fontWeight: 800, margin: "0 0 8px", letterSpacing: -0.5 }}>

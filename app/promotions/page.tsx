@@ -195,18 +195,24 @@ export default function PromotionsPage() {
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
         @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
         select:focus, input:focus { outline: 2px solid #f59e0b; }
+        .promo-hero {
+          background: linear-gradient(135deg, #7c2d12 0%, #b45309 40%, #dc2626 100%);
+          padding: 64px 24px 80px;
+          position: relative;
+          overflow: hidden;
+          text-align: center;
+          color: #fff;
+        }
+        .promo-hero-inner { position: relative; max-width: 600px; margin: 0 auto; }
+        .promo-hero-deco1 { position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; border-radius: 50%; background: rgba(255,255,255,0.04); pointer-events: none; }
+        .promo-hero-deco2 { position: absolute; bottom: -100px; left: 10%; width: 300px; height: 300px; border-radius: 50%; background: rgba(251,191,36,0.10); pointer-events: none; }
       `}</style>
 
       {/* Hero */}
-      <div style={{
-        position: "relative", overflow: "hidden",
-        padding: "64px 24px 80px", textAlign: "center", color: "#fff",
-        background: "linear-gradient(135deg, #7c2d12 0%, #b45309 40%, #dc2626 100%)",
-      }}>
-        <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "rgba(255,255,255,0.04)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: -100, left: "10%", width: 300, height: 300, borderRadius: "50%", background: "rgba(251,191,36,0.10)", pointerEvents: "none" }} />
-
-        <div style={{ position: "relative", maxWidth: 600, margin: "0 auto" }}>
+      <div className="promo-hero">
+        <div className="promo-hero-deco1" />
+        <div className="promo-hero-deco2" />
+        <div className="promo-hero-inner">
           <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 3, opacity: 0.7, textTransform: "uppercase", marginBottom: 8 }}>SPECIAL DEALS</div>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🎁</div>
           <h1 style={{ fontSize: 30, fontWeight: 900, margin: "0 0 8px", textShadow: "0 2px 12px rgba(0,0,0,0.25)" }}>
