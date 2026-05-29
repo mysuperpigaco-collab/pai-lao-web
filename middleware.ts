@@ -9,6 +9,8 @@ const PROTECTED_ROUTES = [
   "/business/dashboard",
   "/business/edit-profile",
   "/business/places",
+  "/admin",
+  "/planner",
 ];
 
 // Route ที่ถ้า login แล้วไม่ควรเข้า (redirect ออก)
@@ -59,15 +61,5 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  return NextResponse.next();
-}
-
-export const config = {
-  matcher: [
-    "/dashboard/:path*",
-    "/trips/create",
-    "/business/:path*",
-    "/login",
-    "/signup",
-  ],
-};
+  // ── ป้องกัน /admin — ต้องเป็น ADMIN หรือ SUPERADMIN เท่านั้น ──
+  if (pathname.startsWith("/
