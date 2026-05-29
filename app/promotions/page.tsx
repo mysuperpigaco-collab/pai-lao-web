@@ -195,17 +195,6 @@ export default function PromotionsPage() {
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
         @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
         select:focus, input:focus { outline: 2px solid #f59e0b; }
-        .promo-hero {
-          background: linear-gradient(135deg, #7c2d12 0%, #b45309 40%, #dc2626 100%);
-          padding: 64px 24px 80px;
-          position: relative;
-          overflow: hidden;
-          text-align: center;
-          color: #fff;
-        }
-        .promo-hero-inner { position: relative; max-width: 600px; margin: 0 auto; }
-        .promo-hero-deco1 { position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; border-radius: 50%; background: rgba(255,255,255,0.04); pointer-events: none; }
-        .promo-hero-deco2 { position: absolute; bottom: -100px; left: 10%; width: 300px; height: 300px; border-radius: 50%; background: rgba(251,191,36,0.10); pointer-events: none; }
       `}</style>
 
       {/* Hero */}
