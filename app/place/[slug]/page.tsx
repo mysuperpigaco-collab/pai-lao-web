@@ -102,9 +102,14 @@ export default async function PlaceDetailPage({ params }: Props) {
     })),
   }));
 
-  // Community photos from all trips that visited this place
+  // Community photos from all trips that visited this place (by placeId OR placeName)
   const communityStops = await prisma.timelineStop.findMany({
-    where: { placeId: place.id },
+    where: {
+      OR: [
+        { placeId: place.id },
+        { placeId: null, placeName: { equals: place.title, mode: "insensitive" } },
+      ],
+    },
     include: {
       trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true } } } },
     },
