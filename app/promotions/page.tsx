@@ -198,42 +198,50 @@ export default function PromotionsPage() {
 
       {/* Hero */}
       <div style={{
-        background: "linear-gradient(135deg, #92400e 0%, #b45309 30%, #d97706 60%, #ef4444 100%)",
         position: "relative", overflow: "hidden",
         padding: "56px 24px 48px", textAlign: "center", color: "#fff",
       }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle,rgba(255,255,255,0.1) 1px,transparent 1px)", backgroundSize: "28px 28px" }} />
+        {/* BG image + warm overlay */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/images/hero-bg.png')", backgroundSize: "cover", backgroundPosition: "center 60%" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(146,64,14,0.88) 0%, rgba(180,83,9,0.85) 30%, rgba(217,119,6,0.82) 60%, rgba(239,68,68,0.80) 100%)" }} />
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle,rgba(255,255,255,0.06) 1px,transparent 1px)", backgroundSize: "28px 28px" }} />
         <div style={{ position: "absolute", top: -80, right: -80, width: 250, height: 250, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
         <div style={{ position: "absolute", bottom: -50, left: -50, width: 180, height: 180, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
 
         <div style={{ position: "relative", maxWidth: 600, margin: "0 auto" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 3, opacity: 0.7, textTransform: "uppercase", marginBottom: 8 }}>SPECIAL DEALS</div>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🎁</div>
-          <h1 style={{ fontSize: 30, fontWeight: 900, margin: "0 0 10px", textShadow: "0 2px 12px rgba(0,0,0,0.25)" }}>
+          <h1 style={{ fontSize: 30, fontWeight: 900, margin: "0 0 8px", textShadow: "0 2px 12px rgba(0,0,0,0.25)" }}>
             โปรโมชั่นวันนี้
           </h1>
+          <div style={{ fontSize: 18, fontWeight: 600, opacity: 0.75, marginBottom: 10 }}>Today&apos;s Promotions</div>
           <p style={{ fontSize: 15, opacity: 0.9, margin: "0 0 32px" }}>
-            ดีลพิเศษจากร้านค้าและสถานที่ท่องเที่ยวทั่วไทย
+            ดีลพิเศษจากร้านค้าและสถานที่ท่องเที่ยวทั่วไทย<br />
+            <span style={{ fontSize: 13, opacity: 0.75 }}>Exclusive deals from businesses across Thailand</span>
           </p>
 
           {/* Stats */}
           <div style={{ display: "flex", justifyContent: "center", gap: 32, flexWrap: "wrap", marginBottom: 32 }}>
             <div>
               <div style={{ fontSize: 26, fontWeight: 800 }}>{promotions.length}</div>
-              <div style={{ fontSize: 13, opacity: 0.8 }}>โปรโมชั่นตอนนี้</div>
+              <div style={{ fontSize: 12, opacity: 0.8 }}>โปรโมชั่นตอนนี้</div>
+              <div style={{ fontSize: 10, opacity: 0.6 }}>Active Deals</div>
             </div>
             <div style={{ width: 1, background: "rgba(255,255,255,0.25)", alignSelf: "stretch" }} />
             <div>
               <div style={{ fontSize: 26, fontWeight: 800 }}>
                 {new Set(promotions.map(p => p.place?.province).filter(Boolean)).size}
               </div>
-              <div style={{ fontSize: 13, opacity: 0.8 }}>จังหวัด</div>
+              <div style={{ fontSize: 12, opacity: 0.8 }}>จังหวัด</div>
+              <div style={{ fontSize: 10, opacity: 0.6 }}>Provinces</div>
             </div>
             <div style={{ width: 1, background: "rgba(255,255,255,0.25)", alignSelf: "stretch" }} />
             <div>
               <div style={{ fontSize: 26, fontWeight: 800 }}>
                 {new Set(promotions.map(p => p.business.id)).size}
               </div>
-              <div style={{ fontSize: 13, opacity: 0.8 }}>ร้านค้าที่ร่วม</div>
+              <div style={{ fontSize: 12, opacity: 0.8 }}>ร้านค้าที่ร่วม</div>
+              <div style={{ fontSize: 10, opacity: 0.6 }}>Partners</div>
             </div>
           </div>
 

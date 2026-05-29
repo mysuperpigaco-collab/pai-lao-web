@@ -289,46 +289,53 @@ export default function MissionsPage() {
 
       {/* Hero */}
       <div style={{
-        background: "linear-gradient(135deg, #064e3b 0%, #065f46 40%, #047857 100%)",
         position: "relative",
         overflow: "hidden",
         padding: "64px 24px 56px",
         textAlign: "center",
         color: "#fff",
       }}>
+        {/* BG image + dark overlay */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/images/hero-bg.png')", backgroundSize: "cover", backgroundPosition: "center 60%" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(6,78,59,0.88) 0%, rgba(6,95,70,0.85) 40%, rgba(4,120,87,0.82) 100%)" }} />
         {/* Decorative circles */}
         <div style={{ position: "absolute", top: -60, right: -60, width: 220, height: 220, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
         <div style={{ position: "absolute", bottom: -40, left: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
-        <div style={{ position: "absolute", top: "50%", left: "10%", width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.04)", transform: "translateY(-50%)" }} />
 
         <div style={{ position: "relative", maxWidth: 600, margin: "0 auto" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 3, opacity: 0.7, textTransform: "uppercase", marginBottom: 8 }}>COMPLETE CHALLENGES</div>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🎯</div>
-          <h1 style={{ fontSize: 32, fontWeight: 800, margin: "0 0 12px", letterSpacing: -0.5 }}>
+          <h1 style={{ fontSize: 32, fontWeight: 800, margin: "0 0 8px", letterSpacing: -0.5 }}>
             ภารกิจ
           </h1>
-          <p style={{ fontSize: 16, opacity: 0.85, lineHeight: 1.6, margin: "0 0 32px" }}>
-            เดินทาง ถ่ายภาพ และสะสมแต้มจากสถานที่จริง<br />พิสูจน์ว่าคุณคือนักเดินทางตัวจริง
+          <div style={{ fontSize: 18, fontWeight: 600, opacity: 0.75, marginBottom: 10 }}>Missions</div>
+          <p style={{ fontSize: 15, opacity: 0.85, lineHeight: 1.6, margin: "0 0 32px" }}>
+            เดินทาง ถ่ายภาพ และสะสมแต้มจากสถานที่จริง<br />
+            <span style={{ fontSize: 13, opacity: 0.75 }}>Visit places, capture moments, and earn rewards</span>
           </p>
 
           {/* Stats */}
           <div style={{ display: "flex", justifyContent: "center", gap: 32, flexWrap: "wrap" }}>
             <div>
               <div style={{ fontSize: 28, fontWeight: 800 }}>{activeMissions.length}</div>
-              <div style={{ fontSize: 13, opacity: 0.75 }}>ภารกิจพร้อมรับ</div>
+              <div style={{ fontSize: 12, opacity: 0.75 }}>ภารกิจพร้อมรับ</div>
+              <div style={{ fontSize: 10, opacity: 0.55 }}>Active Missions</div>
             </div>
             <div style={{ width: 1, background: "rgba(255,255,255,0.2)", alignSelf: "stretch" }} />
             <div>
               <div style={{ fontSize: 28, fontWeight: 800 }}>
                 {missions.reduce((s, m) => s + m.rewardPoints, 0).toLocaleString()}
               </div>
-              <div style={{ fontSize: 13, opacity: 0.75 }}>แต้มรวมทั้งหมด</div>
+              <div style={{ fontSize: 12, opacity: 0.75 }}>แต้มรวมทั้งหมด</div>
+              <div style={{ fontSize: 10, opacity: 0.55 }}>Total Points</div>
             </div>
             <div style={{ width: 1, background: "rgba(255,255,255,0.2)", alignSelf: "stretch" }} />
             <div>
               <div style={{ fontSize: 28, fontWeight: 800 }}>
                 {missions.reduce((s, m) => s + m._count.participants, 0).toLocaleString()}
               </div>
-              <div style={{ fontSize: 13, opacity: 0.75 }}>ผู้เข้าร่วมทั้งหมด</div>
+              <div style={{ fontSize: 12, opacity: 0.75 }}>ผู้เข้าร่วมทั้งหมด</div>
+              <div style={{ fontSize: 10, opacity: 0.55 }}>Total Participants</div>
             </div>
           </div>
         </div>
