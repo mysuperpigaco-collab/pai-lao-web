@@ -247,12 +247,24 @@ export default function MissionsPage() {
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [enabled, setEnabled] = useState<boolean | null>(null);
 
   useEffect(() => {
-    fetch("/api/missions")
+    fetch("/api/settings")
       .then(r => r.json())
-      .then(d => { setMissions(d.missions || []); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then(d => {
+        const on = d.settings?.missionsEnabled === "true";
+        setEnabled(on);
+        if (on) {
+          fetch("/api/missions")
+            .then(r => r.json())
+            .then(d2 => { setMissions(d2.missions || []); setLoading(false); })
+            .catch(() => setLoading(false));
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch(() => { setEnabled(true); setLoading(false); });
   }, []);
 
   const showToast = (message: string, type: "success" | "error") => {
@@ -347,7 +359,13 @@ export default function MissionsPage() {
       <div style={{ minHeight: "60vh", background: "#f8fafb", padding: "40px 24px 80px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
-          {loading ? (
+          {enabled === false ? (
+            <div style={{ textAlign: "center", padding: "80px 24px", background: "#fff", borderRadius: 20 }}>
+              <div style={{ fontSize: 56, marginBottom: 14 }}>🔒</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#374151", marginBottom: 8 }}>ระบบภารกิจยังไม่เปิดให้บริการ</div>
+              <div style={{ fontSize: 14, color: "#9ca3af" }}>กลับมาใหม่เร็วๆ นี้ครับ</div>
+            </div>
+          ) : loading ? (
             <>
               <div style={{ fontSize: 18, fontWeight: 700, color: "#111827", marginBottom: 20 }}>ภารกิจที่เปิดรับ</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 20 }}>

@@ -22,15 +22,23 @@ function daysLeft(end: string) {
 }
 
 export default function PromotionSection() {
+  const [enabled, setEnabled] = useState(false);
   const [promos, setPromos] = useState<Promotion[]>([]);
 
   useEffect(() => {
-    fetch("/api/promotions")
+    fetch("/api/settings")
       .then(r => r.json())
-      .then(d => setPromos((d.promotions || []).slice(0, 4)));
+      .then(d => {
+        if (d.settings?.promotionsEnabled === "true") {
+          setEnabled(true);
+          fetch("/api/promotions")
+            .then(r => r.json())
+            .then(d2 => setPromos((d2.promotions || []).slice(0, 4)));
+        }
+      });
   }, []);
 
-  if (promos.length === 0) return null;
+  if (!enabled || promos.length === 0) return null;
 
   return (
     <section style={{ padding: "0 0 32px" }}>

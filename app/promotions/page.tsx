@@ -151,6 +151,8 @@ export default function PromotionsPage() {
   const [district, setDistrict] = useState("");
   const [search, setSearch] = useState("");
 
+  const [enabled, setEnabled] = useState<boolean | null>(null);
+
   const fetchPromotions = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams();
@@ -162,7 +164,21 @@ export default function PromotionsPage() {
     setLoading(false);
   }, [province, district]);
 
-  useEffect(() => { fetchPromotions(); }, [fetchPromotions]);
+  useEffect(() => {
+    fetch("/api/settings")
+      .then(r => r.json())
+      .then(d => {
+        const on = d.settings?.promotionsEnabled === "true";
+        setEnabled(on);
+        if (on) fetchPromotions();
+        else setLoading(false);
+      })
+      .catch(() => { setEnabled(true); fetchPromotions(); });
+  }, []);
+
+  useEffect(() => {
+    if (enabled) fetchPromotions();
+  }, [province, district]);
 
   const filtered = search
     ? promotions.filter(p =>
@@ -294,7 +310,13 @@ export default function PromotionsPage() {
             </div>
           )}
 
-          {loading ? (
+          {enabled === false ? (
+            <div style={{ textAlign:"center", padding:"80px 24px", background:"#fff", borderRadius:20 }}>
+              <div style={{ fontSize:56, marginBottom:14 }}>🔒</div>
+              <div style={{ fontSize:20, fontWeight:700, color:"#374151", marginBottom:8 }}>ระบบโปรโมชั่นยังไม่เปิดให้บริการ</div>
+              <div style={{ fontSize:14, color:"#9ca3af" }}>กลับมาใหม่เร็วๆ นี้ครับ</div>
+            </div>
+          ) : loading ? (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 20 }}>
               {[1,2,3,4].map(i => <SkeletonCard key={i} />)}
             </div>

@@ -24,15 +24,23 @@ function timeLeft(end: string) {
 }
 
 export default function MissionSection() {
+  const [enabled, setEnabled] = useState(false);
   const [missions, setMissions] = useState<Mission[]>([]);
 
   useEffect(() => {
-    fetch("/api/missions?status=ACTIVE")
+    fetch("/api/settings")
       .then(r => r.json())
-      .then(d => setMissions((d.missions || []).slice(0, 4)));
+      .then(d => {
+        if (d.settings?.missionsEnabled === "true") {
+          setEnabled(true);
+          fetch("/api/missions?status=ACTIVE")
+            .then(r => r.json())
+            .then(d2 => setMissions((d2.missions || []).slice(0, 4)));
+        }
+      });
   }, []);
 
-  if (missions.length === 0) return null;
+  if (!enabled || missions.length === 0) return null;
 
   return (
     <section style={{ padding: "32px 0" }}>
