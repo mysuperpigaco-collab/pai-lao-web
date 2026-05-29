@@ -291,16 +291,13 @@ export default function MissionsPage() {
       <div style={{
         position: "relative",
         overflow: "hidden",
-        padding: "64px 24px 56px",
+        padding: "64px 24px 80px",
         textAlign: "center",
         color: "#fff",
+        background: "linear-gradient(135deg, #0f172a 0%, #064e3b 50%, #065f46 100%)",
       }}>
-        {/* BG image + dark overlay */}
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/images/hero-bg.png')", backgroundSize: "cover", backgroundPosition: "center 60%" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(6,78,59,0.65) 0%, rgba(6,95,70,0.60) 40%, rgba(4,120,87,0.58) 100%)" }} />
-        {/* Decorative circles */}
-        <div style={{ position: "absolute", top: -60, right: -60, width: 220, height: 220, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
-        <div style={{ position: "absolute", bottom: -40, left: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(255,255,255,0.05)" }} />
+        <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "rgba(255,255,255,0.04)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: -100, left: "10%", width: 300, height: 300, borderRadius: "50%", background: "rgba(16,185,129,0.10)", pointerEvents: "none" }} />
 
         <div style={{ position: "relative", maxWidth: 600, margin: "0 auto" }}>
           <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 3, opacity: 0.7, textTransform: "uppercase", marginBottom: 8 }}>COMPLETE CHALLENGES</div>
