@@ -256,7 +256,7 @@ export default function DashboardPage() {
 
           {/* ── Sidebar ── */}
           <aside className="dp-sidebar">
-            <ProfileHeader isOwner={true} user={profileUser} />
+            <ProfileHeader isOwner={true} loading={authLoading} user={profileUser} />
 
             <div className="dp-card" style={{ marginTop: "16px" }}>
               <h3 className="sb-title">บัญชีของฉัน <small>My Account</small></h3>
