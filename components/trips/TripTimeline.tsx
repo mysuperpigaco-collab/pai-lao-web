@@ -164,4 +164,11 @@ export default function TripTimeline({ timeline }: Props) {
         return (
           <div onClick={() => setLightbox(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)",
             display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
-            <img src={filteredImgs[l
+            <img src={filteredImgs[lightbox.imgIdx]} alt=""
+              style={{ maxWidth: "90vw", maxHeight: "85vh", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }} />
+          </div>
+        );
+      })()}
+    </div>
+  );
+}

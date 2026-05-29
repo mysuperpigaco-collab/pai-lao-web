@@ -477,4 +477,20 @@ export default async function PlaceDetailPage({ params }: Props) {
             )}
 
             <ClaimPlaceButton
-         
+              placeSlug={slug}
+              placeTitle={place.title}
+              isBusiness={isBusiness}
+              hasOwner={!!place.business}
+            />
+
+            {isOwner && (
+              <Link href={"/business/places/" + slug + "/edit"} className="pd-edit-btn">
+                &#x270F;&#xFE0F; แก้ไขสถานที่ · Edit Place
+              </Link>
+            )}
+          </aside>
+        </div>
+      </div>
+    </div>
+  );
+}
