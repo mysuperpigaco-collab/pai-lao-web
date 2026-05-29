@@ -10,6 +10,7 @@ import ReportButton from "@/components/common/ReportButton";
 import ClaimPlaceButton from "@/components/places/ClaimPlaceButton";
 import PlaceHero from "@/components/places/PlaceHero";
 import AdminPhotoUpload from "@/components/places/AdminPhotoUpload";
+import MissionSubmitBox from "@/components/places/MissionSubmitBox";
 import "./place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -120,6 +121,33 @@ export default async function PlaceDetailPage({ params }: Props) {
     .sort((a, b) => (b.trip?._count.likes ?? 0) - (a.trip?._count.likes ?? 0));
 
   const communityImages = communityStopsSorted.flatMap(s => s.images).filter(img => img && !img.includes("default-place.svg"));
+  // Active missions for this place
+  const now = new Date();
+  const activeMissions = await prisma.mission.findMany({
+    where: {
+      placeId: place.id,
+      status: "ACTIVE",
+      endDate: { gte: now },
+    },
+    include: {
+      participants: session
+        ? { where: { userId: session.userId }, select: { status: true } }
+        : false,
+    },
+    orderBy: { endDate: "asc" },
+  });
+  const missionsForComponent = activeMissions.map(m => ({
+    id: m.id,
+    title: m.title,
+    description: m.description,
+    rewardPoints: m.rewardPoints,
+    badgeLabel: m.badgeLabel ?? null,
+    endDate: m.endDate.toISOString(),
+    myStatus: session && Array.isArray(m.participants) && m.participants.length > 0
+      ? m.participants[0].status
+      : null,
+  }));
+
   const realCoverUrl = (place.coverUrl && place.coverUrl !== "/images/default-place.svg") ? place.coverUrl : null;
   const communityCover = !realCoverUrl && communityImages.length > 0 ? communityImages[0] : null;
 
@@ -265,6 +293,13 @@ export default async function PlaceDetailPage({ params }: Props) {
                   ))}
                 </div>
               </div>
+            )}
+
+            {session && missionsForComponent.length > 0 && (
+              <MissionSubmitBox
+                placeId={place.id}
+                missions={missionsForComponent}
+              />
             )}
 
             {(session?.role === "ADMIN" || session?.role === "SUPERADMIN") && (

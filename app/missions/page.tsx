@@ -77,10 +77,8 @@ function Toast({ message, type, onClose }: { message: string; type: "success" | 
   );
 }
 
-function MissionCard({ mission, onJoin, joining }: {
+function MissionCard({ mission }: {
   mission: Mission;
-  onJoin: (id: string) => void;
-  joining: string | null;
 }) {
   const myStatus = mission.participants?.[0]?.status;
   const isFull = mission.maxSlots ? mission._count.participants >= mission.maxSlots : false;
@@ -201,40 +199,45 @@ function MissionCard({ mission, onJoin, joining }: {
           <div style={{ textAlign: "center", fontSize: 13, color: "#9ca3af", padding: "10px 0" }}>
             ภารกิจสิ้นสุดแล้ว
           </div>
-        ) : myStatus === "JOINED" ? (
-          <Link href={`/missions/${mission.id}/submit`} style={{
+        ) : myStatus === "SUBMITTED" ? (
+          <div style={{ textAlign: "center", padding: "11px 0", borderRadius: 10,
+            background: "#dbeafe", color: "#1d4ed8", fontWeight: 700, fontSize: 14 }}>
+            ⏳ รอแอดมินตรวจสอบ
+          </div>
+        ) : myStatus === "APPROVED" ? (
+          <div style={{ textAlign: "center", padding: "11px 0", borderRadius: 10,
+            background: "#dcfce7", color: "#15803d", fontWeight: 700, fontSize: 14 }}>
+            ✅ อนุมัติแล้ว!
+          </div>
+        ) : myStatus === "REJECTED" ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ textAlign: "center", padding: "8px 0", color: "#dc2626", fontWeight: 700, fontSize: 13 }}>
+              ❌ ไม่ผ่าน — ส่งใหม่ได้เลย
+            </div>
+            {mission.place?.slug && (
+              <Link href={`/place/${mission.place.slug}`} style={{
+                display: "block", textAlign: "center",
+                background: "linear-gradient(135deg,#f59e0b,#d97706)",
+                color: "#fff", padding: "11px 0", borderRadius: 10,
+                fontWeight: 700, fontSize: 14, textDecoration: "none",
+              }}>
+                📨 ส่งผลงานใหม่ →
+              </Link>
+            )}
+          </div>
+        ) : mission.place?.slug ? (
+          <Link href={`/place/${mission.place.slug}`} style={{
             display: "block", textAlign: "center",
-            background: "linear-gradient(135deg,#059669,#10b981)",
+            background: "linear-gradient(135deg,#10b981,#059669)",
             color: "#fff", padding: "11px 0", borderRadius: 10,
-            fontWeight: 600, fontSize: 14, textDecoration: "none",
+            fontWeight: 700, fontSize: 14, textDecoration: "none",
           }}>
-            ส่งผลงาน →
+            🎯 ไปส่งผลงานที่สถานที่ →
           </Link>
-        ) : myStatus ? (
-          <div style={{
-            textAlign: "center", padding: "11px 0", borderRadius: 10,
-            background: s?.bg, color: s?.color, fontWeight: 600, fontSize: 14,
-          }}>
-            {s?.label}
-          </div>
-        ) : isFull ? (
-          <div style={{ textAlign: "center", padding: "11px 0", fontSize: 13, color: "#9ca3af" }}>
-            เต็มแล้ว
-          </div>
         ) : (
-          <button
-            onClick={() => onJoin(mission.id)}
-            disabled={joining === mission.id}
-            style={{
-              width: "100%", padding: "11px 0", border: "none", borderRadius: 10,
-              background: joining === mission.id ? "#d1fae5" : "linear-gradient(135deg,#10b981,#059669)",
-              color: joining === mission.id ? "#059669" : "#fff",
-              fontWeight: 600, fontSize: 14, cursor: joining === mission.id ? "default" : "pointer",
-              transition: "all 0.2s",
-            }}
-          >
-            {joining === mission.id ? "กำลังรับ..." : "รับภารกิจ"}
-          </button>
+          <div style={{ textAlign: "center", padding: "10px 0", fontSize: 13, color: "#6b7280" }}>
+            ไปสถานที่และส่งผลงานผ่านหน้าสถานที่
+          </div>
         )}
       </div>
     </div>
@@ -245,7 +248,7 @@ export default function MissionsPage() {
   const { user } = useAuth();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [loading, setLoading] = useState(true);
-  const [joining, setJoining] = useState<string | null>(null);
+
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [enabled, setEnabled] = useState<boolean | null>(null);
 
@@ -271,31 +274,7 @@ export default function MissionsPage() {
     setToast({ message, type });
   };
 
-  const handleJoin = async (missionId: string) => {
-    if (!user) {
-      window.location.href = "/login?redirect=/missions";
-      return;
-    }
-    setJoining(missionId);
-    try {
-      const res = await fetch(`/api/missions/${missionId}/join`, { method: "POST" });
-      const data = await res.json();
-      if (res.ok) {
-        setMissions(prev => prev.map(m =>
-          m.id === missionId
-            ? { ...m, participants: [{ status: "JOINED" }], _count: { participants: m._count.participants + 1 } }
-            : m
-        ));
-        showToast("รับภารกิจสำเร็จ! โชคดีนะ 🎯", "success");
-      } else {
-        showToast(data.error || "เกิดข้อผิดพลาด", "error");
-      }
-    } catch {
-      showToast("เชื่อมต่อไม่ได้ กรุณาลองใหม่", "error");
-    } finally {
-      setJoining(null);
-    }
-  };
+
 
   const activeMissions = missions.filter(m => new Date(m.endDate) >= new Date());
   const expiredMissions = missions.filter(m => new Date(m.endDate) < new Date());
@@ -398,7 +377,7 @@ export default function MissionsPage() {
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 20 }}>
                     {activeMissions.map(m => (
-                      <MissionCard key={m.id} mission={m} onJoin={handleJoin} joining={joining} />
+                      <MissionCard key={m.id} mission={m} />
                     ))}
                   </div>
                 </div>
@@ -415,7 +394,7 @@ export default function MissionsPage() {
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 20, opacity: 0.7 }}>
                     {expiredMissions.map(m => (
-                      <MissionCard key={m.id} mission={m} onJoin={handleJoin} joining={joining} />
+                      <MissionCard key={m.id} mission={m} />
                     ))}
                   </div>
                 </div>

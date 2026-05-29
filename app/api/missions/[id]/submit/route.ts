@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
-// POST /api/missions/[id]/submit — ส่งผลงาน
+// POST /api/missions/[id]/submit — ส่งผลงานโดยตรง (ไม่ต้อง join ก่อน)
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+    if (session.role === "ADMIN" || session.role === "SUPERADMIN") {
+      return NextResponse.json({ error: "แอดมินไม่สามารถส่งผลงานได้" }, { status: 403 });
+    }
 
     const { id } = await params;
     const { photoUrls, reviewText, placeId } = await req.json();
@@ -15,17 +18,33 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: "กรุณาอัปโหลดรูปภาพอย่างน้อย 1 รูป" }, { status: 400 });
     }
 
-    const participant = await prisma.missionParticipant.findUnique({
-      where: { missionId_userId: { missionId: id, userId: session.userId } },
-    });
-    if (!participant) return NextResponse.json({ error: "คุณยังไม่ได้รับภารกิจนี้" }, { status: 404 });
-    if (participant.status !== "JOINED") {
-      return NextResponse.json({ error: "ส่งผลงานไปแล้ว" }, { status: 409 });
+    const mission = await prisma.mission.findUnique({ where: { id } });
+    if (!mission) return NextResponse.json({ error: "ไม่พบภารกิจ" }, { status: 404 });
+    if (mission.status !== "ACTIVE" || mission.endDate < new Date()) {
+      return NextResponse.json({ error: "ภารกิจนี้หมดอายุแล้ว" }, { status: 400 });
     }
 
-    const updated = await prisma.missionParticipant.update({
+    // Check if already submitted/approved — prevent re-submit
+    const existing = await prisma.missionParticipant.findUnique({
       where: { missionId_userId: { missionId: id, userId: session.userId } },
-      data: {
+    });
+    if (existing && (existing.status === "SUBMITTED" || existing.status === "APPROVED")) {
+      return NextResponse.json({ error: "คุณส่งผลงานไปแล้ว" }, { status: 409 });
+    }
+
+    // Upsert: create or update to SUBMITTED
+    const participant = await prisma.missionParticipant.upsert({
+      where: { missionId_userId: { missionId: id, userId: session.userId } },
+      create: {
+        missionId: id,
+        userId: session.userId,
+        status: "SUBMITTED",
+        photoUrls,
+        reviewText: reviewText || null,
+        placeId: placeId || null,
+        submittedAt: new Date(),
+      },
+      update: {
         status: "SUBMITTED",
         photoUrls,
         reviewText: reviewText || null,
@@ -33,7 +52,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         submittedAt: new Date(),
       },
     });
-    return NextResponse.json({ ok: true, participant: updated });
+    return NextResponse.json({ ok: true, participant });
   } catch (e) {
     console.error("POST /api/missions/[id]/submit:", e);
     return NextResponse.json({ error: "เกิดข้อผิดพลาด" }, { status: 500 });
