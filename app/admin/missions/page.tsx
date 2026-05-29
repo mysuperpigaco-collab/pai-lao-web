@@ -29,7 +29,7 @@ function PlaceSearch({ onSelect }: { onSelect: (p: PlaceSuggestion) => void }) {
   const [results, setResults] = useState<PlaceSuggestion[]>([]);
   const [selected, setSelected] = useState<PlaceSuggestion | null>(null);
   const [open, setOpen] = useState(false);
-  const timer = useRef<NodeJS.Timeout>();
+  const timer = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const search = (val: string) => {
     setQ(val);
