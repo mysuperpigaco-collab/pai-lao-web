@@ -9,6 +9,7 @@ import ShareButton from "@/components/common/ShareButton";
 import ReportButton from "@/components/common/ReportButton";
 import ClaimPlaceButton from "@/components/places/ClaimPlaceButton";
 import PlaceHero from "@/components/places/PlaceHero";
+import AdminPhotoUpload from "@/components/places/AdminPhotoUpload";
 import "./place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -261,6 +262,17 @@ export default async function PlaceDetailPage({ params }: Props) {
               </div>
             )}
 
+            {(session?.role === "ADMIN" || session?.role === "SUPERADMIN") && (
+              <div className="pd-card">
+                <AdminPhotoUpload
+                  placeId={place.id}
+                  initialGallery={place.gallery ?? []}
+                  initialCoverUrl={realCoverUrl}
+                  onUpdate={() => {}}
+                />
+              </div>
+            )}
+
             {communityImages.length > 0 && (
               <div className="pd-card">
                 <h2>
@@ -465,20 +477,4 @@ export default async function PlaceDetailPage({ params }: Props) {
             )}
 
             <ClaimPlaceButton
-              placeSlug={slug}
-              placeTitle={place.title}
-              isBusiness={isBusiness}
-              hasOwner={!!place.business}
-            />
-
-            {isOwner && (
-              <Link href={"/business/places/" + slug + "/edit"} className="pd-edit-btn">
-                &#x270F;&#xFE0F; แก้ไขสถานที่ · Edit Place
-              </Link>
-            )}
-          </aside>
-        </div>
-      </div>
-    </div>
-  );
-}
+         
