@@ -8,6 +8,7 @@ import PlaceBookmarkButton from "@/components/places/PlaceBookmarkButton";
 import ShareButton from "@/components/common/ShareButton";
 import ReportButton from "@/components/common/ReportButton";
 import ClaimPlaceButton from "@/components/places/ClaimPlaceButton";
+import PlaceHero from "@/components/places/PlaceHero";
 import "./place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -100,15 +101,13 @@ export default async function PlaceDetailPage({ params }: Props) {
     })),
   }));
 
-  // Community photos from trips (only for unclaimed places)
-  const communityStops = !place.business
-    ? await prisma.timelineStop.findMany({
-        where: { placeId: place.id },
-        include: {
-          trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true } } } },
-        },
-      })
-    : [];
+  // Community photos from all trips that visited this place
+  const communityStops = await prisma.timelineStop.findMany({
+    where: { placeId: place.id },
+    include: {
+      trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true } } } },
+    },
+  });
 
   const communityStopsSorted = communityStops
     .filter(s => s.images.length > 0)
@@ -128,10 +127,12 @@ export default async function PlaceDetailPage({ params }: Props) {
               <span>สถานที่ทั้งหมด · All Places</span>
             </Link>
           </div>
-          {(realCoverUrl || communityCover)
-            ? <img src={realCoverUrl || communityCover!} alt={place.title} className="pd-hero-img" />
-            : <div className="pd-hero-img" style={{ background: "linear-gradient(135deg,#10b981,#06b6d4)" }} />
-          }
+          <PlaceHero
+            placeId={place.id}
+            realCoverUrl={realCoverUrl}
+            communityImages={communityImages}
+            isAdmin={session?.role === "ADMIN" || session?.role === "SUPERADMIN"}
+          />
           <div className="pd-hero-overlay">
             <div className="pd-hero-content">
               <div className="pd-hero-badges">
@@ -481,3 +482,4 @@ export default async function PlaceDetailPage({ params }: Props) {
     </div>
   );
 }
+                                 
