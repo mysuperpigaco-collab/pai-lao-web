@@ -132,6 +132,7 @@ model Business {
 
   places       Place[]
   claims       PlaceClaim[]
+  promotions   Promotion[] @relation("BusinessPromotions")
 }
 
 // ── Place ─────────────────────────────────────────────────────
@@ -185,6 +186,8 @@ model Place {
   likes            PlaceLike[]
   claims           PlaceClaim[]
   planStops        TripPlanStop[]
+  missions         Mission[]   @relation("MissionPlace")
+  promotions       Promotion[] @relation("PromotionPlace")
 }
 
 // ── Trip ──────────────────────────────────────────────────────
@@ -461,7 +464,7 @@ model PlaceClaim {
   placeId     String
   place       Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
   businessId  String
-  business    Business @relation("BusinessPromotions", fields: [businessId], references: [id], onDelete: Cascade)
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   status      String   @default("PENDING") // PENDING | APPROVED | REJECTED
   message     String?  // ข้อความยืนยันจากเจ้าของ
   adminNote   String?  // หมายเหตุจากแอดมิน
