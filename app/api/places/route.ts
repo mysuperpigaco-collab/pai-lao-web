@@ -64,7 +64,6 @@ export async function GET(request: Request) {
 
     const communityStops = await prisma.timelineStop.findMany({
       where: {
-        shareToPlace: true,
         OR: [
           { placeId: { in: placeIds } },
           { placeId: null, placeName: { in: placeTitles, mode: "insensitive" } },
