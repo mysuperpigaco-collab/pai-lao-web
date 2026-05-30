@@ -198,7 +198,7 @@ export default function PromotionsPage() {
       `}</style>
 
       {/* Hero */}
-      <div className="promo-hero">
+      <div className="promo-hero" style={{minHeight:350,padding:"64px 24px 80px",background:"linear-gradient(135deg,#7c2d12 0%,#b45309 40%,#dc2626 100%)",color:"#fff",textAlign:"center",position:"relative",overflow:"hidden"}}>
         <div className="promo-hero-deco1" />
         <div className="promo-hero-deco2" />
         <div className="promo-hero-inner">

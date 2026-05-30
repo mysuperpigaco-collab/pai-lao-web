@@ -299,7 +299,7 @@ export default function MissionsPage() {
         .mission-hero-deco2 { position: absolute; bottom: -100px; left: 10%; width: 300px; height: 300px; border-radius: 50%; background: rgba(16,185,129,0.10); pointer-events: none; }`}</style>
 
       {/* Hero */}
-      <div className="mission-hero">
+      <div className="mission-hero" style={{minHeight:350,padding:"64px 24px 80px",background:"linear-gradient(135deg,#0f172a 0%,#064e3b 50%,#065f46 100%)",color:"#fff",textAlign:"center",position:"relative",overflow:"hidden"}}>
         <div className="mission-hero-deco1" />
         <div className="mission-hero-deco2" />
         <div className="mission-hero-inner">
