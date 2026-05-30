@@ -23,8 +23,8 @@
   --pl-gradient: linear-gradient(to right, #4facfe, #43e97b);
 
   /* Neutral */
-  --pl-white:        #ffffff;
-  --pl-bg:           #f8fafc;
+  --pl-white:        rgba(255,255,255,0.88);
+  --pl-bg:           rgba(248,250,252,0.82);
   --pl-border:       #e2e8f0;
   --pl-border-soft:  #dbe7f3;
 
@@ -65,17 +65,32 @@
   box-sizing: border-box;
 }
 
-html, body {
-  overflow-x: hidden;
+html {
   max-width: 100%;
+  background-color: #1a3a2a;
+}
+
+/* Fixed background layer — ใช้ pseudo-element แทน background-attachment: fixed
+   เพราะ overflow-x: clip บน html ทำให้ background-attachment: fixed ไม่ทำงานใน Chrome */
+html::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: url('/images/hero-bg.png');
+  background-size: cover;
+  background-position: center 60%;
+  pointer-events: none;
 }
 
 body {
   font-family: 'Sarabun', sans-serif;
   font-size: 16px;
   line-height: 1.7;
-  background: var(--pl-bg);
+  background: transparent;
   color: var(--pl-text-primary);
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 /* ── Utility ── */
@@ -287,8 +302,36 @@ body {
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .manage-grid     { grid-template-columns: 1fr; }
-  .interest-grid   { grid-template-columns: 1fr; }
+  .interest-grid{ grid-template-columns: 1fr; }
   .signup-card     { padding: 30px 20px; border-radius: 30px; }
   .navbar          { padding: 20px; }
   .section-divider { grid-column: span 1; }
 }
+
+/* ── Promotions Hero ── */
+.promo-hero {
+  background: linear-gradient(135deg, #7c2d12 0%, #b45309 40%, #dc2626 100%) !important;
+  padding: 64px 24px 80px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  text-align: center !important;
+  color: #fff !important;
+  display: block !important;
+}
+.promo-hero-inner { position: relative; max-width: 600px; margin: 0 auto; }
+.promo-hero-deco1 { position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; border-radius: 50%; background: rgba(255,255,255,0.04); pointer-events: none; }
+.promo-hero-deco2 { position: absolute; bottom: -100px; left: 10%; width: 300px; height: 300px; border-radius: 50%; background: rgba(251,191,36,0.10); pointer-events: none; }
+
+/* ── Missions Hero ── */
+.mission-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #064e3b 50%, #065f46 100%) !important;
+  padding: 64px 24px 80px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  text-align: center !important;
+  color: #fff !important;
+  display: block !important;
+}
+.mission-hero-inner { position: relative; max-width: 600px; margin: 0 auto; }
+.mission-hero-deco1 { position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; border-radius: 50%; background: rgba(255,255,255,0.04); pointer-events: none; }
+.mission-hero-deco2 { position: absolute; bottom: -100px; left: 10%; width: 300px; height: 300px; border-radius: 50%; background: rgba(16,185,129,0.10); pointer-events: none; }
