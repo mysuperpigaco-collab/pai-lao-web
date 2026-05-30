@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { getDistricts } from "@/data/thailand";
-import ProvinceSelect from "@/components/ui/ProvinceSelect";
+import { PROVINCES, getDistricts } from "@/data/thailand";
 
 const CATS = ["","NATURE","CAFE","ACCOMMODATION","CAMPING","FOOD","TEMPLE","BEACH","MARKET","ADVENTURE","MUSEUM"];
 const CAT_LABELS: Record<string,string> = {
@@ -308,7 +307,10 @@ export default function AdminPlacesPage() {
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
                 <div>
                   <label style={lbl}>จังหวัด · Province *</label>
-                  <ProvinceSelect value={form.province} onChange={v => setField("province", v)} style={inp} />
+                  <select style={inp} value={form.province} onChange={e => setField("province", e.target.value)}>
+                    <option value="">-- เลือกจังหวัด --</option>
+                    {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
                 </div>
                 <div>
                   <label style={lbl}>อำเภอ / เขต · District *</label>

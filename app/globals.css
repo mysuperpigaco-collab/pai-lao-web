@@ -83,6 +83,14 @@ html::before {
   pointer-events: none;
 }
 
+html {
+  background-image: url('/images/hero-bg.png');
+  background-size: cover;
+  background-position: center 60%;
+  background-attachment: fixed;
+  background-color: #1a3a2a;
+}
+
 body {
   font-family: 'Sarabun', sans-serif;
   font-size: 16px;
