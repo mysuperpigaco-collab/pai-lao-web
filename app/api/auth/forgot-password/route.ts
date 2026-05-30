@@ -4,6 +4,7 @@ import { Resend } from "resend";
 import crypto from "crypto";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const BASE_URL = BASE_URL || "https://pai-lao-web.vercel.app";
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
       data: { resetToken: token, resetTokenExp: exp },
     });
 
-    const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password?token=${token}`;
+    const resetUrl = `${BASE_URL}/reset-password?token=${token}`;
 
     await resend.emails.send({
       from: "PAI-LAO <onboarding@resend.dev>",
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
           </div>
           <p style="color:#94a3b8;font-size:13px;line-height:1.6;">ลิงก์นี้จะหมดอายุใน <strong>1 ชั่วโมง</strong><br/>หากคุณไม่ได้ขอรีเซ็ตรหัสผ่าน สามารถเพิกเฉยต่ออีเมลนี้ได้เลย</p>
           <hr style="border:none;border-top:1px solid #f1f5f9;margin:24px 0;"/>
-          <p style="color:#cbd5e1;font-size:12px;text-align:center;">© 2026 PAI-LAO EXPERIENCE · <a href="${process.env.NEXT_PUBLIC_BASE_URL}" style="color:#94a3b8;">pai-lao-web.vercel.app</a></p>
+          <p style="color:#cbd5e1;font-size:12px;text-align:center;">© 2026 PAI-LAO EXPERIENCE · <a href="${BASE_URL}" style="color:#94a3b8;">pai-lao-web.vercel.app</a></p>
         </div>
       `,
     });
