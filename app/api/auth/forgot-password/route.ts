@@ -4,7 +4,7 @@ import { Resend } from "resend";
 import crypto from "crypto";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const BASE_URL = BASE_URL || "https://pai-lao-web.vercel.app";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://pai-lao-web.vercel.app";
 
 export async function POST(req: NextRequest) {
   try {
