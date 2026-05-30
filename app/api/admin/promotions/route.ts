@@ -8,54 +8,69 @@ function adminGuard(session: Awaited<ReturnType<typeof getCurrentUser>>) {
 
 // GET /api/admin/promotions
 export async function GET(req: NextRequest) {
-  const session = await getCurrentUser();
-  if (!adminGuard(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  try {
+    const session = await getCurrentUser();
+    if (!adminGuard(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { searchParams } = new URL(req.url);
-  const status = searchParams.get("status") || "PENDING";
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get("status") || "PENDING";
 
-  const promotions = await prisma.promotion.findMany({
-    where: { status },
-    include: {
-      business: { select: { id: true, businessName: true, logoUrl: true } },
-      place: { select: { id: true, title: true, slug: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
-  return NextResponse.json({ promotions });
+    const promotions = await prisma.promotion.findMany({
+      where: { status },
+      include: {
+        business: { select: { id: true, businessName: true, logoUrl: true } },
+        place: { select: { id: true, title: true, slug: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json({ promotions });
+  } catch (error) {
+    console.error("GET /api/admin/promotions:", error);
+    return NextResponse.json({ error: "เกิดข้อผิดพลาด" }, { status: 500 });
+  }
 }
 
 // PUT /api/admin/promotions — approve / reject
 export async function PUT(req: NextRequest) {
-  const session = await getCurrentUser();
-  if (!adminGuard(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  try {
+    const session = await getCurrentUser();
+    if (!adminGuard(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { promotionId, action, adminNote } = await req.json();
-  if (!promotionId || !action) return NextResponse.json({ error: "ข้อมูลไม่ครบ" }, { status: 400 });
+    const { promotionId, action, adminNote } = await req.json();
+    if (!promotionId || !action) return NextResponse.json({ error: "ข้อมูลไม่ครบ" }, { status: 400 });
 
-  const newStatus = action === "APPROVE" ? "ACTIVE" : "REJECTED";
-  const updated = await prisma.promotion.update({
-    where: { id: promotionId },
-    data: { status: newStatus, adminNote: adminNote || null },
-  });
-  return NextResponse.json({ ok: true, promotion: updated });
+    const newStatus = action === "APPROVE" ? "ACTIVE" : "REJECTED";
+    const updated = await prisma.promotion.update({
+      where: { id: promotionId },
+      data: { status: newStatus, adminNote: adminNote || null },
+    });
+    return NextResponse.json({ ok: true, promotion: updated });
+  } catch (error) {
+    console.error("PUT /api/admin/promotions:", error);
+    return NextResponse.json({ error: "เกิดข้อผิดพลาด" }, { status: 500 });
+  }
 }
 
-// PATCH /api/admin/promotions — toggle promotion status ACTIVE <-> INACTIVE
+// PATCH /api/admin/promotions — toggle ACTIVE <-> INACTIVE
 export async function PATCH(req: NextRequest) {
-  const session = await getCurrentUser();
-  if (!adminGuard(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  try {
+    const session = await getCurrentUser();
+    if (!adminGuard(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const { promotionId } = await req.json();
-  if (!promotionId) return NextResponse.json({ error: "ข้อมูลไม่ครบ" }, { status: 400 });
+    const { promotionId } = await req.json();
+    if (!promotionId) return NextResponse.json({ error: "ข้อมูลไม่ครบ" }, { status: 400 });
 
-  const promo = await prisma.promotion.findUnique({ where: { id: promotionId } });
-  if (!promo) return NextResponse.json({ error: "ไม่พบโปรโมชั่น" }, { status: 404 });
+    const promo = await prisma.promotion.findUnique({ where: { id: promotionId } });
+    if (!promo) return NextResponse.json({ error: "ไม่พบโปรโมชั่น" }, { status: 404 });
 
-  const newStatus = promo.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-  const updated = await prisma.promotion.update({
-    where: { id: promotionId },
-    data: { status: newStatus },
-  });
-  return NextResponse.json({ ok: true, status: updated.status });
+    const newStatus = promo.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    const updated = await prisma.promotion.update({
+      where: { id: promotionId },
+      data: { status: newStatus },
+    });
+    return NextResponse.json({ ok: true, status: updated.status });
+  } catch (error) {
+    console.error("PATCH /api/admin/promotions:", error);
+    return NextResponse.json({ error: "เกิดข้อผิดพลาด" }, { status: 500 });
+  }
 }
