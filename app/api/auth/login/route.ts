@@ -38,18 +38,11 @@ export async function POST(request: Request) {
       },
     });
 
-    if (!user) {
+    // ── ตรวจรหัสผ่าน (ใช้ message เดียวกัน ป้องกัน user enumeration) ─
+    const isValid = user ? await verifyPassword(password, user.password) : false;
+    if (!user || !isValid) {
       return NextResponse.json(
-        { message: "ไม่พบบัญชีนี้ในระบบ" },
-        { status: 401 }
-      );
-    }
-
-    // ── ตรวจรหัสผ่าน ──────────────────────────────────────────
-    const isValid = await verifyPassword(password, user.password);
-    if (!isValid) {
-      return NextResponse.json(
-        { message: "รหัสผ่านไม่ถูกต้อง" },
+        { message: "อีเมล/ชื่อผู้ใช้ หรือรหัสผ่านไม่ถูกต้อง" },
         { status: 401 }
       );
     }

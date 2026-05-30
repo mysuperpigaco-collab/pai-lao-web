@@ -2,19 +2,17 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { verifyToken } from "@/lib/auth";
 
-// Route ที่ต้อง login ก่อนเข้า
 const PROTECTED_ROUTES = [
   "/dashboard",
   "/trips/create",
   "/business/dashboard",
   "/business/edit-profile",
   "/business/places",
+  "/admin",
+  "/planner",
 ];
 
-// Route ที่ถ้า login แล้วไม่ควรเข้า (redirect ออก)
 const AUTH_ROUTES = ["/login", "/signup"];
-
-// Admin roles
 const ADMIN_ROLES = ["ADMIN", "SUPERADMIN"];
 
 function getHomeForRole(role: string) {
@@ -26,11 +24,10 @@ function getHomeForRole(role: string) {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // ดึง token จาก cookie
   const token = request.cookies.get("pl_token")?.value;
   const session = token ? await verifyToken(token) : null;
 
-  // ── ถ้าเป็น protected route แต่ยังไม่ login ──────────────
+  // Protected routes require login
   const isProtected = PROTECTED_ROUTES.some((r) => pathname.startsWith(r));
   if (isProtected && !session) {
     const loginUrl = new URL("/login", request.url);
@@ -38,23 +35,28 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // ── ถ้า login แล้วพยายามเข้า /login หรือ /signup ──────────
+  // Logged-in users redirected away from auth pages
   const isAuthRoute = AUTH_ROUTES.some((r) => pathname.startsWith(r));
   if (isAuthRoute && session) {
     return NextResponse.redirect(new URL(getHomeForRole(session.role), request.url));
   }
 
-  // ── ADMIN/SUPERADMIN ห้ามสร้างทริป ──────────────────────
+  // ADMIN/SUPERADMIN cannot create trips
   if (pathname.startsWith("/trips/create") && session && ADMIN_ROLES.includes(session.role)) {
     return NextResponse.redirect(new URL("/admin", request.url));
   }
 
-  // ── ADMIN/SUPERADMIN ห้ามเข้า /dashboard (user dashboard) ─
+  // ADMIN/SUPERADMIN cannot access user dashboard
   if (pathname.startsWith("/dashboard") && session && ADMIN_ROLES.includes(session.role)) {
     return NextResponse.redirect(new URL("/admin", request.url));
   }
 
-  // ── ป้องกัน Business route จาก Traveler ──────────────────
+  // Non-admin users cannot access /admin
+  if (pathname.startsWith("/admin") && session && !ADMIN_ROLES.includes(session.role)) {
+    return NextResponse.redirect(new URL(getHomeForRole(session.role), request.url));
+  }
+
+  // Traveler cannot access business routes
   if (pathname.startsWith("/business") && session?.role === "TRAVELER") {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
@@ -67,6 +69,8 @@ export const config = {
     "/dashboard/:path*",
     "/trips/create",
     "/business/:path*",
+    "/admin/:path*",
+    "/planner/:path*",
     "/login",
     "/signup",
   ],

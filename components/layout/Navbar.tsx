@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -28,6 +28,11 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQ, setSearchQ] = useState("");
   const [searchType, setSearchType] = useState("ทริป");
+  const [siteSettings, setSiteSettings] = useState<Record<string,string>>({});
+
+  useEffect(() => {
+    fetch("/api/settings").then(r=>r.json()).then(d=>setSiteSettings(d.settings||{}));
+  }, []);
 
   const handleSearch = () => {
     const q = searchQ.trim();
@@ -44,11 +49,10 @@ export default function Navbar() {
       <style>{`
         .nb-nav {
           position: sticky; top: 0; z-index: 1000;
-          background: #ffffff; border-bottom: 1px solid #e8f5e9;
-        }
-        .nb-accent {
-          height: 3px;
-          background: linear-gradient(90deg, #10b981 0%, #06b6d4 50%, #3b82f6 100%);
+          background: linear-gradient(135deg, rgba(5,150,105,0.80) 0%, rgba(8,145,178,0.80) 100%);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          box-shadow: 0 2px 16px rgba(5,150,105,0.18);
         }
         .nb-inner {
           max-width: 1200px; margin: 0 auto; padding: 0 16px;
@@ -63,98 +67,105 @@ export default function Navbar() {
         }
         .nb-logo-icon {
           width: 38px; height: 38px; border-radius: 12px;
-          background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+          background: rgba(255,255,255,0.2);
           display: flex; align-items: center; justify-content: center;
-          font-size: 18px; box-shadow: 0 4px 12px rgba(16,185,129,0.35);
-          flex-shrink: 0;
+          font-size: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          flex-shrink: 0; backdrop-filter: blur(4px);
+          border: 1px solid rgba(255,255,255,0.3);
         }
         .nb-logo-text { display: flex; flex-direction: column; line-height: 1; }
         .nb-logo-th {
           font-size: 24px; font-weight: 900; letter-spacing: -0.5px;
-          background: linear-gradient(90deg, #059669 0%, #0891b2 100%);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-          background-clip: text;
+          color: #ffffff;
+          text-shadow: 0 1px 4px rgba(0,0,0,0.15);
         }
         .nb-logo-en {
           font-size: 8px; font-weight: 800; letter-spacing: 2.5px;
-          color: #94a3b8; text-transform: uppercase; margin-top: 1px;
+          color: rgba(255,255,255,0.7); text-transform: uppercase; margin-top: 1px;
         }
         /* Desktop-only sections */
         .nb-links {
           display: flex; align-items: center; gap: 4px; flex-shrink: 0;
         }
         .nb-link {
-          text-decoration: none; color: #475569; font-weight: 700;
+          text-decoration: none; color: rgba(255,255,255,0.9); font-weight: 700;
           font-size: 13px; padding: 7px 12px; border-radius: 10px;
           transition: background 0.15s; white-space: nowrap;
         }
-        .nb-link:hover { background: #f0fdf4; }
+        .nb-link:hover { background: rgba(255,255,255,0.15); }
+        .nb-link span { color: rgba(0,0,0,0.65) !important; }
         .nb-search {
           display: flex; align-items: center;
-          background: #f0fdf4; border-radius: 14px; padding: 0 14px 0 10px;
-          flex: 0 1 360px; border: 1.5px solid #d1fae5;
-          height: 42px; gap: 8px;
+          background: rgba(255,255,255,0.18); border-radius: 14px; padding: 0 14px 0 10px;
+          flex: 0 1 360px; border: 1.5px solid rgba(255,255,255,0.35);
+          height: 42px; gap: 8px; backdrop-filter: blur(4px);
         }
         .nb-search select {
           background: none; border: none; padding: 0 8px 0 2px;
-          outline: none; font-size: 13px; color: #059669; font-weight: 700;
-          border-right: 1.5px solid #a7f3d0; cursor: pointer; height: 100%;
+          outline: none; font-size: 13px; color: #fff; font-weight: 700;
+          border-right: 1.5px solid rgba(255,255,255,0.3); cursor: pointer; height: 100%;
         }
+        .nb-search select option { color: #1e293b; background: #fff; }
         .nb-search input {
           background: none; border: none; flex: 1;
-          outline: none; font-size: 13.5px; color: #1e293b; min-width: 0;
+          outline: none; font-size: 13.5px; color: #fff; min-width: 0;
         }
+        .nb-search input::placeholder { color: rgba(255,255,255,0.6); }
         /* Auth zone */
         .nb-auth {
           display: flex; align-items: center; gap: 10px; flex-shrink: 0;
         }
         .nb-write-btn {
           display: flex; align-items: center; gap: 6px;
-          text-decoration: none; color: #fff;
-          background: linear-gradient(135deg, #10b981, #06b6d4);
+          text-decoration: none; color: #059669;
+          background: #ffffff;
           padding: 8px 14px; border-radius: 12px;
-          font-weight: 700; font-size: 13px;
-          box-shadow: 0 3px 10px rgba(16,185,129,0.3);
+          font-weight: 800; font-size: 13px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.12);
           white-space: nowrap;
         }
+        .nb-write-btn:hover { background: #f0fdf4; }
         .nb-avatar-link {
           display: flex; align-items: center; gap: 8px;
           text-decoration: none;
-          background: #f0fdf4; border: 1.5px solid #a7f3d0;
+          background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.4);
           border-radius: 50px; padding: 4px 12px 4px 4px;
-          flex-shrink: 0;
+          flex-shrink: 0; backdrop-filter: blur(4px);
         }
         .nb-avatar-img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
         .nb-avatar-circle {
           width: 30px; height: 30px; border-radius: 50%;
-          background: linear-gradient(135deg, #10b981, #3b82f6);
+          background: rgba(255,255,255,0.3);
           display: flex; align-items: center; justify-content: center;
           color: white; font-weight: 800; font-size: 13px;
+          border: 1.5px solid rgba(255,255,255,0.5);
         }
         .nb-avatar-name {
-          font-size: 13px; font-weight: 700; color: #065f46;
+          font-size: 13px; font-weight: 700; color: #ffffff;
           max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .nb-logout {
-          background: none; border: 1.5px solid #e2e8f0; border-radius: 10px;
-          padding: 7px 12px; font-size: 12px; color: #94a3b8; cursor: pointer;
+          background: none; border: 1.5px solid rgba(255,255,255,0.35); border-radius: 10px;
+          padding: 7px 12px; font-size: 12px; color: rgba(255,255,255,0.8); cursor: pointer;
           font-weight: 600; font-family: inherit; transition: 0.2s; flex-shrink: 0;
         }
-        .nb-logout:hover { border-color: #fca5a5; color: #ef4444; }
+        .nb-logout:hover { border-color: #fca5a5; color: #fca5a5; background: rgba(239,68,68,0.1); }
         .nb-login {
-          text-decoration: none; color: #0891b2; font-weight: 700;
+          text-decoration: none; color: #ffffff; font-weight: 700;
           font-size: 13px; padding: 7px 12px;
-          border: 1.5px solid #a5f3fc; border-radius: 10px;
-          background: #f0fdfe; white-space: nowrap;
+          border: 1.5px solid rgba(255,255,255,0.4); border-radius: 10px;
+          background: rgba(255,255,255,0.15); white-space: nowrap;
         }
+        .nb-login:hover { background: rgba(255,255,255,0.25); }
         .nb-signup {
           text-decoration: none;
-          background: linear-gradient(135deg, #10b981, #06b6d4);
-          color: #ffffff; padding: 9px 16px; border-radius: 12px;
+          background: #ffffff;
+          color: #059669; padding: 9px 16px; border-radius: 12px;
           font-weight: 800; font-size: 13px;
-          box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.12);
           white-space: nowrap;
         }
+        .nb-signup:hover { background: #f0fdf4; }
         /* Hamburger */
         .nb-hamburger {
           display: none; flex-direction: column; justify-content: center;
@@ -163,37 +174,39 @@ export default function Navbar() {
         }
         .nb-hamburger span {
           display: block; width: 22px; height: 2.5px;
-          background: #10b981; border-radius: 2px;
+          background: rgba(255,255,255,0.9); border-radius: 2px;
           transition: all 0.25s;
         }
         /* Mobile drawer */
         .nb-mobile-menu {
           display: none; flex-direction: column;
-          background: #fff; border-top: 1px solid #e8f5e9;
+          background: linear-gradient(135deg, #047857 0%, #0e7490 100%);
+          border-top: 1px solid rgba(255,255,255,0.15);
           padding: 12px 16px 16px;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.15);
         }
         .nb-mobile-menu.open { display: flex; }
         .nb-m-link {
-          text-decoration: none; color: #1e293b; font-weight: 700;
+          text-decoration: none; color: rgba(255,255,255,0.92); font-weight: 700;
           font-size: 15px; padding: 12px 8px;
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid rgba(255,255,255,0.12);
         }
         .nb-m-link:last-child { border-bottom: none; }
         .nb-m-logout {
-          margin-top: 8px; background: none; border: 1.5px solid #fca5a5;
-          border-radius: 10px; padding: 10px; font-size: 13px; color: #ef4444;
+          margin-top: 8px; background: none; border: 1.5px solid rgba(252,165,165,0.6);
+          border-radius: 10px; padding: 10px; font-size: 13px; color: #fca5a5;
           cursor: pointer; font-weight: 700; font-family: inherit; width: 100%;
         }
         /* Plan button */
         .nb-plan-btn {
           display: flex; align-items: center; gap: 6px;
-          text-decoration: none; color: #0891b2;
-          background: #f0fdfe; border: 1.5px solid #a5f3fc;
+          text-decoration: none; color: #ffffff;
+          background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.35);
           padding: 7px 13px; border-radius: 12px;
           font-weight: 700; font-size: 13px; white-space: nowrap;
         }
-        .nb-plan-btn:hover { background: #e0f9fe; }
+        .nb-plan-btn:hover { background: rgba(255,255,255,0.28); }
+        .nb-plan-btn span { color: rgba(255,255,255,0.7) !important; }
         /* ── Mobile ── */
         @media (max-width: 768px) {
           .nb-links        { display: none; }
@@ -207,9 +220,6 @@ export default function Navbar() {
           .nb-hamburger    { display: flex; }
         }
       `}</style>
-
-      {/* Accent bar */}
-      <div className="nb-accent" />
 
       <div className="nb-inner">
 
@@ -261,6 +271,8 @@ export default function Navbar() {
               {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && user.role !== "BUSINESS" && (
                 <Link href="/planner" className="nb-plan-btn">📅 วางแผนเที่ยว <span style={{fontSize:12,opacity:0.85,fontWeight:700}}>Planner</span></Link>
               )}
+              {siteSettings.missionsEnabled === "true" && <Link href="/missions" className="nb-link">🎯 ภารกิจ <span style={{fontSize:11,fontWeight:700,color:"rgba(0,0,0,0.75)"}}>Missions</span></Link>}
+              {siteSettings.promotionsEnabled === "true" && <Link href="/promotions" className="nb-link">🎁 โปรโมชั่น <span style={{fontSize:11,fontWeight:700,color:"rgba(0,0,0,0.75)"}}>Deals</span></Link>}
               {/* Write / Add Place */}
               {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && (
                 user.role === "BUSINESS" ? (
@@ -311,6 +323,8 @@ export default function Navbar() {
         <Link href="/"      className="nb-m-link" onClick={() => setMenuOpen(false)}>🏠 หน้าแรก</Link>
         <Link href="/place" className="nb-m-link" onClick={() => setMenuOpen(false)}>🗺️ สถานที่</Link>
         <Link href="/trips" className="nb-m-link" onClick={() => setMenuOpen(false)}>✈️ ทริป</Link>
+        {siteSettings.missionsEnabled === "true" && <Link href="/missions" className="nb-m-link" onClick={() => setMenuOpen(false)}>🎯 ภารกิจ · Missions</Link>}
+        {siteSettings.promotionsEnabled === "true" && <Link href="/promotions" className="nb-m-link" onClick={() => setMenuOpen(false)}>🎁 โปรโมชั่น · Deals</Link>}
         {user && (
           <button className="nb-m-logout" onClick={() => { logout(); setMenuOpen(false); }}>
             ออกจากระบบ

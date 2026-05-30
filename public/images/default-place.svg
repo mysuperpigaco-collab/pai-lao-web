@@ -5,91 +5,49 @@
       <stop offset="100%" style="stop-color:#134e4a"/>
     </linearGradient>
     <linearGradient id="wave" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#0d9488;stop-opacity:0.4"/>
+      <stop offset="0%" style="stop-color:#0d9488;stop-opacity:0.5"/>
       <stop offset="100%" style="stop-color:#0f766e;stop-opacity:0"/>
     </linearGradient>
-    <linearGradient id="glow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%" gradientUnits="objectBoundingBox">
-      <stop offset="0%" style="stop-color:rgba(255,255,255,0.15)"/>
-      <stop offset="100%" style="stop-color:rgba(255,255,255,0)"/>
-    </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="rgba(0,0,0,0.25)"/>
-    </filter>
   </defs>
 
   <!-- Background -->
   <rect width="1200" height="800" fill="url(#bg)"/>
 
-  <!-- Diagonal stripe pattern -->
-  <g opacity="0.07" stroke="white" stroke-width="1">
-    <line x1="-200" y1="0" x2="400" y2="800"/>
-    <line x1="-80" y1="0" x2="520" y2="800"/>
-    <line x1="40" y1="0" x2="640" y2="800"/>
-    <line x1="160" y1="0" x2="760" y2="800"/>
-    <line x1="280" y1="0" x2="880" y2="800"/>
-    <line x1="400" y1="0" x2="1000" y2="800"/>
-    <line x1="520" y1="0" x2="1120" y2="800"/>
-    <line x1="640" y1="0" x2="1240" y2="800"/>
-    <line x1="760" y1="0" x2="1360" y2="800"/>
-    <line x1="880" y1="0" x2="1480" y2="800"/>
-    <line x1="1000" y1="0" x2="1600" y2="800"/>
-  </g>
+  <!-- Decorative circles -->
+  <circle cx="200" cy="150" r="180" fill="rgba(255,255,255,0.04)"/>
+  <circle cx="1050" cy="650" r="220" fill="rgba(255,255,255,0.04)"/>
+  <circle cx="600" cy="400" r="300" fill="rgba(255,255,255,0.02)"/>
 
-  <!-- Bottom wave -->
-  <path d="M0,640 Q150,600 300,630 Q450,660 600,620 Q750,580 900,615 Q1050,650 1200,620 L1200,800 L0,800 Z" fill="#0d9488" opacity="0.3"/>
-  <path d="M0,680 Q200,650 400,670 Q600,690 800,660 Q1000,630 1200,660 L1200,800 L0,800 Z" fill="#134e4a" opacity="0.5"/>
+  <!-- Mountains / landscape silhouette -->
+  <path d="M0,600 L200,320 L380,480 L560,260 L740,420 L920,200 L1100,380 L1200,300 L1200,800 L0,800 Z"
+    fill="rgba(0,0,0,0.25)"/>
+  <path d="M0,700 L300,480 L500,580 L700,420 L900,520 L1200,380 L1200,800 L0,800 Z"
+    fill="rgba(0,0,0,0.18)"/>
 
-  <!-- Glow circle behind icon -->
-  <circle cx="600" cy="310" r="190" fill="rgba(255,255,255,0.08)"/>
-  <circle cx="600" cy="310" r="155" fill="rgba(255,255,255,0.12)"/>
+  <!-- Sun/moon -->
+  <circle cx="600" cy="280" r="70" fill="rgba(255,255,255,0.12)"/>
+  <circle cx="600" cy="280" r="52" fill="rgba(255,255,255,0.18)"/>
 
-  <!-- White card circle -->
-  <circle cx="600" cy="310" r="130" fill="white" filter="url(#shadow)"/>
+  <!-- Trees -->
+  <polygon points="160,600 180,520 200,600" fill="rgba(255,255,255,0.12)"/>
+  <polygon points="180,600 200,490 220,600" fill="rgba(255,255,255,0.10)"/>
+  <polygon points="980,600 1000,510 1020,600" fill="rgba(255,255,255,0.12)"/>
+  <polygon points="960,610 980,530 1000,610" fill="rgba(255,255,255,0.08)"/>
 
-  <!-- Camera icon inside -->
-  <g transform="translate(540, 268)">
-    <!-- Camera body -->
-    <rect x="0" y="12" width="120" height="80" rx="14" ry="14" fill="#ccece9"/>
-    <!-- Flash bump -->
-    <rect x="8" y="2" width="34" height="16" rx="5" ry="5" fill="#ccece9"/>
-    <!-- Lens outer -->
-    <circle cx="60" cy="52" r="28" fill="#0f766e" stroke="white" stroke-width="4"/>
-    <!-- Lens inner -->
-    <circle cx="60" cy="52" r="16" fill="#0a5955"/>
-    <!-- Lens glint -->
-    <circle cx="52" cy="44" r="7" fill="rgba(255,255,255,0.35)"/>
-    <!-- Top right dot -->
-    <circle cx="100" cy="24" r="5" fill="#0f766e"/>
-  </g>
+  <!-- Stars -->
+  <circle cx="300" cy="120" r="3" fill="rgba(255,255,255,0.6)"/>
+  <circle cx="450" cy="80" r="2" fill="rgba(255,255,255,0.5)"/>
+  <circle cx="750" cy="100" r="3" fill="rgba(255,255,255,0.55)"/>
+  <circle cx="900" cy="60" r="2" fill="rgba(255,255,255,0.45)"/>
+  <circle cx="150" cy="200" r="2" fill="rgba(255,255,255,0.4)"/>
+  <circle cx="1050" cy="150" r="3" fill="rgba(255,255,255,0.5)"/>
 
-  <!-- Main text: Coming Soon -->
-  <text x="600" y="502"
-    font-family="'Sarabun','Noto Sans Thai','Tahoma','Arial',sans-serif"
-    font-size="56" font-weight="700" fill="white"
+  <!-- PAI-LAO branding text -->
+  <text x="600" y="710"
+    font-family="system-ui, -apple-system, sans-serif"
+    font-size="28"
+    font-weight="700"
+    fill="rgba(255,255,255,0.35)"
     text-anchor="middle"
-    filter="url(#shadow)">
-    Coming Soon
-  </text>
-
-  <!-- Sub text Thai -->
-  <text x="600" y="562"
-    font-family="'Sarabun','Noto Sans Thai','Tahoma','Arial',sans-serif"
-    font-size="30" font-weight="400" fill="#99d6d2"
-    text-anchor="middle">
-    รอการอัพเดทรูปภาพสถานที่
-  </text>
-
-  <!-- Brand line -->
-  <text x="600" y="614"
-    font-family="'Sarabun','Noto Sans Thai','Tahoma','Arial',sans-serif"
-    font-size="20" font-weight="300" fill="#5bb8b3"
-    text-anchor="middle">
-    ไปเล่า · pai-lao.vercel.app
-  </text>
-
-  <!-- Decorative dots -->
-  <circle cx="480" cy="648" r="5" fill="#5bb8b3" opacity="0.7"/>
-  <circle cx="540" cy="648" r="5" fill="#5bb8b3" opacity="0.7"/>
-  <circle cx="660" cy="648" r="5" fill="#5bb8b3" opacity="0.7"/>
-  <circle cx="720" cy="648" r="5" fill="#5bb8b3" opacity="0.7"/>
+    letter-spacing="6">ไปเล่า · PAI-LAO</text>
 </svg>

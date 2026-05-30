@@ -459,4 +459,3 @@ export default function SearchPageClient() {
     </div>
   );
 }
-  

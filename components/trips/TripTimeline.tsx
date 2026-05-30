@@ -140,9 +140,9 @@ export default function TripTimeline({ timeline }: Props) {
                       )}
 
                       {/* Images */}
-                      {stop.images?.length > 0 && (
+                      {stop.images?.filter(img => img && !img.includes("default-place.svg")).length > 0 && (
                         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" as const }}>
-                          {stop.images.map((img, ii) => (
+                          {stop.images.filter(img => img && !img.includes("default-place.svg")).map((img, ii) => (
                             <img key={ii} src={img} alt="" onClick={e => { e.stopPropagation(); setLightbox({ stopId: stop.id, imgIdx: ii }); }}
                               style={{ width: 90, height: 68, objectFit: "cover", borderRadius: 8, cursor: "pointer", border: "2px solid #e2e8f0" }} />
                           ))}
@@ -160,10 +160,11 @@ export default function TripTimeline({ timeline }: Props) {
       {lightbox && (() => {
         const stop = timeline.find(s => s.id === lightbox.stopId);
         if (!stop) return null;
+        const filteredImgs = stop.images.filter(img => img && !img.includes("default-place.svg"));
         return (
           <div onClick={() => setLightbox(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)",
             display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
-            <img src={stop.images[lightbox.imgIdx]} alt=""
+            <img src={filteredImgs[lightbox.imgIdx]} alt=""
               style={{ maxWidth: "90vw", maxHeight: "85vh", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }} />
           </div>
         );

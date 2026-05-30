@@ -3,7 +3,8 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { PROVINCES, getDistricts } from "@/data/thailand";
+import { getDistricts } from "@/data/thailand";
+import ProvinceSelect from "@/components/ui/ProvinceSelect";
 import "./page.css";
 
 type PlaceCategory =
@@ -259,13 +260,17 @@ export default function EditPlacePage({ params }: Props) {
 
   if (pageLoading) return (
     <div className="edit-page" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <p style={{color:"#94a3b8",fontSize:"16px"}}>⏳ กำลังโหลดข้อมูล...</p>
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:"60px 20px"}}>
+        <div style={{width:52,height:52,borderRadius:"50%",border:"3px solid #e2e8f0",borderTopColor:"#10b981",animation:"_spin 0.8s linear infinite"}}/>
+        <p style={{fontSize:14,color:"#94a3b8",margin:0}}>กำลังโหลดข้อมูล...</p>
+        <style>{`@keyframes _spin{to{transform:rotate(360deg)}}`}</style>
+      </div>
     </div>
   );
 
   if (submitted) return (
     <div className="edit-page" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"24px",minHeight:"60vh"}}>
-      <div style={{fontSize:"56px"}}>⏳</div>
+      <div style={{fontSize:"56px"}}>✅</div>
       <div style={{textAlign:"center"}}>
         <h2 style={{fontSize:"22px",fontWeight:700,color:"#1e293b",marginBottom:"8px"}}>ส่งคำขอแก้ไขแล้ว!</h2>
         <p style={{color:"#64748b",fontSize:"15px",maxWidth:"360px"}}>
@@ -384,10 +389,7 @@ export default function EditPlacePage({ params }: Props) {
             <div className="form-grid two-col">
               <div className="field">
                 <label>จังหวัด · Province <span className="req">*</span></label>
-                <select className="form-control" value={province} onChange={e => handleProvinceChange(e.target.value)} required>
-                  <option value="">— เลือกจังหวัด / Select Province —</option>
-                  {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
+                <ProvinceSelect className="form-control" value={province} onChange={v => handleProvinceChange(v)} placeholder="— เลือกจังหวัด / Select Province —" required />
               </div>
               <div className="field">
                 <label>อำเภอ / เขต · District <span className="req">*</span></label>
@@ -461,7 +463,7 @@ export default function EditPlacePage({ params }: Props) {
             </div>
             {/* ── Opening Hours ── */}
             <div style={{
-              background:"#f8fafc", borderRadius:14, padding:"18px 20px",
+              background:"rgba(255,255,255,0.82)", borderRadius:14, padding:"18px 20px",
               border:"1px solid #e2e8f0", marginBottom:16,
             }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
@@ -533,7 +535,7 @@ export default function EditPlacePage({ params }: Props) {
 
             {/* ── Closed Days ── */}
             <div style={{
-              background:"#f8fafc", borderRadius:14, padding:"18px 20px",
+              background:"rgba(255,255,255,0.82)", borderRadius:14, padding:"18px 20px",
               border:"1px solid #e2e8f0", marginBottom:16,
             }}>
               <div style={{ marginBottom:14 }}>

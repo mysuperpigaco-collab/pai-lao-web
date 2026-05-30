@@ -56,9 +56,10 @@ model User {
   displayName String?
   birthDate   DateTime?
   gender      Gender?
-  avatarUrl   String?
-  coverUrl    String?
-  bio         String?
+  avatarUrl      String?
+  coverUrl       String?
+  profileCovers  String[]   // รูปสไลด์โชว์ปกโปรไฟล์ สูงสุด 5 รูป
+  bio            String?
 
   lineId      String?
   facebook    String?
@@ -70,6 +71,11 @@ model User {
   postBannedUntil DateTime?  // ห้ามโพสจนถึงวันที่นี้ (null = ไม่ถูกแบน)
   bannedUntil     DateTime?  // บัญชีถูกระงับจนถึงวันที่นี้ (null = ไม่ถูกแบน)
   banReason       String?    // เหตุผลที่ถูกแบน
+  resetToken      String?    // token สำหรับรีเซ็ตรหัสผ่าน
+  resetTokenExp   DateTime?  // วันหมดอายุ token
+  missionsCreated       Mission[]            @relation("MissionCreator")
+  missionParticipations MissionParticipant[]
+  points                Int      @default(0)
 
   // Privacy settings
   profilePrivacy  String    @default("PUBLIC")  // PUBLIC | PRIVATE
@@ -125,7 +131,8 @@ model Business {
   updatedAt    DateTime @updatedAt
 
   places       Place[]
-  claims       PlaceClaim[]
+  claims       PlaceClaim[]  @relation("BusinessClaims")
+  promotions   Promotion[]   @relation("BusinessPromotions")
 }
 
 // ── Place ─────────────────────────────────────────────────────
@@ -179,6 +186,8 @@ model Place {
   likes            PlaceLike[]
   claims           PlaceClaim[]
   planStops        TripPlanStop[]
+  missions         Mission[]     @relation("MissionPlace")
+  promotions       Promotion[]   @relation("PromotionPlace")
 }
 
 // ── Trip ──────────────────────────────────────────────────────
@@ -455,7 +464,7 @@ model PlaceClaim {
   placeId     String
   place       Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
   businessId  String
-  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  business    Business @relation("BusinessClaims", fields: [businessId], references: [id], onDelete: Cascade)
   status      String   @default("PENDING") // PENDING | APPROVED | REJECTED
   message     String?  // ข้อความยืนยันจากเจ้าของ
   adminNote   String?  // หมายเหตุจากแอดมิน
@@ -464,4 +473,85 @@ model PlaceClaim {
 
   @@unique([placeId, businessId])
   @@index([status])
+}
+
+// ── V2: Mission System ────────────────────────────────────
+
+model Mission {
+  id           String   @id @default(uuid())
+  title        String
+  description  String
+  coverUrl     String?
+  placeId      String?
+  place        Place?   @relation("MissionPlace", fields: [placeId], references: [id], onDelete: SetNull)
+  province     String?
+  district     String?
+  reward       String?  // รางวัล เช่น "50 แต้ม" หรือ "Badge นักสำรวจ"
+  rewardPoints Int      @default(0)
+  badgeLabel   String?  // ชื่อ badge ที่จะได้รับ
+  startDate    DateTime
+  endDate      DateTime
+  maxSlots     Int?     // จำนวนคนสูงสุดที่รับภารกิจได้
+  status       String   @default("ACTIVE") // ACTIVE | INACTIVE | EXPIRED
+  createdById  String
+  createdBy    User     @relation("MissionCreator", fields: [createdById], references: [id])
+  participants MissionParticipant[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([status])
+  @@index([endDate])
+}
+
+model MissionParticipant {
+  id          String   @id @default(uuid())
+  missionId   String
+  mission     Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      String   @default("JOINED") // JOINED | SUBMITTED | APPROVED | REJECTED
+  photoUrls   String[] // รูปที่ส่งมา
+  reviewText  String?  // ข้อความรีวิว
+  placeId     String?
+  adminNote   String?
+  visitedAt   DateTime? // วันเวลาที่ผู้ส่งไปสถานที่จริง
+  submittedAt DateTime?
+  approvedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([missionId, userId])
+  @@index([userId])
+  @@index([status])
+}
+
+// ── V2: Promotion System ──────────────────────────────────
+
+model Promotion {
+  id          String   @id @default(uuid())
+  businessId  String
+  business    Business @relation("BusinessPromotions", fields: [businessId], references: [id], onDelete: Cascade)
+  placeId     String?
+  place       Place?   @relation("PromotionPlace", fields: [placeId], references: [id], onDelete: SetNull)
+  title       String
+  description String
+  coverUrl    String?
+  discount    String?  // เช่น "ลด 20%" หรือ "ซื้อ 1 แถม 1"
+  condition   String?  // เงื่อนไข
+  startDate   DateTime
+  endDate     DateTime
+  status      String   @default("PENDING") // PENDING | ACTIVE | REJECTED | EXPIRED
+  adminNote   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([status])
+  @@index([endDate])
+}
+
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }

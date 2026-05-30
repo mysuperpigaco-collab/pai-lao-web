@@ -23,7 +23,7 @@ export default function TripSlider() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    fetch("/api/trips?limit=8&sort=popular")
+    fetch("/api/trips?limit=10&sort=popular")
       .then(r => r.json())
       .then(d => {
         if (d.trips?.length) { setTrips(d.trips); }
@@ -51,8 +51,28 @@ export default function TripSlider() {
 
   if (!loaded) {
     return (
-      <div style={{ height: 320, background: "linear-gradient(135deg,#f0fdf4,#ecfeff)", borderRadius: 24, display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", fontSize: 14 }}>
-        ⏳ กำลังโหลด...
+      <div style={{ position: "relative", height: 320, borderRadius: 24, overflow: "hidden", background: "#e2e8f0", marginBottom: 32 }}>
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 45%, #e2e8f0 90%)",
+          backgroundSize: "200% 100%",
+          animation: "slshimmer 1.6s ease infinite",
+        }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 28px", background: "linear-gradient(to top, rgba(15,23,42,0.55), transparent)" }}>
+          <div style={{ width: "55%", height: 22, borderRadius: 8, background: "rgba(255,255,255,0.2)", marginBottom: 10 }} />
+          <div style={{ width: "35%", height: 14, borderRadius: 6, background: "rgba(255,255,255,0.15)", marginBottom: 14 }} />
+          <div style={{ display: "flex", gap: 6 }}>
+            {[0,1,2].map(i => (
+              <div key={i} style={{ width: i === 0 ? 20 : 6, height: 6, borderRadius: 999, background: i === 0 ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.2)" }} />
+            ))}
+          </div>
+        </div>
+        <style>{`
+          @keyframes slshimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+          }
+        `}</style>
       </div>
     );
   }

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, CSSProperties } from "react";
 import Link from "next/link";
 import { PROVINCES, getDistricts } from "@/data/thailand";
 
@@ -13,22 +13,24 @@ interface Place {
   district: string;
   category: string;
   isVerified?: boolean;
+  avgRating?: number | null;
+  communityCover?: string | null;
   _count?: { reviews: number; bookmarks: number };
   business?: { businessName: string; isVerified?: boolean } | null;
 }
 
 const PLACE_CATS = [
-  { id: "",             icon: "🗺️", label: "ทั้งหมด",               en: "All" },
-  { id: "NATURE",       icon: "🌿", label: "ธรรมชาติ",               en: "Nature" },
-  { id: "CAFE",         icon: "☕", label: "คาเฟ่",                  en: "Café" },
-  { id: "BEACH",        icon: "🏖️", label: "ชายหาด",                en: "Beach" },
-  { id: "ACCOMMODATION",icon: "🏨", label: "ที่พัก",                 en: "Stay" },
-  { id: "FOOD",         icon: "🍲", label: "อาหาร",                  en: "Food" },
-  { id: "TEMPLE",       icon: "🛕", label: "วัด",                    en: "Temple" },
-  { id: "ADVENTURE",    icon: "🧗", label: "ผจญภัย",                 en: "Adventure" },
-  { id: "MARKET",       icon: "🛍️", label: "ตลาด",                  en: "Market" },
-  { id: "MUSEUM",       icon: "🏛️", label: "พิพิธภัณฑ์",            en: "Museum" },
-  { id: "CAMPING",      icon: "⛺", label: "แคมปิ้ง",               en: "Camping" },
+  { id: "",             icon: "🗺️", label: "ทั้งหมด",      en: "All" },
+  { id: "NATURE",       icon: "🌿", label: "ธรรมชาติ",      en: "Nature" },
+  { id: "CAFE",         icon: "☕", label: "คาเฟ่",         en: "Café" },
+  { id: "BEACH",        icon: "🏖️", label: "ชายหาด",       en: "Beach" },
+  { id: "ACCOMMODATION",icon: "🏨", label: "ที่พัก",        en: "Stay" },
+  { id: "FOOD",         icon: "🍲", label: "อาหาร",         en: "Food" },
+  { id: "TEMPLE",       icon: "🛕", label: "วัด",           en: "Temple" },
+  { id: "ADVENTURE",    icon: "🧗", label: "ผจญภัย",        en: "Adventure" },
+  { id: "MARKET",       icon: "🛍️", label: "ตลาด",         en: "Market" },
+  { id: "MUSEUM",       icon: "🏛️", label: "พิพิธภัณฑ์",   en: "Museum" },
+  { id: "CAMPING",      icon: "⛺", label: "แคมปิ้ง",      en: "Camping" },
 ];
 
 const CAT_LABEL: Record<string, string> = {
@@ -37,6 +39,282 @@ const CAT_LABEL: Record<string, string> = {
   ADVENTURE: "ผจญภัย", MARKET: "ตลาด", MUSEUM: "พิพิธภัณฑ์", CAMPING: "แคมปิ้ง",
 };
 
+const CAT_COLOR: Record<string, [string, string]> = {
+  NATURE:        ["#d1fae5", "#065f46"],
+  CAFE:          ["#fef3c7", "#92400e"],
+  BEACH:         ["#e0f2fe", "#075985"],
+  ACCOMMODATION: ["#ede9fe", "#5b21b6"],
+  FOOD:          ["#fee2e2", "#991b1b"],
+  TEMPLE:        ["#fce7f3", "#9d174d"],
+  ADVENTURE:     ["#ecfdf5", "#14532d"],
+  MARKET:        ["#fff7ed", "#7c2d12"],
+  MUSEUM:        ["#f0f9ff", "#0c4a6e"],
+  CAMPING:       ["#f7fee7", "#365314"],
+};
+
+const RANK_EMOJI = ["🥇", "🥈", "🥉"];
+
+// ── Responsive columns hook ──────────────────────────────────────────────────
+function useColumns() {
+  const [cols, setCols] = useState(4);
+  useEffect(() => {
+    function update() {
+      const w = window.innerWidth;
+      setCols(w <= 540 ? 2 : w <= 860 ? 3 : 4);
+    }
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+  return cols;
+}
+
+// ── Place Card ───────────────────────────────────────────────────────────────
+function PlaceCard({ place, rank }: { place: Place; rank: number }) {
+  const [hovered, setHovered] = useState(false);
+  const [imgError, setImgError] = useState(false);
+
+  const verified = place.business?.isVerified || place.isVerified;
+  const bookmarks = place._count?.bookmarks ?? 0;
+  const reviews   = place._count?.reviews   ?? 0;
+  const rating    = place.avgRating;
+  const [catBg, catFg] = CAT_COLOR[place.category] ?? ["#eff6ff", "#2563eb"];
+
+  const card: CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    borderRadius: 20,
+    overflow: "hidden",
+    background: "white",
+    textDecoration: "none",
+    color: "inherit",
+    boxShadow: hovered
+      ? "0 16px 40px rgba(15,23,42,0.14)"
+      : "0 2px 12px rgba(15,23,42,0.06)",
+    transform: hovered ? "translateY(-6px)" : "translateY(0)",
+    transition: "box-shadow 0.25s, transform 0.25s",
+    border: "1px solid #f1f5f9",
+    cursor: "pointer",
+    minWidth: 0,
+  };
+
+  const imgWrap: CSSProperties = {
+    position: "relative",
+    width: "100%",
+    paddingBottom: "65%", // ~3:2
+    background: "#e2e8f0",
+    overflow: "hidden",
+    flexShrink: 0,
+  };
+
+  const imgStyle: CSSProperties = {
+    position: "absolute",
+    inset: 0,
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    transition: "transform 0.35s",
+    transform: hovered ? "scale(1.06)" : "scale(1)",
+  };
+
+  const gradient: CSSProperties = {
+    position: "absolute",
+    inset: 0,
+    background: "linear-gradient(to top, rgba(10,10,20,0.72) 0%, rgba(10,10,20,0.18) 55%, transparent 100%)",
+    zIndex: 1,
+  };
+
+  const chipCat: CSSProperties = {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    zIndex: 3,
+    background: catBg,
+    color: catFg,
+    fontSize: 10,
+    fontWeight: 800,
+    padding: "3px 8px",
+    borderRadius: 999,
+    letterSpacing: 0.3,
+  };
+
+  const rankBadge: CSSProperties = {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    zIndex: 3,
+    fontSize: 22,
+    filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.4))",
+  };
+
+  const verifiedBadge: CSSProperties = {
+    position: "absolute",
+    top: rank < 3 ? 42 : 8,
+    right: 8,
+    zIndex: 3,
+    background: "rgba(220,252,231,0.95)",
+    color: "#15803d",
+    fontSize: 10,
+    fontWeight: 800,
+    padding: "3px 8px",
+    borderRadius: 999,
+  };
+
+  const bottomOverlay: CSSProperties = {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 2,
+    padding: "10px 12px 12px",
+  };
+
+  const titleStyle: CSSProperties = {
+    fontSize: 14,
+    fontWeight: 800,
+    color: "white",
+    margin: 0,
+    lineHeight: 1.35,
+    display: "-webkit-box",
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
+    textShadow: "0 1px 3px rgba(0,0,0,0.5)",
+  };
+
+  const locStyle: CSSProperties = {
+    fontSize: 11,
+    color: "rgba(255,255,255,0.82)",
+    marginTop: 3,
+    display: "flex",
+    alignItems: "center",
+    gap: 3,
+    overflow: "hidden",
+    whiteSpace: "nowrap",
+    textOverflow: "ellipsis",
+  };
+
+  const footer: CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    padding: "9px 12px",
+    borderTop: "1px solid #f1f5f9",
+    background: "white",
+  };
+
+  const statItem: CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 3,
+    fontSize: 11,
+    color: "#64748b",
+    fontWeight: 600,
+  };
+
+  const placeholder: CSSProperties = {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 40,
+    background: "linear-gradient(135deg, #e2e8f0, #cbd5e1)",
+  };
+
+  return (
+    <Link
+      href={`/place/${place.slug}`}
+      style={card}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Image */}
+      <div style={imgWrap}>
+        {/* Unclaimed: prefer community photo; owned: prefer coverUrl */}
+        {(() => {
+          const src = (!place.business && place.communityCover)
+            ? place.communityCover
+            : (place.coverUrl && place.coverUrl !== "/images/default-place.svg"
+               ? place.coverUrl
+               : (place.communityCover || ""));
+          const catIcons: Record<string,string> = {
+            NATURE:"🌿",CAFE:"☕",ACCOMMODATION:"🏨",CAMPING:"⛺",
+            FOOD:"🍲",TEMPLE:"🛕",BEACH:"🏖️",MARKET:"🛍️",ADVENTURE:"🧗",MUSEUM:"🏛️",
+          };
+          const fallbackIcon = catIcons[place.category] ?? "📍";
+          return src && !imgError ? (
+            <img
+              src={src}
+              alt={place.title}
+              style={imgStyle}
+              loading="lazy"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div style={{ ...placeholder, background: `linear-gradient(135deg, ${catBg}88, ${catBg})` }}>
+              <span style={{ fontSize: 48 }}>{fallbackIcon}</span>
+            </div>
+          );
+        })()}
+
+        {/* Gradient overlay */}
+        <div style={gradient} />
+
+        {/* Category chip */}
+        <div style={chipCat}>{CAT_LABEL[place.category] ?? place.category}</div>
+
+        {/* Rank badge */}
+        {rank < 3 && <span style={rankBadge}>{RANK_EMOJI[rank]}</span>}
+
+        {/* Verified */}
+        {verified && <span style={verifiedBadge}>✓ ยืนยันแล้ว</span>}
+
+        {/* Bottom text overlay */}
+        <div style={bottomOverlay}>
+          <p style={titleStyle}>{place.title}</p>
+          <div style={locStyle}>
+            <span>📍</span>
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+              {[place.district, place.province].filter(Boolean).join(", ")}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer stats */}
+      <div style={footer}>
+        {rating != null && (
+          <span style={{ ...statItem, color: "#f59e0b" }}>
+            ⭐ {rating.toFixed(1)}
+          </span>
+        )}
+        {reviews > 0 && (
+          <span style={statItem}>
+            💬 {reviews} รีวิว
+          </span>
+        )}
+        {bookmarks > 0 && (
+          <span style={statItem}>
+            🔖 {bookmarks}
+          </span>
+        )}
+        {reviews === 0 && bookmarks === 0 && rating == null && (
+          <span style={{ ...statItem, color: "#94a3b8", fontStyle: "italic" }}>
+            ยังไม่มีรีวิว
+          </span>
+        )}
+        {place.titleEn && (
+          <span style={{ ...statItem, marginLeft: "auto", color: "#94a3b8", fontStyle: "italic", fontSize: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {place.titleEn}
+          </span>
+        )}
+      </div>
+    </Link>
+  );
+}
+
+// ── Main Section ─────────────────────────────────────────────────────────────
 export default function ExplorerSection() {
   const [province, setProvince] = useState("");
   const [district, setDistrict] = useState("");
@@ -44,6 +322,7 @@ export default function ExplorerSection() {
   const [places,   setPlaces  ] = useState<Place[]>([]);
   const [loading,  setLoading ] = useState(false);
   const [total,    setTotal   ] = useState(0);
+  const cols = useColumns();
 
   const districts = province ? getDistricts(province) : [];
 
@@ -62,275 +341,189 @@ export default function ExplorerSection() {
 
   const handleProvinceChange = (v: string) => { setProvince(v); setDistrict(""); setCategory(""); };
 
+  // ── Styles ────────────────────────────────────────────────────────────────
+  const wrap: CSSProperties = {
+    background: "white",
+    padding: "36px",
+    borderRadius: 28,
+    boxShadow: "0 8px 28px rgba(15,23,42,0.06)",
+    marginTop: 48,
+    border: "1px solid #f1f5f9",
+    maxWidth: "100%",
+    overflowX: "clip",
+  };
+
+  const selectBase: CSSProperties = {
+    padding: "11px 14px",
+    borderRadius: 12,
+    border: "1.5px solid #e2e8f0",
+    fontSize: 14,
+    color: "#0f172a",
+    background: "white",
+    outline: "none",
+    fontFamily: "inherit",
+    cursor: "pointer",
+    width: "100%",
+  };
+
   return (
-    <div className="ex-wrap" style={{maxWidth:"100%",overflowX:"hidden"}}>
-      <div className="ex-header">
-        <h2 className="ex-title">📍 เจาะลึกรายพื้นที่ <span>Explore by Area</span></h2>
-        <p className="ex-sub">สถานที่ยอดนิยมในจังหวัดที่คุณเลือก วัดจากยอด Bookmark · Top places by area</p>
+    <div style={wrap}>
+      {/* Header */}
+      <div style={{ marginBottom: 22 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 900, color: "#0f172a", margin: "0 0 6px" }}>
+          📍 เจาะลึกรายพื้นที่{" "}
+          <span style={{ color: "#2563eb" }}>Explore by Area</span>
+        </h2>
+        <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
+          สถานที่ยอดนิยมในจังหวัดที่คุณเลือก วัดจากยอด Bookmark · Top places by area
+        </p>
       </div>
 
-      {/* ── Filters ── */}
-      <div className="ex-filters">
-        <div className="ex-select-wrap">
-          <label className="ex-label">🗾 จังหวัด · Province</label>
-          <select className="ex-select" value={province} onChange={e => handleProvinceChange(e.target.value)}>
+      {/* Filters */}
+      <div style={{ display: "flex", gap: 16, marginBottom: 18, flexWrap: "wrap" }}>
+        <div style={{ flex: "1 1 200px", display: "flex", flexDirection: "column", gap: 5 }}>
+          <label style={{ fontSize: 12, fontWeight: 700, color: "#64748b" }}>🗾 จังหวัด · Province</label>
+          <select style={selectBase} value={province} onChange={e => handleProvinceChange(e.target.value)}>
             <option value="">-- เลือกจังหวัด / Select Province --</option>
             {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
-        <div className="ex-select-wrap">
-          <label className="ex-label">📌 อำเภอ · District</label>
-          <select className="ex-select" value={district} onChange={e => setDistrict(e.target.value)} disabled={!province}>
+        <div style={{ flex: "1 1 200px", display: "flex", flexDirection: "column", gap: 5 }}>
+          <label style={{ fontSize: 12, fontWeight: 700, color: "#64748b" }}>📌 อำเภอ · District</label>
+          <select
+            style={{ ...selectBase, opacity: !province ? 0.5 : 1, cursor: !province ? "not-allowed" : "pointer", background: !province ? "#f8fafc" : "white" }}
+            value={district}
+            onChange={e => setDistrict(e.target.value)}
+            disabled={!province}
+          >
             <option value="">-- ทุกอำเภอ / All Districts --</option>
             {districts.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
         </div>
       </div>
 
-      {/* ── Category chips ── */}
-      <div className="ex-cats" style={{display:"flex",flexWrap:"nowrap",overflowX:"auto",WebkitOverflowScrolling:"touch",gap:8,marginBottom:22,paddingBottom:6,scrollbarWidth:"none"}}>
-        {PLACE_CATS.map(c => (
-          <button
-            key={c.id}
-            className={`ex-cat${category === c.id ? " active" : ""}`}
-            onClick={() => setCategory(c.id)}
-          >
-            <span className="ex-cat-icon">{c.icon}</span>
-            <span className="ex-cat-th">{c.label}</span>
-            <span className="ex-cat-en">{c.en}</span>
-          </button>
-        ))}
+      {/* Category chips */}
+      <div style={{ display: "flex", flexWrap: "nowrap", overflowX: "auto", WebkitOverflowScrolling: "touch", gap: 8, marginBottom: 22, paddingBottom: 6, scrollbarWidth: "none" }}>
+        {PLACE_CATS.map(c => {
+          const active = category === c.id;
+          return (
+            <button
+              key={c.id}
+              onClick={() => setCategory(c.id)}
+              style={{
+                display: "inline-flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 1,
+                padding: "8px 14px",
+                borderRadius: 14,
+                border: active ? "1.5px solid #3b82f6" : "1.5px solid #e2e8f0",
+                background: active ? "linear-gradient(135deg,#eff6ff,#dbeafe)" : "#f8fafc",
+                cursor: "pointer",
+                transition: "all 0.18s",
+                fontFamily: "inherit",
+                minWidth: 64,
+                flexShrink: 0,
+                boxShadow: active ? "0 2px 10px rgba(59,130,246,0.18)" : "none",
+              }}
+            >
+              <span style={{ fontSize: 18, lineHeight: 1 }}>{c.icon}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: active ? "#1d4ed8" : "#334155", lineHeight: 1.2 }}>{c.label}</span>
+              <span style={{ fontSize: 9, fontWeight: 500, color: active ? "#60a5fa" : "#94a3b8", lineHeight: 1 }}>{c.en}</span>
+            </button>
+          );
+        })}
       </div>
 
-      {/* ── Results ── */}
-      <div className="ex-results">
+      {/* Results */}
+      <div style={{ minHeight: 160 }}>
         {!province ? (
-          <div className="ex-empty">
-            <span>🗺️</span>
-            <p>เลือกจังหวัดเพื่อดูสถานที่ยอดนิยม</p>
-            <small>Select a province to explore popular places</small>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "52px 20px", gap: 12, textAlign: "center", background: "#f8fafc", borderRadius: 18 }}>
+            <span style={{ fontSize: 44 }}>🗺️</span>
+            <p style={{ fontSize: 15, color: "#475569", fontWeight: 700, margin: 0 }}>เลือกจังหวัดเพื่อดูสถานที่ยอดนิยม</p>
+            <small style={{ fontSize: 12, color: "#94a3b8" }}>Select a province to explore popular places</small>
           </div>
         ) : loading ? (
-          <div className="ex-empty"><span>⏳</span><p>กำลังโหลด... <span className="ex-en-muted">Loading...</span></p></div>
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols},1fr)`, gap: 16 }}>
+              {Array.from({ length: cols * 2 }).map((_, i) => (
+                <div key={i} style={{ borderRadius: 20, overflow: "hidden", border: "1px solid #f1f5f9", background: "white" }}>
+                  {/* Image skeleton */}
+                  <div style={{ position: "relative", paddingBottom: "65%", background: "#f1f5f9", overflow: "hidden" }}>
+                    <div style={{
+                      position: "absolute", inset: 0,
+                      background: "linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 40%, #f1f5f9 80%)",
+                      backgroundSize: "200% 100%",
+                      animation: `shimmer 1.4s ease infinite ${i * 0.1}s`,
+                    }} />
+                    {/* Fake chip top-left */}
+                    <div style={{ position: "absolute", top: 10, left: 10, width: 52, height: 18, borderRadius: 999, background: "#e2e8f0", overflow: "hidden" }}>
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 40%, #e2e8f0 80%)", backgroundSize: "200% 100%", animation: `shimmer 1.4s ease infinite ${i * 0.1}s` }} />
+                    </div>
+                  </div>
+                  {/* Footer skeleton */}
+                  <div style={{ padding: "10px 12px", display: "flex", gap: 8, alignItems: "center" }}>
+                    <div style={{ flex: 1, height: 10, borderRadius: 6, background: "#f1f5f9", overflow: "hidden", position: "relative" }}>
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 40%, #f1f5f9 80%)", backgroundSize: "200% 100%", animation: `shimmer 1.4s ease infinite ${i * 0.1 + 0.2}s` }} />
+                    </div>
+                    <div style={{ width: 40, height: 10, borderRadius: 6, background: "#f1f5f9", overflow: "hidden", position: "relative" }}>
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 40%, #f1f5f9 80%)", backgroundSize: "200% 100%", animation: `shimmer 1.4s ease infinite ${i * 0.1 + 0.3}s` }} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <style>{`
+              @keyframes shimmer {
+                0% { background-position: 200% 0; }
+                100% { background-position: -200% 0; }
+              }
+            `}</style>
+          </>
         ) : places.length === 0 ? (
-          <div className="ex-empty">
-            <span>📭</span>
-            <p>ยังไม่มีสถานที่ใน{province.split(" (")[0]}</p>
-            <small>No places in this area yet</small>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "52px 20px", gap: 12, textAlign: "center", background: "#f8fafc", borderRadius: 18 }}>
+            <span style={{ fontSize: 44 }}>📭</span>
+            <p style={{ fontSize: 15, color: "#475569", fontWeight: 700, margin: 0 }}>ยังไม่มีสถานที่ใน{province.split(" (")[0]}</p>
+            <small style={{ fontSize: 12, color: "#94a3b8" }}>No places in this area yet</small>
           </div>
         ) : (
           <>
-            <p className="ex-count">
-              พบ <strong>{total}</strong> สถานที่ · {total} places
+            <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 16px" }}>
+              พบ <strong style={{ color: "#1e293b", fontWeight: 800 }}>{total}</strong> สถานที่ · {total} places
               {category ? ` · ${CAT_LABEL[category] ?? category}` : ""}
               {district ? ` · ${district}` : ""}
             </p>
-            <div className="ex-grid" style={{maxWidth:"100%"}}>
+
+            {/* Grid */}
+            <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols},1fr)`, gap: 16, maxWidth: "100%" }}>
               {places.map((place, i) => (
-                <Link key={place.slug} href={`/place/${place.slug}`} className="ex-card" style={{ textDecoration: "none", color: "inherit", minWidth: 0, width: "100%" }}>
-                  <div className="ex-img">
-                    {place.coverUrl
-                      ? <img src={place.coverUrl} alt={place.title} loading="lazy" onError={(e)=>{const i=e.currentTarget;i.onerror=null;i.src="/images/default-place.svg";}} />
-                      : <div className="ex-img-ph">🏞️</div>
-                    }
-                    {/* Rank badge for top 3 */}
-                    {i < 3 && (
-                      <span className={`ex-rank ex-rank-${i + 1}`}>
-                        {["🥇", "🥈", "🥉"][i]}
-                      </span>
-                    )}
-                    {/* Verified */}
-                    {place.business?.isVerified && (
-                      <span className="ex-verified">✓</span>
-                    )}
-                    {/* Bookmark count */}
-                    {(place._count?.bookmarks ?? 0) > 0 && (
-                      <span className="ex-bm-badge">🔖 {place._count!.bookmarks}</span>
-                    )}
-                  </div>
-                  <div className="ex-info">
-                    <div className="ex-cat-tag">{CAT_LABEL[place.category] ?? place.category}</div>
-                    <h4>{place.title}</h4>
-                    {place.titleEn && <p className="ex-en">{place.titleEn}</p>}
-                    <div className="ex-meta">
-                      <span>📍 {[place.district, place.province].filter(Boolean).join(", ")}</span>
-                      {(place._count?.reviews ?? 0) > 0 && (
-                        <span className="ex-reviews">⭐ {place._count!.reviews} รีวิว</span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
+                <PlaceCard key={place.slug} place={place} rank={i} />
               ))}
             </div>
-            {/* See all link */}
-            <div style={{ textAlign: "center", marginTop: 24 }}>
+
+            {/* See all */}
+            <div style={{ textAlign: "center", marginTop: 28 }}>
               <Link
                 href={`/place?province=${encodeURIComponent(province.split(" (")[0])}${category ? `&category=${category}` : ""}&sort=popular`}
                 style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  padding: "12px 28px", borderRadius: 14,
-                  background: "linear-gradient(135deg, #0f172a, #1e3a8a)",
-                  color: "white", textDecoration: "none",
-                  fontWeight: 800, fontSize: 14,
-                  boxShadow: "0 4px 14px rgba(15,23,42,0.2)",
-                  transition: "0.2s",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  padding: "10px 24px",
+                  background: "linear-gradient(135deg, #0f766e, #047857)",
+                  color: "white",
+                  borderRadius: 999,
+                  textDecoration: "none",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  boxShadow: "0 4px 14px rgba(15,118,110,0.35)",
                 }}
               >
-                ดูทั้งหมด {total} สถานที่ · See all places →
+                ดูสถานที่ทั้งหมดใน{province.split(" (")[0]} · See all →
               </Link>
             </div>
           </>
         )}
       </div>
-
-      <style jsx>{`
-        .ex-wrap {
-          background: white;
-          padding: 36px;
-          border-radius: 28px;
-          box-shadow: 0 8px 28px rgba(15,23,42,0.06);
-          margin-top: 48px;
-          border: 1px solid #f1f5f9;
-        }
-        .ex-header { margin-bottom: 22px; }
-        .ex-title { font-size: 22px; font-weight: 900; color: #0f172a; margin: 0 0 6px; }
-        .ex-title span { color: #2563eb; }
-        .ex-sub { font-size: 13px; color: #64748b; margin: 0; }
-
-        /* Filters */
-        .ex-filters { display: flex; gap: 16px; margin-bottom: 18px; }
-        .ex-select-wrap { flex: 1; display: flex; flex-direction: column; gap: 5px; }
-        .ex-label { font-size: 12px; font-weight: 700; color: #64748b; }
-        .ex-select {
-          padding: 11px 14px; border-radius: 12px; border: 1.5px solid #e2e8f0;
-          font-size: 14px; color: #0f172a; background: white;
-          outline: none; font-family: inherit; cursor: pointer;
-        }
-        .ex-select:focus { border-color: #4facfe; }
-        .ex-select:disabled { opacity: 0.5; cursor: not-allowed; background: #f8fafc; }
-
-        /* Category chips */
-        .ex-cats {
-          display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 22px;
-          overflow-x: auto; padding-bottom: 6px;
-          -webkit-overflow-scrolling: touch; scrollbar-width: none;
-        }
-        .ex-cats::-webkit-scrollbar { display: none; }
-        .ex-cat {
-          display: inline-flex; flex-direction: column; align-items: center;
-          gap: 1px; padding: 8px 14px; border-radius: 14px;
-          border: 1.5px solid #e2e8f0; background: #f8fafc;
-          cursor: pointer; transition: all 0.18s; font-family: inherit;
-          min-width: 64px; flex-shrink: 0;
-        }
-        .ex-cat:hover:not(.active) { background: #eff6ff; border-color: #bfdbfe; }
-        .ex-cat.active {
-          background: linear-gradient(135deg, #eff6ff, #dbeafe);
-          border-color: #3b82f6; color: #1d4ed8;
-          box-shadow: 0 2px 10px rgba(59,130,246,0.18);
-        }
-        .ex-cat-icon { font-size: 18px; line-height: 1; }
-        .ex-cat-th { font-size: 11px; font-weight: 700; color: #334155; line-height: 1.2; }
-        .ex-cat-en { font-size: 9px; font-weight: 500; color: #94a3b8; line-height: 1; }
-        .ex-cat.active .ex-cat-th { color: #1d4ed8; }
-        .ex-cat.active .ex-cat-en { color: #60a5fa; }
-
-        /* Results */
-        .ex-results { min-height: 160px; }
-        .ex-count { font-size: 13px; color: #64748b; margin: 0 0 16px; }
-        .ex-count strong { color: #1e293b; font-weight: 800; }
-        .ex-en-muted { font-weight: 400; color: #94a3b8; }
-
-        /* Empty state */
-        .ex-empty {
-          display: flex; flex-direction: column; align-items: center;
-          justify-content: center; padding: 52px 20px; gap: 12px;
-          text-align: center; background: #f8fafc; border-radius: 18px;
-        }
-        .ex-empty span { font-size: 44px; }
-        .ex-empty p { font-size: 15px; color: #475569; font-weight: 700; margin: 0; }
-        .ex-empty small { font-size: 12px; color: #94a3b8; }
-
-        /* Grid */
-        .ex-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
-
-        /* Card */
-        .ex-card {
-          background: white; border-radius: 18px; overflow: hidden;
-          text-decoration: none; color: inherit; transition: all 0.2s;
-          border: 1px solid #f1f5f9;
-          box-shadow: 0 2px 10px rgba(15,23,42,0.04);
-          display: flex; flex-direction: column; min-width: 0;
-        }
-        .ex-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 12px 28px rgba(15,23,42,0.1);
-          border-color: #e0e7ff;
-        }
-
-        /* Card image */
-        .ex-img {
-          position: relative; height: 160px;
-          overflow: hidden; background: #e2e8f0; flex-shrink: 0;
-        }
-        .ex-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
-        .ex-card:hover .ex-img img { transform: scale(1.04); }
-        .ex-img-ph {
-          width: 100%; height: 100%;
-          display: flex; align-items: center; justify-content: center; font-size: 40px;
-        }
-
-        /* Badges on image */
-        .ex-rank {
-          position: absolute; top: 10px; left: 10px;
-          font-size: 20px; line-height: 1;
-          filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
-        }
-        .ex-verified {
-          position: absolute; top: 10px; right: 10px;
-          background: #dcfce7; color: #15803d;
-          font-size: 10px; font-weight: 800;
-          padding: 3px 8px; border-radius: 999px;
-        }
-        .ex-bm-badge {
-          position: absolute; bottom: 8px; right: 8px;
-          background: rgba(15,23,42,0.65); color: white;
-          font-size: 10px; font-weight: 700;
-          padding: 3px 8px; border-radius: 999px;
-          backdrop-filter: blur(4px);
-        }
-
-        /* Card body */
-        .ex-info { padding: 13px 14px 14px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
-        .ex-cat-tag {
-          font-size: 10px; font-weight: 700; color: #2563eb;
-          background: #eff6ff; border-radius: 6px;
-          padding: 2px 7px; align-self: flex-start; margin-bottom: 2px;
-        }
-        .ex-info h4 {
-          font-size: 13px; font-weight: 800; color: #1e293b; margin: 0;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .ex-en {
-          font-size: 11px; color: #64748b; font-style: italic; margin: 0;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .ex-meta { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
-        .ex-meta span { font-size: 11px; color: #94a3b8; }
-        .ex-reviews { color: #f59e0b !important; font-weight: 700 !important; }
-
-        /* Responsive */
-        @media (max-width: 1100px) { .ex-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 780px)  { .ex-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 600px) {
-          .ex-wrap { padding: 18px 14px; border-radius: 18px; }
-          .ex-filters { flex-direction: column; gap: 10px; }
-          .ex-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-          .ex-cats { gap: 6px; }
-          .ex-cat { padding: 6px 10px; min-width: 54px; }
-          .ex-img { height: 140px; }
-        }
-      `}</style>
     </div>
   );
 }

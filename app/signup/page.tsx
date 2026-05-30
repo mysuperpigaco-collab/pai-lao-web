@@ -220,7 +220,7 @@ export default function SignupPage() {
       <style jsx>{`
         .main-wrapper { 
           min-height: 100vh; 
-          background: #f1f5f9; 
+          background: transparent; 
           display: flex; 
           align-items: flex-start; /* เปลี่ยนจาก center เป็น flex-start เพื่อให้เลื่อนลงมาได้ */
           justify-content: center; 
