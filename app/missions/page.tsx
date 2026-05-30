@@ -280,18 +280,26 @@ export default function MissionsPage() {
   const expiredMissions = missions.filter(m => new Date(m.endDate) < new Date());
 
   return (
-    <div className="mission-page">
+    <>
+      {/* Hero — pure inline, no CSS class dependency */}
+      <div style={{
+        position: "relative", overflow: "hidden",
+        minHeight: 420, padding: "64px 24px 80px",
+        textAlign: "center", color: "#fff",
+        background: "linear-gradient(135deg,#0f172a 0%,#064e3b 50%,#065f46 100%)",
+      }}>
+        <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "rgba(255,255,255,0.04)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: -100, left: "10%", width: 300, height: 300, borderRadius: "50%", background: "rgba(16,185,129,0.10)", pointerEvents: "none" }} />
 
-      {/* Hero */}
-      <div style={{overflowX:"hidden"}}>
-      <div className="mission-hero">
-        <div className="mission-hero-inner">
-          <p className="mission-hero-tag">COMPLETE CHALLENGES</p>
+        <div style={{ position: "relative", maxWidth: 640, margin: "0 auto", zIndex: 1 }}>
+          <div style={{ fontSize: 11, letterSpacing: 3, fontWeight: 800, color: "rgba(255,255,255,0.55)", marginBottom: 14, textTransform: "uppercase" }}>COMPLETE CHALLENGES</div>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🎯</div>
-          <h1 className="mission-hero-title">ภารกิจ <span>Missions</span></h1>
-          <p className="mission-hero-sub">
+          <h1 style={{ fontSize: 52, fontWeight: 900, color: "#fff", margin: "0 0 14px", lineHeight: 1.1 }}>
+            ภารกิจ <span style={{ color: "#34d399" }}>Missions</span>
+          </h1>
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", margin: "0 0 36px", lineHeight: 1.8 }}>
             เดินทาง ถ่ายภาพ และสะสมแต้มจากสถานที่จริง<br />
-            <span>Visit places, capture moments, and earn rewards</span>
+            <span style={{ fontSize: 13, opacity: 0.75 }}>Visit places, capture moments, and earn rewards</span>
           </p>
 
           {/* Stats */}
@@ -303,23 +311,18 @@ export default function MissionsPage() {
             </div>
             <div style={{ width: 1, background: "rgba(255,255,255,0.25)", alignSelf: "stretch" }} />
             <div>
-              <div style={{ fontSize: 28, fontWeight: 800 }}>
-                {new Set(activeMissions.map(m => m.province).filter(Boolean)).size}
-              </div>
+              <div style={{ fontSize: 28, fontWeight: 800 }}>{new Set(activeMissions.map(m => m.province).filter(Boolean)).size}</div>
               <div style={{ fontSize: 12, opacity: 0.8 }}>จังหวัด</div>
               <div style={{ fontSize: 10, opacity: 0.6 }}>Provinces</div>
             </div>
             <div style={{ width: 1, background: "rgba(255,255,255,0.25)", alignSelf: "stretch" }} />
             <div>
-              <div style={{ fontSize: 28, fontWeight: 800 }}>
-                {activeMissions.reduce((s, m) => s + (m.rewardPoints || 0), 0).toLocaleString()}
-              </div>
+              <div style={{ fontSize: 28, fontWeight: 800 }}>{activeMissions.reduce((s, m) => s + (m.rewardPoints || 0), 0).toLocaleString()}</div>
               <div style={{ fontSize: 12, opacity: 0.8 }}>แต้มรวม</div>
               <div style={{ fontSize: 10, opacity: 0.6 }}>Total Points</div>
             </div>
           </div>
         </div>
-      </div>
       </div>
 
       {/* Cards */}
@@ -350,35 +353,6 @@ export default function MissionsPage() {
           )}
         </div>
       </div>
-
-      <style jsx>{`
-        .mission-page { min-height: 100vh; background: transparent; }
-        .mission-hero {
-          background: linear-gradient(135deg, #0f172a 0%, #064e3b 50%, #065f46 100%);
-          padding: 64px 20px 80px;
-          position: relative; overflow: hidden;
-        }
-        .mission-hero::before {
-          content: ""; position: absolute;
-          width: 600px; height: 600px; border-radius: 50%;
-          background: rgba(255,255,255,0.04);
-          top: -200px; right: -200px; pointer-events: none;
-        }
-        .mission-hero::after {
-          content: ""; position: absolute;
-          width: 300px; height: 300px; border-radius: 50%;
-          background: rgba(16,185,129,0.10);
-          bottom: -100px; left: 10%; pointer-events: none;
-        }
-        .mission-hero-inner { max-width: 700px; margin: 0 auto; text-align: center; position: relative; z-index: 1; color: #fff; }
-        .mission-hero-tag { font-size: 11px; letter-spacing: 3px; font-weight: 800; color: rgba(255,255,255,0.5); margin: 0 0 14px; }
-        .mission-hero-title { font-size: 52px; font-weight: 900; color: white; margin: 0 0 14px; line-height: 1.1; }
-        .mission-hero-title span { color: #34d399; }
-        .mission-hero-sub { font-size: 15px; color: rgba(255,255,255,0.65); margin: 0 0 36px; line-height: 1.8; }
-        .mission-hero-sub span { font-size: 13px; opacity: 0.75; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-      `}</style>
-    </div>
+    </>
   );
 }
