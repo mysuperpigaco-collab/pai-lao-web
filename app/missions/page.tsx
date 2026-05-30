@@ -344,7 +344,7 @@ export default function MissionsPage() {
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))", gap: 20 }}>
               {activeMissions.map(mission => (
-                <MissionCard key={mission.id} mission={mission} session={session} />
+                <MissionCard key={mission.id} mission={mission} />
               ))}
             </div>
           )}
