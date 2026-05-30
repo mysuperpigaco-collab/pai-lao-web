@@ -280,71 +280,51 @@ export default function MissionsPage() {
   const expiredMissions = missions.filter(m => new Date(m.endDate) < new Date());
 
   return (
-    <>
-      <style>{`
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-        @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
-        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-      
-        .mission-hero {
-          background: linear-gradient(135deg, #0f172a 0%, #064e3b 50%, #065f46 100%);
-          padding: 64px 24px 80px;
-          position: relative;
-          overflow: hidden;
-          text-align: center;
-          color: #fff;
-        }
-        .mission-hero-inner { position: relative; max-width: 600px; margin: 0 auto; }
-        .mission-hero-deco1 { position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; border-radius: 50%; background: rgba(255,255,255,0.04); pointer-events: none; }
-        .mission-hero-deco2 { position: absolute; bottom: -100px; left: 10%; width: 300px; height: 300px; border-radius: 50%; background: rgba(16,185,129,0.10); pointer-events: none; }`}</style>
+    <div className="mission-page">
 
       {/* Hero */}
-      <div className="mission-hero" style={{minHeight:350,padding:"64px 24px 80px",background:"linear-gradient(135deg,#0f172a 0%,#064e3b 50%,#065f46 100%)",color:"#fff",textAlign:"center",position:"relative",overflow:"hidden"}}>
-        <div className="mission-hero-deco1" />
-        <div className="mission-hero-deco2" />
+      <div style={{overflowX:"hidden"}}>
+      <div className="mission-hero">
         <div className="mission-hero-inner">
-          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 3, opacity: 0.7, textTransform: "uppercase", marginBottom: 8 }}>COMPLETE CHALLENGES</div>
+          <p className="mission-hero-tag">COMPLETE CHALLENGES</p>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🎯</div>
-          <h1 style={{ fontSize: 32, fontWeight: 800, margin: "0 0 8px", letterSpacing: -0.5 }}>
-            ภารกิจ
-          </h1>
-          <div style={{ fontSize: 18, fontWeight: 600, opacity: 0.75, marginBottom: 10 }}>Missions</div>
-          <p style={{ fontSize: 15, opacity: 0.85, lineHeight: 1.6, margin: "0 0 32px" }}>
+          <h1 className="mission-hero-title">ภารกิจ <span>Missions</span></h1>
+          <p className="mission-hero-sub">
             เดินทาง ถ่ายภาพ และสะสมแต้มจากสถานที่จริง<br />
-            <span style={{ fontSize: 13, opacity: 0.75 }}>Visit places, capture moments, and earn rewards</span>
+            <span>Visit places, capture moments, and earn rewards</span>
           </p>
 
           {/* Stats */}
           <div style={{ display: "flex", justifyContent: "center", gap: 32, flexWrap: "wrap" }}>
             <div>
               <div style={{ fontSize: 28, fontWeight: 800 }}>{activeMissions.length}</div>
-              <div style={{ fontSize: 12, opacity: 0.75 }}>ภารกิจพร้อมรับ</div>
-              <div style={{ fontSize: 10, opacity: 0.55 }}>Active Missions</div>
+              <div style={{ fontSize: 12, opacity: 0.8 }}>ภารกิจที่เปิดอยู่</div>
+              <div style={{ fontSize: 10, opacity: 0.6 }}>Active Missions</div>
             </div>
-            <div style={{ width: 1, background: "rgba(255,255,255,0.2)", alignSelf: "stretch" }} />
+            <div style={{ width: 1, background: "rgba(255,255,255,0.25)", alignSelf: "stretch" }} />
             <div>
               <div style={{ fontSize: 28, fontWeight: 800 }}>
-                {missions.reduce((s, m) => s + m.rewardPoints, 0).toLocaleString()}
+                {new Set(activeMissions.map(m => m.province).filter(Boolean)).size}
               </div>
-              <div style={{ fontSize: 12, opacity: 0.75 }}>แต้มรวมทั้งหมด</div>
-              <div style={{ fontSize: 10, opacity: 0.55 }}>Total Points</div>
+              <div style={{ fontSize: 12, opacity: 0.8 }}>จังหวัด</div>
+              <div style={{ fontSize: 10, opacity: 0.6 }}>Provinces</div>
             </div>
-            <div style={{ width: 1, background: "rgba(255,255,255,0.2)", alignSelf: "stretch" }} />
+            <div style={{ width: 1, background: "rgba(255,255,255,0.25)", alignSelf: "stretch" }} />
             <div>
               <div style={{ fontSize: 28, fontWeight: 800 }}>
-                {missions.reduce((s, m) => s + m._count.participants, 0).toLocaleString()}
+                {activeMissions.reduce((s, m) => s + (m.rewardPoints || 0), 0).toLocaleString()}
               </div>
-              <div style={{ fontSize: 12, opacity: 0.75 }}>ผู้เข้าร่วมทั้งหมด</div>
-              <div style={{ fontSize: 10, opacity: 0.55 }}>Total Participants</div>
+              <div style={{ fontSize: 12, opacity: 0.8 }}>แต้มรวม</div>
+              <div style={{ fontSize: 10, opacity: 0.6 }}>Total Points</div>
             </div>
           </div>
         </div>
       </div>
+      </div>
 
-      {/* Main */}
-      <div style={{ minHeight: "60vh", background: "#f8fafb", padding: "40px 24px 80px" }}>
+      {/* Cards */}
+      <div style={{ minHeight: "60vh", background: "#f0fdf4", padding: "32px 24px 80px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-
           {enabled === false ? (
             <div style={{ textAlign: "center", padding: "80px 24px", background: "#fff", borderRadius: 20 }}>
               <div style={{ fontSize: 56, marginBottom: 14 }}>🔒</div>
@@ -352,68 +332,53 @@ export default function MissionsPage() {
               <div style={{ fontSize: 14, color: "#9ca3af" }}>กลับมาใหม่เร็วๆ นี้ครับ</div>
             </div>
           ) : loading ? (
-            <>
-              <div style={{ fontSize: 18, fontWeight: 700, color: "#111827", marginBottom: 20 }}>ภารกิจที่เปิดรับ</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 20 }}>
-                {[1,2,3,4].map(i => <SkeletonCard key={i} />)}
-              </div>
-            </>
-          ) : missions.length === 0 ? (
-            <div style={{
-              textAlign: "center", padding: "80px 24px",
-              background: "#fff", borderRadius: 20,
-              boxShadow: "0 1px 8px rgba(0,0,0,0.05)",
-            }}>
-              <div style={{ fontSize: 64, marginBottom: 16 }}>🗺️</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: "#111827", marginBottom: 8 }}>ยังไม่มีภารกิจในขณะนี้</div>
-              <div style={{ fontSize: 14, color: "#6b7280" }}>กลับมาใหม่เร็วๆ นี้ ทีมงานกำลังเตรียมภารกิจสุดพิเศษ</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))", gap: 20 }}>
+              {[1,2,3].map(i => <SkeletonCard key={i} />)}
+            </div>
+          ) : activeMissions.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "80px 24px", background: "#fff", borderRadius: 20 }}>
+              <div style={{ fontSize: 56, marginBottom: 14 }}>🎯</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "#374151", marginBottom: 8 }}>ยังไม่มีภารกิจในขณะนี้</div>
+              <div style={{ fontSize: 14, color: "#9ca3af" }}>กลับมาใหม่เร็วๆ นี้นะครับ</div>
             </div>
           ) : (
-            <>
-              {/* Active missions */}
-              {activeMissions.length > 0 && (
-                <div style={{ marginBottom: 48, animation: "fadeIn 0.5s ease" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                    <div style={{ width: 4, height: 24, background: "#10b981", borderRadius: 2 }} />
-                    <h2 style={{ fontSize: 20, fontWeight: 700, color: "#111827", margin: 0 }}>
-                      ภารกิจที่เปิดรับ
-                    </h2>
-                    <span style={{ background: "#d1fae5", color: "#059669", borderRadius: 20, padding: "2px 10px", fontSize: 13, fontWeight: 600 }}>
-                      {activeMissions.length} ภารกิจ
-                    </span>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 20 }}>
-                    {activeMissions.map(m => (
-                      <MissionCard key={m.id} mission={m} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Expired missions */}
-              {expiredMissions.length > 0 && (
-                <div style={{ animation: "fadeIn 0.5s ease" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                    <div style={{ width: 4, height: 24, background: "#9ca3af", borderRadius: 2 }} />
-                    <h2 style={{ fontSize: 20, fontWeight: 700, color: "#6b7280", margin: 0 }}>
-                      ภารกิจที่ผ่านมาแล้ว
-                    </h2>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 20, opacity: 0.7 }}>
-                    {expiredMissions.map(m => (
-                      <MissionCard key={m.id} mission={m} />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))", gap: 20 }}>
+              {activeMissions.map(mission => (
+                <MissionCard key={mission.id} mission={mission} session={session} />
+              ))}
+            </div>
           )}
         </div>
       </div>
 
-      {toast && (
-        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
-      )}
-    </>
+      <style jsx>{`
+        .mission-page { min-height: 100vh; background: transparent; }
+        .mission-hero {
+          background: linear-gradient(135deg, #0f172a 0%, #064e3b 50%, #065f46 100%);
+          padding: 64px 20px 80px;
+          position: relative; overflow: hidden;
+        }
+        .mission-hero::before {
+          content: ""; position: absolute;
+          width: 600px; height: 600px; border-radius: 50%;
+          background: rgba(255,255,255,0.04);
+          top: -200px; right: -200px; pointer-events: none;
+        }
+        .mission-hero::after {
+          content: ""; position: absolute;
+          width: 300px; height: 300px; border-radius: 50%;
+          background: rgba(16,185,129,0.10);
+          bottom: -100px; left: 10%; pointer-events: none;
+        }
+        .mission-hero-inner { max-width: 700px; margin: 0 auto; text-align: center; position: relative; z-index: 1; color: #fff; }
+        .mission-hero-tag { font-size: 11px; letter-spacing: 3px; font-weight: 800; color: rgba(255,255,255,0.5); margin: 0 0 14px; }
+        .mission-hero-title { font-size: 52px; font-weight: 900; color: white; margin: 0 0 14px; line-height: 1.1; }
+        .mission-hero-title span { color: #34d399; }
+        .mission-hero-sub { font-size: 15px; color: rgba(255,255,255,0.65); margin: 0 0 36px; line-height: 1.8; }
+        .mission-hero-sub span { font-size: 13px; opacity: 0.75; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+      `}</style>
+    </div>
   );
 }

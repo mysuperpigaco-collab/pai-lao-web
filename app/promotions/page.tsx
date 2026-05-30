@@ -190,27 +190,20 @@ export default function PromotionsPage() {
     : promotions;
 
   return (
-    <>
-      <style>{`
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-        select:focus, input:focus { outline: 2px solid #f59e0b; }
-      `}</style>
+    <div className="promo-page">
 
       {/* Hero */}
-      <div className="promo-hero" style={{minHeight:350,padding:"64px 24px 80px",background:"linear-gradient(135deg,#7c2d12 0%,#b45309 40%,#dc2626 100%)",color:"#fff",textAlign:"center",position:"relative",overflow:"hidden"}}>
+      <div style={{overflowX:"hidden"}}>
+      <div className="promo-hero">
         <div className="promo-hero-deco1" />
         <div className="promo-hero-deco2" />
         <div className="promo-hero-inner">
-          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 3, opacity: 0.7, textTransform: "uppercase", marginBottom: 8 }}>SPECIAL DEALS</div>
+          <p className="promo-hero-tag">SPECIAL DEALS</p>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🎁</div>
-          <h1 style={{ fontSize: 30, fontWeight: 900, margin: "0 0 8px", textShadow: "0 2px 12px rgba(0,0,0,0.25)" }}>
-            โปรโมชั่นวันนี้
-          </h1>
-          <div style={{ fontSize: 18, fontWeight: 600, opacity: 0.75, marginBottom: 10 }}>Today&apos;s Promotions</div>
-          <p style={{ fontSize: 15, opacity: 0.9, margin: "0 0 32px" }}>
+          <h1 className="promo-hero-title">โปรโมชั่นวันนี้ <span>Today&apos;s Promotions</span></h1>
+          <p className="promo-hero-sub">
             ดีลพิเศษจากร้านค้าและสถานที่ท่องเที่ยวทั่วไทย<br />
-            <span style={{ fontSize: 13, opacity: 0.75 }}>Exclusive deals from businesses across Thailand</span>
+            <span>Exclusive deals from businesses across Thailand</span>
           </p>
 
           {/* Stats */}
@@ -238,30 +231,19 @@ export default function PromotionsPage() {
             </div>
           </div>
 
-          {/* Search bar */}
-          <div style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)", borderRadius: 16, padding: "16px 20px", display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+          {/* Search/Filter bar */}
+          <div className="promo-search-wrap">
             <input
               type="text"
               placeholder="ค้นหาชื่อโปรโมชั่น, ร้าน..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{
-                flex: "1 1 180px", minWidth: 180, padding: "10px 16px",
-                borderRadius: 10, border: "none",
-                fontSize: 14, outline: "none",
-                background: "rgba(255,255,255,0.95)",
-              }}
+              className="promo-search-input"
             />
             <select
               value={province}
               onChange={e => { setProvince(e.target.value); setDistrict(""); }}
-              style={{
-                flex: "1 1 150px", minWidth: 150, padding: "10px 16px",
-                borderRadius: 10, border: "none",
-                fontSize: 14, outline: "none",
-                background: "rgba(255,255,255,0.95)",
-                color: province ? "#111827" : "#9ca3af",
-              }}
+              className="promo-search-select"
             >
               <option value="">ทุกจังหวัด</option>
               {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
@@ -270,40 +252,24 @@ export default function PromotionsPage() {
               value={district}
               onChange={e => setDistrict(e.target.value)}
               disabled={!province}
-              style={{
-                flex: "1 1 150px", minWidth: 150, padding: "10px 16px",
-                borderRadius: 10, border: "none",
-                fontSize: 14, outline: "none",
-                background: "rgba(255,255,255,0.95)",
-                color: district ? "#111827" : "#9ca3af",
-                opacity: province ? 1 : 0.6,
-                cursor: province ? "pointer" : "not-allowed",
-              }}
+              className="promo-search-select"
             >
               <option value="">{province ? "ทุกอำเภอ" : "เลือกจังหวัดก่อน"}</option>
               {province && getDistricts(province).map(d => <option key={d} value={d}>{d}</option>)}
             </select>
             {(province || district || search) && (
-              <button
-                onClick={() => { setProvince(""); setDistrict(""); setSearch(""); }}
-                style={{
-                  padding: "10px 16px", borderRadius: 10, border: "none",
-                  background: "rgba(255,255,255,0.3)", color: "#fff",
-                  fontWeight: 600, fontSize: 13, cursor: "pointer",
-                  whiteSpace: "nowrap",
-                }}
-              >
+              <button onClick={() => { setProvince(""); setDistrict(""); setSearch(""); }} className="promo-clear-btn">
                 ล้างตัวกรอง ✕
               </button>
             )}
           </div>
         </div>
       </div>
+      </div>
 
       {/* Cards */}
       <div style={{ minHeight: "60vh", background: "#f8fafb", padding: "32px 24px 80px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          {/* Result label */}
           {!loading && promotions.length > 0 && (
             <div style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ width: 4, height: 24, background: "#f59e0b", borderRadius: 2 }} />
@@ -346,12 +312,62 @@ export default function PromotionsPage() {
               )}
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 20, animation: "fadeIn 0.4s ease" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 20 }}>
               {filtered.map(p => <PromoCard key={p.id} promo={p} />)}
             </div>
           )}
         </div>
       </div>
-    </>
+
+      <style jsx>{`
+        .promo-page { min-height: 100vh; background: transparent; }
+        .promo-hero {
+          background: linear-gradient(135deg, #7c2d12 0%, #b45309 40%, #dc2626 100%);
+          padding: 64px 20px 80px;
+          position: relative; overflow: hidden;
+        }
+        .promo-hero::before {
+          content: ""; position: absolute;
+          width: 600px; height: 600px; border-radius: 50%;
+          background: rgba(255,255,255,0.04);
+          top: -200px; right: -200px; pointer-events: none;
+        }
+        .promo-hero::after {
+          content: ""; position: absolute;
+          width: 300px; height: 300px; border-radius: 50%;
+          background: rgba(251,191,36,0.10);
+          bottom: -100px; left: 10%; pointer-events: none;
+        }
+        .promo-hero-inner { max-width: 700px; margin: 0 auto; text-align: center; position: relative; z-index: 1; color: #fff; }
+        .promo-hero-tag { font-size: 11px; letter-spacing: 3px; font-weight: 800; color: rgba(255,255,255,0.5); margin: 0 0 14px; }
+        .promo-hero-title { font-size: 42px; font-weight: 900; color: white; margin: 0 0 14px; line-height: 1.1; }
+        .promo-hero-title span { color: #fbbf24; }
+        .promo-hero-sub { font-size: 15px; color: rgba(255,255,255,0.65); margin: 0 0 36px; line-height: 1.8; }
+        .promo-hero-sub span { font-size: 13px; opacity: 0.75; }
+        .promo-hero-deco1 { display: none; }
+        .promo-hero-deco2 { display: none; }
+        .promo-search-wrap {
+          background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
+          border-radius: 16px; padding: 16px 20px;
+          display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .promo-search-input {
+          flex: 1 1 180px; min-width: 180px; padding: 10px 16px;
+          border-radius: 10px; border: none; font-size: 14px; outline: none;
+          background: rgba(255,255,255,0.95);
+        }
+        .promo-search-select {
+          flex: 1 1 150px; min-width: 150px; padding: 10px 16px;
+          border-radius: 10px; border: none; font-size: 14px; outline: none;
+          background: rgba(255,255,255,0.95);
+        }
+        .promo-clear-btn {
+          padding: 10px 16px; border-radius: 10px; border: none;
+          background: rgba(255,255,255,0.3); color: #fff;
+          font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+      `}</style>
+    </div>
   );
 }
