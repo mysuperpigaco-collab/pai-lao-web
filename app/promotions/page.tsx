@@ -194,7 +194,7 @@ export default function PromotionsPage() {
       {/* Hero — pure inline, no CSS class dependency */}
       <div style={{
         position: "relative", overflow: "hidden",
-        minHeight: 420, padding: "64px 24px 80px",
+        minHeight: 421, padding: "64px 24px 80px",
         textAlign: "center", color: "#fff",
         background: "linear-gradient(135deg,#7c2d12 0%,#b45309 40%,#dc2626 100%)",
       }}>
