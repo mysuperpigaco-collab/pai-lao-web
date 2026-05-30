@@ -191,76 +191,69 @@ export default function PromotionsPage() {
 
   return (
     <>
-      {/* Hero — pure inline, no CSS class dependency */}
+      {/* Hero */}
       <div style={{
         position: "relative", overflow: "hidden",
-        minHeight: 421, padding: "64px 24px 80px",
+        padding: "64px 24px 56px",
         textAlign: "center", color: "#fff",
         background: "linear-gradient(135deg,#7c2d12 0%,#b45309 40%,#dc2626 100%)",
       }}>
-        {/* decorative circles */}
         <div style={{ position: "absolute", top: -200, right: -200, width: 600, height: 600, borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: -100, left: "10%", width: 300, height: 300, borderRadius: "50%", background: "rgba(251,191,36,0.08)", pointerEvents: "none" }} />
-
-        {/* content */}
         <div style={{ position: "relative", maxWidth: 640, margin: "0 auto", zIndex: 1 }}>
           <div style={{ fontSize: 11, letterSpacing: 3, fontWeight: 800, color: "rgba(255,255,255,0.55)", marginBottom: 14, textTransform: "uppercase" }}>SPECIAL DEALS</div>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🎁</div>
           <h1 style={{ fontSize: 42, fontWeight: 900, color: "#fff", margin: "0 0 14px", lineHeight: 1.1 }}>
             โปรโมชั่นวันนี้ <span style={{ color: "#fbbf24" }}>Today&apos;s Promotions</span>
           </h1>
-          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", margin: "0 0 36px", lineHeight: 1.8 }}>
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.7)", margin: "0 0 28px", lineHeight: 1.8 }}>
             ดีลพิเศษจากร้านค้าและสถานที่ท่องเที่ยวทั่วไทย<br />
             <span style={{ fontSize: 13, opacity: 0.75 }}>Exclusive deals from businesses across Thailand</span>
           </p>
-
-          {/* Stats */}
-          <div style={{ display: "flex", justifyContent: "center", gap: 32, flexWrap: "wrap", marginBottom: 32 }}>
+          <div style={{ display: "flex", justifyContent: "center", gap: 32, flexWrap: "wrap" }}>
             <div>
               <div style={{ fontSize: 26, fontWeight: 800 }}>{promotions.length}</div>
-              <div style={{ fontSize: 12, opacity: 0.8 }}>โปรโมชั่นตอนนี้</div>
-              <div style={{ fontSize: 10, opacity: 0.6 }}>Active Deals</div>
+              <div style={{ fontSize: 12, opacity: 0.8 }}>โปรโมชั่น · Active Deals</div>
             </div>
             <div style={{ width: 1, background: "rgba(255,255,255,0.25)", alignSelf: "stretch" }} />
             <div>
               <div style={{ fontSize: 26, fontWeight: 800 }}>{new Set(promotions.map(p => p.place?.province).filter(Boolean)).size}</div>
-              <div style={{ fontSize: 12, opacity: 0.8 }}>จังหวัด</div>
-              <div style={{ fontSize: 10, opacity: 0.6 }}>Provinces</div>
+              <div style={{ fontSize: 12, opacity: 0.8 }}>จังหวัด · Provinces</div>
             </div>
             <div style={{ width: 1, background: "rgba(255,255,255,0.25)", alignSelf: "stretch" }} />
             <div>
               <div style={{ fontSize: 26, fontWeight: 800 }}>{new Set(promotions.map(p => p.business.id)).size}</div>
-              <div style={{ fontSize: 12, opacity: 0.8 }}>ร้านค้าที่ร่วม</div>
-              <div style={{ fontSize: 10, opacity: 0.6 }}>Partners</div>
+              <div style={{ fontSize: 12, opacity: 0.8 }}>ร้านค้า · Partners</div>
             </div>
-          </div>
-
-          {/* Search/Filter */}
-          <div style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)", borderRadius: 16, padding: "16px 20px", display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
-            <input type="text" placeholder="ค้นหาชื่อโปรโมชั่น, ร้าน..." value={search} onChange={e => setSearch(e.target.value)}
-              style={{ flex: "1 1 180px", minWidth: 180, padding: "10px 16px", borderRadius: 10, border: "none", fontSize: 14, outline: "none", background: "rgba(255,255,255,0.95)" }} />
-            <select value={province} onChange={e => { setProvince(e.target.value); setDistrict(""); }}
-              style={{ flex: "1 1 150px", minWidth: 150, padding: "10px 16px", borderRadius: 10, border: "none", fontSize: 14, outline: "none", background: "rgba(255,255,255,0.95)" }}>
-              <option value="">ทุกจังหวัด</option>
-              {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
-            <select value={district} onChange={e => setDistrict(e.target.value)} disabled={!province}
-              style={{ flex: "1 1 150px", minWidth: 150, padding: "10px 16px", borderRadius: 10, border: "none", fontSize: 14, outline: "none", background: "rgba(255,255,255,0.95)", opacity: province ? 1 : 0.6 }}>
-              <option value="">{province ? "ทุกอำเภอ" : "เลือกจังหวัดก่อน"}</option>
-              {province && getDistricts(province).map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-            {(province || district || search) && (
-              <button onClick={() => { setProvince(""); setDistrict(""); setSearch(""); }}
-                style={{ padding: "10px 16px", borderRadius: 10, border: "none", background: "rgba(255,255,255,0.3)", color: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>
-                ล้างตัวกรอง ✕
-              </button>
-            )}
           </div>
         </div>
       </div>
 
+      {/* Search/Filter bar — below hero */}
+      <div style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "16px 24px", display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+        <input type="text" placeholder="ค้นหาชื่อโปรโมชั่น, ร้าน..."
+          value={search} onChange={e => setSearch(e.target.value)}
+          style={{ flex: "1 1 200px", maxWidth: 300, padding: "10px 16px", borderRadius: 10, border: "1.5px solid #e5e7eb", fontSize: 14, outline: "none" }} />
+        <select value={province} onChange={e => { setProvince(e.target.value); setDistrict(""); }}
+          style={{ flex: "1 1 160px", maxWidth: 220, padding: "10px 16px", borderRadius: 10, border: "1.5px solid #e5e7eb", fontSize: 14, outline: "none", background: "#fff" }}>
+          <option value="">ทุกจังหวัด</option>
+          {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+        </select>
+        <select value={district} onChange={e => setDistrict(e.target.value)} disabled={!province}
+          style={{ flex: "1 1 160px", maxWidth: 220, padding: "10px 16px", borderRadius: 10, border: "1.5px solid #e5e7eb", fontSize: 14, outline: "none", background: "#fff", opacity: province ? 1 : 0.5 }}>
+          <option value="">{province ? "ทุกอำเภอ" : "เลือกจังหวัดก่อน"}</option>
+          {province && getDistricts(province).map(d => <option key={d} value={d}>{d}</option>)}
+        </select>
+        {(province || district || search) && (
+          <button onClick={() => { setProvince(""); setDistrict(""); setSearch(""); }}
+            style={{ padding: "10px 16px", borderRadius: 10, border: "1.5px solid #e5e7eb", background: "#f9fafb", color: "#374151", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
+            ล้างตัวกรอง ✕
+          </button>
+        )}
+      </div>
+
       {/* Cards */}
-      <div style={{ minHeight: "60vh", background: "#f8fafb", padding: "32px 24px 80px" }}>
+      <div style={{ minHeight: "60vh", background: "transparent", padding: "32px 24px 80px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           {!loading && promotions.length > 0 && (
             <div style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
@@ -277,7 +270,6 @@ export default function PromotionsPage() {
             <div style={{ textAlign: "center", padding: "80px 24px", background: "#fff", borderRadius: 20 }}>
               <div style={{ fontSize: 56, marginBottom: 14 }}>🔒</div>
               <div style={{ fontSize: 20, fontWeight: 700, color: "#374151", marginBottom: 8 }}>ระบบโปรโมชั่นยังไม่เปิดให้บริการ</div>
-              <div style={{ fontSize: 14, color: "#9ca3af" }}>กลับมาใหม่เร็วๆ นี้ครับ</div>
             </div>
           ) : loading ? (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 20 }}>
@@ -292,11 +284,6 @@ export default function PromotionsPage() {
               <div style={{ fontSize: 14, color: "#9ca3af" }}>
                 {province || district ? "ลองเปลี่ยนจังหวัดหรืออำเภอดูครับ" : "กลับมาใหม่เร็วๆ นี้นะครับ"}
               </div>
-              {(province || district) && (
-                <button onClick={() => { setProvince(""); setDistrict(""); }} style={{ marginTop: 16, padding: "10px 24px", borderRadius: 10, background: "#f59e0b", color: "#fff", border: "none", fontWeight: 600, cursor: "pointer" }}>
-                  ดูโปรโมชั่นทั้งหมด
-                </button>
-              )}
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 20 }}>
