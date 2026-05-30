@@ -1,7 +1,7 @@
 /* ─── PAGE ─── */
 .pd-page {
   min-height: 100vh;
-  background: #f8fafc;
+  background: transparent;
 }
 
 /* ─── HERO ─── */
