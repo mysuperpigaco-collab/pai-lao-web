@@ -326,7 +326,7 @@ export default function MissionsPage() {
       </div>
 
       {/* Cards */}
-      <div style={{ minHeight: "60vh", background: "#f0fdf4", padding: "32px 24px 80px" }}>
+      <div style={{ minHeight: "60vh", background: "transparent", padding: "32px 24px 80px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           {enabled === false ? (
             <div style={{ textAlign: "center", padding: "80px 24px", background: "#fff", borderRadius: 20 }}>
