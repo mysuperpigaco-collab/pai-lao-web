@@ -73,6 +73,9 @@ model User {
   banReason       String?    // เหตุผลที่ถูกแบน
   resetToken      String?    // token สำหรับรีเซ็ตรหัสผ่าน
   resetTokenExp   DateTime?  // วันหมดอายุ token
+  emailVerified      Boolean   @default(false) // ยืนยันอีเมลแล้วหรือยัง
+  emailVerifyToken   String?   // token สำหรับยืนยันอีเมล
+  emailVerifyExp     DateTime? // วันหมดอายุ token ยืนยันอีเมล
   missionsCreated       Mission[]            @relation("MissionCreator")
   missionParticipations MissionParticipant[]
   points                Int      @default(0)
@@ -256,8 +259,9 @@ model TimelineStop {
   googleMapsUrl String?  // Google Maps URL
   tips          String?  // เคล็ดลับ/ข้อควรรู้
 
-  placeId     String?
-  place       Place?  @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  placeId      String?
+  place        Place?  @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  shareToPlace Boolean @default(false) // แชร์รูปไปยังหน้าสถานที่
 
   @@index([tripId])
   @@index([order])
