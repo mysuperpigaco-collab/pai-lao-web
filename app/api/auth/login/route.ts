@@ -1,8 +1,20 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword, signToken, setAuthCookie } from "@/lib/auth";
 
-export async function POST(request: Request) {
+// ── helper: ดึง IP จาก request headers ──────────────────────
+function getIp(request: NextRequest): string {
+  return (
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+    request.headers.get("x-real-ip") ||
+    "unknown"
+  );
+}
+
+export async function POST(request: NextRequest) {
+  const ip        = getIp(request);
+  const userAgent = request.headers.get("user-agent") || undefined;
+
   try {
     const { emailOrUsername, password } = await request.json();
 
@@ -41,6 +53,16 @@ export async function POST(request: Request) {
     // ── ตรวจรหัสผ่าน (ใช้ message เดียวกัน ป้องกัน user enumeration) ─
     const isValid = user ? await verifyPassword(password, user.password) : false;
     if (!user || !isValid) {
+      // บันทึก login ล้มเหลว
+      await prisma.loginLog.create({
+        data: {
+          userId:    user?.id    ?? null,
+          username:  user?.username ?? emailOrUsername.substring(0, 100),
+          action:    "LOGIN_FAILED",
+          ip,
+          userAgent,
+        },
+      }).catch(() => {}); // ไม่ให้ log error ขัดขวาง response
       return NextResponse.json(
         { message: "อีเมล/ชื่อผู้ใช้ หรือรหัสผ่านไม่ถูกต้อง" },
         { status: 401 }
@@ -66,6 +88,17 @@ export async function POST(request: Request) {
       role: user.role,
     });
     await setAuthCookie(token);
+
+    // ── บันทึก login สำเร็จ (พ.ร.บ. คอมพิวเตอร์ มาตรา 26) ──
+    await prisma.loginLog.create({
+      data: {
+        userId:   user.id,
+        username: user.username,
+        action:   "LOGIN_SUCCESS",
+        ip,
+        userAgent,
+      },
+    }).catch(() => {});
 
     // ── strip password, return full user ─────────────────────
     const { password: _pw, ...safeUser } = user;

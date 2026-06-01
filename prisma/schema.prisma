@@ -417,6 +417,22 @@ model AdminLog {
   @@index([createdAt])
 }
 
+// ── LoginLog (พ.ร.บ. คอมพิวเตอร์ มาตรา 26 — เก็บ 90 วัน) ──
+
+model LoginLog {
+  id        String   @id @default(uuid())
+  userId    String?  // null = login ล้มเหลว (ไม่รู้ว่าใคร)
+  username  String?  // เก็บไว้แม้ user ถูกลบ
+  action    String   // "LOGIN_SUCCESS" | "LOGIN_FAILED" | "LOGOUT"
+  ip        String   // IP address ของผู้ใช้
+  userAgent String?  // Browser / device info
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([ip])
+}
+
 // ── TripPlan ──────────────────────────────────────────────
 
 model TripPlan {
