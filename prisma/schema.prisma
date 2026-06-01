@@ -417,6 +417,27 @@ model AdminLog {
   @@index([createdAt])
 }
 
+// ── UserActivityLog (พ.ร.บ. คอมพิวเตอร์ มาตรา 26 — เก็บ 90 วัน) ──
+// บันทึกกิจกรรมสำคัญของผู้ใช้: สมัคร, reset password, สร้าง/ลบ content, อัปโหลด, รีวิว, รายงาน
+
+model UserActivityLog {
+  id         String   @id @default(uuid())
+  userId     String?  // null = ยังไม่ได้ login
+  username   String?
+  action     String   // ดูค่าได้ใน lib/activityLogger.ts
+  ip         String
+  userAgent  String?
+  targetId   String?  // id ของ trip/place/review ที่เกี่ยวข้อง
+  targetType String?  // "TRIP" | "PLACE" | "REVIEW" | "REPORT" | "FILE"
+  detail     String?  // ข้อมูลเพิ่มเติม เช่น ชื่อ trip
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([ip])
+  @@index([action])
+}
+
 // ── LoginLog (พ.ร.บ. คอมพิวเตอร์ มาตรา 26 — เก็บ 90 วัน) ──
 
 model LoginLog {

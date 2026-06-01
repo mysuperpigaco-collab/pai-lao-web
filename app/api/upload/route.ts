@@ -1,11 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
+import { logActivity, getClientIp } from "@/lib/activityLogger";
 
 // bucket ใน Supabase Storage (ต้องสร้างไว้ก่อน)
 const BUCKET = "pai-lao-media";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
@@ -49,6 +50,14 @@ export async function POST(request: Request) {
 
     // สร้าง public URL
     const { data } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(filename);
+
+    await logActivity({
+      userId: session.userId, username: session.username,
+      action: "UPLOAD_FILE",
+      ip: getClientIp(request), userAgent: request.headers.get("user-agent"),
+      targetType: "FILE",
+      detail: `${filename} (${(file.size / 1024).toFixed(1)} KB)`,
+    }).catch(() => {});
 
     return NextResponse.json({ url: data.publicUrl }, { status: 201 });
   } catch (error) {

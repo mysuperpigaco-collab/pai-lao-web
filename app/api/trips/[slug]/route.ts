@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { logActivity, getClientIp } from "@/lib/activityLogger";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -259,19 +260,28 @@ export async function PUT(request: Request, { params }: Params) {
 }
 
 // ── DELETE /api/trips/[slug] ──────────────────────────────
-export async function DELETE(_req: Request, { params }: Params) {
+export async function DELETE(req: NextRequest, { params }: Params) {
   try {
     const { slug } = await params;
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 
-    const trip = await prisma.trip.findUnique({ where: { slug }, select: { authorId: true } });
+    const trip = await prisma.trip.findUnique({ where: { slug }, select: { id: true, title: true, authorId: true } });
     if (!trip) return NextResponse.json({ message: "ไม่พบทริป" }, { status: 404 });
     if (trip.authorId !== session.userId && session.role !== "ADMIN") {
       return NextResponse.json({ message: "ไม่มีสิทธิ์ลบ" }, { status: 403 });
     }
 
     await prisma.trip.delete({ where: { slug } });
+
+    await logActivity({
+      userId: session.userId, username: session.username,
+      action: "DELETE_TRIP",
+      ip: getClientIp(req), userAgent: req.headers.get("user-agent"),
+      targetId: trip.id, targetType: "TRIP",
+      detail: trip.title,
+    }).catch(() => {});
+
     return NextResponse.json({ message: "ลบทริปแล้ว" });
   } catch (error) {
     console.error("DELETE /api/trips/[slug]:", error);

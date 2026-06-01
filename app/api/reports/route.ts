@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { logActivity, getClientIp } from "@/lib/activityLogger";
 
 // POST /api/reports — รายงานเนื้อหา
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
@@ -30,6 +31,14 @@ export async function POST(request: Request) {
         detail: detail ?? null,
       },
     });
+
+    await logActivity({
+      userId: session.userId, username: session.username,
+      action: "SUBMIT_REPORT",
+      ip: getClientIp(request), userAgent: request.headers.get("user-agent"),
+      targetId, targetType,
+      detail: reason,
+    }).catch(() => {});
 
     return NextResponse.json({ message: "ส่งรายงานสำเร็จ", report }, { status: 201 });
   } catch (error) {

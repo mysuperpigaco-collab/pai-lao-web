@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { logActivity, getClientIp } from "@/lib/activityLogger";
 
 // ── POST /api/reviews — เขียนรีวิว ───────────────────────
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
@@ -63,6 +64,14 @@ export async function POST(request: Request) {
         author: { select: { id: true, username: true, displayName: true, firstName: true, avatarUrl: true } },
       },
     });
+
+    await logActivity({
+      userId: session.userId, username: session.username,
+      action: "POST_REVIEW",
+      ip: getClientIp(request), userAgent: request.headers.get("user-agent"),
+      targetId: tripId ?? placeId, targetType: tripId ? "TRIP" : "PLACE",
+      detail: `rating: ${rating}`,
+    }).catch(() => {});
 
     return NextResponse.json({ message: "รีวิวสำเร็จ", review }, { status: 201 });
   } catch (error) {

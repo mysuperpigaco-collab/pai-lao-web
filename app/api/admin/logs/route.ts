@@ -56,7 +56,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ logs, total, page, pages: Math.ceil(total / limit) });
     }
 
-    return NextResponse.json({ message: "type ไม่ถูกต้อง (admin | login)" }, { status: 400 });
+    // ── User activity logs ────────────────────────────────────
+    if (type === "activity") {
+      const where: any = {};
+      if (action) where.action   = action;
+      if (userId) where.userId   = userId;
+      if (ip)     where.ip       = { contains: ip };
+
+      const [logs, total] = await Promise.all([
+        prisma.userActivityLog.findMany({ where, skip, take: limit, orderBy: { createdAt: "desc" } }),
+        prisma.userActivityLog.count({ where }),
+      ]);
+
+      return NextResponse.json({ logs, total, page, pages: Math.ceil(total / limit) });
+    }
+
+    return NextResponse.json({ message: "type ไม่ถูกต้อง (admin | login | activity)" }, { status: 400 });
   } catch (error) {
     console.error("GET /api/admin/logs:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
@@ -75,22 +90,25 @@ export async function DELETE(request: NextRequest) {
     const retentionDays = 90; // พ.ร.บ. กำหนดขั้นต่ำ 90 วัน
     const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
 
-    const { count } = await prisma.loginLog.deleteMany({
-      where: { createdAt: { lt: cutoff } },
-    });
+    const [loginResult, activityResult] = await Promise.all([
+      prisma.loginLog.deleteMany({ where: { createdAt: { lt: cutoff } } }),
+      prisma.userActivityLog.deleteMany({ where: { createdAt: { lt: cutoff } } }),
+    ]);
+
+    const totalDeleted = loginResult.count + activityResult.count;
 
     await prisma.adminLog.create({
       data: {
         adminId:    session.userId,
         action:     "CLEANUP_LOGS",
         targetType: "SYSTEM",
-        detail:     `ลบ LoginLog เก่ากว่า ${retentionDays} วัน จำนวน ${count} รายการ (ก่อน ${cutoff.toISOString()})`,
+        detail:     `ลบ log เก่ากว่า ${retentionDays} วัน: LoginLog ${loginResult.count} + ActivityLog ${activityResult.count} รายการ`,
       },
     });
 
     return NextResponse.json({
       message: `ลบ log เก่ากว่า ${retentionDays} วันสำเร็จ`,
-      deleted: count,
+      deleted: { loginLog: loginResult.count, activityLog: activityResult.count, total: totalDeleted },
       cutoffDate: cutoff.toISOString(),
     });
   } catch (error) {

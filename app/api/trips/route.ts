@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { logActivity, getClientIp } from "@/lib/activityLogger";
 
 // ── GET /api/trips ─────────────────────────────────────────
 export async function GET(request: Request) {
@@ -191,6 +192,15 @@ export async function POST(request: Request) {
       },
       include: { timeline: true },
     });
+
+    await logActivity({
+      userId: session.userId, username: session.username,
+      action: "CREATE_TRIP",
+      ip: getClientIp(request as NextRequest),
+      userAgent: (request as NextRequest).headers.get("user-agent"),
+      targetId: trip.id, targetType: "TRIP",
+      detail: trip.title,
+    }).catch(() => {});
 
     return NextResponse.json({ message: "สร้างทริปสำเร็จ", trip }, { status: 201 });
   } catch (error) {

@@ -2,11 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import crypto from "crypto";
+import { logActivity, getClientIp } from "@/lib/activityLogger";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://pai-lao-web.vercel.app";
 
 export async function POST(req: NextRequest) {
+  const ip        = getClientIp(req);
+  const userAgent = req.headers.get("user-agent") ?? null;
+
   try {
     const { email } = await req.json();
     if (!email) return NextResponse.json({ error: "กรุณากรอกอีเมล" }, { status: 400 });
@@ -23,6 +27,12 @@ export async function POST(req: NextRequest) {
       where: { id: user.id },
       data: { resetToken: token, resetTokenExp: exp },
     });
+
+    await logActivity({
+      userId: user.id, username: user.username,
+      action: "PASSWORD_RESET_REQUEST",
+      ip, userAgent,
+    }).catch(() => {});
 
     const resetUrl = `${BASE_URL}/reset-password?token=${token}`;
 
