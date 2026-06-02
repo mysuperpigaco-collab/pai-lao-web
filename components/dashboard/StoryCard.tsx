@@ -46,7 +46,7 @@ export default function StoryCard({
   const [deleting, setDeleting] = useState(false);
   const [confirm,  setConfirm ] = useState(false);
 
-  const published = story.isPublished !== false;
+  const published = story.isPublished === true;
   const imgSrc    = story.coverUrl || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=800";
 
   const handleDelete = async () => {
