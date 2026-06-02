@@ -72,9 +72,8 @@ function SortableStopCard({ stop, idx, total, onEdit, onRemove }: {
               <p style={{ margin: "6px 0 0", fontSize: 13, color: "#374151", lineHeight: 1.6 }}>{stop.notes}</p>
             )}
             {stop.googleMapsUrl && (
-              <a href={stop.googleMapsUrl} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 8, fontSize: 12, color: "#3b82f6", fontWeight: 700, textDecoration: "none", padding: "4px 12px", borderRadius: 20, border: "1px solid #bfdbfe", background: "#eff6ff" }}>
-                🗺️ Google Maps
-              </a>
+              <MapsButton url={stop.googleMapsUrl} placeName={stop.placeName} variant="text"
+                style={{ marginTop: 8, fontSize: 12, display: "inline-block" }} />
             )}
           </div>
           {/* Action buttons */}
@@ -108,6 +107,7 @@ import {
   useSortable, arrayMove
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import MapsButton from "@/components/common/MapsButton";
 
 interface PlanStop {
   id: string; order: number; name: string; day: number;

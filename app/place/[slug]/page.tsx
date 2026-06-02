@@ -11,6 +11,7 @@ import ClaimPlaceButton from "@/components/places/ClaimPlaceButton";
 import PlaceHero from "@/components/places/PlaceHero";
 import AdminPhotoUpload from "@/components/places/AdminPhotoUpload";
 import MissionSubmitBox from "@/components/places/MissionSubmitBox";
+import MapsButton from "@/components/common/MapsButton";
 import "./place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -340,9 +341,7 @@ export default async function PlaceDetailPage({ params }: Props) {
             {place.googleMapsUrl && (
               <div className="pd-card pd-map-card">
                 <h2>แผนที่ Map</h2>
-                <a href={place.googleMapsUrl} target="_blank" rel="noreferrer" className="pd-map-btn">
-                  เปิดใน Google Maps
-                </a>
+                <MapsButton url={place.googleMapsUrl} placeName={place.title} className="pd-map-btn" />
               </div>
             )}
             <div className="pd-card">
@@ -406,9 +405,7 @@ export default async function PlaceDetailPage({ params }: Props) {
             )}
 
             {place.googleMapsUrl && (
-              <a href={place.googleMapsUrl} target="_blank" rel="noreferrer" className="pd-maps-btn">
-                &#x1F5FA; เส้นทาง · Get Directions
-              </a>
+              <MapsButton url={place.googleMapsUrl} placeName={place.title} className="pd-maps-btn" />
             )}
 
             <div className="pd-side-card pd-info-card">
@@ -483,9 +480,7 @@ export default async function PlaceDetailPage({ params }: Props) {
               <div className="pd-loc-district">{place.district}</div>
               {place.address && <div className="pd-loc-address">{place.address}</div>}
               {place.googleMapsUrl && (
-                <a href={place.googleMapsUrl} target="_blank" rel="noreferrer" className="pd-maps-btn" style={{ marginTop: 12 }}>
-                  Google Maps
-                </a>
+                <MapsButton url={place.googleMapsUrl} placeName={place.title} className="pd-maps-btn" style={{ marginTop: 12 }} />
               )}
             </div>
 

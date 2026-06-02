@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import Link from "next/link";
+import MapsButton from "@/components/common/MapsButton";
 import "@/app/place/[slug]/place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -144,9 +145,7 @@ export default async function PlacePreviewPage({ params }: Props) {
               {place.googleMapsUrl && (
                 <div className="pd-card pd-map-card">
                   <h2>🗺️ แผนที่ <span style={{ fontSize: 14, fontWeight: 600, color: "#64748b" }}>Map</span></h2>
-                  <a href={place.googleMapsUrl} target="_blank" rel="noreferrer" className="pd-map-btn">
-                    เปิดใน Google Maps
-                  </a>
+                  <MapsButton url={place.googleMapsUrl} placeName={place.title} className="pd-map-btn" />
                 </div>
               )}
 
@@ -232,9 +231,7 @@ export default async function PlacePreviewPage({ params }: Props) {
                 <div className="pd-loc-district">อ.{place.district}</div>
                 {place.address && <div className="pd-loc-address">{place.address}</div>}
                 {place.googleMapsUrl && (
-                  <a href={place.googleMapsUrl} target="_blank" rel="noreferrer" className="pd-maps-btn">
-                    🗺️ เปิด Google Maps
-                  </a>
+                  <MapsButton url={place.googleMapsUrl} placeName={place.title} className="pd-maps-btn" />
                 )}
               </div>
 

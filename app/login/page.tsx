@@ -1,18 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import InputField from "@/components/ui/InputField";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { login } = useAuth();
+  return <Suspense fallback={null}><LoginInner /></Suspense>;
+}
 
-  const [formData, setFormData] = useState({ identifier: "", password: "", rememberMe: false });
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+function LoginInner() {
+  const router       = useRouter();
+  const searchParams = useSearchParams();
+  const { login }    = useAuth();
+
+  const [formData,   setFormData  ] = useState({ identifier: "", password: "", rememberMe: false });
+  const [error,      setError     ] = useState("");
+  const [notice,     setNotice    ] = useState("");
+  const [isLoading,  setIsLoading ] = useState(false);
+
+  useEffect(() => {
+    const v = searchParams.get("verified");
+    if (v === "success") setNotice("✅ ยืนยันอีเมลสำเร็จ! เข้าสู่ระบบได้เลย");
+    if (v === "invalid") setNotice("❌ ลิงก์ยืนยันหมดอายุหรือไม่ถูกต้อง");
+    if (v === "error")   setNotice("❌ เกิดข้อผิดพลาด กรุณาลองใหม่");
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -48,6 +61,15 @@ export default function LoginPage() {
         <p style={{ color: "#999", marginBottom: "35px", fontSize: "14px" }}>
           ยินดีต้อนรับกลับสู่สังคมนักเดินทาง | Welcome Back
         </p>
+
+        {notice && (
+          <div style={{ background: notice.startsWith("✅") ? "#f0fdf4" : "#fef2f2",
+            border: `1px solid ${notice.startsWith("✅") ? "#86efac" : "#fecaca"}`,
+            borderRadius: "12px", padding: "12px 16px", marginBottom: "20px",
+            color: notice.startsWith("✅") ? "#15803d" : "#b91c1c", fontSize: "14px", textAlign: "left" }}>
+            {notice}
+          </div>
+        )}
 
         {error && (
           <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "12px",
@@ -107,3 +129,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
