@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import DOMPurify from "isomorphic-dompurify";
 import TripRichContent from "@/components/trips/TripRichContent";
 import BackButton from "@/components/common/BackButton";
 import TripTimeline from "@/components/trips/TripTimeline";
@@ -227,10 +226,7 @@ export default async function TripDetailPage({ params }: Props) {
                 <h2>🗒️ เรื่องเล่า</h2>
                 {trip.description?.startsWith("<") ? (
                   <TripRichContent
-                    html={DOMPurify.sanitize(trip.description ?? "", {
-                      ALLOWED_TAGS: ["p","h2","h3","strong","em","u","ul","ol","li","img","hr","br","blockquote"],
-                      ALLOWED_ATTR: ["src","alt","class","style"],
-                    })}
+                    html={trip.description ?? ""}
                   />
                 ) : (
                   <p className="description">{trip.description ?? ""}</p>
