@@ -72,7 +72,7 @@ function SortableStopCard({ stop, idx, total, onEdit, onRemove }: {
               <p style={{ margin: "6px 0 0", fontSize: 13, color: "#374151", lineHeight: 1.6 }}>{stop.notes}</p>
             )}
             {stop.googleMapsUrl && (
-              <MapsButton url={stop.googleMapsUrl} placeName={stop.placeName} variant="text"
+              <MapsButton url={stop.googleMapsUrl} placeName={stop.name} variant="text"
                 style={{ marginTop: 8, fontSize: 12, display: "inline-block" }} />
             )}
           </div>
