@@ -147,7 +147,13 @@ export async function POST(request: Request) {
       }
     }
 
-    const slug = `${title.replace(/[^a-zA-Z0-9]/g, "-").replace(/-+/g, "-").toLowerCase()}-${Date.now()}`;
+    // slug: keep Thai + alphanumeric, collapse dashes, strip leading/trailing dashes
+    const titleSlug = title
+      .replace(/[^a-zA-Z0-9฀-๿]/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .toLowerCase() || "trip";
+    const slug = `${titleSlug}-${Date.now()}`;
 
     const trip = await (prisma as any).trip.create({
       data: {

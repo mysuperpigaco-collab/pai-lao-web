@@ -219,15 +219,15 @@ export default async function TripDetailPage({ params }: Props) {
             {trip.description && (
               <div className="content-card">
                 <h2>🗒️ เรื่องเล่า</h2>
-                {trip.description.startsWith("<") ? (
+                {trip.description?.startsWith("<") ? (
                   <TripRichContent
-                    html={DOMPurify.sanitize(trip.description, {
+                    html={DOMPurify.sanitize(trip.description ?? "", {
                       ALLOWED_TAGS: ["p","h2","h3","strong","em","u","ul","ol","li","img","hr","br","blockquote"],
                       ALLOWED_ATTR: ["src","alt","class","style"],
                     })}
                   />
                 ) : (
-                  <p className="description">{trip.description}</p>
+                  <p className="description">{trip.description ?? ""}</p>
                 )}
               </div>
             )}
