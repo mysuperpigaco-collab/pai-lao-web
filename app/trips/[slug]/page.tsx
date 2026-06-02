@@ -103,7 +103,7 @@ export default async function TripDetailPage({ params }: Props) {
     ? trip.reviews.reduce((s, r) => s + r.rating, 0) / trip.reviews.length
     : 0;
 
-  const authorName = trip.author.displayName || trip.author.firstName;
+  const authorName = trip.author.displayName || trip.author.firstName || "?";
   const authorInitial = authorName.slice(0, 1).toUpperCase();
 
   const relatedTrips = await prisma.trip.findMany({

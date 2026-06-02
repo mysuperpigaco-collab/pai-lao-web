@@ -156,7 +156,7 @@ export default async function PlacePreviewPage({ params }: Props) {
                     <div key={r.id} style={{ borderBottom: "1px solid #f1f5f9", paddingBottom: 12, marginBottom: 12 }}>
                       <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                         <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#3b82f6", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, flexShrink: 0 }}>
-                          {(r.author.displayName || r.author.firstName).slice(0, 1)}
+                          {(r.author.displayName || r.author.firstName || "?").slice(0, 1)}
                         </div>
                         <div>
                           <div style={{ fontWeight: 700, fontSize: 14 }}>{r.author.displayName || r.author.firstName}</div>

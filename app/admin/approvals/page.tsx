@@ -446,7 +446,7 @@ export default function AdminApprovalsPage() {
                               ? <img src={trip.author.avatarUrl} style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }} alt="" />
                               : <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#334155",
                                   display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#94a3b8" }}>
-                                  {(trip.author.displayName || trip.author.firstName).slice(0, 1)}
+                                  {(trip.author.displayName || trip.author.firstName || "?").slice(0, 1)}
                                 </div>}
                             <span style={{ fontSize: 12, color: "#94a3b8" }}>@{trip.author.username}</span>
                             <span style={{ fontSize: 11, color: "#475569", marginLeft: "auto" }}>{fmt(trip.createdAt)}</span>
