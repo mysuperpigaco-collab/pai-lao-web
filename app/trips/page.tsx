@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { PROVINCES } from "@/data/thailand";
+import { PROVINCES, getDistricts } from "@/data/thailand";
 
 /* ─── Types ──────────────────────────────────────────────── */
 interface Trip {
@@ -63,6 +63,7 @@ function TripsInner() {
 
   const [mood,     setMood    ] = useState(() => searchParams.get("mood")     ?? "");
   const [province, setProvince] = useState(() => searchParams.get("province") ?? "");
+  const [district, setDistrict] = useState(() => searchParams.get("district") ?? "");
   const [sort,     setSort    ] = useState(() => searchParams.get("sort")     ?? "popular");
   const initQ = searchParams.get("q") ?? "";
   const [q,        setQ       ] = useState(initQ);
@@ -77,6 +78,7 @@ function TripsInner() {
     const params = new URLSearchParams({ limit: String(PAGE_SIZE), page: String(p), sort });
     if (mood)     params.set("mood",     mood);
     if (province) params.set("province", province.split(" (")[0]);
+    if (district) params.set("district", district);
     if (q)        params.set("q",        q);
 
     try {
@@ -87,7 +89,7 @@ function TripsInner() {
       setTotal(data.total ?? 0);
     } catch {}
     append ? setLoadingMore(false) : setLoading(false);
-  }, [mood, province, sort, q]);
+  }, [mood, province, district, sort, q]);
 
   useEffect(() => { setPage(1); fetch_(1, false); }, [fetch_]);
 
@@ -153,17 +155,29 @@ function TripsInner() {
             ))}
           </div>
 
-          {/* Province + Sort row */}
+          {/* Province + District + Sort row */}
           <div className="tp-filter-row">
             <div className="tp-select-wrap">
               <span className="tp-select-icon">🗾</span>
               <select
                 className="tp-select"
                 value={province}
-                onChange={e => changeFilter(setProvince, e.target.value)}
+                onChange={e => { changeFilter(setProvince, e.target.value); setDistrict(""); }}
               >
                 <option value="">ทุกจังหวัด · All Provinces</option>
                 {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            <div className="tp-select-wrap">
+              <span className="tp-select-icon">🏘️</span>
+              <select
+                className="tp-select"
+                value={district}
+                onChange={e => changeFilter(setDistrict, e.target.value)}
+                disabled={!province}
+              >
+                <option value="">{province ? "ทุกอำเภอ" : "เลือกจังหวัดก่อน"}</option>
+                {getDistricts(province).map(d => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
             <div className="tp-select-wrap tp-select-sm">
@@ -187,11 +201,11 @@ function TripsInner() {
         <div className="tp-result-bar">
           <p className="tp-result-count">
             {loading ? "กำลังโหลด..." : (
-              <>พบ <strong>{total.toLocaleString()}</strong> ทริป{mood ? ` · ${mood}` : ""}{province ? ` · ${province.split(" (")[0]}` : ""}{q ? ` · "${q}"` : ""}</>
+              <>พบ <strong>{total.toLocaleString()}</strong> ทริป{mood ? ` · ${mood}` : ""}{province ? ` · ${province.split(" (")[0]}` : ""}{district ? ` · ${district}` : ""}{q ? ` · "${q}"` : ""}</>
             )}
           </p>
-          {!loading && (mood || province || q) && (
-            <button className="tp-clear-btn" onClick={() => { setMood(""); setProvince(""); setQ(""); setInputQ(""); }}>
+          {!loading && (mood || province || district || q) && (
+            <button className="tp-clear-btn" onClick={() => { setMood(""); setProvince(""); setDistrict(""); setQ(""); setInputQ(""); }}>
               ✕ ล้างตัวกรอง · Clear filters
             </button>
           )}

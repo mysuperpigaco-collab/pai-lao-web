@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef, Suspense } from "react
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import ProvinceSelect from "@/components/ui/ProvinceSelect";
+import DistrictSelect from "@/components/ui/DistrictSelect";
 
 /* ─── Types ──────────────────────────────────────────────── */
 interface Place {
@@ -71,6 +72,7 @@ function PlacesInner() {
   // Initialize from URL query params (e.g. /place?category=NATURE&province=เชียงใหม่&sort=popular)
   const [cat,      setCat     ] = useState(() => searchParams.get("category") ?? "");
   const [province, setProvince] = useState(() => searchParams.get("province") ?? "");
+  const [district, setDistrict] = useState(() => searchParams.get("district") ?? "");
   const [sort,     setSort    ] = useState(() => searchParams.get("sort") ?? "popular");
   const initQ = searchParams.get("q") ?? "";
   const [q,        setQ       ] = useState(initQ);
@@ -87,6 +89,7 @@ function PlacesInner() {
     });
     if (cat)      params.set("category", cat);
     if (province) params.set("province", province.split(" (")[0]);
+    if (district) params.set("district", district);
     if (q)        params.set("q", q);
 
     try {
@@ -97,7 +100,7 @@ function PlacesInner() {
       setTotal(data.total ?? 0);
     } catch {}
     append ? setLoadingMore(false) : setLoading(false);
-  }, [cat, province, sort, q]);
+  }, [cat, province, district, sort, q]);
 
   /* reset page + fetch when filters change */
   useEffect(() => {
@@ -175,15 +178,23 @@ function PlacesInner() {
             ))}
           </div>
 
-          {/* Province + Sort row */}
+          {/* Province + District + Sort row */}
           <div className="pl-filter-row">
             <div className="pl-select-wrap">
               <span className="pl-select-icon">🗾</span>
               <ProvinceSelect
                 value={province}
-                onChange={v => changeFilter(setProvince, v)}
+                onChange={v => { changeFilter(setProvince, v); setDistrict(""); }}
                 placeholder="ทุกจังหวัด · All Provinces"
                 style={{ borderRadius: 20, padding: "8px 14px", minHeight: 40, fontSize: 14 }}
+              />
+            </div>
+            <div className="pl-select-wrap">
+              <DistrictSelect
+                province={province.split(" (")[0]}
+                value={district}
+                onChange={v => changeFilter(setDistrict, v)}
+                placeholder="ทุกอำเภอ"
               />
             </div>
             <div className="pl-select-wrap pl-select-sm">
@@ -207,11 +218,11 @@ function PlacesInner() {
         <div className="pl-result-bar">
           <p className="pl-result-count">
             {loading ? "กำลังโหลด..." : (
-              <>พบ <strong>{total.toLocaleString()}</strong> สถานที่{cat ? ` · ${CAT_LABEL[cat] ?? ""}` : ""}{province ? ` · ${province.split(" (")[0]}` : ""}{q ? ` · "${q}"` : ""}</>
+              <>พบ <strong>{total.toLocaleString()}</strong> สถานที่{cat ? ` · ${CAT_LABEL[cat] ?? ""}` : ""}{province ? ` · ${province.split(" (")[0]}` : ""}{district ? ` · ${district}` : ""}{q ? ` · "${q}"` : ""}</>
             )}
           </p>
-          {!loading && (cat || province || q) && (
-            <button className="pl-clear-btn" onClick={() => { setCat(""); setProvince(""); setQ(""); setInputQ(""); }}>
+          {!loading && (cat || province || district || q) && (
+            <button className="pl-clear-btn" onClick={() => { setCat(""); setProvince(""); setDistrict(""); setQ(""); setInputQ(""); }}>
               ✕ ล้างตัวกรอง · Clear filters
             </button>
           )}
@@ -230,7 +241,7 @@ function PlacesInner() {
             <div style={{ fontSize: 56, marginBottom: 16 }}>🔍</div>
             <h3>ไม่พบสถานที่ · No places found</h3>
             <p>ลองเปลี่ยนตัวกรองหรือค้นหาคำอื่น · Try adjusting your filters or search term</p>
-            <button className="pl-clear-btn" style={{ marginTop: 16 }} onClick={() => { setCat(""); setProvince(""); setQ(""); setInputQ(""); }}>
+            <button className="pl-clear-btn" style={{ marginTop: 16 }} onClick={() => { setCat(""); setProvince(""); setDistrict(""); setQ(""); setInputQ(""); }}>
               ล้างตัวกรองทั้งหมด · Clear all filters
             </button>
           </div>
