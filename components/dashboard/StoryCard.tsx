@@ -72,12 +72,12 @@ export default function StoryCard({
           position: "absolute", top: "10px", right: "10px",
           display: "inline-flex", alignItems: "center", gap: "5px",
           padding: "4px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: 700,
-          background: published ? "#dcfce7" : story.approvalStatus === "PENDING" ? "#eff6ff" : story.approvalStatus === "REJECTED" ? "#fef2f2" : "#f1f5f9",
-          color:      published ? "#15803d" : story.approvalStatus === "PENDING" ? "#1d4ed8" : story.approvalStatus === "REJECTED" ? "#b91c1c" : "#475569",
+          background: published || story.approvalStatus === "APPROVED" ? "#dcfce7" : story.approvalStatus === "PENDING" ? "#eff6ff" : story.approvalStatus === "REJECTED" ? "#fef2f2" : "#f1f5f9",
+          color:      published || story.approvalStatus === "APPROVED" ? "#15803d" : story.approvalStatus === "PENDING" ? "#1d4ed8" : story.approvalStatus === "REJECTED" ? "#b91c1c" : "#475569",
           backdropFilter: "blur(4px)",
         }}>
-          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: published ? "#22c55e" : story.approvalStatus === "PENDING" ? "#3b82f6" : story.approvalStatus === "REJECTED" ? "#ef4444" : "#94a3b8", flexShrink: 0 }} />
-          {published ? "เผยแพร่แล้ว · Published" : story.approvalStatus === "PENDING" ? "รออนุมัติ · Pending" : story.approvalStatus === "REJECTED" ? "ถูกปฏิเสธ · Rejected" : "ฉบับร่าง · Draft"}
+          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: published || story.approvalStatus === "APPROVED" ? "#22c55e" : story.approvalStatus === "PENDING" ? "#3b82f6" : story.approvalStatus === "REJECTED" ? "#ef4444" : "#94a3b8", flexShrink: 0 }} />
+          {published || story.approvalStatus === "APPROVED" ? "เผยแพร่แล้ว · Published" : story.approvalStatus === "PENDING" ? "รออนุมัติ · Pending" : story.approvalStatus === "REJECTED" ? "ถูกปฏิเสธ · Rejected" : "ฉบับร่าง · Draft"}
         </span>
       </div>
 

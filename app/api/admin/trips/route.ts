@@ -26,21 +26,13 @@ export async function GET(request: Request) {
       ];
     }
     if (approval === "PENDING") {
-      // Include both PENDING and null-approvalStatus non-draft unpublished trips
+      // Include PENDING + limbo (isDraft:false, isPublished:false, approvalStatus:null)
       where.isDraft = false;
       where.isPublished = false;
-      where.OR = [...(where.OR ?? []), ...[
+      where.OR = [
         { approvalStatus: "PENDING" },
         { approvalStatus: null },
-      ]];
-      delete where.OR; // reset OR from search, use direct filter
-      where.AND = [
-        { isDraft: false },
-        { isPublished: false },
-        { OR: [{ approvalStatus: "PENDING" }, { approvalStatus: null }] },
       ];
-      delete where.isDraft;
-      delete where.isPublished;
     } else if (approval) {
       where.approvalStatus = approval;
     }
@@ -108,7 +100,10 @@ export async function PUT(request: Request) {
       if (!trip) return NextResponse.json({ message: "ไม่พบทริป" }, { status: 404 });
       const updated = await prisma.trip.update({
         where: { id: tripId },
-        data: { isPublished: !trip.isPublished },
+        data: {
+          isPublished: !trip.isPublished,
+          approvalStatus: !trip.isPublished ? "APPROVED" : "PENDING",
+        },
         select: { id: true, title: true, isPublished: true },
       });
       await prisma.adminLog.create({
