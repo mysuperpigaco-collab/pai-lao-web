@@ -29,27 +29,22 @@ export async function GET(request: Request) {
     (prisma as any).pendingEdit.count({ where }),
   ]);
 
-  // Enrich with target info (title, slug)
-  const enriched = await Promise.all(edits.map(async (edit: any) => {
-    let targetTitle: string | null = null;
-    let targetSlug:  string | null = null;
-    if (edit.targetType === "TRIP") {
-      const trip = await prisma.trip.findUnique({
-        where: { id: edit.targetId },
-        select: { title: true, slug: true },
-      }).catch(() => null);
-      targetTitle = trip?.title ?? null;
-      targetSlug  = trip?.slug  ?? null;
-    } else if (edit.targetType === "PLACE") {
-      const place = await prisma.place.findUnique({
-        where: { id: edit.targetId },
-        select: { title: true, slug: true },
-      }).catch(() => null);
-      targetTitle = place?.title ?? null;
-      targetSlug  = place?.slug  ?? null;
-    }
-    return { ...edit, targetTitle, targetSlug };
-  }));
+  // Enrich with target info (title, slug) — batch queries instead of N+1
+  const tripIds  = edits.filter((e: any) => e.targetType === "TRIP" ).map((e: any) => e.targetId);
+  const placeIds = edits.filter((e: any) => e.targetType === "PLACE").map((e: any) => e.targetId);
+
+  const [trips, places] = await Promise.all([
+    tripIds.length  > 0 ? prisma.trip.findMany ({ where: { id: { in: tripIds  } }, select: { id: true, title: true, slug: true } }) : [],
+    placeIds.length > 0 ? prisma.place.findMany({ where: { id: { in: placeIds } }, select: { id: true, title: true, slug: true } }) : [],
+  ]);
+
+  const tripMap  = Object.fromEntries(trips.map( (t: any) => [t.id, t]));
+  const placeMap = Object.fromEntries(places.map((p: any) => [p.id, p]));
+
+  const enriched = edits.map((edit: any) => {
+    const target = edit.targetType === "TRIP" ? tripMap[edit.targetId] : placeMap[edit.targetId];
+    return { ...edit, targetTitle: target?.title ?? null, targetSlug: target?.slug ?? null };
+  });
 
   return NextResponse.json({ edits: enriched, total, page, pages: Math.ceil(total / limit) });
 }
@@ -95,6 +90,11 @@ export async function PUT(request: Request) {
                   transport: stop.transport ?? null, duration: stop.duration ?? null,
                   cost: stop.cost ?? null,
                   images: stop.images ?? (stop.image ? [stop.image] : []),
+                  stopType:      stop.stopType      ?? null,
+                  googleMapsUrl: stop.googleMapsUrl ?? null,
+                  tips:          stop.tips          ?? null,
+                  shareToPlace:  stop.shareToPlace  ?? false,
+                  placeId:       stop.placeId       ?? null,
                 })),
               },
             },
