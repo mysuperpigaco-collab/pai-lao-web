@@ -80,7 +80,7 @@ export default async function PlaceDetailPage({ params }: Props) {
     : 0;
   const catLabel = CAT_LABEL[place.category] ?? place.category;
   const catIcon  = CAT_ICON[place.category]  ?? "📍";
-  const isOwner    = session?.userId === place.business?.userId;
+  const isOwner    = !!session && !!place.business?.userId && session.userId === place.business.userId;
   const isBusiness = session?.role === "BUSINESS";
 
   let initialLiked = false;
