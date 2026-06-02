@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
 import {
   BackButton, CancelButton, SaveButton, ActionBar, PageTag,
 } from "@/components/ui/ActionButtons";
@@ -43,15 +44,7 @@ const MINUTES = ["00", "15", "30", "45"];
 
 const MAX_PHOTOS = 20;
 
-async function uploadImage(file: File, folder = "places"): Promise<string> {
-  const fd = new FormData();
-  fd.append("file", file);
-  fd.append("folder", folder);
-  const res = await fetch("/api/upload", { method: "POST", body: fd });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "อัปโหลดรูปไม่สำเร็จ");
-  return data.url as string;
-}
+// uploadFile/uploadFiles imported from uploadHelper (includes resize)
 
 /* ── Time picker sub-component ── */
 function TimePicker({

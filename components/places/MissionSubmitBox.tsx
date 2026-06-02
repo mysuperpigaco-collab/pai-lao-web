@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import { uploadFile } from "@/lib/uploadHelper";
 
 interface Mission {
   id: string;
@@ -32,11 +33,7 @@ export default function MissionSubmitBox({ placeId, missions }: Props) {
     setUploading(true);
     const urls: string[] = [];
     for (const file of Array.from(files)) {
-      const form = new FormData();
-      form.append("file", file);
-      form.append("folder", "missions");
-      const res = await fetch("/api/upload", { method: "POST", body: form });
-      if (res.ok) { const { url } = await res.json(); urls.push(url); }
+      try { const url = await uploadFile(file, "missions"); urls.push(url); } catch {}
     }
     setPhotos(p => [...p, ...urls]);
     setUploading(false);

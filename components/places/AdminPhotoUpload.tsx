@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import { uploadFile } from "@/lib/uploadHelper";
 
 interface Props {
   placeId: string;
@@ -19,14 +20,10 @@ export default function AdminPhotoUpload({ placeId, initialGallery, initialCover
     setUploading(true);
     const uploaded: string[] = [];
     for (const file of Array.from(files)) {
-      const form = new FormData();
-      form.append("file", file);
-      form.append("folder", "places");
-      const res = await fetch("/api/upload", { method: "POST", body: form });
-      if (res.ok) {
-        const { url } = await res.json();
+      try {
+        const url = await uploadFile(file, "places");
         uploaded.push(url);
-      }
+      } catch {}
     }
     if (uploaded.length === 0) { setUploading(false); return; }
 

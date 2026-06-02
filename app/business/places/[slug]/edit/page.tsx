@@ -45,19 +45,11 @@ const HOURS   = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"))
 const MINUTES = ["00", "15", "30", "45"];
 
 
+import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
+
 const MAX_PHOTOS = 20;
 
-async function uploadImage(file: File, folder = "places"): Promise<string> {
-  const fd = new FormData();
-  fd.append("file", file);
-  fd.append("folder", folder);
-  const res = await fetch("/api/upload", { method: "POST", body: fd });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "อัปโหลดรูปไม่สำเร็จ");
-  }
-  return (await res.json()).url as string;
-}
+// uploadFile imported from uploadHelper (includes resize)
 
 export default function EditPlacePage({ params }: Props) {
   const { slug: rawSlug } = use(params);
