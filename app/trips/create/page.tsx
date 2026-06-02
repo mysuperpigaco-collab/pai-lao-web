@@ -640,7 +640,7 @@ export default function CreateStoryPage() {
                       <div style={{ position: "relative", width: "100%", height: "110px", borderRadius: "20px", overflow: "hidden" }}>
                         <img src={item.imagePreview} alt="checkpoint" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         <button type="button" onClick={() => { updateTimeline(idx,"imageFile",null); updateTimeline(idx,"imagePreview",null); }}
-                          style={{ position: "absolute", top: 6, right: 6, width: 26, height: 26, borderRadius: "50%", background: "rgba(239,68,68,0.9)", color: "#fff", border: "none", fontSize: 14, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: "1" }}>
+                          style={{ position: "absolute", top: 6, right: 6, width: 26, height: 26, borderRadius: "50%", background: "rgba(239,68,68,0.9)", color: "#fff", border: "none", fontSize: 14, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           ×
                         </button>
                       </div>
@@ -802,4 +802,11 @@ export default function CreateStoryPage() {
         .pv-timeline{border-left:4px solid #3b82f6;padding-left:40px;margin-left:15px}
         .pv-item{position:relative;margin-bottom:50px}
         .pv-dot{position:absolute;left:-49px;top:8px;width:18px;height:18px;background:#3b82f6;border-radius:50%;border:4px solid #fff;box-shadow:0 0 0 6px rgba(59,130,246,0.2)}
-        .pv-info h4{margin:0;font-size:24px;color:#1e293b;font-weig
+        .pv-info h4{margin:0;font-size:24px;color:#1e293b;font-weight:800}
+        .pv-desc{color:#64748b;line-height:1.8;margin:15px 0;font-size:16px}
+        .pv-checkpoint-img{width:100%;max-width:500px;border-radius:30px;margin-top:20px;box-shadow:0 20px 40px rgba(0,0,0,0.1)}
+        @media(max-width:768px){.info-grid{grid-template-columns:1fr}.timeline-detail-row{grid-template-columns:1fr}.main-actions{flex-direction:column}.create-card{padding:30px}}@media(max-width:480px){.create-card{padding:20px;border-radius:24px}.create-container{padding:20px 12px}.timeline-card{padding:18px;border-radius:20px}.btn-action-publish{font-size:15px;padding:16px}}
+      `}</style>
+    </div>
+  );
+}
