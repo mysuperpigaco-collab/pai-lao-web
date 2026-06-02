@@ -184,8 +184,18 @@ export default function CreateStoryPage() {
   const selectPlace = (idx: number, p: any) => {
     const updated = [...timeline];
     updated[idx].place    = p.title;
-    updated[idx].province = normalizeProvince(p.province ?? "");
-    updated[idx].district = p.district ?? "";
+    const prov = normalizeProvince(p.province ?? "");
+    updated[idx].province = prov;
+    // normalise district: match against the district list for the province
+    const rawDist = p.district ?? "";
+    const distList = getDistricts(prov);
+    const matchedDist = distList.find(d =>
+      d === rawDist ||
+      d.startsWith(rawDist) ||
+      rawDist.startsWith(d) ||
+      d.replace(/^เมือง/, "") === rawDist.replace(/^เมือง/, "")
+    ) ?? rawDist;
+    updated[idx].district = matchedDist;
     updated[idx].placeId  = p.id;
     updated[idx].placeSlug = p.slug;
     setTimeline(updated);
