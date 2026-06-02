@@ -77,8 +77,17 @@ export default function EditTripPage({ params }: Props) {
   const selectPlace = (idx: number, p: any) => {
     const updated = [...timeline];
     updated[idx].place    = p.title;
-    updated[idx].province = p.province ? normalizeProvince(p.province) : updated[idx].province;
-    updated[idx].district = p.district ?? updated[idx].district;
+    const prov = p.province ? normalizeProvince(p.province) : updated[idx].province;
+    updated[idx].province = prov;
+    const rawDist = (p.district ?? "").replace(/^อำเภอ|^อ\./, "").trim();
+    const distList = getDistricts(prov);
+    const matchedDist = rawDist ? (distList.find(d => {
+      const dClean = d.replace(/^เมือง/, "");
+      const rClean = rawDist.replace(/^เมือง/, "");
+      return d === rawDist || d.startsWith(rawDist) || rawDist.startsWith(d) ||
+        dClean === rClean || dClean.startsWith(rClean) || rClean.startsWith(dClean);
+    }) ?? rawDist) : updated[idx].district;
+    updated[idx].district = matchedDist;
     updated[idx].placeId  = p.id;
     setTimeline(updated);
     setPlaceSuggestions(prev => ({ ...prev, [idx]: [] }));
@@ -772,7 +781,7 @@ export default function EditTripPage({ params }: Props) {
         .timeline-detail-row { display: grid; grid-template-columns: 1fr 180px; gap: 20px; margin-top: 15px; }
         .desc-area { height: 110px; border-radius: 20px; resize: none; background: white !important; }
         .cp-upload-container { height: 110px; }
-        .cp-label { width: 100%; height: 100%; border: 2px dashed #cbd5e1; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #64748b; font-size: 12px; font-weight: 700; transition: 0.3s; background: white; }
+        .cp-label { width: 100%; height: 100%; border: 2px dashed #cbd5e1; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #64748b; font-size: 12px; font-weight: 700; transition: 0.3s; background: white; text-align: center; gap: 4px; }
         .cp-label:hover { border-color: #3b82f6; color: #3b82f6; background: #f0f7ff; }
         .cp-preview-box { position: relative; width: 100%; height: 110px; border-radius: 20px; overflow: hidden; }
         .cp-preview-box img { width: 100%; height: 100%; object-fit: cover; }
