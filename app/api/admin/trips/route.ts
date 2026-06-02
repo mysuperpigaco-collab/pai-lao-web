@@ -100,10 +100,7 @@ export async function PUT(request: Request) {
       if (!trip) return NextResponse.json({ message: "ไม่พบทริป" }, { status: 404 });
       const updated = await prisma.trip.update({
         where: { id: tripId },
-        data: {
-          isPublished: !trip.isPublished,
-          approvalStatus: !trip.isPublished ? "APPROVED" : "PENDING",
-        },
+        data: { isPublished: !trip.isPublished },
         select: { id: true, title: true, isPublished: true },
       });
       await prisma.adminLog.create({
