@@ -25,7 +25,7 @@ export default function CreateStoryPage() {
   if (user && (user.role === "ADMIN" || user.role === "SUPERADMIN")) {
     return null;
   }
-  const today    = new Date().toISOString().split("T")[0];
+  const _d = new Date(); const today = `${_d.getFullYear()}-${String(_d.getMonth()+1).padStart(2,"0")}-${String(_d.getDate()).padStart(2,"0")}`;
 
   // ── State ────────────────────────────────────────────────
   const [coverFile,    setCoverFile   ] = useState<File | null>(null);
