@@ -30,6 +30,10 @@ export default function CreateStoryPage() {
   // ── State ────────────────────────────────────────────────
   const [coverFile,    setCoverFile   ] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [coverZoom,    setCoverZoom   ] = useState(1);
+  const [coverOffset,  setCoverOffset ] = useState({ x: 0, y: 0 }); // % for background-position
+  const coverAreaRef  = useRef<HTMLDivElement>(null);
+  const coverDragRef  = useRef({ dragging: false, startX: 0, startY: 0, startOX: 0, startOY: 0 });
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
 
@@ -69,7 +73,59 @@ export default function CreateStoryPage() {
     if (!file) return;
     setCoverFile(file);
     setCoverPreview(URL.createObjectURL(file));
+    setCoverZoom(1);
+    setCoverOffset({ x: 0, y: 0 });
   };
+
+  // ── Cover drag handlers ─────────────────────────────────
+  const onCoverMouseDown = (e: React.MouseEvent) => {
+    if (!coverPreview) return;
+    coverDragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, startOX: coverOffset.x, startOY: coverOffset.y };
+    e.preventDefault();
+  };
+  const onCoverMouseMove = (e: React.MouseEvent) => {
+    const d = coverDragRef.current;
+    if (!d.dragging || !coverAreaRef.current) return;
+    const W = coverAreaRef.current.offsetWidth;
+    const H = coverAreaRef.current.offsetHeight;
+    // max shift ≈ half the extra space created by zoom
+    const maxX = (coverZoom - 1) * 50;
+    const maxY = (coverZoom - 1) * 50;
+    const dx = ((e.clientX - d.startX) / W) * 100;
+    const dy = ((e.clientY - d.startY) / H) * 100;
+    setCoverOffset({
+      x: Math.max(-maxX, Math.min(maxX, d.startOX + dx)),
+      y: Math.max(-maxY, Math.min(maxY, d.startOY + dy)),
+    });
+  };
+  const onCoverMouseUp = () => { coverDragRef.current.dragging = false; };
+
+  // ── Canvas crop cover before upload ────────────────────
+  const getCroppedCoverFile = (): Promise<File> => new Promise((resolve) => {
+    const el = coverAreaRef.current;
+    if (!el || !coverPreview) { resolve(coverFile!); return; }
+    const W = el.offsetWidth, H = el.offsetHeight;
+    const img = new window.Image();
+    img.onload = () => {
+      const bgW = W * coverZoom;
+      const bgH = bgW * (img.naturalHeight / img.naturalWidth);
+      const posX = 50 + coverOffset.x;
+      const posY = 50 + coverOffset.y;
+      const leftPx = Math.max(0, Math.min((bgW - W) * posX / 100, bgW - W));
+      const topPx  = Math.max(0, Math.min((bgH - H) * posY / 100, bgH - H));
+      const sx = leftPx  * (img.naturalWidth  / bgW);
+      const sy = topPx   * (img.naturalHeight / bgH);
+      const sw = W       * (img.naturalWidth  / bgW);
+      const sh = H       * (img.naturalHeight / bgH);
+      const canvas = document.createElement("canvas");
+      canvas.width = 1200; canvas.height = Math.round(1200 * H / W);
+      canvas.getContext("2d")!.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob => {
+        resolve(new File([blob!], "cover.jpg", { type: "image/jpeg" }));
+      }, "image/jpeg", 0.88);
+    };
+    img.src = coverPreview;
+  });
 
   const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -162,7 +218,8 @@ export default function CreateStoryPage() {
       // 1. อัปโหลดรูปปกถ้ามีไฟล์ใหม่
       let draftCoverUrl = existingCoverUrl;
       if (coverFile) {
-        draftCoverUrl = await uploadFile(coverFile, "trips/covers");
+        const cropped = await getCroppedCoverFile();
+        draftCoverUrl = await uploadFile(cropped, "trips/covers");
         setExistingCoverUrl(draftCoverUrl);
         setCoverPreview(draftCoverUrl);
       }
@@ -249,7 +306,7 @@ export default function CreateStoryPage() {
     try {
       // 1. อัปโหลดรูปปก (หรือใช้ URL เดิมจาก draft)
       const coverUrl = coverFile
-        ? await uploadFile(coverFile, "trips/covers")
+        ? await uploadFile(await getCroppedCoverFile(), "trips/covers")
         : existingCoverUrl;
 
       // 2. อัปโหลด gallery ใหม่ + รวมกับ gallery เดิมจาก draft
@@ -419,15 +476,47 @@ export default function CreateStoryPage() {
 
         <form onSubmit={handleSubmit}>
           {/* 1. Cover */}
-          <div className="cover-upload-area" onClick={() => document.getElementById("coverInput")?.click()}>
-            {coverPreview
-              ? <img src={coverPreview} alt="Cover" className="cover-preview" />
-              : <div className="upload-placeholder">
-                  <span className="icon-main">🖼️</span>
-                  <h4>คลิกเพื่อเพิ่มรูปหน้าปกทริป</h4>
-                  <p>1200 x 630px สำหรับการแสดงผลที่ดีที่สุด</p>
-                </div>
-            }
+          <div
+            ref={coverAreaRef}
+            className="cover-upload-area"
+            style={coverPreview ? { cursor: coverDragRef.current.dragging ? "grabbing" : "grab", border: "none" } : {}}
+            onClick={!coverPreview ? () => document.getElementById("coverInput")?.click() : undefined}
+            onMouseDown={onCoverMouseDown}
+            onMouseMove={onCoverMouseMove}
+            onMouseUp={onCoverMouseUp}
+            onMouseLeave={onCoverMouseUp}
+          >
+            {coverPreview ? (
+              <div style={{
+                width: "100%", height: "100%",
+                backgroundImage: `url(${coverPreview})`,
+                backgroundSize: `${coverZoom * 100}%`,
+                backgroundPosition: `${50 + coverOffset.x}% ${50 + coverOffset.y}%`,
+                backgroundRepeat: "no-repeat",
+                borderRadius: "inherit",
+              }} />
+            ) : (
+              <div className="upload-placeholder">
+                <span className="icon-main">🖼️</span>
+                <h4>คลิกเพื่อเพิ่มรูปหน้าปกทริป</h4>
+                <p>1200 x 630px สำหรับการแสดงผลที่ดีที่สุด</p>
+              </div>
+            )}
+            {/* Zoom slider */}
+            {coverPreview && (
+              <div style={{ position:"absolute", bottom:12, left:"50%", transform:"translateX(-50%)", display:"flex", alignItems:"center", gap:8, background:"rgba(0,0,0,0.45)", borderRadius:20, padding:"6px 14px", backdropFilter:"blur(6px)" }}
+                onMouseDown={e => e.stopPropagation()}>
+                <span style={{ color:"#fff", fontSize:13 }}>🔍</span>
+                <input type="range" min={1} max={2.5} step={0.05} value={coverZoom}
+                  onChange={e => { const z = Number(e.target.value); setCoverZoom(z); setCoverOffset(o => ({ x: Math.max(-(z-1)*50, Math.min((z-1)*50, o.x)), y: Math.max(-(z-1)*50, Math.min((z-1)*50, o.y)) })); }}
+                  style={{ width:120, cursor:"pointer", accentColor:"#3b82f6" }} />
+                <span style={{ color:"#fff", fontSize:11, minWidth:28 }}>{Math.round(coverZoom * 100)}%</span>
+                <button type="button" onClick={() => document.getElementById("coverInput")?.click()}
+                  style={{ marginLeft:6, background:"rgba(255,255,255,0.2)", border:"none", color:"#fff", borderRadius:12, padding:"3px 10px", fontSize:12, cursor:"pointer" }}>
+                  เปลี่ยน
+                </button>
+              </div>
+            )}
             <input type="file" id="coverInput" hidden accept="image/*" onChange={handleCoverUpload} />
           </div>
 
