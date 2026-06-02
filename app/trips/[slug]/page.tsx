@@ -37,9 +37,11 @@ export default async function TripDetailPage({ params }: Props) {
   const raw = await params;
   const slug = decodeURIComponent(raw.slug);
 
-  const trip = await prisma.trip.findUnique({
-    where: { slug },
-    include: {
+  let trip: any = null;
+  try {
+    trip = await prisma.trip.findUnique({
+      where: { slug },
+      include: {
       author: {
         select: {
           id: true, username: true, firstName: true, lastName: true,
@@ -61,6 +63,10 @@ export default async function TripDetailPage({ params }: Props) {
     },
   });
 
+  } catch (e) {
+    console.error("Trip page error:", e);
+    return notFound();
+  }
   if (!trip) return notFound();
 
   // ── อนุญาตให้เจ้าของและแอดมินดูทริปที่ยังไม่ได้รับการอนุมัติ ──
@@ -100,7 +106,7 @@ export default async function TripDetailPage({ params }: Props) {
   followerCount = await prisma.follow.count({ where: { followingId: trip.author.id } });
 
   const avgRating = trip.reviews.length
-    ? trip.reviews.reduce((s, r) => s + r.rating, 0) / trip.reviews.length
+    ? trip.reviews.reduce((s: number, r: any) => s + r.rating, 0) / trip.reviews.length
     : 0;
 
   const authorName = trip.author.displayName || trip.author.firstName || "?";
@@ -212,7 +218,7 @@ export default async function TripDetailPage({ params }: Props) {
           <div className="trip-main">
             {trip.tags?.length > 0 && (
               <div className="tag-row">
-                {trip.tags.map((tag, i) => <span className="trip-tag" key={i}>{tag}</span>)}
+                {trip.tags.map((tag: string, i: number) => <span className="trip-tag" key={i}>{tag}</span>)}
               </div>
             )}
 
@@ -305,14 +311,14 @@ export default async function TripDetailPage({ params }: Props) {
 
             <div className="content-card">
               <TripComments
-                reviews={trip.reviews.map(r => ({
+                reviews={trip.reviews.map((r: any) => ({
                   id: r.id,
                   rating: r.rating,
                   text: r.text,
                   createdAt: r.createdAt.toISOString(),
                   author: r.author,
                   likes: r.likes ?? 0,
-                  replies: r.replies.map(rep => ({
+                  replies: r.replies.map((rep: any) => ({
                     id: rep.id,
                     text: rep.text,
                     createdAt: rep.createdAt.toISOString(),
