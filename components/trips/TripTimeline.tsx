@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import MapsButton from "@/components/common/MapsButton";
 
 interface TimelineStop {
   id: string;
@@ -129,14 +130,14 @@ export default function TripTimeline({ timeline }: Props) {
 
                       {/* Google Maps link */}
                       {stop.googleMapsUrl && (
-                        <a href={stop.googleMapsUrl} target="_blank" rel="noopener noreferrer"
-                          onClick={e => e.stopPropagation()}
+                        <MapsButton
+                          url={stop.googleMapsUrl}
+                          placeName={stop.placeName}
                           style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 12,
                             padding: "7px 14px", borderRadius: 10, border: "1.5px solid #3b82f6",
                             background: "#eff6ff", color: "#1d4ed8", fontSize: 13, fontWeight: 700,
-                            textDecoration: "none" }}>
-                          🗺️ ดูบน Google Maps · Open in Maps
-                        </a>
+                            cursor: "pointer" }}
+                        />
                       )}
 
                       {/* Images */}

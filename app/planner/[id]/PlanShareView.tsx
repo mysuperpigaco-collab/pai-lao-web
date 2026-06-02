@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import MapsButton from "@/components/common/MapsButton";
 
 const STOP_LABELS: Record<string, { icon: string; label: string; color: string; bg: string }> = {
   ATTRACTION: { icon: "🏞️", label: "ที่เที่ยว",  color: "#3b82f6", bg: "#eff6ff" },
@@ -221,10 +222,7 @@ export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl
                           )}
                           {stop.notes && <p className="pv-stop-notes">{stop.notes}</p>}
                           {stop.googleMapsUrl && (
-                            <a href={stop.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="pv-maps-link no-print">
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-                              เปิดใน Google Maps
-                            </a>
+                            <MapsButton url={stop.googleMapsUrl} placeName={stop.name} className="pv-maps-link no-print" variant="text" />
                           )}
                           {stop.googleMapsUrl && (
                             <div className="pv-maps-print print-only">
