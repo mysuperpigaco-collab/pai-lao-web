@@ -25,7 +25,25 @@ export async function GET(request: Request) {
         { author:   { username: { contains: q, mode: "insensitive" } } },
       ];
     }
-    if (approval) where.approvalStatus = approval;
+    if (approval === "PENDING") {
+      // Include both PENDING and null-approvalStatus non-draft unpublished trips
+      where.isDraft = false;
+      where.isPublished = false;
+      where.OR = [...(where.OR ?? []), ...[
+        { approvalStatus: "PENDING" },
+        { approvalStatus: null },
+      ]];
+      delete where.OR; // reset OR from search, use direct filter
+      where.AND = [
+        { isDraft: false },
+        { isPublished: false },
+        { OR: [{ approvalStatus: "PENDING" }, { approvalStatus: null }] },
+      ];
+      delete where.isDraft;
+      delete where.isPublished;
+    } else if (approval) {
+      where.approvalStatus = approval;
+    }
 
     const [trips, total] = await Promise.all([
       prisma.trip.findMany({

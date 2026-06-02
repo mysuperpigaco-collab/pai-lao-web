@@ -29,7 +29,8 @@ export default function EditTripPage({ params }: Props) {
   const [error,         setError        ] = useState("");
   const [submitted,     setSubmitted    ] = useState(false);
   const [notFound,      setNotFound     ] = useState(false);
-  const [isDraft,       setIsDraft      ] = useState(false);
+  const [isDraft,         setIsDraft        ] = useState(false);
+  const [isUnsubmitted,   setIsUnsubmitted  ] = useState(false); // draft OR limbo (unpublished, no approvalStatus)
   const [draftSubmitted, setDraftSubmitted] = useState(false);
   const [isSavingTemp, setIsSavingTemp] = useState(false);
   const [tempSaved,    setTempSaved   ] = useState(false);
@@ -135,6 +136,7 @@ export default function EditTripPage({ params }: Props) {
         setCoverPreview(t.coverUrl ?? null);
         setExistingGallery(t.gallery ?? []);
         setIsDraft(t.isDraft ?? false);
+        setIsUnsubmitted((t.isDraft ?? false) || (!t.isPublished && !t.approvalStatus));
         setTimeline((t.timeline ?? []).map((stop: any) => ({
           date:          stop.date           ?? today,
           time:          stop.time           ?? "",
@@ -314,14 +316,14 @@ export default function EditTripPage({ params }: Props) {
           youtubeUrl:  youtubeUrl.trim() || null,
           tiktokUrl:   tiktokUrl.trim()  || null,
           timeline:    timelineData,
-          ...(isDraft ? { finalize: true } : {}),
+          ...(isUnsubmitted ? { finalize: true } : {}),
         }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "เกิดข้อผิดพลาด");
 
-      if (isDraft && data.pending) {
+      if (isUnsubmitted && data.pending) {
         setDraftSubmitted(true);
       } else if (data.pending) {
         setSubmitted(true);
@@ -726,7 +728,7 @@ export default function EditTripPage({ params }: Props) {
           {/* Submit */}
           <ActionBar>
             <CancelButton href="/dashboard" label="ยกเลิก · Discard" />
-            {isDraft && (
+            {isUnsubmitted && (
               <button
                 type="button"
                 onClick={saveTempDraft}
@@ -743,7 +745,7 @@ export default function EditTripPage({ params }: Props) {
                 {isSavingTemp ? "⏳ กำลังบันทึก..." : tempSaved ? "✅ บันทึกแล้ว!" : "💾 บันทึกชั่วคราว"}
               </button>
             )}
-            <SaveButton label={isDraft ? "🚀 ส่งเพื่อเผยแพร่ · Submit" : "💾 บันทึกการแก้ไข · Save Changes"} loading={isLoading} />
+            <SaveButton label={isUnsubmitted ? "🚀 ส่งเพื่อเผยแพร่ · Submit" : "💾 บันทึกการแก้ไข · Save Changes"} loading={isLoading} />
           </ActionBar>
 
         </form>
