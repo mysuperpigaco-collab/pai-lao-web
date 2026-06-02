@@ -187,14 +187,14 @@ export default function CreateStoryPage() {
     const prov = normalizeProvince(p.province ?? "");
     updated[idx].province = prov;
     // normalise district: match against the district list for the province
-    const rawDist = p.district ?? "";
+    const rawDist = (p.district ?? "").replace(/^อำเภอ|^อ\./, "").trim();
     const distList = getDistricts(prov);
-    const matchedDist = distList.find(d =>
-      d === rawDist ||
-      d.startsWith(rawDist) ||
-      rawDist.startsWith(d) ||
-      d.replace(/^เมือง/, "") === rawDist.replace(/^เมือง/, "")
-    ) ?? rawDist;
+    const matchedDist = rawDist ? (distList.find(d => {
+      const dClean = d.replace(/^เมือง/, "");
+      const rClean = rawDist.replace(/^เมือง/, "");
+      return d === rawDist || d.startsWith(rawDist) || rawDist.startsWith(d) ||
+        dClean === rClean || dClean.startsWith(rClean) || rClean.startsWith(dClean);
+    }) ?? rawDist) : "";
     updated[idx].district = matchedDist;
     updated[idx].placeId  = p.id;
     updated[idx].placeSlug = p.slug;
@@ -848,7 +848,10 @@ export default function CreateStoryPage() {
               </div>
             </div>
             <div className="pv-body">
-              <p className="pv-main-content">{content}</p>
+              {content?.startsWith("<")
+                ? <div className="pv-main-content trip-rich-content" dangerouslySetInnerHTML={{ __html: content }} />
+                : <p className="pv-main-content">{content}</p>
+              }
               <div className="pv-timeline">
                 {timeline.map((t, i) => (
                   <div key={i} className="pv-item">
@@ -919,7 +922,7 @@ export default function CreateStoryPage() {
         .pv-tag{background:#3b82f6;padding:6px 18px;border-radius:50px;font-size:13px;font-weight:800;text-transform:uppercase}
         .pv-title-box h1{font-size:42px;margin:15px 0;font-weight:900;line-height:1.1}
         .pv-body{padding:50px}
-        .pv-main-content{line-height:2;color:#475569;font-size:18px;margin-bottom:50px;white-space:pre-wrap}
+        .pv-main-content{line-height:2;color:#475569;font-size:18px;margin-bottom:50px;white-space:pre-wrap}.pv-main-content.trip-rich-content{white-space:normal}
         .pv-timeline{border-left:4px solid #3b82f6;padding-left:40px;margin-left:15px}
         .pv-item{position:relative;margin-bottom:50px}
         .pv-dot{position:absolute;left:-49px;top:8px;width:18px;height:18px;background:#3b82f6;border-radius:50%;border:4px solid #fff;box-shadow:0 0 0 6px rgba(59,130,246,0.2)}
