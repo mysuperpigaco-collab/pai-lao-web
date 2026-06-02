@@ -195,10 +195,10 @@ export default function EditPlacePage({ params }: Props) {
     try {
       // upload new cover if changed
       let coverUrl = coverPreview;
-      if (coverFile) coverUrl = await uploadImage(coverFile);
+      if (coverFile) coverUrl = await uploadFile(coverFile, 'places/covers');
 
       // upload new gallery files
-      const newGalleryUrls = await Promise.all(galleryFiles.map(f => uploadImage(f)));
+      const newGalleryUrls = await Promise.all(galleryFiles.map(f => uploadFile(f, 'places')));
       const gallery = [...existingGallery, ...newGalleryUrls];
 
       const res = await fetch(`/api/places/${slug}`, {

@@ -199,8 +199,8 @@ export default function CreatePlacePage() {
         : `ปิดทุกวัน${closedDaysList.join(", ")}`;
 
     try {
-      const coverUrl    = await uploadImage(coverFile);
-      const galleryUrls = await Promise.all(galleryFiles.map(f => uploadImage(f)));
+      const coverUrl    = await uploadFile(coverFile, 'places/covers');
+      const galleryUrls = await Promise.all(galleryFiles.map(f => uploadFile(f, 'places')));
 
       const res = await fetch("/api/places", {
         method: "POST",
