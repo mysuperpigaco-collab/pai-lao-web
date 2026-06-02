@@ -78,6 +78,7 @@ export default function CreateStoryPage() {
   };
 
   // ── Cover drag handlers ─────────────────────────────────
+  // coverOffset = translate % of element size (pre-scale), clamped to keep edges covered
   const onCoverMouseDown = (e: React.MouseEvent) => {
     if (!coverPreview) return;
     coverDragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, startOX: coverOffset.x, startOY: coverOffset.y };
@@ -88,38 +89,54 @@ export default function CreateStoryPage() {
     if (!d.dragging || !coverAreaRef.current) return;
     const W = coverAreaRef.current.offsetWidth;
     const H = coverAreaRef.current.offsetHeight;
-    // max shift ≈ half the extra space created by zoom
-    const maxX = (coverZoom - 1) * 50;
-    const maxY = (coverZoom - 1) * 50;
-    const dx = ((e.clientX - d.startX) / W) * 100;
-    const dy = ((e.clientY - d.startY) / H) * 100;
+    const z = coverZoom;
+    // transform: scale(z) translate(tx%, ty%) — translate is pre-scale in element space
+    // drag dx pixels → Δtx_pct = dx / z / W * 100
+    const maxT = 50 * (z - 1) / z;
+    const dx = (e.clientX - d.startX) / z / W * 100;
+    const dy = (e.clientY - d.startY) / z / H * 100;
     setCoverOffset({
-      x: Math.max(-maxX, Math.min(maxX, d.startOX + dx)),
-      y: Math.max(-maxY, Math.min(maxY, d.startOY + dy)),
+      x: Math.max(-maxT, Math.min(maxT, d.startOX + dx)),
+      y: Math.max(-maxT, Math.min(maxT, d.startOY + dy)),
     });
   };
   const onCoverMouseUp = () => { coverDragRef.current.dragging = false; };
 
   // ── Canvas crop cover before upload ────────────────────
+  // Matches: img { object-fit:cover; transform: scale(z) translate(tx%, ty%) }
   const getCroppedCoverFile = (): Promise<File> => new Promise((resolve) => {
     const el = coverAreaRef.current;
     if (!el || !coverPreview) { resolve(coverFile!); return; }
     const W = el.offsetWidth, H = el.offsetHeight;
     const img = new window.Image();
     img.onload = () => {
-      const bgW = W * coverZoom;
-      const bgH = bgW * (img.naturalHeight / img.naturalWidth);
-      const posX = 50 + coverOffset.x;
-      const posY = 50 + coverOffset.y;
-      const leftPx = Math.max(0, Math.min((bgW - W) * posX / 100, bgW - W));
-      const topPx  = Math.max(0, Math.min((bgH - H) * posY / 100, bgH - H));
-      const sx = leftPx  * (img.naturalWidth  / bgW);
-      const sy = topPx   * (img.naturalHeight / bgH);
-      const sw = W       * (img.naturalWidth  / bgW);
-      const sh = H       * (img.naturalHeight / bgH);
+      const z = coverZoom;
+      // object-fit:cover scale factor
+      const sc = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+      // total scale on image pixels
+      const total = sc * z;
+      // translate in screen pixels: tx_px = tx% * W * z (from scale(z) translate(tx%))
+      const tx_px = coverOffset.x / 100 * W * z;
+      const ty_px = coverOffset.y / 100 * H * z;
+      // Center of image in container coords
+      const cx = W / 2 + tx_px;
+      const cy = H / 2 + ty_px;
+      // Visible rect in natural image coords
+      const srcX = (cx - W / 2) / total + img.naturalWidth  * (1 - W  / (img.naturalWidth  * total)) / 2;
+      const srcY = (cy - H / 2) / total + img.naturalHeight * (1 - H  / (img.naturalHeight * total)) / 2;
+      // Simpler: invert the mapping. container center (W/2,H/2) → image pixel
+      // img pixel = (container_point - cx) / total + imgCenter
+      const halfW_src = (W / 2) / total;
+      const halfH_src = (H / 2) / total;
+      const imgCx = img.naturalWidth  / 2 + (W / 2 - cx) / total;
+      const imgCy = img.naturalHeight / 2 + (H / 2 - cy) / total;
       const canvas = document.createElement("canvas");
       canvas.width = 1200; canvas.height = Math.round(1200 * H / W);
-      canvas.getContext("2d")!.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+      canvas.getContext("2d")!.drawImage(
+        img,
+        imgCx - halfW_src, imgCy - halfH_src, halfW_src * 2, halfH_src * 2,
+        0, 0, canvas.width, canvas.height
+      );
       canvas.toBlob(blob => {
         resolve(new File([blob!], "cover.jpg", { type: "image/jpeg" }));
       }, "image/jpeg", 0.88);
@@ -487,14 +504,19 @@ export default function CreateStoryPage() {
             onMouseLeave={onCoverMouseUp}
           >
             {coverPreview ? (
-              <div style={{
-                width: "100%", height: "100%",
-                backgroundImage: `url(${coverPreview})`,
-                backgroundSize: `${coverZoom * 100}%`,
-                backgroundPosition: `${50 + coverOffset.x}% ${50 + coverOffset.y}%`,
-                backgroundRepeat: "no-repeat",
-                borderRadius: "inherit",
-              }} />
+              <img
+                src={coverPreview}
+                draggable={false}
+                style={{
+                  position: "absolute", inset: 0,
+                  width: "100%", height: "100%",
+                  objectFit: "cover",
+                  transform: `scale(${coverZoom}) translate(${coverOffset.x}%, ${coverOffset.y}%)`,
+                  pointerEvents: "none",
+                  userSelect: "none",
+                  borderRadius: "inherit",
+                }}
+              />
             ) : (
               <div className="upload-placeholder">
                 <span className="icon-main">🖼️</span>
@@ -508,7 +530,7 @@ export default function CreateStoryPage() {
                 onMouseDown={e => e.stopPropagation()}>
                 <span style={{ color:"#fff", fontSize:13 }}>🔍</span>
                 <input type="range" min={1} max={2.5} step={0.05} value={coverZoom}
-                  onChange={e => { const z = Number(e.target.value); setCoverZoom(z); setCoverOffset(o => ({ x: Math.max(-(z-1)*50, Math.min((z-1)*50, o.x)), y: Math.max(-(z-1)*50, Math.min((z-1)*50, o.y)) })); }}
+                  onChange={e => { const z = Number(e.target.value); const maxT = 50*(z-1)/z; setCoverZoom(z); setCoverOffset(o => ({ x: Math.max(-maxT, Math.min(maxT, o.x)), y: Math.max(-maxT, Math.min(maxT, o.y)) })); }}
                   style={{ width:120, cursor:"pointer", accentColor:"#3b82f6" }} />
                 <span style={{ color:"#fff", fontSize:11, minWidth:28 }}>{Math.round(coverZoom * 100)}%</span>
                 <button type="button" onClick={() => document.getElementById("coverInput")?.click()}
