@@ -7,6 +7,7 @@ import { ArrowRight, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
 import { getDistricts, normalizeProvince, PROVINCES } from "@/data/thailand";
+import RichTextEditor from "@/components/common/RichTextEditor";
 
 export default function CreateStoryPage() {
   const router   = useRouter();
@@ -239,7 +240,7 @@ export default function CreateStoryPage() {
     e.preventDefault();
     if (!user)       { setError("กรุณาเข้าสู่ระบบก่อน"); return; }
     if (!title)      { setError("กรุณาใส่ชื่อทริป"); return; }
-    if (!content)    { setError("กรุณาเขียนเรื่องเล่าโดยรวม"); return; }
+    if (!content || content === "<p></p>") { setError("กรุณาเขียนเรื่องเล่าโดยรวม"); return; }
     if (!coverFile && !existingCoverUrl) { setError("กรุณาเพิ่มรูปปก"); return; }
 
     setError("");
@@ -439,8 +440,11 @@ export default function CreateStoryPage() {
             </div>
             <div className="form-group full-width">
               <label>เรื่องเล่าโดยรวม | <small>OVERALL</small> <span>*</span></label>
-              <textarea className="form-control text-area" value={content}
-                onChange={(e) => setContent(e.target.value)} placeholder="เล่าความประทับใจในภาพรวมของทริปนี้..." required />
+              <RichTextEditor
+                value={content}
+                onChange={setContent}
+                placeholder="เล่าความประทับใจในภาพรวมของทริปนี้... แทรกรูปภาพได้เลย 🖼️"
+              />
             </div>
             <div className="form-group">
               <label>งบประมาณ | <small>BUDGET (บาท)</small></label>

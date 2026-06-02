@@ -575,3 +575,36 @@
   .tag-row { gap: 6px; }
   .share-row { flex-wrap: wrap; }
 }
+
+/* ─── Rich Text Content (Tiptap) ─── */
+.trip-rich-content {
+  font-size: 15px;
+  line-height: 1.9;
+  color: #1e293b;
+}
+.trip-rich-content h2 {
+  font-size: 22px; font-weight: 900;
+  color: #0f172a; margin: 24px 0 12px;
+  border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;
+}
+.trip-rich-content h3 {
+  font-size: 18px; font-weight: 800;
+  color: #1e293b; margin: 20px 0 8px;
+}
+.trip-rich-content p { margin: 0 0 14px; }
+.trip-rich-content strong { font-weight: 800; }
+.trip-rich-content em { font-style: italic; }
+.trip-rich-content u { text-decoration: underline; }
+.trip-rich-content ul, .trip-rich-content ol {
+  padding-left: 24px; margin: 8px 0 14px;
+}
+.trip-rich-content li { margin-bottom: 6px; }
+.trip-rich-content img {
+  max-width: 100%; border-radius: 16px;
+  margin: 20px auto; display: block;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+}
+.trip-rich-content hr {
+  border: none; border-top: 2px solid #f1f5f9;
+  margin: 28px 0;
+}

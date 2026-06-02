@@ -14,6 +14,7 @@ import {
   PageTag,
 } from "@/components/ui/ActionButtons";
 import "@/components/ui/action-buttons.css";
+import RichTextEditor from "@/components/common/RichTextEditor";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -252,7 +253,7 @@ export default function EditTripPage({ params }: Props) {
     e.preventDefault();
     setError("");
     if (!title.trim())   { setError("กรุณากรอกชื่อเรื่องเล่า"); return; }
-    if (!content.trim()) { setError("กรุณากรอกเนื้อหา"); return; }
+    if (!content || content === "<p></p>") { setError("กรุณากรอกเนื้อหา"); return; }
 
     setIsLoading(true);
     try {
@@ -525,8 +526,11 @@ export default function EditTripPage({ params }: Props) {
 
             <div className="form-group full-width">
               <label>เนื้อหา | <small>STORY CONTENT</small> <span style={{ color: "#ef4444" }}>*</span></label>
-              <textarea className="form-control text-area" value={content}
-                onChange={e => setContent(e.target.value)} placeholder="เล่าเรื่องราวการเดินทางของคุณ..." />
+              <RichTextEditor
+                value={content}
+                onChange={setContent}
+                placeholder="เล่าเรื่องราวการเดินทางของคุณ... แทรกรูปภาพได้เลย 🖼️"
+              />
             </div>
           </div>
 
