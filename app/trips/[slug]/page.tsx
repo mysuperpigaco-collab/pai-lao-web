@@ -222,7 +222,7 @@ export default async function TripDetailPage({ params }: Props) {
               </div>
             )}
 
-            {trip.description && (
+            {trip.description && trip.description !== "<p></p>" && trip.description !== "<p><br></p>" && (
               <div className="content-card">
                 <h2>🗒️ เรื่องเล่า</h2>
                 {trip.description?.startsWith("<") ? (
