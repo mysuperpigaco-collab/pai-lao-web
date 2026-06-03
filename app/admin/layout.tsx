@@ -28,8 +28,9 @@ const NAV_ADMIN = [
     { href: "/admin/promotions", icon: "🎁", label: "โปรโมชั่น" },
   ]},
   { group: "ชุมชน", items: [
-    { href: "/admin/users",   icon: "👥", label: "ผู้ใช้งาน" },
-    { href: "/admin/reports", icon: "🚩", label: "รายงาน", alert: true },
+    { href: "/admin/users",         icon: "👥", label: "ผู้ใช้งาน" },
+    { href: "/admin/reports",       icon: "🚩", label: "รายงาน", alert: true },
+    { href: "/admin/announcements", icon: "📢", label: "ประกาศ" },
   ]},
 ];
 

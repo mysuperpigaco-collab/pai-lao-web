@@ -88,6 +88,7 @@ export default function DashboardPage() {
   const [replyNotifs, setReplyNotifs]   = useState<ReplyNotif[]>([]);
   const [tripReviews, setTripReviews]   = useState<TripOwnerNotif[]>([]);
   const [loadingNotifs, setLoadingNotifs] = useState(true);
+  const [announcements, setAnnouncements] = useState<{ id: string; title: string; body: string; icon: string; type: string; createdAt: string }[]>([]);
   const [draftTrips, setDraftTrips] = useState<{ id: string; slug: string; title: string; updatedAt?: string; timeline?: { id: string }[] }[]>([]);
 
   // ── Read/unread tracking via localStorage ──
@@ -110,6 +111,7 @@ export default function DashboardPage() {
     const allIds = [
       ...tripReviews.map(r => `tr:${r.id}`),
       ...replyNotifs.map(r => `rp:${r.id}`),
+      ...announcements.map(a => `an:${a.id}`),
     ];
     markSeen(allIds);
   };
@@ -123,10 +125,15 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/reviews/notifications")
-      .then(r => r.json())
-      .then(d => { setReplyNotifs(d.reviews ?? []); setTripReviews(d.tripReviews ?? []); setLoadingNotifs(false); })
-      .catch(() => setLoadingNotifs(false));
+    Promise.all([
+      fetch("/api/reviews/notifications").then(r => r.json()),
+      fetch("/api/announcements").then(r => r.json()),
+    ]).then(([notifData, annData]) => {
+      setReplyNotifs(notifData.reviews ?? []);
+      setTripReviews(notifData.tripReviews ?? []);
+      setAnnouncements(annData.announcements ?? []);
+      setLoadingNotifs(false);
+    }).catch(() => setLoadingNotifs(false));
   }, []);
 
   // ── โหลด draft trip ──────────────────────────────────────
@@ -325,11 +332,12 @@ export default function DashboardPage() {
                 const visibleItems = allItems.filter(({ kind, n }) =>
                   !seenIds.has(`del:${kind === "trip" ? `tr:${n.id}` : `rp:${n.id}`}`)
                 );
-                if (visibleItems.length === 0) return null;
+                const visibleAnnouncements = announcements.filter(a => !seenIds.has(`del:an:${a.id}`));
+                if (visibleItems.length === 0 && visibleAnnouncements.length === 0) return null;
 
                 const unreadCount = visibleItems.filter(({ kind, n }) =>
                   !seenIds.has(kind === "trip" ? `tr:${n.id}` : `rp:${n.id}`)
-                ).length;
+                ).length + visibleAnnouncements.filter(a => !seenIds.has(`an:${a.id}`)).length;
 
                 const dismissNotif = (key: string) => markSeen([`del:${key}`]);
 
@@ -435,6 +443,37 @@ export default function DashboardPage() {
                             </div>
                           );
                         })}
+
+                      {/* ── Announcement cards ── */}
+                      {visibleAnnouncements.map(a => {
+                        const anid = `an:${a.id}`;
+                        const isRead = seenIds.has(anid);
+                        const bgMap: Record<string, string> = { info: isRead ? "#f8fafc" : "#eff6ff", success: isRead ? "#f8fafc" : "#f0fdf4", warning: isRead ? "#f8fafc" : "#fffbeb", tip: isRead ? "#f8fafc" : "#f5f3ff" };
+                        const borderMap: Record<string, string> = { info: isRead ? "#e2e8f0" : "#bfdbfe", success: isRead ? "#e2e8f0" : "#bbf7d0", warning: isRead ? "#e2e8f0" : "#fde68a", tip: isRead ? "#e2e8f0" : "#ddd6fe" };
+                        const colorMap: Record<string, string> = { info: "#2563eb", success: "#16a34a", warning: "#d97706", tip: "#7c3aed" };
+                        const dotMap: Record<string, string>   = { info: "#3b82f6", success: "#22c55e", warning: "#f59e0b", tip: "#8b5cf6" };
+                        return (
+                          <div key={a.id} onClick={() => markSeen([anid])}
+                            style={{ background: bgMap[a.type] ?? "#f8fafc", border: `1.5px solid ${borderMap[a.type] ?? "#e2e8f0"}`, borderLeft: `4px solid ${dotMap[a.type] ?? "#e2e8f0"}`, borderRadius: 16, padding: "13px 14px", display: "flex", flexDirection: "column", gap: 8, boxShadow: isRead ? "none" : "0 2px 12px rgba(0,0,0,0.06)", transition: "all 0.3s ease", opacity: isRead ? 0.75 : 1, position: "relative", cursor: "pointer" }}>
+                            <button onClick={e => { e.stopPropagation(); markSeen([`del:${anid}`, anid]); }}
+                              style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#94a3b8", fontFamily: "inherit", lineHeight: 1 }} title="ปิด">×</button>
+                            <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                              <div style={{ position: "relative", flexShrink: 0 }}>
+                                <div style={{ width: 36, height: 36, borderRadius: 10, background: isRead ? "#f1f5f9" : (bgMap[a.type] ?? "#f1f5f9"), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{a.icon}</div>
+                                {!isRead && <span style={{ position: "absolute", top: -2, right: -2, width: 9, height: 9, borderRadius: "50%", background: "#e11d48", border: "2px solid white" }} />}
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0, paddingRight: 18 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 2 }}>
+                                  <span style={{ fontSize: 12, fontWeight: isRead ? 600 : 800, color: isRead ? "#475569" : colorMap[a.type] ?? "#0f172a" }}>{a.title}</span>
+                                  {!isRead && <span style={{ fontSize: 9, fontWeight: 800, background: "#fef3c7", color: "#92400e", padding: "1px 5px", borderRadius: 999 }}>ใหม่</span>}
+                                </div>
+                                <p style={{ fontSize: 11, color: isRead ? "#94a3b8" : "#374151", margin: 0, lineHeight: 1.5 }}>{a.body}</p>
+                              </div>
+                            </div>
+                            <span style={{ fontSize: 10, color: "#94a3b8", alignSelf: "flex-end" }}>{new Date(a.createdAt).toLocaleDateString("th-TH")}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 );
