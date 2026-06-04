@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword, signToken, setAuthCookie } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 // ── helper: ดึง IP จาก request headers ──────────────────────
 function getIp(request: NextRequest): string {
@@ -14,6 +15,16 @@ function getIp(request: NextRequest): string {
 export async function POST(request: NextRequest) {
   const ip        = getIp(request);
   const userAgent = request.headers.get("user-agent") || undefined;
+
+  // ── Rate limit: 10 ครั้ง / นาที ต่อ IP ──────────────────────
+  const rl = checkRateLimit(`login:${ip}`, 10, 60_000);
+  if (!rl.allowed) {
+    const retryAfter = Math.ceil((rl.resetAt - Date.now()) / 1000);
+    return NextResponse.json(
+      { message: `พยายามเข้าสู่ระบบบ่อยเกินไป กรุณารอ ${retryAfter} วินาที` },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } }
+    );
+  }
 
   try {
     const { emailOrUsername, password } = await request.json();

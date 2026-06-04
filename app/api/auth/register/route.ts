@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, signToken, setAuthCookie } from "@/lib/auth";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
+import { checkRateLimit } from "@/lib/rateLimit";
 import { Resend } from "resend";
 import crypto from "crypto";
 
@@ -11,6 +12,16 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://pai-lao-web.vercel
 export async function POST(request: NextRequest) {
   const ip        = getClientIp(request);
   const userAgent = request.headers.get("user-agent") ?? null;
+
+  // ── Rate limit: 5 ครั้ง / 10 นาที ต่อ IP ───────────────────
+  const rl = checkRateLimit(`register:${ip}`, 5, 10 * 60_000);
+  if (!rl.allowed) {
+    const retryAfter = Math.ceil((rl.resetAt - Date.now()) / 1000);
+    return NextResponse.json(
+      { message: `สมัครสมาชิกบ่อยเกินไป กรุณารอ ${Math.ceil(retryAfter / 60)} นาที` },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } }
+    );
+  }
 
   try {
     const body = await request.json();

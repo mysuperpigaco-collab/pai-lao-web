@@ -5,6 +5,7 @@ import TripRichContent from "@/components/trips/TripRichContent";
 import BackButton from "@/components/common/BackButton";
 import TripTimeline from "@/components/trips/TripTimeline";
 import TripComments from "@/components/trips/TripComments";
+import ViewTracker from "@/components/common/ViewTracker";
 import BookmarkButton from "@/components/trips/BookmarkButton";
 import LikeButton from "@/components/trips/LikeButton";
 import FollowButton from "@/components/trips/FollowButton";
@@ -189,6 +190,7 @@ export default async function TripDetailPage({ params }: Props) {
   return (
     <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+    <ViewTracker type="trips" slug={slug} />
     <div className="place-page">
 
       {/* ─── Approval Status Banner ─── */}

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import PlaceReviews from "@/components/places/PlaceReviews";
+import ViewTracker from "@/components/common/ViewTracker";
 import PlaceLikeButton from "@/components/places/PlaceLikeButton";
 import PlaceBookmarkButton from "@/components/places/PlaceBookmarkButton";
 import ShareButton from "@/components/common/ShareButton";
@@ -225,6 +226,7 @@ export default async function PlaceDetailPage({ params }: Props) {
   return (
     <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+    <ViewTracker type="places" slug={slug} />
     <div className="pd-page">
       <div className="pd-hero-wrap">
         <div className="pd-hero">
