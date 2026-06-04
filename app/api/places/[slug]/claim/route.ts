@@ -2,11 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
-// POST /api/places/[slug]/claim — business owner claims an unclaimed place
-export async function POST(
-  _req: Request,
-  { params }: { params: Promise<{ slug: string }> }
-) {
+type Params = { params: Promise<{ slug: string }> };
+
+// POST /api/places/[slug]/claim — ส่งคำขอ claim รอแอดมินอนุมัติ
+export async function POST(req: Request, { params }: Params) {
   try {
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
@@ -30,23 +29,38 @@ export async function POST(
     });
     if (!business) return NextResponse.json({ message: "ไม่พบข้อมูลธุรกิจ" }, { status: 404 });
 
-    // Claim: link place to this business
-    await prisma.place.update({
-      where: { slug },
-      data: { businessId: business.id },
+    // เช็คว่ามีคำขอ pending อยู่แล้วหรือไม่
+    const existing = await (prisma as any).placeClaim.findFirst({
+      where: { placeId: place.id, businessId: business.id, status: "PENDING" },
+    });
+    if (existing) {
+      return NextResponse.json({ message: "คุณมีคำขอรอการอนุมัติอยู่แล้ว" }, { status: 409 });
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const message = (body as any)?.message?.trim() || null;
+
+    // สร้าง PlaceClaim รอแอดมินอนุมัติ (ไม่ set businessId ทันที)
+    await (prisma as any).placeClaim.create({
+      data: {
+        placeId:    place.id,
+        businessId: business.id,
+        status:     "PENDING",
+        message,
+      },
     });
 
     await prisma.adminLog.create({
       data: {
-        adminId: session.userId,
-        action: "CLAIM_PLACE",
-        targetId: place.id,
+        adminId:    session.userId,
+        action:     "REQUEST_CLAIM_PLACE",
+        targetId:   place.id,
         targetType: "PLACE",
-        detail: `Business claimed place: ${place.title}`,
+        detail:     `Business requested claim: ${place.title}`,
       },
     }).catch(() => {});
 
-    return NextResponse.json({ message: "เชื่อมสถานที่สำเร็จ" });
+    return NextResponse.json({ message: "ส่งคำขอเรียบร้อย รอแอดมินอนุมัติ", pending: true });
   } catch (err) {
     console.error("POST /api/places/[slug]/claim:", err);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });

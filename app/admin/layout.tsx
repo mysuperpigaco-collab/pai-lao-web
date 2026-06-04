@@ -30,6 +30,7 @@ const NAV_ADMIN = [
   { group: "ชุมชน", items: [
     { href: "/admin/users",         icon: "👥", label: "ผู้ใช้งาน" },
     { href: "/admin/reports",       icon: "🚩", label: "รายงาน", alert: true },
+    { href: "/admin/claims",        icon: "🏢", label: "คำขอ Claim" },
     { href: "/admin/announcements", icon: "📢", label: "ประกาศ" },
   ]},
 ];
