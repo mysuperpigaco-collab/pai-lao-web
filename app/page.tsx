@@ -563,16 +563,16 @@ export default function HomePage() {
 
                 {/* Hero — rank 1 */}
                 {archiveTrips[0] && (
-                  <div className="pl-fade" style={{ marginBottom: 16 }}>
+                  <div style={{ marginBottom: 16, animation: "fadeSlide 0.35s ease" }}>
                     <HeroCard trip={archiveTrips[0]} />
                   </div>
                 )}
 
                 {/* Medium — rank 2 & 3 */}
                 {archiveTrips.length > 1 && (
-                  <div ref={archiveGridRef} style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 16 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 16 }}>
                     {archiveTrips.slice(1, 3).map((trip, i) => (
-                      <div key={trip.slug} className="pl-fade">
+                      <div key={trip.slug} style={{ animation: `fadeSlide 0.35s ease ${i * 60}ms both` }}>
                         <MedCard trip={trip} rank={i + 1} />
                       </div>
                     ))}
@@ -587,7 +587,7 @@ export default function HomePage() {
                   return (
                     <div style={{ display: "grid", gridTemplateColumns: `repeat(${smallCols},1fr)`, gap: 12 }}>
                       {smallTrips.map((trip, i) => (
-                        <div key={trip.slug} className="pl-fade">
+                        <div key={trip.slug} style={{ animation: `fadeSlide 0.35s ease ${(i + 2) * 50}ms both` }}>
                           <SmallCard trip={trip} rank={i + 3} />
                         </div>
                       ))}

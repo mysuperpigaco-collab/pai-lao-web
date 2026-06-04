@@ -127,6 +127,12 @@ body {
 .logo-text h1 { font-size: 28px; font-weight: 800; }
 .logo-text p  { font-size: 11px; color: #999; letter-spacing: 2px; }
 
+/* ── Keyframes ── */
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
 /* ── Animation Utilities ── */
 
 /* Scroll fade-in */
