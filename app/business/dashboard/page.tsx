@@ -87,8 +87,10 @@ function PromotionSection() {
             </div>
           ))}
         </div>
+      ) : (
+        <div style={{ padding: "16px 0 4px", textAlign: "center", color: "#94a3b8", fontSize: 12 }}>ยังไม่มีโปรโมชั่น</div>
       )}
-    </section>
+    </div>
   );
 }
 
