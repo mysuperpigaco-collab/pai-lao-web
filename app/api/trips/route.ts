@@ -41,6 +41,48 @@ export async function GET(request: Request) {
       ]} : {}),
     };
 
+    // ── Trending: sort by likes in last 90 days ───────────
+    if (sort === "trending") {
+      const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+      const recentLikes = await prisma.tripLike.groupBy({
+        by: ["tripId"],
+        where: { createdAt: { gte: since }, trip: where },
+        _count: { tripId: true },
+        orderBy: { _count: { tripId: "desc" } },
+        take: limit,
+        skip,
+      });
+      const orderedIds = recentLikes.map((r: any) => r.tripId);
+      if (orderedIds.length === 0) {
+        return NextResponse.json({ trips: [], total: 0, page, totalPages: 0 });
+      }
+      const trendingTrips = await prisma.trip.findMany({
+        where: { id: { in: orderedIds } },
+        select: {
+          id: true, slug: true, title: true, subtitle: true,
+          coverUrl: true, mood: true, budget: true, location: true,
+          tags: true, createdAt: true, isPublished: true, viewCount: true,
+          approvalStatus: true, rejectionReason: true,
+          author: { select: { id: true, username: true, displayName: true, firstName: true, avatarUrl: true } },
+          _count: { select: { reviews: true, bookmarks: true, likes: true } },
+          reviews: { select: { rating: true } },
+          timeline: { select: { province: true, district: true }, take: 1, orderBy: { order: "asc" } },
+        },
+      });
+      // preserve order from recentLikes
+      const tripMap = Object.fromEntries(trendingTrips.map((t: any) => [t.id, t]));
+      const ordered = orderedIds.map((id: string) => tripMap[id]).filter(Boolean);
+      const flat = ordered.map(({ timeline, reviews, ...t }: any) => {
+        const ratings = (reviews ?? []).map((r: any) => r.rating).filter(Boolean);
+        const avgRating = ratings.length ? ratings.reduce((s: number, r: number) => s + r, 0) / ratings.length : null;
+        return { ...t, avgRating, province: timeline?.[0]?.province ?? null, district: timeline?.[0]?.district ?? null, hasPendingEdit: false };
+      });
+      const trendingTotal = await prisma.tripLike.groupBy({
+        by: ["tripId"], where: { createdAt: { gte: since }, trip: where }, _count: { tripId: true },
+      });
+      return NextResponse.json({ trips: flat, total: trendingTotal.length, page, totalPages: Math.ceil(trendingTotal.length / limit) });
+    }
+
     const orderBy: any = sort === "popular"
       ? { bookmarks: { _count: "desc" } }
       : { createdAt: "desc" };
