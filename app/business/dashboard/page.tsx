@@ -3,94 +3,177 @@
 // ── Feature flag: แอดมินเปิด/ปิด Promotion ─────────────────────
 const PROMOTION_ENABLED = true;
 
-// ── PromotionSection ────────────────────────────────────────────
-function PromotionSection() {
-  if (!PROMOTION_ENABLED) return null;
-  const [promos, setPromos] = React.useState<any[]>([]);
-  const [showForm, setShowForm] = React.useState(false);
-  const [form, setForm] = React.useState({ title: "", description: "", discount: "", condition: "", startDate: "", endDate: "", coverUrl: "" });
-  const [saving, setSaving] = React.useState(false);
-  const [msg, setMsg] = React.useState("");
+// ── PromotionModal ────────────────────────────────────────────────
+type Place = { id: string; slug: string; title: string };
 
-  React.useEffect(() => {
-    fetch("/api/promotions").then(r => r.json()).then(d => setPromos(d.promotions || []));
-  }, []);
+function PromotionModal({ places, onClose, onSuccess }: {
+  places: Place[]; onClose: () => void; onSuccess: () => void;
+}) {
+  const [form, setForm] = React.useState({
+    placeId: places[0]?.id ?? "",
+    title: "", description: "", discount: "",
+    startDate: "", endDate: "",
+  });
+  const [conditions, setConditions] = React.useState<string[]>([""]);
+  const [saving, setSaving] = React.useState(false);
+  const [err, setErr] = React.useState("");
+
+  const inp: React.CSSProperties = { width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", fontSize: 13, fontFamily: "inherit", boxSizing: "border-box", outline: "none", background: "white" };
+  const lbl: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 5 };
+
+  const addCondition    = () => setConditions(c => [...c, ""]);
+  const removeCondition = (i: number) => setConditions(c => c.filter((_, idx) => idx !== i));
+  const updateCondition = (i: number, v: string) => setConditions(c => c.map((x, idx) => idx === i ? v : x));
 
   const handleSubmit = async () => {
-    if (!form.title || !form.description || !form.startDate || !form.endDate) { setMsg("กรุณากรอกข้อมูลให้ครบ"); return; }
-    setSaving(true); setMsg("");
-    const res = await fetch("/api/promotions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+    if (!form.title || !form.description || !form.startDate || !form.endDate || !form.placeId) {
+      setErr("กรุณากรอกข้อมูลที่จำเป็นให้ครบ"); return;
+    }
+    setSaving(true); setErr("");
+    const payload = { ...form, conditions: conditions.filter(c => c.trim()) };
+    const res = await fetch("/api/promotions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     const data = await res.json();
-    if (res.ok) { setMsg("✅ ส่งคำขอเรียบร้อย"); setShowForm(false); setForm({ title: "", description: "", discount: "", condition: "", startDate: "", endDate: "", coverUrl: "" }); }
-    else setMsg("❌ " + (data.error || "เกิดข้อผิดพลาด"));
+    if (res.ok) { onSuccess(); onClose(); }
+    else { setErr(data.error || "เกิดข้อผิดพลาด"); }
     setSaving(false);
   };
 
-  const inp: React.CSSProperties = { width: "100%", padding: "9px 11px", borderRadius: 10, border: "1.5px solid #e2e8f0", fontSize: 13, fontFamily: "inherit", boxSizing: "border-box", outline: "none" };
-  const lbl: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 4 };
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(15,23,42,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: "white", borderRadius: 24, width: "100%", maxWidth: 560, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(15,23,42,0.2)" }}>
+
+        {/* Modal header */}
+        <div style={{ padding: "22px 24px 16px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "white", zIndex: 1, borderRadius: "24px 24px 0 0" }}>
+          <div>
+            <div style={{ fontWeight: 900, fontSize: 17, color: "#0f172a" }}>🎁 เพิ่มโปรโมชั่น</div>
+            <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>ส่งคำขอโปรโมชั่น รอแอดมินอนุมัติ</div>
+          </div>
+          <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: "50%", border: "none", background: "#f1f5f9", cursor: "pointer", fontSize: 18, color: "#64748b", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
+        </div>
+
+        <div style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+
+          {/* Place selector */}
+          {places.length > 1 && (
+            <div>
+              <label style={lbl}>📍 สถานที่ *</label>
+              <select value={form.placeId} onChange={e => setForm(p => ({ ...p, placeId: e.target.value }))} style={{ ...inp }}>
+                {places.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+              </select>
+            </div>
+          )}
+          {places.length === 1 && (
+            <div style={{ background: "#f8fafc", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 13 }}>📍</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#334155" }}>{places[0].title}</span>
+            </div>
+          )}
+
+          {/* Title */}
+          <div>
+            <label style={lbl}>ชื่อโปรโมชั่น *</label>
+            <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="เช่น โปรซัมเมอร์ ลด 20%" style={inp} />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label style={lbl}>รายละเอียด *</label>
+            <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="อธิบายโปรโมชั่นให้ชัดเจน..." rows={3} style={{ ...inp, resize: "vertical" }} />
+          </div>
+
+          {/* Discount */}
+          <div>
+            <label style={lbl}>ส่วนลด</label>
+            <input value={form.discount} onChange={e => setForm(p => ({ ...p, discount: e.target.value }))} placeholder="เช่น ลด 20% หรือ ซื้อ 1 แถม 1" style={inp} />
+          </div>
+
+          {/* Date range */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <label style={lbl}>📅 วันเริ่ม *</label>
+              <input type="date" value={form.startDate} onChange={e => setForm(p => ({ ...p, startDate: e.target.value }))} style={inp} />
+            </div>
+            <div>
+              <label style={lbl}>📅 วันหมดอายุ *</label>
+              <input type="date" value={form.endDate} onChange={e => setForm(p => ({ ...p, endDate: e.target.value }))} style={inp} />
+            </div>
+          </div>
+
+          {/* Conditions list */}
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+              <label style={{ ...lbl, margin: 0 }}>📋 ข้อกำหนดและเงื่อนไข</label>
+              <button onClick={addCondition} style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 8, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#2563eb", cursor: "pointer", fontFamily: "inherit" }}>+ เพิ่มข้อ</button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+              {conditions.map((c, i) => (
+                <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 700, minWidth: 20 }}>{i + 1}.</span>
+                  <input value={c} onChange={e => updateCondition(i, e.target.value)} placeholder={`เงื่อนไขข้อที่ ${i + 1} เช่น ซื้อขั้นต่ำ 200 บาท`}
+                    style={{ ...inp, flex: 1 }} />
+                  {conditions.length > 1 && (
+                    <button onClick={() => removeCondition(i)} style={{ width: 28, height: 28, borderRadius: "50%", border: "none", background: "#fef2f2", color: "#dc2626", cursor: "pointer", fontSize: 14, fontFamily: "inherit", flexShrink: 0 }}>×</button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {err && <div style={{ background: "#fef2f2", color: "#dc2626", fontSize: 13, fontWeight: 700, padding: "10px 14px", borderRadius: 10, border: "1px solid #fecaca" }}>⚠️ {err}</div>}
+
+          {/* Actions */}
+          <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
+            <button onClick={onClose} style={{ flex: 1, padding: "12px", borderRadius: 12, border: "1.5px solid #e2e8f0", background: "white", color: "#64748b", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>ยกเลิก</button>
+            <button onClick={handleSubmit} disabled={saving} style={{ flex: 2, padding: "12px", borderRadius: 12, border: "none", background: saving ? "#e2e8f0" : "linear-gradient(135deg,#f59e0b,#ef4444)", color: saving ? "#94a3b8" : "white", fontWeight: 800, fontSize: 14, cursor: saving ? "wait" : "pointer", fontFamily: "inherit" }}>
+              {saving ? "⏳ กำลังส่ง..." : "📤 ส่งคำขอโปรโมชั่น"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── PromotionBar — แสดงใต้ profile card ─────────────────────────
+function PromotionBar({ places }: { places: Place[] }) {
+  if (!PROMOTION_ENABLED) return null;
+  const [showModal, setShowModal] = React.useState(false);
+  const [promos, setPromos] = React.useState<any[]>([]);
+
+  const load = () => fetch("/api/promotions").then(r => r.json()).then(d => setPromos(d.promotions || []));
+  React.useEffect(() => { load(); }, []);
 
   return (
-    <div style={{ background: "white", borderRadius: 20, border: "1.5px solid #f1f5f9", padding: "20px 20px 18px", boxShadow: "0 2px 12px rgba(15,23,42,0.05)" }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-        <div>
-          <div style={{ fontWeight: 900, fontSize: 15, color: "#0f172a", display: "flex", alignItems: "center", gap: 7 }}>
-            🎁 โปรโมชั่น
+    <>
+      {/* Bar */}
+      <div style={{ background: "white", borderRadius: 16, border: "1.5px solid #fde68a", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ fontSize: 28 }}>🎁</div>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 14, color: "#92400e" }}>โปรโมชั่นของร้าน</div>
+            <div style={{ fontSize: 12, color: "#b45309" }}>
+              {promos.length > 0 ? `${promos.length} โปรโมชั่นที่กำลังแสดง` : "ยังไม่มีโปรโมชั่น · ดึงดูดลูกค้าด้วยโปรโมชั่น"}
+            </div>
           </div>
-          <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>ดึงดูดลูกค้าด้วยโปรโมชั่น</div>
+          {promos.length > 0 && (
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {promos.slice(0, 2).map(p => (
+                <span key={p.id} style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 999, background: "#fffbeb", color: "#d97706", border: "1px solid #fde68a" }}>{p.title}</span>
+              ))}
+              {promos.length > 2 && <span style={{ fontSize: 11, color: "#94a3b8" }}>+{promos.length - 2}</span>}
+            </div>
+          )}
         </div>
-        <button onClick={() => { setShowForm(v => !v); setMsg(""); }}
-          style={{ padding: "7px 14px", background: showForm ? "#f1f5f9" : "linear-gradient(135deg,#f59e0b,#ef4444)", color: showForm ? "#64748b" : "#fff", borderRadius: 10, fontWeight: 700, fontSize: 12, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
-          {showForm ? "ยกเลิก" : "+ เพิ่มโปรโมชั่น"}
+        <button onClick={() => setShowModal(true)} style={{ padding: "10px 20px", background: "linear-gradient(135deg,#f59e0b,#ef4444)", color: "white", border: "none", borderRadius: 12, fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0 }}>
+          + เพิ่มโปรโมชั่น
         </button>
       </div>
 
-      {msg && <p style={{ fontSize: 12, fontWeight: 700, color: msg.startsWith("✅") ? "#15803d" : "#dc2626", background: msg.startsWith("✅") ? "#f0fdf4" : "#fef2f2", padding: "8px 12px", borderRadius: 8, margin: "0 0 12px" }}>{msg}</p>}
-
-      {showForm && (
-        <div style={{ background: "#f8fafc", borderRadius: 14, padding: "16px", marginBottom: 14, border: "1px solid #e2e8f0" }}>
-          {[
-            { label: "ชื่อโปรโมชั่น *", key: "title", placeholder: "เช่น โปรซัมเมอร์ ลด 20%" },
-            { label: "รายละเอียด *", key: "description", placeholder: "รายละเอียด..." },
-            { label: "ส่วนลด", key: "discount", placeholder: "เช่น ลด 20%" },
-            { label: "เงื่อนไข", key: "condition", placeholder: "เช่น ขั้นต่ำ 200 บาท" },
-          ].map(({ label, key, placeholder }) => (
-            <div key={key} style={{ marginBottom: 10 }}>
-              <label style={lbl}>{label}</label>
-              {key === "description"
-                ? <textarea value={form[key as keyof typeof form]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} rows={2} style={{ ...inp, resize: "vertical" }} />
-                : <input value={form[key as keyof typeof form]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} style={inp} />
-              }
-            </div>
-          ))}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
-            <div><label style={lbl}>วันเริ่ม *</label><input type="date" value={form.startDate} onChange={e => setForm(p => ({ ...p, startDate: e.target.value }))} style={inp} /></div>
-            <div><label style={lbl}>วันหมด *</label><input type="date" value={form.endDate} onChange={e => setForm(p => ({ ...p, endDate: e.target.value }))} style={inp} /></div>
-          </div>
-          <button onClick={handleSubmit} disabled={saving}
-            style={{ width: "100%", padding: "10px", background: "linear-gradient(135deg,#f59e0b,#ef4444)", color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: 13, border: "none", cursor: saving ? "wait" : "pointer", fontFamily: "inherit" }}>
-            {saving ? "⏳ กำลังส่ง..." : "📤 ส่งคำขอ"}
-          </button>
-        </div>
+      {showModal && (
+        <PromotionModal places={places} onClose={() => setShowModal(false)} onSuccess={load} />
       )}
-
-      {promos.length > 0 ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {promos.slice(0, 3).map((p: any) => (
-            <div key={p.id} style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 12, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 13, color: "#92400e" }}>{p.title}</div>
-                {p.discount && <div style={{ fontSize: 11, color: "#d97706", fontWeight: 600 }}>{p.discount}</div>}
-                <div style={{ fontSize: 10, color: "#b45309", marginTop: 2 }}>{new Date(p.startDate).toLocaleDateString("th-TH")} – {new Date(p.endDate).toLocaleDateString("th-TH")}</div>
-              </div>
-              <span style={{ fontSize: 10, fontWeight: 800, background: "#f0fdf4", color: "#059669", padding: "3px 8px", borderRadius: 999, border: "1px solid #a7f3d0" }}>✓ แสดงอยู่</span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div style={{ padding: "16px 0 4px", textAlign: "center", color: "#94a3b8", fontSize: 12 }}>ยังไม่มีโปรโมชั่น</div>
-      )}
-    </div>
+    </>
   );
 }
 
@@ -240,17 +323,17 @@ export default function BusinessDashboardPage() {
         <span>จัดการข้อมูล โปรไฟล์ รีวิว และสถานที่ทั้งหมดได้ในที่เดียว · Manage all your places in one place</span>
       </section>
 
-      {/* ── PROFILE + PROMOTION ROW ── */}
-      <div style={{ display: "grid", gridTemplateColumns: PROMOTION_ENABLED ? "1fr 360px" : "1fr", gap: 20, marginBottom: 24, alignItems: "start" }}>
-        <BusinessProfileCard
-          businessName={biz.businessName}
-          phone={biz.phone ?? undefined}
-          lineId={biz.lineId ?? undefined}
-          logoUrl={biz.logoUrl ?? undefined}
-          isVerified={biz.isVerified}
-        />
-        <PromotionSection />
-      </div>
+      {/* ── PROFILE CARD ── */}
+      <BusinessProfileCard
+        businessName={biz.businessName}
+        phone={biz.phone ?? undefined}
+        lineId={biz.lineId ?? undefined}
+        logoUrl={biz.logoUrl ?? undefined}
+        isVerified={biz.isVerified}
+      />
+
+      {/* ── PROMOTION BAR ── */}
+      <PromotionBar places={places.map(p => ({ id: p.id, slug: p.slug, title: p.title }))} />
 
       {/* ── STATS ── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginBottom: "32px" }}>
