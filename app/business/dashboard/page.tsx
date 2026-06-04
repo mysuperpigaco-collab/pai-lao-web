@@ -9,10 +9,12 @@ type Place = { id: string; slug: string; title: string };
 function PromotionModal({ places, onClose, onSuccess }: {
   places: Place[]; onClose: () => void; onSuccess: () => void;
 }) {
+  const today = new Date().toISOString().split("T")[0];
   const [form, setForm] = React.useState({
     placeId: places[0]?.id ?? "",
     title: "", description: "", discount: "",
-    startDate: "", endDate: "",
+    startDate: "", startTime: "00:00",
+    endDate:   "", endTime:   "23:59",
   });
   const [conditions, setConditions] = React.useState<string[]>([""]);
   const [saving, setSaving] = React.useState(false);
@@ -30,7 +32,12 @@ function PromotionModal({ places, onClose, onSuccess }: {
       setErr("กรุณากรอกข้อมูลที่จำเป็นให้ครบ"); return;
     }
     setSaving(true); setErr("");
-    const payload = { ...form, conditions: conditions.filter(c => c.trim()) };
+    const payload = {
+      ...form,
+      startDate: form.startDate && form.startTime ? `${form.startDate}T${form.startTime}` : form.startDate,
+      endDate:   form.endDate   && form.endTime   ? `${form.endDate}T${form.endTime}`     : form.endDate,
+      conditions: conditions.filter(c => c.trim()),
+    };
     const res = await fetch("/api/promotions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     const data = await res.json();
     if (res.ok) { onSuccess(); onClose(); }
@@ -88,15 +95,20 @@ function PromotionModal({ places, onClose, onSuccess }: {
             <input value={form.discount} onChange={e => setForm(p => ({ ...p, discount: e.target.value }))} placeholder="เช่น ลด 20% หรือ ซื้อ 1 แถม 1" style={inp} />
           </div>
 
-          {/* Date range */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <div>
-              <label style={lbl}>📅 วันเริ่ม *</label>
-              <input type="date" value={form.startDate} onChange={e => setForm(p => ({ ...p, startDate: e.target.value }))} style={inp} />
-            </div>
-            <div>
-              <label style={lbl}>📅 วันหมดอายุ *</label>
-              <input type="date" value={form.endDate} onChange={e => setForm(p => ({ ...p, endDate: e.target.value }))} style={inp} />
+          {/* Date + Time range */}
+          <div>
+            <label style={lbl}>📅 ช่วงเวลาโปรโมชั่น *</label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div>
+                <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600, marginBottom: 4 }}>วันเริ่ม</div>
+                <input type="date" value={form.startDate} min={today} onChange={e => setForm(p => ({ ...p, startDate: e.target.value }))} style={inp} />
+                <input type="time" value={form.startTime} onChange={e => setForm(p => ({ ...p, startTime: e.target.value }))} style={{ ...inp, marginTop: 6 }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600, marginBottom: 4 }}>วันหมดอายุ</div>
+                <input type="date" value={form.endDate} min={form.startDate || today} onChange={e => setForm(p => ({ ...p, endDate: e.target.value }))} style={inp} />
+                <input type="time" value={form.endTime} onChange={e => setForm(p => ({ ...p, endTime: e.target.value }))} style={{ ...inp, marginTop: 6 }} />
+              </div>
             </div>
           </div>
 

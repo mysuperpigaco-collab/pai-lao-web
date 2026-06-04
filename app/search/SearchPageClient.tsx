@@ -1,5 +1,6 @@
 "use client";
 import ProvinceSelect from "@/components/ui/ProvinceSelect";
+import DistrictSelect from "@/components/ui/DistrictSelect";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -45,11 +46,12 @@ export default function SearchPageClient() {
   const sp = useSearchParams();
   const router = useRouter();
 
-  const [q, setQ]           = useState(sp.get("q") ?? "");
-  const [type, setType]     = useState(sp.get("type") ?? "all");
-  const [province, setProv] = useState(sp.get("province") ?? "");
-  const [category, setCat]  = useState(sp.get("category") ?? "");
-  const [sort, setSort]     = useState(sp.get("sort") ?? "recent");
+  const [q, setQ]             = useState(sp.get("q") ?? "");
+  const [type, setType]       = useState(sp.get("type") ?? "all");
+  const [province, setProv]   = useState(sp.get("province") ?? "");
+  const [district, setDistrict] = useState(sp.get("district") ?? "");
+  const [category, setCat]    = useState(sp.get("category") ?? "");
+  const [sort, setSort]       = useState(sp.get("sort") ?? "recent");
 
   const [trips,  setTrips]  = useState<TripResult[]>([]);
   const [places, setPlaces] = useState<PlaceResult[]>([]);
@@ -61,12 +63,13 @@ export default function SearchPageClient() {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const doSearch = async (overrides?: Partial<{ q: string; type: string; province: string; category: string; sort: string }>) => {
-    const fq       = overrides?.q       ?? q;
-    const ftype    = overrides?.type    ?? type;
+  const doSearch = async (overrides?: Partial<{ q: string; type: string; province: string; district: string; category: string; sort: string }>) => {
+    const fq       = overrides?.q        ?? q;
+    const ftype    = overrides?.type     ?? type;
     const fprov    = overrides?.province ?? province;
+    const fdist    = overrides?.district ?? district;
     const fcat     = overrides?.category ?? category;
-    const fsort    = overrides?.sort    ?? sort;
+    const fsort    = overrides?.sort     ?? sort;
     if (!fq.trim()) {
       setSearchError("กรุณาพิมพ์คำค้นหา · Please enter a search keyword");
       inputRef.current?.focus();
@@ -78,30 +81,35 @@ export default function SearchPageClient() {
 
     // Update URL
     const params = new URLSearchParams();
-    if (fq)    params.set("q", fq);
+    if (fq)              params.set("q", fq);
     if (ftype !== "all") params.set("type", ftype);
-    if (fprov) params.set("province", fprov);
-    if (fcat)  params.set("category", fcat);
+    if (fprov)           params.set("province", fprov);
+    if (fdist)           params.set("district", fdist);
+    if (fcat)            params.set("category", fcat);
     if (fsort !== "recent") params.set("sort", fsort);
     router.replace(`/search?${params.toString()}`, { scroll: false });
+
+    const provQ = fprov ? `&province=${encodeURIComponent(fprov)}` : "";
+    const distQ = fdist ? `&district=${encodeURIComponent(fdist)}` : "";
+    const catQ  = fcat  ? `&category=${fcat}` : "";
 
     const fetchers = [];
     if (ftype === "all" || ftype === "trip") {
       fetchers.push(
-        fetch(`/api/trips?q=${encodeURIComponent(fq)}&limit=20&sort=${fsort}${fprov ? `&province=${encodeURIComponent(fprov)}` : ""}`)
+        fetch(`/api/trips?q=${encodeURIComponent(fq)}&limit=20&sort=${fsort}${provQ}${distQ}`)
           .then(r => r.json())
           .then(d => { setTrips(d.trips ?? []); setTotalTrips(d.total ?? 0); })
       );
     }
     if (ftype === "all" || ftype === "place") {
       fetchers.push(
-        fetch(`/api/places?q=${encodeURIComponent(fq)}&limit=20&sort=${fsort}${fprov ? `&province=${encodeURIComponent(fprov)}` : ""}${fcat ? `&category=${fcat}` : ""}`)
+        fetch(`/api/places?q=${encodeURIComponent(fq)}&limit=20&sort=${fsort}${provQ}${distQ}${catQ}`)
           .then(r => r.json())
           .then(d => { setPlaces(d.places ?? []); setTotalPlaces(d.total ?? 0); })
       );
     }
-    if (ftype === "trip") { setPlaces([]); setTotalPlaces(0); }
-    if (ftype === "place") { setTrips([]); setTotalTrips(0); }
+    if (ftype === "trip")  { setPlaces([]); setTotalPlaces(0); }
+    if (ftype === "place") { setTrips([]);  setTotalTrips(0);  }
 
     await Promise.allSettled(fetchers);
     setLoading(false);
@@ -112,7 +120,7 @@ export default function SearchPageClient() {
     const initQ = sp.get("q");
     if (initQ) {
       setQ(initQ);
-      doSearch({ q: initQ, type: sp.get("type") ?? "all", province: sp.get("province") ?? "", category: sp.get("category") ?? "", sort: sp.get("sort") ?? "recent" });
+      doSearch({ q: initQ, type: sp.get("type") ?? "all", province: sp.get("province") ?? "", district: sp.get("district") ?? "", category: sp.get("category") ?? "", sort: sp.get("sort") ?? "recent" });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -166,51 +174,72 @@ export default function SearchPageClient() {
           </div>
         )}
 
-        {/* Filter row */}
-        <div className="srch-filters" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-          {/* Type */}
-          <div className="srch-type-toggle" style={{ display: "flex", background: "#f1f5f9", borderRadius: 10, padding: 3, gap: 2 }}>
-            {[{ v:"all", l:"ทั้งหมด" }, { v:"trip", l:"✈️ ทริป" }, { v:"place", l:"🗺️ สถานที่" }].map(opt => (
-              <button key={opt.v} type="button" onClick={() => setType(opt.v)}
-                style={{ padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: type === opt.v ? 800 : 500,
-                  background: type === opt.v ? "white" : "transparent",
-                  color: type === opt.v ? "#0f172a" : "#64748b",
-                  boxShadow: type === opt.v ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
-                  transition: "all 0.15s" }}>
-                {opt.l}
-              </button>
-            ))}
+        {/* Filter row 1 — Type toggle */}
+        <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 12, padding: 4, gap: 2, marginBottom: 12, alignSelf: "flex-start" }}>
+          {[{ v:"all", l:"ทั้งหมด" }, { v:"trip", l:"✈️ ทริป" }, { v:"place", l:"🗺️ สถานที่" }].map(opt => (
+            <button key={opt.v} type="button" onClick={() => setType(opt.v)}
+              style={{ padding: "7px 18px", borderRadius: 9, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: type === opt.v ? 800 : 500,
+                background: type === opt.v ? "white" : "transparent",
+                color: type === opt.v ? "#0f172a" : "#64748b",
+                boxShadow: type === opt.v ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
+                transition: "all 0.15s" }}>
+              {opt.l}
+            </button>
+          ))}
+        </div>
+
+        {/* Filter row 2 — Location + Category + Sort */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto auto", gap: 10, alignItems: "end", flexWrap: "wrap" }}>
+          {/* Province */}
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 5 }}>📍 จังหวัด</div>
+            <ProvinceSelect
+              value={province}
+              onChange={v => { setProv(v); setDistrict(""); }}
+              placeholder="ทุกจังหวัด"
+              style={{ borderRadius: 10, minHeight: 38, fontSize: 13, width: "100%" }}
+            />
           </div>
 
-          {/* Province */}
-          <ProvinceSelect
-            value={province}
-            onChange={v => setProv(v)}
-            placeholder="📍 ทุกจังหวัด"
-            style={{ borderRadius: 10, minHeight: 38, fontSize: 13 }}
-          />
+          {/* District */}
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 5 }}>🏘️ อำเภอ</div>
+            <DistrictSelect
+              province={province}
+              value={district}
+              onChange={v => setDistrict(v)}
+              placeholder="ทุกอำเภอ"
+              style={{ borderRadius: 10, minHeight: 38, fontSize: 13, width: "100%" }}
+            />
+          </div>
 
-          {/* Category (only for place/all) */}
-          {type !== "trip" && (
-            <select value={category} onChange={e => setCat(e.target.value)}
-              style={{ padding: "8px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "white", fontSize: 13, color: "#374151", fontFamily: "inherit", cursor: "pointer" }}>
-              {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-            </select>
-          )}
+          {/* Category */}
+          {type !== "trip" ? (
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 5 }}>🏷️ หมวด</div>
+              <select value={category} onChange={e => setCat(e.target.value)}
+                style={{ padding: "8px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "white", fontSize: 13, color: "#374151", fontFamily: "inherit", cursor: "pointer", height: 38 }}>
+                {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+              </select>
+            </div>
+          ) : <div />}
 
-          {/* Sort */}
-          <select value={sort} onChange={e => setSort(e.target.value)}
-            style={{ padding: "8px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "white", fontSize: 13, color: "#374151", fontFamily: "inherit", cursor: "pointer" }}>
-            <option value="recent">🕐 ล่าสุด</option>
-            <option value="popular">🔥 ยอดนิยม</option>
-          </select>
-
-          {/* Apply filters btn */}
-          {searched && (
-            <button type="submit" style={{ padding: "8px 16px", borderRadius: 10, border: "1.5px solid #d1fae5", background: "#f0fdf4", color: "#059669", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-              ✓ กรองผลลัพธ์
-            </button>
-          )}
+          {/* Sort + Apply */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b" }}>เรียงตาม</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <select value={sort} onChange={e => setSort(e.target.value)}
+                style={{ padding: "8px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "white", fontSize: 13, color: "#374151", fontFamily: "inherit", cursor: "pointer", height: 38 }}>
+                <option value="recent">🕐 ล่าสุด</option>
+                <option value="popular">🔥 ยอดนิยม</option>
+              </select>
+              {searched && (
+                <button type="submit" style={{ padding: "0 16px", height: 38, borderRadius: 10, border: "none", background: "linear-gradient(135deg,#10b981,#06b6d4)", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                  กรอง
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </form>
 
