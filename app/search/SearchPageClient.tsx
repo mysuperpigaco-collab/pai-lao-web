@@ -89,7 +89,9 @@ export default function SearchPageClient() {
     if (fsort !== "recent") params.set("sort", fsort);
     router.replace(`/search?${params.toString()}`, { scroll: false });
 
-    const provQ = fprov ? `&province=${encodeURIComponent(fprov)}` : "";
+    // strip "(English)" suffix ที่ ProvinceSelect อาจส่งมา
+    const cleanProv = fprov ? fprov.split(" (")[0].trim() : "";
+    const provQ = cleanProv ? `&province=${encodeURIComponent(cleanProv)}` : "";
     const distQ = fdist ? `&district=${encodeURIComponent(fdist)}` : "";
     const catQ  = fcat  ? `&category=${fcat}` : "";
 
@@ -189,57 +191,58 @@ export default function SearchPageClient() {
         </div>
 
         {/* Filter row 2 — Location + Category + Sort */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto auto", gap: 10, alignItems: "end", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+
           {/* Province */}
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 5 }}>📍 จังหวัด</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "6px 14px", flex: "1 1 180px", minWidth: 160 }}>
+            <span style={{ fontSize: 15, flexShrink: 0 }}>🗾</span>
             <ProvinceSelect
               value={province}
               onChange={v => { setProv(v); setDistrict(""); }}
               placeholder="ทุกจังหวัด"
-              style={{ borderRadius: 10, minHeight: 38, fontSize: 13, width: "100%" }}
+              style={{ border: "none", background: "transparent", fontSize: 13, minHeight: 32, padding: "0", boxShadow: "none" }}
             />
           </div>
 
           {/* District */}
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 5 }}>🏘️ อำเภอ</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "6px 14px", flex: "1 1 160px", minWidth: 140 }}>
+            <span style={{ fontSize: 15, flexShrink: 0 }}>🏘️</span>
             <DistrictSelect
-              province={province}
+              province={province.split(" (")[0]}
               value={district}
               onChange={v => setDistrict(v)}
               placeholder="ทุกอำเภอ"
-              style={{ borderRadius: 10, minHeight: 38, fontSize: 13, width: "100%" }}
+              style={{ border: "none", background: "transparent", fontSize: 13, minHeight: 32, padding: "0", boxShadow: "none" }}
             />
           </div>
 
           {/* Category */}
-          {type !== "trip" ? (
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 5 }}>🏷️ หมวด</div>
+          {type !== "trip" && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "6px 14px", flex: "1 1 140px" }}>
+              <span style={{ fontSize: 15, flexShrink: 0 }}>🏷️</span>
               <select value={category} onChange={e => setCat(e.target.value)}
-                style={{ padding: "8px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "white", fontSize: 13, color: "#374151", fontFamily: "inherit", cursor: "pointer", height: 38 }}>
+                style={{ border: "none", background: "transparent", fontSize: 13, color: "#374151", fontFamily: "inherit", cursor: "pointer", flex: 1, outline: "none", minHeight: 32 }}>
                 {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
             </div>
-          ) : <div />}
+          )}
 
-          {/* Sort + Apply */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b" }}>เรียงตาม</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <select value={sort} onChange={e => setSort(e.target.value)}
-                style={{ padding: "8px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "white", fontSize: 13, color: "#374151", fontFamily: "inherit", cursor: "pointer", height: 38 }}>
-                <option value="recent">🕐 ล่าสุด</option>
-                <option value="popular">🔥 ยอดนิยม</option>
-              </select>
-              {searched && (
-                <button type="submit" style={{ padding: "0 16px", height: 38, borderRadius: 10, border: "none", background: "linear-gradient(135deg,#10b981,#06b6d4)", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-                  กรอง
-                </button>
-              )}
-            </div>
+          {/* Sort */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "6px 14px" }}>
+            <span style={{ fontSize: 15, flexShrink: 0 }}>📊</span>
+            <select value={sort} onChange={e => setSort(e.target.value)}
+              style={{ border: "none", background: "transparent", fontSize: 13, color: "#374151", fontFamily: "inherit", cursor: "pointer", outline: "none", minHeight: 32 }}>
+              <option value="recent">🕐 ล่าสุด</option>
+              <option value="popular">🔥 ยอดนิยม</option>
+            </select>
           </div>
+
+          {/* Apply */}
+          {searched && (
+            <button type="submit" style={{ padding: "8px 20px", height: 44, borderRadius: 12, border: "none", background: "linear-gradient(135deg,#10b981,#06b6d4)", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0 }}>
+              ✓ กรอง
+            </button>
+          )}
         </div>
       </form>
 
