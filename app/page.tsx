@@ -8,6 +8,7 @@ import PromotionSection from "@/components/home/PromotionSection";
 import ExplorerSection from "@/components/home/ExplorerSection";
 import AutoGridSection from "@/components/home/AutoGridSection";
 import { useAuth } from "@/context/AuthContext";
+import { useFadeIn, useSingleFadeIn } from "@/hooks/useFadeIn";
 
 interface Trip {
   slug: string;
@@ -156,6 +157,7 @@ function MedCard({ trip, rank }: { trip: Trip; rank: number }) {
   return (
     <Link
       href={`/trips/${trip.slug}`}
+      className="pl-card-hover"
       style={{
         display: "block",
         position: "relative",
@@ -239,6 +241,7 @@ function SmallCard({ trip, rank }: { trip: Trip; rank: number }) {
   return (
     <Link
       href={`/trips/${trip.slug}`}
+      className="pl-card-hover"
       style={{
         display: "flex",
         flexDirection: "column",
@@ -407,6 +410,9 @@ function useSmallCols() {
 export default function HomePage() {
   const { user } = useAuth();
   const [spotlightTab, setSpotlightTab] = useState<"popular" | "trending">("popular");
+  const archiveGridRef  = useFadeIn();
+  const spotlightRef    = useSingleFadeIn();
+  const exploreRef      = useSingleFadeIn();
   const [showArchive, setShowArchive] = useState(false);
   const [archiveCache, setArchiveCache] = useState<Record<string, Trip[]>>({});
   const [archiveLoading, setArchiveLoading] = useState(false);
@@ -433,7 +439,7 @@ export default function HomePage() {
     <main style={{ maxWidth: 1200, margin: "0 auto", padding: "36px 20px 80px" }}>
 
       {/* ─── Spotlight header ─── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 18, gap: 12, flexWrap: "wrap" }}>
+      <div ref={spotlightRef} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 18, gap: 12, flexWrap: "wrap" }}>
         <div>
           <h2 style={{ fontSize: 26, fontWeight: 900, color: "#0f172a", margin: "0 0 6px" }}>
             ✨ เรื่องเล่า <span style={{ color: "#2563eb" }}>Spotlight</span>
@@ -557,16 +563,18 @@ export default function HomePage() {
 
                 {/* Hero — rank 1 */}
                 {archiveTrips[0] && (
-                  <div style={{ marginBottom: 16 }}>
+                  <div className="pl-fade" style={{ marginBottom: 16 }}>
                     <HeroCard trip={archiveTrips[0]} />
                   </div>
                 )}
 
                 {/* Medium — rank 2 & 3 */}
                 {archiveTrips.length > 1 && (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 16 }}>
+                  <div ref={archiveGridRef} style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 16 }}>
                     {archiveTrips.slice(1, 3).map((trip, i) => (
-                      <MedCard key={trip.slug} trip={trip} rank={i + 1} />
+                      <div key={trip.slug} className="pl-fade">
+                        <MedCard trip={trip} rank={i + 1} />
+                      </div>
                     ))}
                   </div>
                 )}
@@ -579,7 +587,9 @@ export default function HomePage() {
                   return (
                     <div style={{ display: "grid", gridTemplateColumns: `repeat(${smallCols},1fr)`, gap: 12 }}>
                       {smallTrips.map((trip, i) => (
-                        <SmallCard key={trip.slug} trip={trip} rank={i + 3} />
+                        <div key={trip.slug} className="pl-fade">
+                          <SmallCard trip={trip} rank={i + 3} />
+                        </div>
                       ))}
                       {Array.from({ length: fillCount }).map((_, i) => (
                         <InviteCard key={`invite-${i}`} user={user} />
@@ -599,7 +609,7 @@ export default function HomePage() {
       <ExplorerSection />
 
       {/* ─── Must-See ─── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 48, marginBottom: 18, gap: 12, flexWrap: "wrap" }}>
+      <div ref={exploreRef} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 48, marginBottom: 18, gap: 12, flexWrap: "wrap" }}>
         <div>
           <h2 style={{ fontSize: 26, fontWeight: 900, color: "#0f172a", margin: "0 0 6px" }}>
             🗺️ ไฮไลต์สถานที่ <span style={{ color: "#2563eb" }}>Explore Places</span>

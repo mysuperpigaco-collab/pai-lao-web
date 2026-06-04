@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useAnimatedCounter } from "@/hooks/useAnimatedCounter";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { uploadFile } from "@/lib/uploadHelper";
@@ -76,6 +77,8 @@ export default function ProfileHeader({ isOwner, loading, user = DEFAULT_USER }:
   const u = { ...DEFAULT_USER, ...user };
   const { logout, refresh } = useAuth();
   const router = useRouter();
+  const stories   = useAnimatedCounter(u.storiesCount ?? 0);
+  const following = useAnimatedCounter(u.followingCount ?? 0);
   const [avatarSrc, setAvatarSrc] = useState(u.avatarUrl);
   const [uploading, setUploading] = useState(false);
 
@@ -181,7 +184,7 @@ export default function ProfileHeader({ isOwner, loading, user = DEFAULT_USER }:
 
         <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", marginBottom: "16px" }}>
           <div style={{ textAlign: "center" }}>
-            <strong style={{ display: "block", fontSize: "20px", fontWeight: 900, color: "#2563eb", lineHeight: 1 }}>{u.storiesCount}</strong>
+            <strong ref={stories.ref} style={{ display: "block", fontSize: "20px", fontWeight: 900, color: "#2563eb", lineHeight: 1 }}>{stories.value}</strong>
             <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 500 }}>เรื่องเล่า</span>
           </div>
           <div style={{ width: "1px", height: "32px", background: "#f1f5f9" }} />
@@ -191,7 +194,7 @@ export default function ProfileHeader({ isOwner, loading, user = DEFAULT_USER }:
           </div>
           <div style={{ width: "1px", height: "32px", background: "#f1f5f9" }} />
           <div style={{ textAlign: "center" }}>
-            <strong style={{ display: "block", fontSize: "20px", fontWeight: 900, color: "#7c3aed", lineHeight: 1 }}>{u.followingCount}</strong>
+            <strong ref={following.ref} style={{ display: "block", fontSize: "20px", fontWeight: 900, color: "#7c3aed", lineHeight: 1 }}>{following.value}</strong>
             <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 500 }}>ติดตาม</span>
           </div>
         </div>
