@@ -192,6 +192,7 @@ function PromotionBar({ places }: { places: Place[] }) {
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import ProvinceSelect from "@/components/ui/ProvinceSelect";
+import DistrictSelect from "@/components/ui/DistrictSelect";
 import BusinessProfileCard from "@/components/business/BusinessProfileCard";
 import BusinessPlaceCard from "@/components/business/BusinessPlaceCard";
 import BusinessNotifications from "@/components/business/BusinessNotifications";
@@ -247,6 +248,7 @@ export default function BusinessDashboardPage() {
   // Claim place search state
   const [claimQuery, setClaimQuery] = useState("");
   const [claimProvince, setClaimProvince] = useState("");
+  const [claimDistrict, setClaimDistrict] = useState("");
   const [claimCategory, setClaimCategory] = useState("");
   const [claimResults, setClaimResults] = useState<any[]>([]);
   const [claimLoading, setClaimLoading] = useState(false);
@@ -276,7 +278,7 @@ export default function BusinessDashboardPage() {
   };
 
   const claimTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const runClaimSearch = (q: string, province: string, category: string) => {
+  const runClaimSearch = (q: string, province: string, district: string, category: string) => {
     if (claimTimerRef.current) clearTimeout(claimTimerRef.current);
     if (!q.trim() || q.length < 2) { setClaimResults([]); return; }
     claimTimerRef.current = setTimeout(async () => {
@@ -284,6 +286,7 @@ export default function BusinessDashboardPage() {
       try {
         const params = new URLSearchParams({ q, limit: "12" });
         if (province) params.set("province", province.split(" (")[0]);
+        if (district) params.set("district", district);
         if (category) params.set("category", category);
         const res = await fetch(`/api/places?${params}`);
         const data = await res.json();
@@ -294,7 +297,7 @@ export default function BusinessDashboardPage() {
   };
   const searchUnclaimedPlaces = (q: string) => {
     setClaimQuery(q);
-    runClaimSearch(q, claimProvince, claimCategory);
+    runClaimSearch(q, claimProvince, claimDistrict, claimCategory);
   };
   const claimPlace = async (slug: string) => {
     setClaimingSlug(slug);
@@ -471,21 +474,33 @@ export default function BusinessDashboardPage() {
           </div>
 
           {/* Province filter */}
-          <div style={{ flex: "1 1 160px", display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "0 14px", height: 44 }}>
-            <span style={{ fontSize: 14, flexShrink: 0 }}>🗾</span>
+          <div style={{ flex: "1 1 150px", display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "0 12px", height: 44, boxSizing: "border-box" }}>
+            <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1 }}>🗾</span>
             <ProvinceSelect
               value={claimProvince}
-              onChange={v => { setClaimProvince(v); runClaimSearch(claimQuery, v, claimCategory); }}
+              onChange={v => { setClaimProvince(v); setClaimDistrict(""); runClaimSearch(claimQuery, v, "", claimCategory); }}
               placeholder="ทุกจังหวัด"
-              style={{ border: "none", background: "transparent", fontSize: 13, height: 44, padding: "0", boxShadow: "none" }}
+              style={{ border: "none", background: "transparent", fontSize: 13, height: 44, padding: "0", boxShadow: "none", display: "flex", alignItems: "center" }}
+            />
+          </div>
+
+          {/* District filter */}
+          <div style={{ flex: "1 1 140px", display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "0 12px", height: 44, boxSizing: "border-box" }}>
+            <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1 }}>🏘️</span>
+            <DistrictSelect
+              province={claimProvince.split(" (")[0]}
+              value={claimDistrict}
+              onChange={v => { setClaimDistrict(v); runClaimSearch(claimQuery, claimProvince, v, claimCategory); }}
+              placeholder="ทุกอำเภอ"
+              style={{ border: "none", background: "transparent", fontSize: 13, height: 44, padding: "0", boxShadow: "none", display: "flex", alignItems: "center" }}
             />
           </div>
 
           {/* Category filter */}
-          <div style={{ flex: "1 1 140px", display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "0 14px", height: 44 }}>
-            <span style={{ fontSize: 14, flexShrink: 0 }}>🏷️</span>
+          <div style={{ flex: "1 1 130px", display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "0 12px", height: 44, boxSizing: "border-box" }}>
+            <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1 }}>🏷️</span>
             <select value={claimCategory}
-              onChange={e => { setClaimCategory(e.target.value); runClaimSearch(claimQuery, claimProvince, e.target.value); }}
+              onChange={e => { setClaimCategory(e.target.value); runClaimSearch(claimQuery, claimProvince, claimDistrict, e.target.value); }}
               style={{ flex: 1, border: "none", background: "transparent", fontSize: 13, color: "#374151", fontFamily: "inherit", cursor: "pointer", outline: "none", height: 44 }}>
               <option value="">ทุกหมวด</option>
               {[["NATURE","🌿 ธรรมชาติ"],["CAFE","☕ คาเฟ่"],["BEACH","🏖️ ชายหาด"],["ACCOMMODATION","🏨 ที่พัก"],["FOOD","🍲 อาหาร"],["TEMPLE","🛕 วัด"],["ADVENTURE","🧗 ผจญภัย"],["MARKET","🛍️ ตลาด"],["MUSEUM","🏛️ พิพิธภัณฑ์"],["CAMPING","⛺ แคมปิ้ง"]].map(([v,l]) => (
