@@ -168,7 +168,6 @@ export default async function TripDetailPage({ params }: Props) {
   const isOwner = session?.userId === trip.author.id;
   const isAdmin = session?.role === "ADMIN" || session?.role === "SUPERADMIN";
 
-  const authorName = trip.author?.displayName || trip.author?.firstName || "ไปเล่า";
   const jsonLd = {
     "@context": "https://schema.org",
     "@type":    "Article",
