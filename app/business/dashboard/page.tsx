@@ -1,7 +1,7 @@
 "use client";
 
 // ── Feature flag: แอดมินเปิด/ปิด Promotion ─────────────────────
-const PROMOTION_ENABLED = false; // TODO: เปลี่ยนเป็น true เมื่อแอดมินพร้อม
+const PROMOTION_ENABLED = true;
 
 // ── PromotionSection ────────────────────────────────────────────
 function PromotionSection() {
@@ -21,66 +21,69 @@ function PromotionSection() {
     setSaving(true); setMsg("");
     const res = await fetch("/api/promotions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
     const data = await res.json();
-    if (res.ok) { setMsg("✅ ส่งคำขอเรียบร้อย รอแอดมินอนุมัติ"); setShowForm(false); setForm({ title: "", description: "", discount: "", condition: "", startDate: "", endDate: "", coverUrl: "" }); }
+    if (res.ok) { setMsg("✅ ส่งคำขอเรียบร้อย"); setShowForm(false); setForm({ title: "", description: "", discount: "", condition: "", startDate: "", endDate: "", coverUrl: "" }); }
     else setMsg("❌ " + (data.error || "เกิดข้อผิดพลาด"));
     setSaving(false);
   };
 
+  const inp: React.CSSProperties = { width: "100%", padding: "9px 11px", borderRadius: 10, border: "1.5px solid #e2e8f0", fontSize: 13, fontFamily: "inherit", boxSizing: "border-box", outline: "none" };
+  const lbl: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 4 };
+
   return (
-    <section style={{ marginTop: 48 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+    <div style={{ background: "white", borderRadius: 20, border: "1.5px solid #f1f5f9", padding: "20px 20px 18px", boxShadow: "0 2px 12px rgba(15,23,42,0.05)" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <div>
-          <h2 style={{ fontSize: "22px", fontWeight: 900, margin: 0 }}>โปรโมชั่นของร้าน</h2>
-          <p style={{ fontSize: "13px", color: "#64748b", margin: "4px 0 0" }}>ขอเพิ่มโปรโมชั่นเพื่อดึงดูดลูกค้า</p>
+          <div style={{ fontWeight: 900, fontSize: 15, color: "#0f172a", display: "flex", alignItems: "center", gap: 7 }}>
+            🎁 โปรโมชั่น
+          </div>
+          <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>ดึงดูดลูกค้าด้วยโปรโมชั่น</div>
         </div>
-        <button onClick={() => setShowForm(!showForm)} style={{ padding: "10px 20px", background: "linear-gradient(135deg,#f59e0b,#ef4444)", color: "#fff", borderRadius: "12px", fontWeight: 700, fontSize: "13px", border: "none", cursor: "pointer" }}>
-          {showForm ? "ยกเลิก" : "+ ขอเพิ่มโปรโมชั่น"}
+        <button onClick={() => { setShowForm(v => !v); setMsg(""); }}
+          style={{ padding: "7px 14px", background: showForm ? "#f1f5f9" : "linear-gradient(135deg,#f59e0b,#ef4444)", color: showForm ? "#64748b" : "#fff", borderRadius: 10, fontWeight: 700, fontSize: 12, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+          {showForm ? "ยกเลิก" : "+ เพิ่มโปรโมชั่น"}
         </button>
       </div>
-      {msg && <p style={{ fontWeight: 700, color: msg.startsWith("✅") ? "#15803d" : "#dc2626", marginBottom: 12 }}>{msg}</p>}
+
+      {msg && <p style={{ fontSize: 12, fontWeight: 700, color: msg.startsWith("✅") ? "#15803d" : "#dc2626", background: msg.startsWith("✅") ? "#f0fdf4" : "#fef2f2", padding: "8px 12px", borderRadius: 8, margin: "0 0 12px" }}>{msg}</p>}
+
       {showForm && (
-        <div style={{ background: "#fff", borderRadius: "16px", padding: "24px", border: "1.5px solid #e2e8f0", marginBottom: "20px", maxWidth: "600px" }}>
-          <h3 style={{ fontSize: "16px", fontWeight: 800, margin: "0 0 16px" }}>ข้อมูลโปรโมชั่น</h3>
+        <div style={{ background: "#f8fafc", borderRadius: 14, padding: "16px", marginBottom: 14, border: "1px solid #e2e8f0" }}>
           {[
             { label: "ชื่อโปรโมชั่น *", key: "title", placeholder: "เช่น โปรซัมเมอร์ ลด 20%" },
-            { label: "รายละเอียด *", key: "description", placeholder: "รายละเอียดโปรโมชั่น" },
-            { label: "ส่วนลด", key: "discount", placeholder: "เช่น ลด 20% หรือ ซื้อ 1 แถม 1" },
-            { label: "เงื่อนไข", key: "condition", placeholder: "เช่น เมื่อซื้อขั้นต่ำ 200 บาท" },
+            { label: "รายละเอียด *", key: "description", placeholder: "รายละเอียด..." },
+            { label: "ส่วนลด", key: "discount", placeholder: "เช่น ลด 20%" },
+            { label: "เงื่อนไข", key: "condition", placeholder: "เช่น ขั้นต่ำ 200 บาท" },
           ].map(({ label, key, placeholder }) => (
-            <div key={key} style={{ marginBottom: "12px" }}>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#374151", marginBottom: "4px" }}>{label}</label>
-              {key === "description" ? (
-                <textarea value={form[key as keyof typeof form]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} rows={3} style={{ width: "100%", padding: "10px 12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", fontSize: "13px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }} />
-              ) : (
-                <input value={form[key as keyof typeof form]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} style={{ width: "100%", padding: "10px 12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", fontSize: "13px", boxSizing: "border-box" }} />
-              )}
+            <div key={key} style={{ marginBottom: 10 }}>
+              <label style={lbl}>{label}</label>
+              {key === "description"
+                ? <textarea value={form[key as keyof typeof form]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} rows={2} style={{ ...inp, resize: "vertical" }} />
+                : <input value={form[key as keyof typeof form]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} style={inp} />
+              }
             </div>
           ))}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
-            <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#374151", marginBottom: "4px" }}>วันเริ่ม *</label>
-              <input type="date" value={form.startDate} onChange={e => setForm(p => ({ ...p, startDate: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", fontSize: "13px", boxSizing: "border-box" }} />
-            </div>
-            <div>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#374151", marginBottom: "4px" }}>วันหมดอายุ *</label>
-              <input type="date" value={form.endDate} onChange={e => setForm(p => ({ ...p, endDate: e.target.value }))} style={{ width: "100%", padding: "10px 12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", fontSize: "13px", boxSizing: "border-box" }} />
-            </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+            <div><label style={lbl}>วันเริ่ม *</label><input type="date" value={form.startDate} onChange={e => setForm(p => ({ ...p, startDate: e.target.value }))} style={inp} /></div>
+            <div><label style={lbl}>วันหมด *</label><input type="date" value={form.endDate} onChange={e => setForm(p => ({ ...p, endDate: e.target.value }))} style={inp} /></div>
           </div>
-          <button onClick={handleSubmit} disabled={saving} style={{ width: "100%", padding: "12px", background: "linear-gradient(135deg,#f59e0b,#ef4444)", color: "#fff", borderRadius: "12px", fontWeight: 700, fontSize: "14px", border: "none", cursor: saving ? "wait" : "pointer" }}>
-            {saving ? "กำลังส่ง..." : "ส่งคำขอโปรโมชั่น"}
+          <button onClick={handleSubmit} disabled={saving}
+            style={{ width: "100%", padding: "10px", background: "linear-gradient(135deg,#f59e0b,#ef4444)", color: "#fff", borderRadius: 10, fontWeight: 700, fontSize: 13, border: "none", cursor: saving ? "wait" : "pointer", fontFamily: "inherit" }}>
+            {saving ? "⏳ กำลังส่ง..." : "📤 ส่งคำขอ"}
           </button>
         </div>
       )}
-      {promos.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "600px" }}>
+
+      {promos.length > 0 ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {promos.slice(0, 3).map((p: any) => (
-            <div key={p.id} style={{ background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: "12px", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div key={p.id} style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 12, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <div style={{ fontWeight: 700, fontSize: "14px" }}>{p.title}</div>
-                {p.discount && <div style={{ fontSize: "12px", color: "#ef4444", fontWeight: 600 }}>{p.discount}</div>}
-                <div style={{ fontSize: "11px", color: "#94a3b8" }}>{new Date(p.startDate).toLocaleDateString("th-TH")} – {new Date(p.endDate).toLocaleDateString("th-TH")}</div>
+                <div style={{ fontWeight: 700, fontSize: 13, color: "#92400e" }}>{p.title}</div>
+                {p.discount && <div style={{ fontSize: 11, color: "#d97706", fontWeight: 600 }}>{p.discount}</div>}
+                <div style={{ fontSize: 10, color: "#b45309", marginTop: 2 }}>{new Date(p.startDate).toLocaleDateString("th-TH")} – {new Date(p.endDate).toLocaleDateString("th-TH")}</div>
               </div>
-              <span style={{ fontSize: "11px", fontWeight: 700, background: "#f0fdf4", color: "#059669", padding: "3px 10px", borderRadius: "999px" }}>กำลังแสดง</span>
+              <span style={{ fontSize: 10, fontWeight: 800, background: "#f0fdf4", color: "#059669", padding: "3px 8px", borderRadius: 999, border: "1px solid #a7f3d0" }}>✓ แสดงอยู่</span>
             </div>
           ))}
         </div>

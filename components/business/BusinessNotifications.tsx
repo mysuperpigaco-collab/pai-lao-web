@@ -13,7 +13,24 @@ interface Notification {
 }
 
 function Stars({ r }: { r: number }) {
-  return <span style={{ color: "#f59e0b", fontSize: 12 }}>{"★".repeat(r)}{"☆".repeat(5 - r)}</span>;
+  return (
+    <span style={{ display: "inline-flex", gap: 1 }}>
+      {[1,2,3,4,5].map(i => (
+        <span key={i} style={{ fontSize: 12, color: i <= r ? "#f59e0b" : "#e2e8f0" }}>★</span>
+      ))}
+    </span>
+  );
+}
+
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  const h = Math.floor(m / 60);
+  const d = Math.floor(h / 24);
+  if (d > 0) return `${d} วันที่แล้ว`;
+  if (h > 0) return `${h} ชั่วโมงที่แล้ว`;
+  if (m > 0) return `${m} นาทีที่แล้ว`;
+  return "เมื่อกี้";
 }
 
 export default function BusinessNotifications() {
@@ -31,122 +48,116 @@ export default function BusinessNotifications() {
   const unread = items.filter(n => n.replies.length === 0).length;
 
   return (
-    <div className="bn-wrap">
-      {/* Header */}
-      <button className="bn-header" onClick={() => setOpen(v => !v)}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 20 }}>🔔</span>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: 15, color: "#0f172a" }}>
-              แจ้งเตือน · Notifications
-            </div>
-            <div style={{ fontSize: 12, color: "#64748b", marginTop: 1 }}>
-              รีวิวล่าสุดบนสถานที่ของคุณ · Latest reviews on your places
-            </div>
+    <div style={{ background: "white", borderRadius: 20, border: "1.5px solid #f1f5f9", marginBottom: 28, overflow: "hidden", boxShadow: "0 4px 24px rgba(15,23,42,0.06)" }}>
+
+      {/* ── Header ── */}
+      <button onClick={() => setOpen(v => !v)} style={{
+        width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "18px 22px", background: "transparent", border: "none", cursor: "pointer",
+        fontFamily: "inherit", textAlign: "left",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 12, background: unread > 0 ? "linear-gradient(135deg,#fef3c7,#fde68a)" : "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>
+            🔔
           </div>
-          {unread > 0 && (
-            <span className="bn-badge">{unread} ใหม่</span>
-          )}
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 15, color: "#0f172a", display: "flex", alignItems: "center", gap: 8 }}>
+              แจ้งเตือน
+              {unread > 0 && (
+                <span style={{ background: "#ef4444", color: "white", fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 999, animation: "pulse 2s ease-in-out infinite" }}>
+                  {unread} ใหม่
+                </span>
+              )}
+            </div>
+            <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 1 }}>รีวิวล่าสุดบนสถานที่ของคุณ</div>
+          </div>
         </div>
-        <span className="bn-arrow" style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
+        <span style={{ fontSize: 18, color: "#cbd5e1", transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.3s" }}>⌄</span>
       </button>
 
+      {/* ── Body ── */}
       {open && (
-        <div className="bn-body">
+        <div style={{ borderTop: "1px solid #f8fafc" }}>
           {loading ? (
-            <div><div>
-              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
-                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
-                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.00s`}}/>
+            <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", gap: 12 }}>
+              {[0,1,2].map(i => (
+                <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 14, background: "#f1f5f9", flexShrink: 0, overflow: "hidden", position: "relative" }}>
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)", backgroundSize: "200% 100%", animation: `_sh 1.5s ease infinite ${i*0.1}s` }} />
+                  </div>
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                    <div style={{ height: 10, width: "55%", borderRadius: 5, background: "#f1f5f9", position: "relative", overflow: "hidden" }}>
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)", backgroundSize: "200% 100%", animation: `_sh 1.5s ease infinite ${i*0.1+0.15}s` }} />
+                    </div>
+                    <div style={{ height: 8, width: "80%", borderRadius: 4, background: "#f1f5f9", position: "relative", overflow: "hidden" }}>
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)", backgroundSize: "200% 100%", animation: `_sh 1.5s ease infinite ${i*0.1+0.25}s` }} />
+                    </div>
+                  </div>
                 </div>
-                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
-                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
-              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.1s`}}/>
+              ))}
+              <style>{`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
             </div>
-                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
-              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.2s`}}/>
-            </div>
-                </div>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
-                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
-                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.08s`}}/>
-                </div>
-                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
-                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
-              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.18s`}}/>
-            </div>
-                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
-              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.28s`}}/>
-            </div>
-                </div>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
-                <div style={{position:"relative",width:36,height:36,borderRadius:10,background:"#f1f5f9",flexShrink:0,overflow:"hidden"}}>
-                  <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.16s`}}/>
-                </div>
-                <div style={{flex:1,display:"flex",flexDirection:"column",gap:5}}>
-                  <div style={{position:"relative",width:"70%",height:9,borderRadius:5,background:"#f1f5f9",overflow:"hidden"}}>
-              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.26s`}}/>
-            </div>
-                  <div style={{position:"relative",width:"45%",height:7,borderRadius:4,background:"#f1f5f9",overflow:"hidden"}}>
-              <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.36s`}}/>
-            </div>
-                </div>
-              </div>
-              <style>{"@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
-            </div></div>
           ) : items.length === 0 ? (
-            <div className="bn-empty">
-              <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
-              <p>ยังไม่มีรีวิว · No reviews yet</p>
-              <small>เมื่อมีคนรีวิวสถานที่ของคุณ จะแสดงที่นี่</small>
+            <div style={{ padding: "48px 24px", textAlign: "center" }}>
+              <div style={{ fontSize: 40, marginBottom: 10 }}>📭</div>
+              <div style={{ fontWeight: 700, fontSize: 15, color: "#334155", marginBottom: 4 }}>ยังไม่มีรีวิว</div>
+              <div style={{ fontSize: 13, color: "#94a3b8" }}>เมื่อมีคนรีวิวสถานที่ของคุณ จะแสดงที่นี่</div>
             </div>
           ) : (
-            <div className="bn-list">
-              {items.map(item => {
+            <div style={{ maxHeight: 480, overflowY: "auto" }}>
+              {items.map((item, idx) => {
                 const authorName = item.author.displayName || item.author.firstName;
-                const hasReply = item.replies.length > 0;
+                const hasReply   = item.replies.length > 0;
                 return (
-                  <div key={item.id} className={`bn-item${hasReply ? "" : " bn-item-new"}`}>
-                    {/* Place thumbnail */}
-                    <div className="bn-thumb">
+                  <div key={item.id} style={{
+                    display: "flex", gap: 14, padding: "16px 22px",
+                    borderBottom: idx < items.length - 1 ? "1px solid #f8fafc" : "none",
+                    background: hasReply ? "transparent" : "#fffbeb",
+                    transition: "background 0.15s",
+                  }}>
+                    {/* Place thumb */}
+                    <div style={{ width: 52, height: 52, borderRadius: 14, overflow: "hidden", background: "#e2e8f0", flexShrink: 0, position: "relative" }}>
                       {item.place.coverUrl
-                        ? <img src={item.place.coverUrl} alt={item.place.title} />
-                        : <div className="bn-thumb-ph">🏞️</div>
+                        ? <img src={item.place.coverUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🏞️</div>
                       }
+                      {!hasReply && (
+                        <span style={{ position: "absolute", top: 4, right: 4, width: 9, height: 9, borderRadius: "50%", background: "#ef4444", border: "2px solid white" }} />
+                      )}
                     </div>
 
                     {/* Content */}
-                    <div className="bn-content">
-                      <div className="bn-top-row">
-                        <span className="bn-place-name">{item.place.title}</span>
-                        {!hasReply && <span className="bn-new-dot" title="ยังไม่ได้ตอบกลับ" />}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                        <span style={{ fontWeight: 800, fontSize: 13, color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>{item.place.title}</span>
+                        <span style={{ fontSize: 11, color: "#94a3b8", flexShrink: 0 }}>{timeAgo(item.createdAt)}</span>
                       </div>
-                      <div className="bn-meta-row">
-                        {item.author.avatarUrl
-                          ? <img src={item.author.avatarUrl} alt="" className="bn-avatar" />
-                          : <div className="bn-avatar-ph">{authorName.slice(0, 1).toUpperCase()}</div>
-                        }
-                        <span className="bn-reviewer">{authorName}</span>
-                        <Stars r={item.rating} />
-                        <span className="bn-date">
-                          {new Date(item.createdAt).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}
-                        </span>
-                      </div>
-                      <p className="bn-text">{item.text.length > 80 ? item.text.slice(0, 80) + "…" : item.text}</p>
 
-                      <div className="bn-actions">
-                        <Link href={`/place/${item.place.slug}`} className="bn-view-btn">
-                          👁 ดูสถานที่ · View Place
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
+                        {item.author.avatarUrl
+                          ? <img src={item.author.avatarUrl} alt="" style={{ width: 18, height: 18, borderRadius: "50%", objectFit: "cover" }} />
+                          : <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#3b82f6", color: "white", fontSize: 8, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{authorName.slice(0,1).toUpperCase()}</div>
+                        }
+                        <span style={{ fontSize: 12, fontWeight: 700, color: "#475569" }}>{authorName}</span>
+                        <Stars r={item.rating} />
+                      </div>
+
+                      {item.text && (
+                        <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 8px", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>
+                          "{item.text}"
+                        </p>
+                      )}
+
+                      <div style={{ display: "flex", gap: 7, alignItems: "center" }}>
+                        <Link href={`/place/${item.place.slug}`} style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 8, background: "#eff6ff", color: "#2563eb", textDecoration: "none", border: "1px solid #dbeafe" }}>
+                          ดูสถานที่
                         </Link>
-                        {!hasReply && (
-                          <Link href={`/place/${item.place.slug}#reviews`} className="bn-reply-btn">
-                            🏢 ตอบกลับ · Reply
+                        {!hasReply ? (
+                          <Link href={`/place/${item.place.slug}#reviews`} style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 8, background: "#ecfdf5", color: "#059669", textDecoration: "none", border: "1px solid #a7f3d0" }}>
+                            ตอบกลับ
                           </Link>
-                        )}
-                        {hasReply && (
-                          <span className="bn-replied-tag">✓ ตอบกลับแล้ว · Replied</span>
+                        ) : (
+                          <span style={{ fontSize: 11, color: "#059669", fontWeight: 600 }}>✓ ตอบกลับแล้ว</span>
                         )}
                       </div>
                     </div>
@@ -158,80 +169,7 @@ export default function BusinessNotifications() {
         </div>
       )}
 
-      <style jsx>{`
-        .bn-wrap {
-          background: white;
-          border-radius: 24px;
-          border: 1.5px solid #e2e8f0;
-          margin-bottom: 28px;
-          overflow: hidden;
-          box-shadow: 0 4px 20px rgba(15,23,42,0.04);
-        }
-        .bn-header {
-          width: 100%; display: flex; justify-content: space-between; align-items: center;
-          padding: 18px 24px; background: white; border: none; cursor: pointer;
-          font-family: inherit; text-align: left; transition: background 0.15s;
-        }
-        .bn-header:hover { background: #f8fafc; }
-        .bn-badge {
-          background: #ef4444; color: white; font-size: 11px; font-weight: 800;
-          padding: 2px 8px; border-radius: 999px; margin-left: 4px;
-        }
-        .bn-arrow { font-size: 16px; color: #94a3b8; transition: transform 0.3s; }
-
-        .bn-body {
-          border-top: 1px solid #f1f5f9;
-          max-height: 520px; overflow-y: auto;
-        }
-        .bn-empty {
-          padding: 40px; text-align: center; color: #94a3b8; font-size: 14px;
-        }
-        .bn-empty p { margin: 0 0 4px; color: #475569; font-weight: 600; }
-        .bn-empty small { font-size: 12px; }
-
-        .bn-list { display: flex; flex-direction: column; }
-        .bn-item {
-          display: flex; gap: 14px; padding: 16px 22px;
-          border-bottom: 1px solid #f8fafc; transition: background 0.15s;
-        }
-        .bn-item:hover { background: #f8fafc; }
-        .bn-item:last-child { border-bottom: none; }
-        .bn-item-new { background: #fefce8; }
-        .bn-item-new:hover { background: #fef9c3; }
-
-        .bn-thumb {
-          width: 60px; height: 60px; border-radius: 14px;
-          overflow: hidden; flex-shrink: 0; background: #e2e8f0;
-        }
-        .bn-thumb img { width: 100%; height: 100%; object-fit: cover; }
-        .bn-thumb-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-
-        .bn-content { flex: 1; min-width: 0; }
-        .bn-top-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-        .bn-place-name { font-size: 13px; font-weight: 800; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .bn-new-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; flex-shrink: 0; }
-
-        .bn-meta-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
-        .bn-avatar { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
-        .bn-avatar-ph { width: 20px; height: 20px; border-radius: 50%; background: #3b82f6; color: white; font-size: 9px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
-        .bn-reviewer { font-size: 12px; font-weight: 700; color: #334155; }
-        .bn-date { font-size: 11px; color: #94a3b8; margin-left: auto; }
-
-        .bn-text { font-size: 12px; color: #64748b; margin: 0 0 8px; line-height: 1.5; }
-
-        .bn-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        .bn-view-btn {
-          font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 8px;
-          background: #eff6ff; color: #2563eb; text-decoration: none; transition: 0.15s;
-        }
-        .bn-view-btn:hover { background: #dbeafe; }
-        .bn-reply-btn {
-          font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 8px;
-          background: #ecfdf5; color: #059669; text-decoration: none; border: 1px solid #a7f3d0; transition: 0.15s;
-        }
-        .bn-reply-btn:hover { background: #d1fae5; }
-        .bn-replied-tag { font-size: 11px; color: #059669; font-weight: 600; }
-      `}</style>
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}`}</style>
     </div>
   );
 }
