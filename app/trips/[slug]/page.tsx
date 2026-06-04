@@ -32,6 +32,53 @@ function getYoutubeId(url: string): string | null {
 
 type Props = { params: Promise<{ slug: string }> };
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pai-lao-web.vercel.app";
+
+export async function generateMetadata({ params }: Props) {
+  const raw = await params;
+  const slug = decodeURIComponent(raw.slug);
+
+  const trip = await prisma.trip.findUnique({
+    where: { slug },
+    select: {
+      title: true, subtitle: true, description: true,
+      coverUrl: true, mood: true, tags: true,
+      author: { select: { displayName: true, firstName: true } },
+      timeline: { select: { province: true }, take: 1, orderBy: { order: "asc" } },
+    },
+  }).catch(() => null);
+
+  if (!trip) return { title: "ไม่พบทริป | ไปเล่า" };
+
+  const authorName = trip.author?.displayName || trip.author?.firstName || "ไปเล่า";
+  const province   = trip.timeline?.[0]?.province;
+  const desc       = trip.subtitle
+    || trip.description?.replace(/<[^>]+>/g, "").slice(0, 160)
+    || `เรื่องเล่าการเดินทางโดย ${authorName}`;
+  const image      = trip.coverUrl || `${SITE_URL}/images/og-default.png`;
+
+  return {
+    title:       `${trip.title} | ไปเล่า`,
+    description: desc,
+    keywords:    [trip.mood, province, ...(trip.tags ?? [])].filter(Boolean).join(", "),
+    openGraph: {
+      title:       trip.title,
+      description: desc,
+      url:         `${SITE_URL}/trips/${slug}`,
+      siteName:    "ไปเล่า",
+      images:      [{ url: image, width: 1200, height: 630, alt: trip.title }],
+      type:        "article",
+      locale:      "th_TH",
+    },
+    twitter: {
+      card:        "summary_large_image",
+      title:       trip.title,
+      description: desc,
+      images:      [image],
+    },
+  };
+}
+
 export default async function TripDetailPage({ params }: Props) {
   const raw = await params;
   const slug = decodeURIComponent(raw.slug);
@@ -121,7 +168,28 @@ export default async function TripDetailPage({ params }: Props) {
   const isOwner = session?.userId === trip.author.id;
   const isAdmin = session?.role === "ADMIN" || session?.role === "SUPERADMIN";
 
+  const authorName = trip.author?.displayName || trip.author?.firstName || "ไปเล่า";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type":    "Article",
+    headline:   trip.title,
+    description: trip.subtitle || trip.description?.replace(/<[^>]+>/g, "").slice(0, 160) || "",
+    image:      trip.coverUrl ? [trip.coverUrl] : [],
+    author: {
+      "@type": "Person",
+      name:    authorName,
+      url:     `${SITE_URL}/user/${trip.author?.username}`,
+    },
+    publisher: { "@type": "Organization", name: "ไปเล่า", url: SITE_URL },
+    datePublished: trip.createdAt,
+    dateModified:  trip.updatedAt,
+    url:           `${SITE_URL}/trips/${slug}`,
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/trips/${slug}` },
+  };
+
   return (
+    <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <div className="place-page">
 
       {/* ─── Approval Status Banner ─── */}
@@ -464,5 +532,6 @@ export default async function TripDetailPage({ params }: Props) {
         </div>
       </div>
     </div>
+    </>
   );
 }

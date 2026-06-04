@@ -16,6 +16,50 @@ import "./place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pai-lao-web.vercel.app";
+
+export async function generateMetadata({ params }: Props) {
+  const raw = await params;
+  const slug = decodeURIComponent(raw.slug);
+
+  const place = await prisma.place.findUnique({
+    where: { slug },
+    select: {
+      title: true, titleEn: true, descriptionShort: true, description: true,
+      coverUrl: true, category: true, province: true, district: true, tags: true,
+    },
+  }).catch(() => null);
+
+  if (!place) return { title: "ไม่พบสถานที่ | ไปเล่า" };
+
+  const desc = place.descriptionShort
+    || place.description?.replace(/<[^>]+>/g, "").slice(0, 160)
+    || `${place.title} · ${place.province}`;
+  const image  = place.coverUrl || `${SITE_URL}/images/og-default.png`;
+  const locStr = [place.district, place.province].filter(Boolean).join(", ");
+
+  return {
+    title:       `${place.title} · ${locStr} | ไปเล่า`,
+    description: desc,
+    keywords:    [place.category, place.province, place.district, ...(place.tags ?? [])].filter(Boolean).join(", "),
+    openGraph: {
+      title:       `${place.title} · ${locStr}`,
+      description: desc,
+      url:         `${SITE_URL}/place/${slug}`,
+      siteName:    "ไปเล่า",
+      images:      [{ url: image, width: 1200, height: 630, alt: place.title }],
+      type:        "website",
+      locale:      "th_TH",
+    },
+    twitter: {
+      card:        "summary_large_image",
+      title:       `${place.title} · ${locStr}`,
+      description: desc,
+      images:      [image],
+    },
+  };
+}
+
 const CAT_LABEL: Record<string, string> = {
   NATURE: "ธรรมชาติ · Nature", CAFE: "คาเฟ่ · Café",
   ACCOMMODATION: "ที่พัก · Stay", CAMPING: "แคมปิ้ง · Camping",
@@ -152,7 +196,35 @@ export default async function PlaceDetailPage({ params }: Props) {
   const realCoverUrl = (place.coverUrl && place.coverUrl !== "/images/default-place.svg") ? place.coverUrl : null;
   const communityCover = !realCoverUrl && communityImages.length > 0 ? communityImages[0] : null;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type":    "TouristAttraction",
+    name:       place.title,
+    description: place.descriptionShort || place.description?.replace(/<[^>]+>/g, "").slice(0, 160) || "",
+    image:      place.coverUrl ? [place.coverUrl] : [],
+    url:        `${SITE_URL}/place/${slug}`,
+    address: {
+      "@type":           "PostalAddress",
+      addressLocality:   place.district,
+      addressRegion:     place.province,
+      addressCountry:    "TH",
+      streetAddress:     place.address || undefined,
+    },
+    ...(place.lat && place.lng ? { geo: { "@type": "GeoCoordinates", latitude: place.lat, longitude: place.lng } } : {}),
+    ...(place.phone ? { telephone: place.phone } : {}),
+    ...(place.website ? { sameAs: [place.website] } : {}),
+    aggregateRating: avgRating > 0 ? {
+      "@type": "AggregateRating",
+      ratingValue: avgRating.toFixed(1),
+      reviewCount: place._count?.reviews || 0,
+      bestRating:  5,
+      worstRating: 1,
+    } : undefined,
+  };
+
   return (
+    <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <div className="pd-page">
       <div className="pd-hero-wrap">
         <div className="pd-hero">
@@ -527,5 +599,6 @@ export default async function PlaceDetailPage({ params }: Props) {
         </div>
       </div>
     </div>
+    </>
   );
 }
