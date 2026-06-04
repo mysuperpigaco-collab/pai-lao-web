@@ -155,18 +155,23 @@ export default function BusinessPlaceCard({
             {onDeleted && (
               <button onClick={handleDelete} style={{ ...btnStyle("del"), border: "1.5px solid #fecaca" }}>
                 <IconTrash />
-                <span style={labelStyle}><span style={{ fontSize: 12, fontWeight: 700 }}>ลบ</span><span style={{ fontSize: 9, opacity: 0.7 }}>Delete</span></span>
+                <span style={labelStyle}><span style={{ fontSize: 12, fontWeight: 700 }}>ถอน</span><span style={{ fontSize: 9, opacity: 0.7 }}>Unclaim</span></span>
               </button>
             )}
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-            <button onClick={handleDelete} disabled={deleting} style={{ padding: 10, borderRadius: 10, border: "none", background: "#dc2626", color: "#fff", fontSize: 12, fontWeight: 800, cursor: deleting ? "wait" : "pointer", fontFamily: "inherit" }}>
-              {deleting ? "⏳ กำลังลบ..." : "🗑 ยืนยันลบ"}
-            </button>
-            <button onClick={() => setConfirm(false)} style={{ padding: 10, borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#64748b", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-              ยกเลิก
-            </button>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <p style={{ fontSize: 11, color: "#64748b", margin: 0, textAlign: "center", padding: "4px 0" }}>
+              สถานที่จะยังอยู่ในระบบ แต่คุณจะไม่ใช่เจ้าของอีกต่อไป
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+              <button onClick={handleDelete} disabled={deleting} style={{ padding: 10, borderRadius: 10, border: "none", background: "#dc2626", color: "#fff", fontSize: 12, fontWeight: 800, cursor: deleting ? "wait" : "pointer", fontFamily: "inherit" }}>
+                {deleting ? "⏳ กำลังถอน..." : "✓ ยืนยันถอน"}
+              </button>
+              <button onClick={() => setConfirm(false)} style={{ padding: 10, borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#64748b", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                ยกเลิก
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -177,6 +177,8 @@ export async function PUT(request: Request, { params }: Params) {
 }
 
 // ── DELETE /api/places/[slug] ─────────────────────────────
+// ADMIN: ลบสถานที่จริงออกจากระบบ
+// BUSINESS OWNER: ตัดความเป็นเจ้าของออกเท่านั้น (unclaim) ไม่ลบข้อมูล
 export async function DELETE(_req: Request, { params }: Params) {
   try {
     const { slug: rawSlug } = await params;
@@ -186,15 +188,29 @@ export async function DELETE(_req: Request, { params }: Params) {
 
     const place = await prisma.place.findUnique({
       where: { slug },
-      select: { business: { select: { userId: true } } },
+      select: { id: true, businessId: true, business: { select: { userId: true } } },
     });
     if (!place) return NextResponse.json({ message: "ไม่พบสถานที่" }, { status: 404 });
-    if (place.business?.userId !== session.userId && session.role !== "ADMIN") {
-      return NextResponse.json({ message: "ไม่มีสิทธิ์ลบ" }, { status: 403 });
+
+    const isAdmin   = session.role === "ADMIN" || session.role === "SUPERADMIN";
+    const isOwner   = place.business?.userId === session.userId;
+
+    if (!isAdmin && !isOwner) {
+      return NextResponse.json({ message: "ไม่มีสิทธิ์" }, { status: 403 });
     }
 
-    await prisma.place.delete({ where: { slug } });
-    return NextResponse.json({ message: "ลบสถานที่แล้ว" });
+    if (isAdmin) {
+      // แอดมินเท่านั้นที่ลบสถานที่ออกจากระบบได้จริง
+      await prisma.place.delete({ where: { slug } });
+      return NextResponse.json({ message: "ลบสถานที่ออกจากระบบแล้ว" });
+    }
+
+    // เจ้าของ: ตัดความเป็นเจ้าของออก (unclaim) ข้อมูลสถานที่ยังอยู่
+    await prisma.place.update({
+      where: { slug },
+      data: { businessId: null },
+    });
+    return NextResponse.json({ message: "ยกเลิกความเป็นเจ้าของสถานที่แล้ว สถานที่ยังคงอยู่ในระบบ" });
   } catch (error) {
     console.error("DELETE /api/places/[slug]:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
