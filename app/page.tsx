@@ -406,19 +406,25 @@ function useSmallCols() {
 // ── Main Page ────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const { user } = useAuth();
+  const [spotlightTab, setSpotlightTab] = useState<"popular" | "trending">("popular");
   const [showArchive, setShowArchive] = useState(false);
-  const [archiveTrips, setArchiveTrips] = useState<Trip[]>([]);
+  const [archiveCache, setArchiveCache] = useState<Record<string, Trip[]>>({});
   const [archiveLoading, setArchiveLoading] = useState(false);
   const smallCols = useSmallCols();
 
+  const archiveTrips = archiveCache[spotlightTab] ?? [];
+
   useEffect(() => {
-    if (!showArchive || archiveTrips.length > 0) return;
+    if (!showArchive || archiveCache[spotlightTab]?.length > 0) return;
     setArchiveLoading(true);
-    fetch(`/api/trips?limit=10&sort=popular`)
+    fetch(`/api/trips?limit=10&sort=${spotlightTab}`)
       .then(r => r.json())
-      .then(d => { setArchiveTrips(d.trips ?? []); setArchiveLoading(false); })
+      .then(d => {
+        setArchiveCache(prev => ({ ...prev, [spotlightTab]: d.trips ?? [] }));
+        setArchiveLoading(false);
+      })
       .catch(() => setArchiveLoading(false));
-  }, [showArchive]);
+  }, [showArchive, spotlightTab]);
 
   const [btnHovered, setBtnHovered] = useState(false);
 
@@ -456,7 +462,7 @@ export default function HomePage() {
         )}
       </div>
 
-      <TripSlider />
+      <TripSlider activeTab={spotlightTab} onTabChange={setSpotlightTab} />
 
       {/* ─── Top Stories Archive ─── */}
       <div style={{ margin: "36px 0" }}>
@@ -484,13 +490,13 @@ export default function HomePage() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ fontSize: 28 }}>🏆</span>
+            <span style={{ fontSize: 28 }}>{spotlightTab === "trending" ? "🔥" : "🏆"}</span>
             <div>
               <div style={{ fontSize: 15, fontWeight: 800, color: showArchive ? "#92400e" : "#334155" }}>
-                คลังเรื่องเล่ายอดนิยม · Top Stories
+                {spotlightTab === "trending" ? "คลังมาแรงล่าสุด · Trending Stories" : "คลังเรื่องเล่ายอดนิยม · Top Stories"}
               </div>
               <div style={{ fontSize: 11, fontWeight: 500, color: showArchive ? "#b45309" : "#94a3b8", marginTop: 2 }}>
-                10 อันดับที่คนบุ๊กมาร์คมากที่สุด · Most bookmarked stories
+                {spotlightTab === "trending" ? "10 อันดับไลค์สูงใน 90 วัน · Most liked in 90 days" : "10 อันดับที่คนบุ๊กมาร์คมากที่สุด · Most bookmarked stories"}
               </div>
             </div>
           </div>
@@ -545,7 +551,8 @@ export default function HomePage() {
             ) : (
               <>
                 <p style={{ fontSize: 14, fontWeight: 800, color: "#1e293b", margin: "0 0 18px", display: "flex", alignItems: "center", gap: 8 }}>
-                  <span>🏆</span> 10 เรื่องเล่ายอดนิยม · Most Bookmarked Stories
+                  <span>{spotlightTab === "trending" ? "🔥" : "🏆"}</span>
+                  {spotlightTab === "trending" ? "10 มาแรงล่าสุด · Trending in 90 days" : "10 เรื่องเล่ายอดนิยม · Most Bookmarked Stories"}
                 </p>
 
                 {/* Hero — rank 1 */}

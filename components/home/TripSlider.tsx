@@ -23,8 +23,12 @@ const TABS: { key: TabKey; label: string; icon: string; desc: string }[] = [
   { key: "trending", label: "มาแรงล่าสุด",     icon: "🔥", desc: "ไลค์สูงใน 90 วัน"  },
 ];
 
-export default function TripSlider() {
-  const [activeTab, setActiveTab] = useState<TabKey>("popular");
+interface TripSliderProps {
+  activeTab:    TabKey;
+  onTabChange:  (tab: TabKey) => void;
+}
+
+export default function TripSlider({ activeTab, onTabChange }: TripSliderProps) {
   const [current,   setCurrent  ] = useState(0);
   const [cache,     setCache    ] = useState<Record<TabKey, Trip[]>>({ popular: [], trending: [] });
   const [loadedTab, setLoadedTab] = useState<Record<TabKey, boolean>>({ popular: false, trending: false });
@@ -50,7 +54,7 @@ export default function TripSlider() {
 
   const switchTab = (tab: TabKey) => {
     if (tab === activeTab) return;
-    setActiveTab(tab);
+    onTabChange(tab);
     setCurrent(0);
     if (!loadedTab[tab]) fetchTab(tab);
   };
@@ -71,21 +75,29 @@ export default function TripSlider() {
 
   // ── Tabs ──────────────────────────────────────────────────
   const TabBar = () => (
-    <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+    <div style={{
+      display: "grid", gridTemplateColumns: "1fr 1fr",
+      background: "#f1f5f9", borderRadius: 16, padding: 4,
+      border: "1.5px solid #e2e8f0", marginBottom: 14,
+    }}>
       {TABS.map(t => {
         const isActive = t.key === activeTab;
+        const isTrending = t.key === "trending";
         return (
           <button key={t.key} onClick={() => switchTab(t.key)} style={{
-            display: "flex", alignItems: "center", gap: 6,
-            padding: "8px 16px", borderRadius: 12, border: "none", cursor: "pointer",
-            fontFamily: "inherit", fontWeight: 700, fontSize: 13, transition: "all 0.2s",
-            background: isActive ? (t.key === "trending" ? "linear-gradient(135deg,#f97316,#ef4444)" : "linear-gradient(135deg,#0ea5e9,#2563eb)") : "#f1f5f9",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+            padding: "10px 0", borderRadius: 12, border: "none", cursor: "pointer",
+            fontFamily: "inherit", fontWeight: 700, fontSize: 14, transition: "all 0.25s",
+            background: isActive
+              ? isTrending
+                ? "linear-gradient(135deg,#f97316,#ef4444)"
+                : "linear-gradient(135deg,#0ea5e9,#2563eb)"
+              : "transparent",
             color: isActive ? "#fff" : "#64748b",
-            boxShadow: isActive ? "0 4px 14px rgba(0,0,0,0.12)" : "none",
+            boxShadow: isActive ? "0 4px 14px rgba(0,0,0,0.14)" : "none",
           }}>
-            <span>{t.icon}</span>
+            <span style={{ fontSize: 16 }}>{t.icon}</span>
             <span>{t.label}</span>
-            {!isActive && !loadedTab[t.key] && <span style={{ fontSize: 10, opacity: 0.6 }}></span>}
           </button>
         );
       })}
