@@ -42,6 +42,63 @@ function formatDate(iso?: string) {
   return new Date(iso).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" });
 }
 
+const CAT_ICON: Record<string,string>  = { NATURE:"🌿",CAFE:"☕",ACCOMMODATION:"🏨",CAMPING:"⛺",FOOD:"🍲",TEMPLE:"🛕",BEACH:"🏖️",MARKET:"🛍️",ADVENTURE:"🧗",MUSEUM:"🏛️" };
+const CAT_LABEL: Record<string,string> = { NATURE:"ธรรมชาติ",CAFE:"คาเฟ่",ACCOMMODATION:"ที่พัก",CAMPING:"แคมปิ้ง",FOOD:"อาหาร",TEMPLE:"วัด",BEACH:"ชายหาด",MARKET:"ตลาด",ADVENTURE:"ผจญภัย",MUSEUM:"พิพิธภัณฑ์" };
+const CAT_COLOR: Record<string,string> = { NATURE:"#16a34a",CAFE:"#92400e",ACCOMMODATION:"#1d4ed8",CAMPING:"#15803d",FOOD:"#b91c1c",TEMPLE:"#7c3aed",BEACH:"#0369a1",MARKET:"#b45309",ADVENTURE:"#c2410c",MUSEUM:"#6b21a8" };
+
+function SearchPlaceCard({ place }: { place: PlaceResult }) {
+  const [hovered, setHovered] = useState(false);
+  const [imgErr, setImgErr]   = useState(false);
+  const icon  = CAT_ICON[place.category]  ?? "📍";
+  const color = CAT_COLOR[place.category] ?? "#0f172a";
+  const prov  = place.province?.split(" (")[0] ?? "";
+  const showImg = !!place.coverUrl && !imgErr;
+
+  return (
+    <Link href={`/place/${place.slug}`} style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", borderRadius: 20, overflow: "hidden", background: "#fff", border: "1px solid #f1f5f9",
+      boxShadow: hovered ? "0 16px 36px rgba(15,23,42,.13)" : "0 2px 12px rgba(15,23,42,.06)",
+      transform: hovered ? "translateY(-6px)" : "none", transition: "transform .22s ease, box-shadow .22s ease" }}
+      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+
+      {/* Image */}
+      <div style={{ position: "relative", height: 164, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
+        {showImg
+          ? <img src={place.coverUrl} alt={place.title} loading="lazy" onError={() => setImgErr(true)}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transform: hovered ? "scale(1.06)" : "scale(1)", transition: "transform .35s ease" }} />
+          : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg, ${color}18, ${color}38)` }}>
+              <span style={{ fontSize: 48 }}>{icon}</span>
+            </div>
+        }
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(15,23,42,.65) 0%, transparent 55%)", pointerEvents: "none" }} />
+        {/* Province badge */}
+        <div style={{ position: "absolute", top: 10, left: 10, right: 10, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          {prov && <span style={{ background: "rgba(255,255,255,.88)", color: "#0f172a", fontSize: 11, fontWeight: 800, padding: "4px 10px", borderRadius: 999, backdropFilter: "blur(6px)" }}>{prov}</span>}
+          {place.business?.isVerified && <span style={{ background: "rgba(22,163,74,.88)", color: "#fff", fontSize: 10, fontWeight: 800, padding: "4px 8px", borderRadius: 999 }}>✓</span>}
+        </div>
+        {/* Category badge */}
+        <div style={{ position: "absolute", bottom: 10, left: 10 }}>
+          <span style={{ background: "rgba(15,23,42,.7)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 999, backdropFilter: "blur(4px)" }}>
+            {icon} {CAT_LABEL[place.category] ?? place.category}
+          </span>
+        </div>
+        {/* Review count */}
+        {(place._count?.reviews ?? 0) > 0 && (
+          <span style={{ position: "absolute", bottom: 10, right: 10, background: "rgba(15,23,42,.65)", color: "white", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999 }}>
+            ⭐ {place._count!.reviews}
+          </span>
+        )}
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: "12px 14px", flex: 1 }}>
+        <h4 style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", margin: "0 0 3px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{place.title}</h4>
+        {place.titleEn && <p style={{ fontSize: 11, color: "#64748b", fontStyle: "italic", margin: "0 0 2px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{place.titleEn}</p>}
+        <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>📍 {[place.district, place.province?.split(" (")[0]].filter(Boolean).join(", ")}</p>
+      </div>
+    </Link>
+  );
+}
+
 export default function SearchPageClient() {
   const sp = useSearchParams();
   const router = useRouter();
@@ -194,25 +251,25 @@ export default function SearchPageClient() {
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
 
           {/* Province */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "6px 14px", flex: "1 1 180px", minWidth: 160 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "0 14px", height: 44, flex: "1 1 180px", minWidth: 160, boxSizing: "border-box" }}>
             <span style={{ fontSize: 15, flexShrink: 0 }}>🗾</span>
             <ProvinceSelect
               value={province}
               onChange={v => { setProv(v); setDistrict(""); }}
               placeholder="ทุกจังหวัด"
-              style={{ border: "none", background: "transparent", fontSize: 13, minHeight: 32, padding: "0", boxShadow: "none" }}
+              style={{ border: "none", background: "transparent", fontSize: 13, height: 44, padding: "0", boxShadow: "none", display: "flex", alignItems: "center" }}
             />
           </div>
 
           {/* District */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "6px 14px", flex: "1 1 160px", minWidth: 140 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "0 14px", height: 44, flex: "1 1 160px", minWidth: 140, boxSizing: "border-box" }}>
             <span style={{ fontSize: 15, flexShrink: 0 }}>🏘️</span>
             <DistrictSelect
               province={province.split(" (")[0]}
               value={district}
               onChange={v => setDistrict(v)}
               placeholder="ทุกอำเภอ"
-              style={{ border: "none", background: "transparent", fontSize: 13, minHeight: 32, padding: "0", boxShadow: "none" }}
+              style={{ border: "none", background: "transparent", fontSize: 13, height: 44, padding: "0", boxShadow: "none", display: "flex", alignItems: "center" }}
             />
           </div>
 
@@ -422,29 +479,7 @@ export default function SearchPageClient() {
                 <span style={{ fontSize: 12, fontWeight: 700, background: "#f0fdf4", color: "#15803d", padding: "2px 8px", borderRadius: 999 }}>{totalPlaces}</span>
               </h2>
               <div className="search-result-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
-                {places.map(place => (
-                  <Link key={place.slug} href={`/place/${place.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
-                    <div style={{ background: "white", borderRadius: 16, overflow: "hidden", border: "1.5px solid #f1f5f9", boxShadow: "0 2px 10px rgba(15,23,42,0.04)", transition: "all 0.2s", cursor: "pointer" }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 24px rgba(15,23,42,0.10)"; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = "none"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 10px rgba(15,23,42,0.04)"; }}
-                    >
-                      <div style={{ position: "relative", height: 140, background: "#e2e8f0", overflow: "hidden" }}>
-                        <img src={place.coverUrl} alt={place.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        {place.business?.isVerified && (
-                          <span style={{ position: "absolute", top: 8, left: 8, background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 999 }}>✓ Verified</span>
-                        )}
-                        {(place._count?.reviews ?? 0) > 0 && (
-                          <span style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(15,23,42,0.65)", color: "white", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999 }}>⭐ {place._count!.reviews}</span>
-                        )}
-                      </div>
-                      <div style={{ padding: "11px 13px" }}>
-                        <h4 style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", margin: "0 0 2px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{place.title}</h4>
-                        {place.titleEn && <p style={{ fontSize: 11, color: "#64748b", fontStyle: "italic", margin: "0 0 2px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{place.titleEn}</p>}
-                        <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>📍 {[place.district, place.province].filter(Boolean).join(", ")}</p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+                {places.map(place => <SearchPlaceCard key={place.slug} place={place} />)}
               </div>
               {totalPlaces > 20 && (
                 <div style={{ textAlign: "center", marginTop: 14 }}>
