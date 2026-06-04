@@ -18,6 +18,7 @@ interface PlaceResult {
   slug: string; title: string; titleEn?: string | null;
   coverUrl: string; province: string; district: string;
   category: string;
+  communityCover?: string | null;
   _count?: { reviews: number; bookmarks: number };
   business?: { businessName: string; isVerified?: boolean } | null;
 }
@@ -52,7 +53,11 @@ function SearchPlaceCard({ place }: { place: PlaceResult }) {
   const icon  = CAT_ICON[place.category]  ?? "📍";
   const color = CAT_COLOR[place.category] ?? "#0f172a";
   const prov  = place.province?.split(" (")[0] ?? "";
-  const showImg = !!place.coverUrl && !imgErr;
+  // ใช้ logic เดียวกับ PlaceCard ในหน้า place
+  const displayImg = (!place.business && place.communityCover)
+    ? place.communityCover
+    : ((place.coverUrl && place.coverUrl !== "/images/default-place.svg") ? place.coverUrl : (place.communityCover || null));
+  const showImg = !!displayImg && !imgErr;
 
   return (
     <Link href={`/place/${place.slug}`} style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", borderRadius: 20, overflow: "hidden", background: "#fff", border: "1px solid #f1f5f9",
@@ -63,7 +68,7 @@ function SearchPlaceCard({ place }: { place: PlaceResult }) {
       {/* Image */}
       <div style={{ position: "relative", height: 164, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
         {showImg
-          ? <img src={place.coverUrl} alt={place.title} loading="lazy" onError={() => setImgErr(true)}
+          ? <img src={displayImg!} alt={place.title} loading="lazy" onError={() => setImgErr(true)}
               style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transform: hovered ? "scale(1.06)" : "scale(1)", transition: "transform .35s ease" }} />
           : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg, ${color}18, ${color}38)` }}>
               <span style={{ fontSize: 48 }}>{icon}</span>
