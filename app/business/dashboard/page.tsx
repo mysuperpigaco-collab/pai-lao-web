@@ -1,6 +1,11 @@
 "use client";
+
+// ── Feature flag: แอดมินเปิด/ปิด Promotion ─────────────────────
+const PROMOTION_ENABLED = false; // TODO: เปลี่ยนเป็น true เมื่อแอดมินพร้อม
+
 // ── PromotionSection ────────────────────────────────────────────
 function PromotionSection() {
+  if (!PROMOTION_ENABLED) return null;
   const [promos, setPromos] = React.useState<any[]>([]);
   const [showForm, setShowForm] = React.useState(false);
   const [form, setForm] = React.useState({ title: "", description: "", discount: "", condition: "", startDate: "", endDate: "", coverUrl: "" });
@@ -230,14 +235,17 @@ export default function BusinessDashboardPage() {
         <span>จัดการข้อมูล โปรไฟล์ รีวิว และสถานที่ทั้งหมดได้ในที่เดียว · Manage all your places in one place</span>
       </section>
 
-      {/* ── PROFILE CARD ── */}
-      <BusinessProfileCard
-        businessName={biz.businessName}
-        phone={biz.phone ?? undefined}
-        lineId={biz.lineId ?? undefined}
-        logoUrl={biz.logoUrl ?? undefined}
-        isVerified={biz.isVerified}
-      />
+      {/* ── PROFILE + PROMOTION ROW ── */}
+      <div style={{ display: "grid", gridTemplateColumns: PROMOTION_ENABLED ? "1fr 360px" : "1fr", gap: 20, marginBottom: 24, alignItems: "start" }}>
+        <BusinessProfileCard
+          businessName={biz.businessName}
+          phone={biz.phone ?? undefined}
+          lineId={biz.lineId ?? undefined}
+          logoUrl={biz.logoUrl ?? undefined}
+          isVerified={biz.isVerified}
+        />
+        <PromotionSection />
+      </div>
 
       {/* ── STATS ── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginBottom: "32px" }}>
@@ -262,12 +270,10 @@ export default function BusinessDashboardPage() {
       <BusinessNotifications />
 
       {/* ── PLACES HEADER ── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
+      <div className="section-header" style={{ marginTop: 32 }}>
         <div>
-          <h2 style={{ fontSize: "22px", fontWeight: 900, margin: 0 }}>สถานที่ของคุณ</h2>
-          <p style={{ color: "#64748b", fontSize: "13px", margin: "4px 0 0" }}>
-            {places.length} สถานที่ · จัดการและแก้ไขข้อมูลได้ที่นี่
-          </p>
+          <h2 className="section-title">สถานที่ของคุณ</h2>
+          <p className="section-sub">{places.length} สถานที่ · จัดการและแก้ไขข้อมูลได้ที่นี่</p>
         </div>
         <Link href="/business/places/create" style={{
           display: "inline-flex", alignItems: "center", gap: "8px",
@@ -317,13 +323,11 @@ export default function BusinessDashboardPage() {
       )}
 
       {/* ── Claim unclaimed places ───────────────────────────── */}
-      <section style={{ marginTop: 48 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+      <section style={{ marginTop: 40, background: "rgba(255,255,255,0.82)", borderRadius: 20, padding: "28px 28px 24px", border: "1.5px solid #f1f5f9" }}>
+        <div className="section-header" style={{ marginBottom: 16 }}>
           <div>
-            <h2 style={{ fontSize: "22px", fontWeight: 900, margin: 0 }}>ค้นหาและยืนยันความเป็นเจ้าของสถานที่</h2>
-            <p style={{ fontSize: "13px", color: "#64748b", margin: "4px 0 0" }}>
-              Claim Place · สถานที่ที่นักท่องเที่ยวเพิ่มไว้ที่ยังไม่มีเจ้าของ
-            </p>
+            <h2 className="section-title">ค้นหาและยืนยันความเป็นเจ้าของสถานที่</h2>
+            <p className="section-sub">Claim Place · สถานที่ที่นักท่องเที่ยวเพิ่มไว้ที่ยังไม่มีเจ้าของ</p>
           </div>
         </div>
         <div style={{ position: "relative", maxWidth: 520 }}>
@@ -351,11 +355,7 @@ export default function BusinessDashboardPage() {
         {claimResults.length > 0 && (
           <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10, maxWidth: 640 }}>
             {claimResults.map(p => (
-              <div key={p.slug} style={{
-                display: "flex", alignItems: "center", gap: 14, background: "#fff",
-                border: "1.5px solid #e2e8f0", borderRadius: 14, padding: "12px 16px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-              }}>
+              <div key={p.slug} className="claim-card">
                 {p.coverUrl && (
                   <img src={p.coverUrl} alt="" style={{ width: 56, height: 56, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
                 )}
@@ -387,32 +387,37 @@ export default function BusinessDashboardPage() {
         )}
       </section>
 
-      {/* ── Promotion Request Section ───────────────────────────── */}
-      <PromotionSection />
-
       <style jsx>{`
-        .dashboard-page { width: 100%; max-width: 1440px; margin: 0 auto; padding: 40px 24px 80px; }
+        .dashboard-page { width: 100%; max-width: 1100px; margin: 0 auto; padding: 36px 24px 80px; }
 
         .dashboard-hero {
-          background: linear-gradient(135deg, #0f172a, #1e3a8a, #0f766e);
-          border-radius: 36px; padding: 48px; color: white;
+          background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #0f766e 100%);
+          border-radius: 28px; padding: 40px 48px; color: white;
           margin-bottom: 24px; position: relative; overflow: hidden;
+          display: flex; align-items: center; justify-content: space-between; gap: 20px;
         }
         .dashboard-hero::before {
-          content: ""; position: absolute; width: 400px; height: 400px;
-          background: rgba(255,255,255,0.06); border-radius: 999px;
-          top: -120px; right: -120px;
+          content: ""; position: absolute; width: 320px; height: 320px;
+          background: rgba(255,255,255,0.05); border-radius: 999px;
+          top: -100px; right: -80px; pointer-events: none;
         }
-        .dashboard-tag { font-size: 11px; letter-spacing: 2.5px; font-weight: 800; color: rgba(255,255,255,0.6); margin: 0 0 12px; }
-        .dashboard-hero h1 { font-size: 44px; font-weight: 900; margin: 0 0 12px; line-height: 1.1; color: #ffffff; }
-        .dashboard-hero span { display: block; color: rgba(255,255,255,0.75); font-size: 15px; line-height: 1.7; max-width: 640px; }
+        .dashboard-tag { font-size: 10px; letter-spacing: 3px; font-weight: 800; color: rgba(255,255,255,0.5); margin: 0 0 10px; text-transform: uppercase; }
+        .dashboard-hero h1 { font-size: 36px; font-weight: 900; margin: 0 0 8px; line-height: 1.15; color: #ffffff; }
+        .dashboard-hero span { display: block; color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.7; max-width: 520px; }
 
-        .manage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 12px; }
+        .section-title { font-size: 18px; font-weight: 900; margin: 0; color: #0f172a; }
+        .section-sub { font-size: 12px; color: #64748b; margin: 3px 0 0; }
+
+        .manage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+
+        .claim-card { display: flex; align-items: center; gap: 14px; background: white; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: box-shadow 0.2s; }
+        .claim-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
 
         @media (max-width: 768px) {
-          .dashboard-page { padding: 24px 16px 60px; }
-          .dashboard-hero { padding: 32px 24px; border-radius: 28px; }
-          .dashboard-hero h1 { font-size: 32px; }
+          .dashboard-page { padding: 20px 16px 60px; }
+          .dashboard-hero { padding: 28px 24px; border-radius: 22px; flex-direction: column; align-items: flex-start; }
+          .dashboard-hero h1 { font-size: 28px; }
         }
       `}</style>
     </div>
