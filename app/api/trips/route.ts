@@ -22,10 +22,8 @@ export async function GET(request: Request) {
     // ถ้าส่ง mine=1 จะดึงเฉพาะทริปของ user ที่ login (รวมทั้ง unpublished)
     let resolvedAuthorId = authorId;
     let includeUnpublished = false;
-    if (mine) {
-      const session = await getCurrentUser();
-      if (session) { resolvedAuthorId = session.userId; includeUnpublished = true; }
-    }
+    let session = mine ? await getCurrentUser() : null;
+    if (session) { resolvedAuthorId = session.userId; includeUnpublished = true; }
 
     const where: any = {
       ...(!includeUnpublished ? { isPublished: true, approvalStatus: "APPROVED", isDraft: false } : { isDraft: false }),
@@ -124,13 +122,12 @@ export async function GET(request: Request) {
     if (mine) {
       const tripIds = tripsFlat.map((t: any) => t.id).filter(Boolean);
       if (tripIds.length > 0) {
-        const sessionForPending = await getCurrentUser();
-      const pending = await (prisma as any).pendingEdit.findMany({
+        const pending = await (prisma as any).pendingEdit.findMany({
           where: {
             targetType: "TRIP",
             targetId: { in: tripIds },
             status: "PENDING",
-            ...(sessionForPending ? { submittedById: sessionForPending.userId } : {}),
+            ...(session ? { submittedById: session.userId } : {}),
           },
           select: { targetId: true },
         });
