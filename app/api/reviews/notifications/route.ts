@@ -16,7 +16,7 @@ export async function GET() {
       prisma.review.findMany({
         where: { authorId: session.userId, replies: { some: {} } },
         orderBy: { createdAt: "desc" },
-        take: 20,
+        take: 50,
         select: {
           id: true, text: true, createdAt: true,
           place: { select: { slug: true, title: true } },
@@ -38,7 +38,7 @@ export async function GET() {
           trip: { authorId: session.userId },
         },
         orderBy: { createdAt: "desc" },
-        take: 20,
+        take: 50,
         select: {
           id: true, text: true, rating: true, createdAt: true,
           trip: { select: { slug: true, title: true } },

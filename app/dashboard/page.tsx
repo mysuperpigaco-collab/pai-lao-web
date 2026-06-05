@@ -88,6 +88,7 @@ export default function DashboardPage() {
   const [replyNotifs, setReplyNotifs]   = useState<ReplyNotif[]>([]);
   const [tripReviews, setTripReviews]   = useState<TripOwnerNotif[]>([]);
   const [loadingNotifs, setLoadingNotifs] = useState(true);
+  const [visibleNotifCount, setVisibleNotifCount] = useState(5);
   const [announcements, setAnnouncements] = useState<{ id: string; title: string; body: string; icon: string; type: string; createdAt: string }[]>([]);
   const [draftTrips, setDraftTrips] = useState<{ id: string; slug: string; title: string; updatedAt?: string; timeline?: { id: string }[] }[]>([]);
 
@@ -332,6 +333,8 @@ export default function DashboardPage() {
                 const visibleItems = allItems.filter(({ kind, n }) =>
                   !seenIds.has(`del:${kind === "trip" ? `tr:${n.id}` : `rp:${n.id}`}`)
                 );
+                const pagedItems = visibleItems.slice(0, visibleNotifCount);
+                const hasMoreNotifs = visibleItems.length > visibleNotifCount;
                 const visibleAnnouncements = announcements.filter(a => !seenIds.has(`del:an:${a.id}`));
                 if (visibleItems.length === 0 && visibleAnnouncements.length === 0) return null;
 
@@ -369,13 +372,8 @@ export default function DashboardPage() {
                       display: "grid",
                       gridTemplateColumns: "repeat(2, 1fr)",
                       gap: 10,
-                      maxHeight: visibleItems.length > 4 ? 520 : undefined,
-                      overflowY: visibleItems.length > 4 ? "auto" : undefined,
-                      paddingRight: visibleItems.length > 4 ? 4 : 0,
                     }}>
-                      {tripReviews
-                        .filter(n => !seenIds.has(`del:tr:${n.id}`))
-                        .map(notif => {
+                      {pagedItems.filter(i => i.kind === "trip").map(({ n: notif }) => {
                           const nid = `tr:${notif.id}`;
                           const isRead = seenIds.has(nid);
                           const reviewerName = notif.author.displayName || notif.author.firstName || "ผู้ใช้";
@@ -409,9 +407,7 @@ export default function DashboardPage() {
                           );
                         })}
 
-                      {replyNotifs
-                        .filter(n => !seenIds.has(`del:rp:${n.id}`))
-                        .map(notif => {
+                      {pagedItems.filter(i => i.kind === "reply").map(({ n: notif }) => {
                           const nid = `rp:${notif.id}`;
                           const isRead = seenIds.has(nid);
                           const dest = notif.place ? `/place/${notif.place.slug}` : notif.trip ? `/trips/${notif.trip.slug}` : "#";
@@ -475,6 +471,16 @@ export default function DashboardPage() {
                         );
                       })}
                     </div>
+
+                    {/* ปุ่มแสดงเพิ่ม */}
+                    {hasMoreNotifs && (
+                      <button
+                        onClick={() => setVisibleNotifCount(c => c + 5)}
+                        style={{ marginTop: 10, width: "100%", padding: "10px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+                      >
+                        ⬇️ แสดงเพิ่ม ({visibleItems.length - visibleNotifCount} รายการ)
+                      </button>
+                    )}
                   </div>
                 );
               })()}
