@@ -35,7 +35,7 @@ export default function Footer() {
             <ul>
               <li>ศูนย์ช่วยเหลือ</li>
               <li>ติดต่อเรา</li>
-              <li>คำถามที่พบบ่อย</li>
+              <li><a href="/faq" style={{ color: "inherit", textDecoration: "none" }}>คำถามที่พบบ่อย</a></li>
             </ul>
           </div>
           <div className="link-col">
