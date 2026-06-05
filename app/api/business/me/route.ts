@@ -19,6 +19,7 @@ export async function GET() {
           include: {
             _count: { select: { reviews: true, bookmarks: true } },
             reviews: { select: { rating: true } },
+            claims: { where: { status: "APPROVED" }, select: { id: true } },
           },
         },
       },
@@ -38,6 +39,7 @@ export async function GET() {
         approvalStatus: (p as any).approvalStatus ?? "APPROVED",
         rejectionReason: (p as any).rejectionReason ?? null,
         claimStatus: null as string | null,
+        isClaimedPlace: (p as any).claims?.length > 0,
       };
     });
 
@@ -70,6 +72,7 @@ export async function GET() {
         rejectionReason: p.rejectionReason ?? null,
         claimStatus: c.status as string,   // "PENDING" | "REJECTED"
         claimNote: c.adminNote ?? null,
+        isClaimedPlace: true,
       };
     });
 

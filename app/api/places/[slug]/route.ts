@@ -188,12 +188,16 @@ export async function DELETE(_req: Request, { params }: Params) {
 
     const place = await prisma.place.findUnique({
       where: { slug },
-      select: { id: true, businessId: true, business: { select: { userId: true } } },
+      select: {
+        id: true, businessId: true,
+        business: { select: { userId: true, id: true } },
+        claims: { where: { status: "APPROVED" }, select: { id: true } },
+      },
     });
     if (!place) return NextResponse.json({ message: "ไม่พบสถานที่" }, { status: 404 });
 
-    const isAdmin   = session.role === "ADMIN" || session.role === "SUPERADMIN";
-    const isOwner   = place.business?.userId === session.userId;
+    const isAdmin = session.role === "ADMIN" || session.role === "SUPERADMIN";
+    const isOwner = place.business?.userId === session.userId;
 
     if (!isAdmin && !isOwner) {
       return NextResponse.json({ message: "ไม่มีสิทธิ์" }, { status: 403 });
@@ -205,12 +209,18 @@ export async function DELETE(_req: Request, { params }: Params) {
       return NextResponse.json({ message: "ลบสถานที่ออกจากระบบแล้ว" });
     }
 
-    // เจ้าของ: ตัดความเป็นเจ้าของออก (unclaim) ข้อมูลสถานที่ยังอยู่
-    await prisma.place.update({
-      where: { slug },
-      data: { businessId: null },
-    });
-    return NextResponse.json({ message: "ยกเลิกความเป็นเจ้าของสถานที่แล้ว สถานที่ยังคงอยู่ในระบบ" });
+    // เจ้าของ: เช็คว่าสถานที่นี้ถูก claim มาหรือสร้างเอง
+    const isClaimedPlace = (place as any).claims?.length > 0;
+
+    if (isClaimedPlace) {
+      // สถานที่ที่เคยไม่มีเจ้าของ — ยกเลิกความเป็นเจ้าของได้เท่านั้น ไม่ลบ
+      await prisma.place.update({ where: { slug }, data: { businessId: null } });
+      return NextResponse.json({ message: "ยกเลิกความเป็นเจ้าของสถานที่แล้ว สถานที่ยังคงอยู่ในระบบ" });
+    }
+
+    // สถานที่ที่เจ้าของสร้างเอง — ลบออกจากระบบได้
+    await prisma.place.delete({ where: { slug } });
+    return NextResponse.json({ message: "ลบสถานที่ออกจากระบบแล้ว" });
   } catch (error) {
     console.error("DELETE /api/places/[slug]:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });

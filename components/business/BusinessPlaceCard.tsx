@@ -19,6 +19,7 @@ type Props = {
   rejectionReason?: string | null;
   claimStatus?: string | null;
   claimNote?: string | null;
+  isClaimedPlace?: boolean;
 };
 
 const CAT_ICON: Record<string, string> = {
@@ -66,11 +67,25 @@ export default function BusinessPlaceCard({
   slug, title, province, district, coverUrl,
   category, avgRating, isVerified, reviewCount, bookmarkCount, onDeleted,
   approvalStatus = "APPROVED", rejectionReason,
-  claimStatus, claimNote,
+  claimStatus, claimNote, isClaimedPlace = false,
 }: Props) {
   const icon = CAT_ICON[category] ?? "📍";
   const [confirm, setConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [cancellingClaim, setCancellingClaim] = useState(false);
+  const [confirmCancelClaim, setConfirmCancelClaim] = useState(false);
+
+  async function handleCancelClaim() {
+    if (!confirmCancelClaim) { setConfirmCancelClaim(true); return; }
+    setCancellingClaim(true);
+    try {
+      const res = await fetch(`/api/places/${slug}/claim`, { method: "DELETE" });
+      if (res.ok) onDeleted?.(slug);
+      else { alert("ไม่สามารถยกเลิกได้"); setCancellingClaim(false); setConfirmCancelClaim(false); }
+    } catch {
+      alert("เกิดข้อผิดพลาด"); setCancellingClaim(false); setConfirmCancelClaim(false);
+    }
+  }
 
   async function handleDelete() {
     if (!confirm) { setConfirm(true); return; }
@@ -166,12 +181,37 @@ export default function BusinessPlaceCard({
 
       {/* Actions */}
       <div style={{ padding: "10px 12px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
-        {/* Claim place — แค่ดูสถานที่ได้ ยังแก้ไข/ลบไม่ได้ */}
+        {/* Claim place — ดูสถานที่ + ยกเลิกคำขอ */}
         {claimStatus ? (
-          <Link href={`/place/${slug}`} style={{ ...btnStyle("view"), flexDirection: "row", justifyContent: "center", gap: 6, padding: "10px" }}>
-            <IconEye />
-            <span style={{ fontSize: 12, fontWeight: 700 }}>ดูสถานที่</span>
-          </Link>
+          confirmCancelClaim ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <p style={{ fontSize: 11, color: "#64748b", margin: 0, textAlign: "center", padding: "4px 0" }}>
+                ยืนยันยกเลิกคำขอความเป็นเจ้าของ?
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                <button onClick={handleCancelClaim} disabled={cancellingClaim}
+                  style={{ padding: 10, borderRadius: 10, border: "none", background: "#dc2626", color: "#fff", fontSize: 12, fontWeight: 800, cursor: cancellingClaim ? "wait" : "pointer", fontFamily: "inherit" }}>
+                  {cancellingClaim ? "⏳ กำลังยกเลิก..." : "✓ ยืนยัน"}
+                </button>
+                <button onClick={() => setConfirmCancelClaim(false)}
+                  style={{ padding: 10, borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#64748b", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                  ไม่ยกเลิก
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+              <Link href={`/place/${slug}`} style={{ ...btnStyle("view"), flexDirection: "row", justifyContent: "center", gap: 6, padding: "10px" }}>
+                <IconEye />
+                <span style={{ fontSize: 12, fontWeight: 700 }}>ดู</span>
+              </Link>
+              <button onClick={() => setConfirmCancelClaim(true)}
+                style={{ ...btnStyle("del"), border: "1.5px solid #fecaca", flexDirection: "row", justifyContent: "center", gap: 6, padding: "10px" }}>
+                <IconTrash />
+                <span style={{ fontSize: 12, fontWeight: 700 }}>ยกเลิกคำขอ</span>
+              </button>
+            </div>
+          )
         ) : !confirm ? (
           <div style={{ display: "grid", gridTemplateColumns: onDeleted ? "1fr 1fr 1fr" : "1fr 1fr", gap: 6 }}>
             <Link href={`/place/${slug}`} style={btnStyle("view")}>
@@ -185,18 +225,23 @@ export default function BusinessPlaceCard({
             {onDeleted && (
               <button onClick={handleDelete} style={{ ...btnStyle("del"), border: "1.5px solid #fecaca" }}>
                 <IconTrash />
-                <span style={labelStyle}><span style={{ fontSize: 12, fontWeight: 700 }}>ถอน</span><span style={{ fontSize: 9, opacity: 0.7 }}>Unclaim</span></span>
+                <span style={labelStyle}>
+                  <span style={{ fontSize: 12, fontWeight: 700 }}>{isClaimedPlace ? "ถอน" : "ลบ"}</span>
+                  <span style={{ fontSize: 9, opacity: 0.7 }}>{isClaimedPlace ? "Unclaim" : "Delete"}</span>
+                </span>
               </button>
             )}
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             <p style={{ fontSize: 11, color: "#64748b", margin: 0, textAlign: "center", padding: "4px 0" }}>
-              สถานที่จะยังอยู่ในระบบ แต่คุณจะไม่ใช่เจ้าของอีกต่อไป
+              {isClaimedPlace
+                ? "สถานที่จะยังอยู่ในระบบ แต่คุณจะไม่ใช่เจ้าของอีกต่อไป"
+                : "สถานที่จะถูกลบออกจากระบบถาวร ไม่สามารถกู้คืนได้"}
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
               <button onClick={handleDelete} disabled={deleting} style={{ padding: 10, borderRadius: 10, border: "none", background: "#dc2626", color: "#fff", fontSize: 12, fontWeight: 800, cursor: deleting ? "wait" : "pointer", fontFamily: "inherit" }}>
-                {deleting ? "⏳ กำลังถอน..." : "✓ ยืนยันถอน"}
+                {deleting ? "⏳ กำลัง..." : isClaimedPlace ? "✓ ยืนยันถอน" : "✓ ยืนยันลบ"}
               </button>
               <button onClick={() => setConfirm(false)} style={{ padding: 10, borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#64748b", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                 ยกเลิก

@@ -66,3 +66,36 @@ export async function POST(req: Request, { params }: Params) {
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
   }
 }
+
+// DELETE /api/places/[slug]/claim — ยกเลิกคำขอ claim ที่ยังรออยู่
+export async function DELETE(req: Request, { params }: Params) {
+  try {
+    const session = await getCurrentUser();
+    if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+    if (session.role !== "BUSINESS") {
+      return NextResponse.json({ message: "เฉพาะเจ้าของธุรกิจเท่านั้น" }, { status: 403 });
+    }
+
+    const { slug } = await params;
+    const place = await prisma.place.findUnique({ where: { slug }, select: { id: true } });
+    if (!place) return NextResponse.json({ message: "ไม่พบสถานที่" }, { status: 404 });
+
+    const business = await prisma.business.findUnique({
+      where: { userId: session.userId },
+      select: { id: true },
+    });
+    if (!business) return NextResponse.json({ message: "ไม่พบข้อมูลธุรกิจ" }, { status: 404 });
+
+    const claim = await (prisma as any).placeClaim.findFirst({
+      where: { placeId: place.id, businessId: business.id, status: { in: ["PENDING", "REJECTED"] } },
+    });
+    if (!claim) return NextResponse.json({ message: "ไม่พบคำขอที่สามารถยกเลิกได้" }, { status: 404 });
+
+    await (prisma as any).placeClaim.delete({ where: { id: claim.id } });
+
+    return NextResponse.json({ message: "ยกเลิกคำขอเรียบร้อยแล้ว" });
+  } catch (err) {
+    console.error("DELETE /api/places/[slug]/claim:", err);
+    return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
+  }
+}
