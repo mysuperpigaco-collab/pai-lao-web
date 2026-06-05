@@ -312,7 +312,7 @@ export default function BusinessDashboardPage() {
       .then(r => r.json())
       .then(d => {
         if (d.message) { setError(d.message); }
-        else { setData(d); }
+        else { setData(d); currentBizIdRef.current = d.business?.id ?? null; }
         setLoading(false);
       })
       .catch(() => { setError("ไม่สามารถโหลดข้อมูลได้"); setLoading(false); });
@@ -329,6 +329,7 @@ export default function BusinessDashboardPage() {
   };
 
   const claimTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const currentBizIdRef = useRef<string | null>(null);
   const runClaimSearch = (q: string, province: string, district: string, category: string) => {
     if (claimTimerRef.current) clearTimeout(claimTimerRef.current);
     if (!q.trim() || q.length < 2) { setClaimResults([]); return; }
@@ -340,9 +341,14 @@ export default function BusinessDashboardPage() {
         if (district) params.set("district", district);
         if (category) params.set("category", category);
         const res = await fetch(`/api/places?${params}`);
-        const data = await res.json();
-        // แสดงทั้งสถานที่ไม่มีเจ้าของ และสถานที่ที่มีเจ้าของ (สำหรับ dispute)
-        setClaimResults(data.places ?? []);
+        const placeData = await res.json();
+        // แสดงทั้งสถานที่ไม่มีเจ้าของ และที่มีเจ้าของอื่น (สำหรับ dispute) ยกเว้นของตัวเอง
+        setClaimResults(prev => {
+          const currentBizId = currentBizIdRef.current;
+          return (placeData.places ?? []).filter((p: any) =>
+            !p.business || (currentBizId && p.business.id !== currentBizId)
+          );
+        });
       } catch {}
       setClaimLoading(false);
     }, 400);
@@ -619,9 +625,9 @@ export default function BusinessDashboardPage() {
                     {p.business && (
                       <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700, marginBottom: 8 }}>🏢 {p.business.businessName}</div>
                     )}
-                    {p.business ? (
+                    {p.business && p.business.id !== currentBizIdRef.current ? (
                       <DisputeButton slug={p.slug} claimingSlug={claimingSlug} onDispute={claimPlace} />
-                    ) : (
+                    ) : !p.business ? (
                       <div style={{ display: "flex", gap: 8 }}>
                         <a href={`/place/${p.slug}`} target="_blank" rel="noreferrer"
                           style={{ flex: 1, padding: "8px 0", textAlign: "center", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
@@ -632,7 +638,7 @@ export default function BusinessDashboardPage() {
                           {claimingSlug === p.slug ? "⏳ กำลังยืนยัน..." : "🏢 เป็นเจ้าของ"}
                         </button>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               );

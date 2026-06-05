@@ -6,11 +6,12 @@ interface Props {
   placeTitle: string;
   isBusiness: boolean;   // current user is BUSINESS role
   hasOwner: boolean;     // place already has businessId
+  isOwner?: boolean;     // current user IS the owner of this place
 }
 
 type ClaimStatus = "NONE" | "PENDING" | "APPROVED" | "REJECTED" | "DISPUTED";
 
-export default function ClaimPlaceButton({ placeSlug, placeTitle, isBusiness, hasOwner }: Props) {
+export default function ClaimPlaceButton({ placeSlug, placeTitle, isBusiness, hasOwner, isOwner = false }: Props) {
   const [status, setStatus]       = useState<ClaimStatus>("NONE");
   const [adminNote, setAdminNote] = useState<string | null>(null);
   const [loading, setLoading]     = useState(false);
@@ -32,7 +33,7 @@ export default function ClaimPlaceButton({ placeSlug, placeTitle, isBusiness, ha
       .catch(() => {});
   }, [placeSlug, isBusiness, hasOwner]);
 
-  if (!isBusiness) return null;
+  if (!isBusiness || isOwner) return null;
 
   const submit = async () => {
     setLoading(true);

@@ -590,6 +590,7 @@ export default async function PlaceDetailPage({ params }: Props) {
               placeTitle={place.title}
               isBusiness={isBusiness}
               hasOwner={!!place.business}
+              isOwner={isOwner}
             />
 
             {isOwner && (
