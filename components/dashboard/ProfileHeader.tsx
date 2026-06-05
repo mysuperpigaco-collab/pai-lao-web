@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAnimatedCounter } from "@/hooks/useAnimatedCounter";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { uploadFile } from "@/lib/uploadHelper";
 
@@ -76,13 +75,12 @@ function Shim({ delay = 0 }: { delay?: number }) {
 export default function ProfileHeader({ isOwner, loading, user = DEFAULT_USER }: Props) {
   const u = { ...DEFAULT_USER, ...user };
   const { logout, refresh } = useAuth();
-  const router = useRouter();
   const stories   = useAnimatedCounter(u.storiesCount ?? 0);
   const following = useAnimatedCounter(u.followingCount ?? 0);
   const [avatarSrc, setAvatarSrc] = useState(u.avatarUrl);
   const [uploading, setUploading] = useState(false);
 
-  const handleLogout = async () => { await logout(); router.push("/login"); };
+  const handleLogout = async () => { await logout(); };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
