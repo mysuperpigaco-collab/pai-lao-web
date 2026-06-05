@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { prisma } from "@/lib/prisma";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const SUPPORT_EMAIL = "supportpailao@gmail.com";
+const RATE_LIMIT_MINUTES = 10; // 1 email ต่อ 10 นาทีต่อ email address
 
 export async function POST(req: Request) {
   try {
@@ -19,6 +21,19 @@ export async function POST(req: Request) {
 
     if (message.trim().length < 10) {
       return NextResponse.json({ error: "ข้อความต้องมีอย่างน้อย 10 ตัวอักษร" }, { status: 400 });
+    }
+
+    // Rate limit — เช็คว่า email นี้ส่งมาใน 10 นาทีล่าสุดหรือไม่
+    const since = new Date(Date.now() - RATE_LIMIT_MINUTES * 60 * 1000);
+    const recentLog = await prisma.adminLog.findFirst({
+      where: {
+        action: "CONTACT_FORM",
+        detail: { contains: email.toLowerCase() },
+        createdAt: { gte: since },
+      },
+    });
+    if (recentLog) {
+      return NextResponse.json({ error: `กรุณารอ ${RATE_LIMIT_MINUTES} นาทีก่อนส่งอีกครั้ง` }, { status: 429 });
     }
 
     const categoryLabel: Record<string, string> = {
@@ -69,6 +84,17 @@ export async function POST(req: Request) {
         </div>
       `,
     });
+
+    // บันทึก log สำหรับ rate limiting
+    await prisma.adminLog.create({
+      data: {
+        adminId:    "00000000-0000-0000-0000-000000000000", // placeholder สำหรับ contact form
+        action:     "CONTACT_FORM",
+        targetType: "CONTACT",
+        targetId:   "contact",
+        detail:     `from:${email.toLowerCase()} name:${name.trim()} cat:${category}`,
+      },
+    }).catch(() => {}); // ไม่ block ถ้า log ไม่สำเร็จ
 
     return NextResponse.json({ ok: true, message: "ส่งข้อความสำเร็จ" });
   } catch (err) {

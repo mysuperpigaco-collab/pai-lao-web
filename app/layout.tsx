@@ -14,14 +14,35 @@ const chakraPetch = Chakra_Petch({
 
 export const metadata: Metadata = {
   title: "ไปเล่า | PAI-LAO EXPERIENCE",
-  description: "ก้าวแรกสู่การเป็นนักเล่าเรื่อง แบ่งปันประสบการณ์การเดินทาง",
+  description: "ชุมชนนักท่องเที่ยวไทย แบ่งปันเรื่องเล่าการเดินทาง ค้นหาสถานที่ท่องเที่ยว และวางแผนทริปได้ในที่เดียว",
+  keywords: ["ท่องเที่ยว", "รีวิวทริป", "สถานที่ท่องเที่ยว", "ไทย", "pai-lao", "travel"],
+  authors: [{ name: "PAI-LAO EXPERIENCE" }],
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "ไปเล่า",
+  },
+  openGraph: {
+    type: "website",
+    locale: "th_TH",
+    url: "https://pai-lao-web.vercel.app",
+    siteName: "ไปเล่า PAI-LAO EXPERIENCE",
+    title: "ไปเล่า | PAI-LAO EXPERIENCE",
+    description: "ชุมชนนักท่องเที่ยวไทย แบ่งปันเรื่องเล่าการเดินทาง",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ไปเล่า | PAI-LAO EXPERIENCE",
+    description: "ชุมชนนักท่องเที่ยวไทย แบ่งปันเรื่องเล่าการเดินทาง",
+  },
 };
-
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  minimumScale: 1,
+  themeColor: "#10b981",
 };
 
 export default function RootLayout({

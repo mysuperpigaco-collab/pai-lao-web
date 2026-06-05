@@ -20,11 +20,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: SITE_URL,              lastModified: new Date(), changeFrequency: "daily",   priority: 1.0 },
-    { url: `${SITE_URL}/trips`,   lastModified: new Date(), changeFrequency: "hourly",  priority: 0.9 },
-    { url: `${SITE_URL}/place`,   lastModified: new Date(), changeFrequency: "daily",   priority: 0.9 },
-    { url: `${SITE_URL}/login`,   lastModified: new Date(), changeFrequency: "monthly", priority: 0.3 },
-    { url: `${SITE_URL}/register`,lastModified: new Date(), changeFrequency: "monthly", priority: 0.3 },
+    { url: SITE_URL,                lastModified: new Date(), changeFrequency: "daily",   priority: 1.0 },
+    { url: `${SITE_URL}/trips`,     lastModified: new Date(), changeFrequency: "hourly",  priority: 0.9 },
+    { url: `${SITE_URL}/place`,     lastModified: new Date(), changeFrequency: "daily",   priority: 0.9 },
+    { url: `${SITE_URL}/about`,     lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}/faq`,       lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
+    { url: `${SITE_URL}/contact`,   lastModified: new Date(), changeFrequency: "yearly",  priority: 0.5 },
+    { url: `${SITE_URL}/policy`,    lastModified: new Date(), changeFrequency: "yearly",  priority: 0.3 },
+    { url: `${SITE_URL}/login`,     lastModified: new Date(), changeFrequency: "monthly", priority: 0.3 },
+    { url: `${SITE_URL}/signup`,    lastModified: new Date(), changeFrequency: "monthly", priority: 0.3 },
   ];
 
   const tripRoutes: MetadataRoute.Sitemap = trips.map(t => ({
