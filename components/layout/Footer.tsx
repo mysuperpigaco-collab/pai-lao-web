@@ -34,7 +34,7 @@ export default function Footer() {
             <h4>ช่วยเหลือ</h4>
             <ul>
               <li>ศูนย์ช่วยเหลือ</li>
-              <li>ติดต่อเรา</li>
+              <li><a href="/contact" style={{ color: "inherit", textDecoration: "none" }}>ติดต่อเรา</a></li>
               <li><a href="/faq" style={{ color: "inherit", textDecoration: "none" }}>คำถามที่พบบ่อย</a></li>
             </ul>
           </div>
