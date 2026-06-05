@@ -60,6 +60,7 @@ export default function ClaimPlaceButton({ placeSlug, placeTitle, isBusiness, ha
     PENDING: "#f59e0b",
     APPROVED: "#10b981",
     REJECTED: "#ef4444",
+    DISPUTED: "#a855f7",
   };
 
   // ── Dispute UI (สถานที่มีเจ้าของแล้ว) ──────────────────────
