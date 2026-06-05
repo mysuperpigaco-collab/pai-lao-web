@@ -46,6 +46,7 @@ const MINUTES = ["00", "15", "30", "45"];
 
 
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
+import PageLoading from "@/components/ui/PageLoading";
 
 const MAX_PHOTOS = 20;
 
@@ -254,11 +255,7 @@ export default function EditPlacePage({ params }: Props) {
   const usedPct = Math.round((totalPhotos / MAX_PHOTOS) * 100);
   const countState = totalPhotos >= MAX_PHOTOS ? "full" : totalPhotos >= 15 ? "warn" : "ok";
 
-  if (pageLoading) return (
-    <div className="edit-page" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>
-      <p style={{color:"#94a3b8",fontSize:"16px"}}>⏳ กำลังโหลดข้อมูล...</p>
-    </div>
-  );
+  if (pageLoading) return <PageLoading text="กำลังโหลดข้อมูลสถานที่..." />;
 
   if (submitted) return (
     <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"80px 20px",minHeight:"calc(100vh - 80px)"}}>

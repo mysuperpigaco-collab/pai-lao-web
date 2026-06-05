@@ -6,6 +6,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import PageLoading from "@/components/ui/PageLoading";
 import InputField from "@/components/ui/InputField";
 import {
   BackButton,
@@ -171,13 +172,7 @@ export default function EditBusinessProfilePage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <p style={{ color: "#64748b" }}>กำลังโหลด...</p>
-      </div>
-    );
-  }
+  if (isLoading) return <PageLoading text="กำลังโหลดข้อมูลโปรไฟล์..." />;
 
   /* ── Render ── */
   return (

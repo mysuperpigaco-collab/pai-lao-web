@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
+import PageLoading from "@/components/ui/PageLoading";
 import { getDistricts, normalizeProvince, PROVINCES } from "@/data/thailand";
 import {
   BackButton,
@@ -374,17 +375,7 @@ export default function EditTripPage({ params }: Props) {
     );
   }
 
-  if (isLoadingTrip) {
-    return (
-      <div className="create-container">
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:16,padding:"60px 20px"}}>
-        <div style={{width:52,height:52,borderRadius:"50%",border:"3px solid #e2e8f0",borderTopColor:"#10b981",animation:"_spin 0.8s linear infinite"}}/>
-        <p style={{fontSize:14,color:"#94a3b8",margin:0}}>กำลังโหลดข้อมูลทริป...</p>
-        <style>{`@keyframes _spin{to{transform:rotate(360deg)}}`}</style>
-      </div>
-      </div>
-    );
-  }
+  if (isLoadingTrip) return <PageLoading text="กำลังโหลดข้อมูลทริป..." />;
 
   if (notFound) {
     return (
