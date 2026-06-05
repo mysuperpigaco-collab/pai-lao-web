@@ -143,6 +143,8 @@ export default function EditBusinessProfilePage() {
     if (isChangingPw) {
       if (!currentPw) { setPwError("กรุณากรอกรหัสผ่านปัจจุบัน"); return; }
       if (!newPw || newPw.length < 8) { setPwError("รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร"); return; }
+      if (!/[a-zA-Z]/.test(newPw)) { setPwError("รหัสผ่านใหม่ต้องมีตัวอักษรอย่างน้อย 1 ตัว"); return; }
+      if (!/[0-9]/.test(newPw)) { setPwError("รหัสผ่านใหม่ต้องมีตัวเลขอย่างน้อย 1 ตัว"); return; }
     }
 
     setIsSaving(true);

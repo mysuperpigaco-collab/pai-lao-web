@@ -169,9 +169,11 @@ export default function AdminProfilePage() {
   /* ── Save profile ── */
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    if (newPw && newPw !== confirmPw) {
-      showToast("error", "รหัสผ่านใหม่ไม่ตรงกัน");
-      return;
+    if (newPw) {
+      if (newPw.length < 8) { showToast("error", "รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร"); return; }
+      if (!/[a-zA-Z]/.test(newPw)) { showToast("error", "รหัสผ่านใหม่ต้องมีตัวอักษรอย่างน้อย 1 ตัว"); return; }
+      if (!/[0-9]/.test(newPw)) { showToast("error", "รหัสผ่านใหม่ต้องมีตัวเลขอย่างน้อย 1 ตัว"); return; }
+      if (newPw !== confirmPw) { showToast("error", "รหัสผ่านใหม่ไม่ตรงกัน"); return; }
     }
     setSaving(true);
     try {
