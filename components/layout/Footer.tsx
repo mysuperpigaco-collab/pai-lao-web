@@ -25,16 +25,14 @@ export default function Footer() {
           <div className="link-col">
             <h4>เกี่ยวกับเรา</h4>
             <ul>
-              <li>รู้จักไปเล่า</li>
-              <li>ร่วมงานกับเรา</li>
-              <li>ติดต่อโฆษณา</li>
+              <li><a href="/about" style={{ color: "inherit", textDecoration: "none" }}>รู้จักไปเล่า</a></li>
             </ul>
           </div>
           <div className="link-col">
             <h4>ช่วยเหลือ</h4>
             <ul>
-              <li>ศูนย์ช่วยเหลือ</li>
               <li><a href="/contact" style={{ color: "inherit", textDecoration: "none" }}>ติดต่อเรา</a></li>
+              <li><a href="/contact?cat=ads" style={{ color: "inherit", textDecoration: "none" }}>ติดต่อโฆษณา</a></li>
               <li><a href="/faq" style={{ color: "inherit", textDecoration: "none" }}>คำถามที่พบบ่อย</a></li>
             </ul>
           </div>

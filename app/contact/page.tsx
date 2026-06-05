@@ -1,19 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 const CATEGORIES = [
   { value: "general",     label: "🌐 ทั่วไป" },
   { value: "business",    label: "🏢 เจ้าของธุรกิจ" },
   { value: "bug",         label: "🐛 แจ้งปัญหาเว็บ" },
   { value: "content",     label: "🚩 เนื้อหาไม่เหมาะสม" },
+  { value: "ads",         label: "📣 ติดต่อโฆษณา" },
   { value: "partnership", label: "🤝 ความร่วมมือ" },
   { value: "other",       label: "💬 อื่นๆ" },
 ];
 
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: "", email: "", category: "general", subject: "", message: "" });
+  const searchParams = useSearchParams();
+  const [form, setForm] = useState({ name: "", email: "", category: searchParams.get("cat") ?? "general", subject: "", message: "" });
+  useEffect(() => {
+    const cat = searchParams.get("cat");
+    if (cat) set("category", cat);
+  }, [searchParams]);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");

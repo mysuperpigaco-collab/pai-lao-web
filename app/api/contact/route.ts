@@ -26,6 +26,7 @@ export async function POST(req: Request) {
       business: "เจ้าของธุรกิจ",
       bug: "แจ้งปัญหา",
       content: "เนื้อหาไม่เหมาะสม",
+      ads: "ติดต่อโฆษณา",
       partnership: "ความร่วมมือ",
       other: "อื่นๆ",
     };
