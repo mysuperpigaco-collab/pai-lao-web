@@ -20,6 +20,7 @@ type Props = {
   claimStatus?: string | null;
   claimNote?: string | null;
   isClaimedPlace?: boolean;
+  hasPendingEdit?: boolean;
 };
 
 const CAT_ICON: Record<string, string> = {
@@ -67,7 +68,7 @@ export default function BusinessPlaceCard({
   slug, title, province, district, coverUrl,
   category, avgRating, isVerified, reviewCount, bookmarkCount, onDeleted,
   approvalStatus = "APPROVED", rejectionReason,
-  claimStatus, claimNote, isClaimedPlace = false,
+  claimStatus, claimNote, isClaimedPlace = false, hasPendingEdit = false,
 }: Props) {
   const icon = CAT_ICON[category] ?? "📍";
   const [confirm, setConfirm] = useState(false);
@@ -135,7 +136,12 @@ export default function BusinessPlaceCard({
             ⏳ รอตรวจสอบ
           </span>
         )}
-        {!claimStatus && approvalStatus === "APPROVED" && (
+        {!claimStatus && approvalStatus === "APPROVED" && hasPendingEdit && (
+          <span style={{ position: "absolute", top: isVerified ? 36 : 10, right: 10, background: "#fef9c3", color: "#854d0e", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 999, border: "1px solid #fde68a" }}>
+            ⏳ รอตรวจสอบการแก้ไข
+          </span>
+        )}
+        {!claimStatus && approvalStatus === "APPROVED" && !hasPendingEdit && (
           <span style={{ position: "absolute", top: isVerified ? 36 : 10, right: 10, background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 999, border: "1px solid #bbf7d0" }}>
             ✓ อนุมัติแล้ว
           </span>

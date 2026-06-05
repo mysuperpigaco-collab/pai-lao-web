@@ -224,6 +224,7 @@ type BusinessData = {
     claimStatus?: string | null;
     claimNote?: string | null;
     isClaimedPlace?: boolean;
+    hasPendingEdit?: boolean;
   }[];
   stats: {
     totalPlaces: number;
@@ -435,6 +436,7 @@ export default function BusinessDashboardPage() {
               claimStatus={p.claimStatus}
               claimNote={p.claimNote}
               isClaimedPlace={p.isClaimedPlace}
+              hasPendingEdit={p.hasPendingEdit}
             />
           ))}
         </section>

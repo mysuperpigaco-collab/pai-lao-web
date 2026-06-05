@@ -20,6 +20,7 @@ export async function GET() {
             _count: { select: { reviews: true, bookmarks: true } },
             reviews: { select: { rating: true } },
             claims: { where: { status: "APPROVED" }, select: { id: true } },
+            pendingEdits: { where: { status: "PENDING" }, select: { id: true }, take: 1 },
           },
         },
       },
@@ -40,6 +41,7 @@ export async function GET() {
         rejectionReason: (p as any).rejectionReason ?? null,
         claimStatus: null as string | null,
         isClaimedPlace: (p as any).claims?.length > 0,
+        hasPendingEdit: (p as any).pendingEdits?.length > 0,
       };
     });
 
