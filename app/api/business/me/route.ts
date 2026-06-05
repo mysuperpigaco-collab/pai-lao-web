@@ -19,7 +19,7 @@ export async function GET() {
           include: {
             _count: { select: { reviews: true, bookmarks: true } },
             reviews: { select: { rating: true } },
-            claims: { where: { status: "APPROVED" }, select: { id: true } },
+            claims: { where: { status: "APPROVED" }, select: { id: true, businessId: true } },
           },
         },
       },
@@ -47,10 +47,10 @@ export async function GET() {
         province: p.province, district: p.district, category: p.category,
         coverUrl: p.coverUrl, isVerified: p.isVerified, avgRating,
         reviewCount: p._count.reviews, bookmarkCount: p._count.bookmarks, createdAt: p.createdAt,
-        approvalStatus: (p as any).approvalStatus ?? "APPROVED",
-        rejectionReason: (p as any).rejectionReason ?? null,
+        approvalStatus: p.approvalStatus ?? "PENDING",
+        rejectionReason: p.rejectionReason ?? null,
         claimStatus: null as string | null,
-        isClaimedPlace: (p as any).claims?.length > 0,
+        isClaimedPlace: (p as any).claims?.some((c: any) => c.businessId === business.id),
         hasPendingEdit: pendingEditIds.has(p.id),
       };
     });
