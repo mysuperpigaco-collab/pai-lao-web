@@ -214,6 +214,7 @@ export default function Navbar() {
           .nb-avatar-name  { display: none; }
           .nb-logout       { display: none; }
           .nb-plan-btn     { display: none; }
+          .nb-feature-link { display: none; }
           .nb-write-btn    { padding: 7px 10px; font-size: 12px; }
           .nb-write-btn span { display: none; }
           .nb-avatar-link  { padding: 4px; border-radius: 50%; }
@@ -271,8 +272,8 @@ export default function Navbar() {
               {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && user.role !== "BUSINESS" && (
                 <Link href="/planner" className="nb-plan-btn">📅 วางแผนเที่ยว <span style={{fontSize:12,opacity:0.85,fontWeight:700}}>Planner</span></Link>
               )}
-              {siteSettings.missionsEnabled === "true" && <Link href="/missions" className="nb-link">🎯 ภารกิจ <span style={{fontSize:11,fontWeight:700,color:"rgba(0,0,0,0.75)"}}>Missions</span></Link>}
-              {siteSettings.promotionsEnabled === "true" && <Link href="/promotions" className="nb-link">🎁 โปรโมชั่น <span style={{fontSize:11,fontWeight:700,color:"rgba(0,0,0,0.75)"}}>Deals</span></Link>}
+              {siteSettings.missionsEnabled === "true" && <Link href="/missions" className="nb-link nb-feature-link">🎯 ภารกิจ <span style={{fontSize:11,fontWeight:700,color:"rgba(0,0,0,0.75)"}}>Missions</span></Link>}
+              {siteSettings.promotionsEnabled === "true" && <Link href="/promotions" className="nb-link nb-feature-link">🎁 โปรโมชั่น <span style={{fontSize:11,fontWeight:700,color:"rgba(0,0,0,0.75)"}}>Deals</span></Link>}
               {/* Write / Add Place */}
               {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && (
                 user.role === "BUSINESS" ? (

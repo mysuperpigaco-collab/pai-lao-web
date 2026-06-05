@@ -86,13 +86,13 @@ export default function ContactPage() {
         </p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 24, alignItems: "start" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 24, alignItems: "start" }} className="contact-grid">
 
         {/* Form */}
         <form onSubmit={handleSubmit} style={{ background: "white", borderRadius: 20, border: "1.5px solid #f1f5f9", padding: "28px 28px 24px", boxShadow: "0 4px 24px rgba(15,23,42,0.06)", display: "flex", flexDirection: "column", gap: 18 }}>
 
           {/* Name + Email */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div className="contact-name-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div>
               <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>ชื่อ *</label>
               <input value={form.name} onChange={e => set("name", e.target.value)} placeholder="ชื่อของคุณ" required style={inp} />
@@ -106,7 +106,7 @@ export default function ContactPage() {
           {/* Category */}
           <div>
             <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>หมวดหมู่</label>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <div className="contact-cats" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {CATEGORIES.map(c => (
                 <button key={c.value} type="button" onClick={() => set("category", c.value)}
                   style={{ padding: "7px 14px", borderRadius: 999, border: "1.5px solid", borderColor: form.category === c.value ? "#10b981" : "#e2e8f0", background: form.category === c.value ? "#f0fdf4" : "white", color: form.category === c.value ? "#065f46" : "#475569", fontWeight: form.category === c.value ? 700 : 400, fontSize: 13, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>
@@ -179,8 +179,26 @@ export default function ContactPage() {
       </div>
 
       <style>{`
-        @media (max-width: 640px) {
-          .contact-grid { grid-template-columns: 1fr !important; }
+        @media (max-width: 680px) {
+          .contact-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .contact-grid form {
+            order: 1;
+          }
+        }
+        @media (max-width: 480px) {
+          .contact-name-row {
+            grid-template-columns: 1fr !important;
+          }
+          .contact-cats {
+            flex-direction: column !important;
+          }
+          .contact-cats button {
+            border-radius: 12px !important;
+            width: 100%;
+            text-align: left;
+          }
         }
         input:focus, textarea:focus, select:focus {
           border-color: #10b981 !important;

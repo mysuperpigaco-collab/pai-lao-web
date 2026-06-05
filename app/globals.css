@@ -67,6 +67,7 @@
 
 html {
   max-width: 100%;
+  overflow-x: hidden;
   background-color: #1a3a2a;
 }
 
@@ -97,7 +98,7 @@ body {
   line-height: 1.7;
   background: transparent;
   color: var(--pl-text-primary);
-  overflow-x: clip;
+  overflow-x: hidden;
   max-width: 100%;
 }
 
