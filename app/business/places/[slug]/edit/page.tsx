@@ -261,7 +261,7 @@ export default function EditPlacePage({ params }: Props) {
   );
 
   if (submitted) return (
-    <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"80px 20px"}}>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"80px 20px",minHeight:"calc(100vh - 80px)"}}>
       <div style={{background:"white",borderRadius:24,padding:"48px 40px",textAlign:"center",maxWidth:400,boxShadow:"0 8px 40px rgba(15,23,42,0.10)"}}>
         <div style={{fontSize:"52px",marginBottom:16}}>⏳</div>
         <h2 style={{fontSize:"20px",fontWeight:800,color:"#1e293b",marginBottom:8}}>ส่งคำขอแก้ไขแล้ว!</h2>
