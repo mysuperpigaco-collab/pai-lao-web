@@ -435,46 +435,40 @@ export default function PlannerPage() {
     <div style={{ minHeight: "100vh", background: "transparent" }}>
 
       {/* ════ HEADER ════ */}
-      <div style={{
-        background: "rgba(255,255,255,0.90)",
-        borderBottom: "1px solid #e2e8f0",
-        padding: "0 24px", display: "flex", alignItems: "center", gap: 16,
-        height: 56, position: "sticky", top: 0, zIndex: 100,
-        boxShadow: "0 1px 4px rgba(0,0,0,0.06)"
-      }}>
-        <Link href="/dashboard" style={{ color: "#64748b", textDecoration: "none", fontSize: 20, lineHeight: 1, padding: "4px 8px", borderRadius: 8, background: "#f8fafc", border: "1px solid #e2e8f0" }}>←</Link>
-        <div>
-          <div style={{ fontWeight: 900, fontSize: 18, color: "#1e293b" }}>📅 วางแผนเที่ยว</div>
+      <div className="planner-header">
+        <Link href="/dashboard" style={{ color: "#64748b", textDecoration: "none", fontSize: 20, lineHeight: 1, padding: "4px 8px", borderRadius: 8, background: "#f8fafc", border: "1px solid #e2e8f0", flexShrink: 0 }}>←</Link>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontWeight: 900, fontSize: 18, color: "#1e293b", whiteSpace: "nowrap" }}>📅 วางแผนเที่ยว</div>
           <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, letterSpacing: "0.5px" }}>TRIP PLANNER</div>
         </div>
         <div style={{ flex: 1 }} />
         {activePlan && (
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div className="planner-header-actions">
             <button onClick={togglePublic} style={{
-              padding: "7px 16px", borderRadius: 20, border: "1.5px solid",
+              padding: "7px 14px", borderRadius: 20, border: "1.5px solid",
               borderColor: activePlan.isPublic ? "#10b981" : "#e2e8f0",
               background: activePlan.isPublic ? "#ecfdf5" : "#f8fafc",
               color: activePlan.isPublic ? "#065f46" : "#64748b",
               fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit",
-              display: "flex", alignItems: "center", gap: 5
+              display: "flex", alignItems: "center", gap: 5, flexShrink: 0, whiteSpace: "nowrap"
             }}>
-              {activePlan.isPublic ? "🌐 สาธารณะ · Public" : "🔒 ส่วนตัว · Private"}
+              {activePlan.isPublic ? "🌐 สาธารณะ" : "🔒 ส่วนตัว"}
             </button>
             {activePlan.isPublic && shareUrl && (
               <button onClick={copyLink} style={{
-                padding: "7px 16px", borderRadius: 20, border: "1.5px solid #3b82f6",
+                padding: "7px 14px", borderRadius: 20, border: "1.5px solid #3b82f6",
                 background: "#eff6ff", color: "#1d4ed8", fontWeight: 700, fontSize: 12,
-                cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5
+                cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5, flexShrink: 0, whiteSpace: "nowrap"
               }}>
-                🔗 แชร์ · Share
+                🔗 คัดลอกลิงก์
               </button>
             )}
             <Link href={`/planner/${activePlan.id}`} target="_blank" style={{
-              padding: "7px 16px", borderRadius: 20, border: "1.5px solid #7c3aed",
+              padding: "7px 14px", borderRadius: 20, border: "1.5px solid #7c3aed",
               background: "linear-gradient(135deg,#f5f3ff,#ede9fe)", color: "#6d28d9", fontWeight: 800, fontSize: 12,
-              textDecoration: "none", display: "flex", alignItems: "center", gap: 5
+              textDecoration: "none", display: "flex", alignItems: "center", gap: 5, flexShrink: 0, whiteSpace: "nowrap"
             }}>
-              📤 แชร์ · Share
+              📤 แชร์
             </Link>
           </div>
         )}
@@ -482,9 +476,18 @@ export default function PlannerPage() {
 
       {/* ════ 3-COLUMN LAYOUT ════ */}
       <style>{`
-        .planner-grid { display:grid; grid-template-columns:260px 1fr 320px; height:calc(100vh - 56px); overflow:hidden; }
+        .planner-header {
+          background: rgba(255,255,255,0.90); border-bottom: 1px solid #e2e8f0;
+          padding: 0 24px; display: flex; align-items: center; gap: 16px;
+          min-height: 56px; position: sticky; top: 60px; z-index: 100;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .planner-header-actions { display:flex; gap:8px; align-items:center; }
+
+        .planner-grid { display:grid; grid-template-columns:260px 1fr 320px; height:calc(100vh - 116px); overflow:hidden; }
         .planner-sidebar { display:flex; flex-direction:column; overflow:hidden; }
         .planner-right { overflow-y:auto; }
+
         @media (max-width: 900px) {
           .planner-grid { grid-template-columns:1fr; height:auto; overflow:visible; }
           .planner-sidebar { height:auto; max-height:40vh; overflow-y:auto; border-right:none !important; border-bottom:1px solid #e2e8f0; }
@@ -492,6 +495,11 @@ export default function PlannerPage() {
         }
         @media (max-width: 640px) {
           .planner-sidebar { max-height:50vh; }
+          .planner-header { padding: 8px 14px; flex-wrap: wrap; gap: 8px 10px; }
+          .planner-header-actions {
+            width: 100%; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px;
+          }
+          .planner-header-actions::-webkit-scrollbar { display: none; }
         }
       `}</style>
       <div className="planner-grid" style={{ maxWidth: 1400, margin: "0 auto", width: "100%", borderLeft: "1px solid #e2e8f0", borderRight: "1px solid #e2e8f0" }}>
