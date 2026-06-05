@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/auth";
 
 type Params = { params: Promise<{ slug: string }> };
 
+const MAX_PENDING_CLAIMS = 2;
+
 // POST /api/places/[slug]/claim — ส่งคำขอ claim รอแอดมินอนุมัติ
 export async function POST(req: Request, { params }: Params) {
   try {
@@ -11,6 +13,22 @@ export async function POST(req: Request, { params }: Params) {
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
     if (session.role !== "BUSINESS") {
       return NextResponse.json({ message: "เฉพาะเจ้าของธุรกิจเท่านั้น" }, { status: 403 });
+    }
+
+    // ── Ban check ──────────────────────────────────────────────────
+    const userCheck = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { bannedUntil: true, postBannedUntil: true },
+    });
+    const now = new Date();
+    if (userCheck?.bannedUntil && userCheck.bannedUntil > now) {
+      return NextResponse.json({ message: "บัญชีของคุณถูกระงับ ไม่สามารถดำเนินการได้" }, { status: 403 });
+    }
+    if (userCheck?.postBannedUntil && userCheck.postBannedUntil > now) {
+      const until = new Date(userCheck.postBannedUntil);
+      const isPermanent = until.getFullYear() >= 2099;
+      const dateStr = isPermanent ? "ถาวร" : until.toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" });
+      return NextResponse.json({ message: `คุณถูกจำกัดสิทธิ์จนถึงวันที่ ${dateStr} ไม่สามารถส่งคำขอ Claim ได้` }, { status: 403 });
     }
 
     const { slug } = await params;
@@ -25,6 +43,18 @@ export async function POST(req: Request, { params }: Params) {
       select: { id: true },
     });
     if (!business) return NextResponse.json({ message: "ไม่พบข้อมูลธุรกิจ" }, { status: 404 });
+
+    // ── จำกัด pending claims สูงสุด 2 รายการพร้อมกัน ──────────────
+    const pendingCount = await (prisma as any).placeClaim.count({
+      where: { businessId: business.id, status: { in: ["PENDING", "DISPUTED"] } },
+    });
+    if (pendingCount >= MAX_PENDING_CLAIMS) {
+      return NextResponse.json({
+        message: `คุณมีคำขอ Claim รออนุมัติอยู่ ${pendingCount} รายการ (สูงสุด ${MAX_PENDING_CLAIMS} รายการ) กรุณารอแอดมินอนุมัติก่อนส่งคำขอเพิ่ม`,
+        limitReached: true,
+        pendingCount,
+      }, { status: 429 });
+    }
 
     const body = await req.json().catch(() => ({}));
     const message = (body as any)?.message?.trim() || null;
