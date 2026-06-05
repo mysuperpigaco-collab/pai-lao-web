@@ -49,6 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [me, setMe]               = useState<MeUser | null>(null);
   const [pendingReports, set]     = useState(0);
   const [pendingApprovals, setPA] = useState(0);
+  const [pendingClaims, setPC]    = useState(0);
   const [loading, setLoading]     = useState(true);
 
   useEffect(() => {
@@ -71,6 +72,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     fetch("/api/admin/reports?status=PENDING&limit=1")
       .then(r => r.json())
       .then(d => set(d.total || 0));
+    fetch("/api/admin/place-claims?status=ACTIVE")
+      .then(r => r.json())
+      .then(d => setPC((d.claims ?? []).length || 0))
+      .catch(() => {});
     Promise.all([
       fetch("/api/admin/trips?approval=PENDING&limit=1").then(r => r.json()).then(d => d.total || 0).catch(() => 0),
       fetch("/api/admin/places?approval=PENDING&limit=1").then(r => r.json()).then(d => d.total || 0).catch(() => 0),
@@ -122,6 +127,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   )}
                   {(item as any).approval && pendingApprovals > 0 && (
                     <span className="adm-nav-badge" style={{ background: "#f59e0b", color: "#000" }}>{pendingApprovals > 99 ? "99+" : pendingApprovals}</span>
+                  )}
+                  {item.href === "/admin/claims" && pendingClaims > 0 && (
+                    <span className="adm-nav-badge" style={{ background: "#7c3aed", color: "#fff" }}>{pendingClaims > 99 ? "99+" : pendingClaims}</span>
                   )}
                 </Link>
               ))}
