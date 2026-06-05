@@ -247,6 +247,51 @@ function StatCard({ value, label, labelEn, color, bg }: {
   );
 }
 
+function DisputeButton({ slug, claimingSlug, onDispute }: { slug: string; claimingSlug: string | null; onDispute: (slug: string, reason?: string) => void }) {
+  const [showForm, setShowForm] = React.useState(false);
+  const [reason, setReason] = React.useState("");
+  const isClaiming = claimingSlug === slug;
+
+  if (!showForm) {
+    return (
+      <div style={{ display: "flex", gap: 8 }}>
+        <a href={`/place/${slug}`} target="_blank" rel="noreferrer"
+          style={{ flex: 1, padding: "8px 0", textAlign: "center", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
+          ดูสถานที่
+        </a>
+        <button onClick={() => setShowForm(true)}
+          style={{ flex: 2, padding: "8px 0", borderRadius: 10, border: "none", background: "#f59e0b", color: "#fff", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+          ⚔️ โต้แย้งความเป็นเจ้าของ
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <textarea
+        value={reason}
+        onChange={e => setReason(e.target.value)}
+        placeholder="ระบุเหตุผล เช่น ฉันเป็นเจ้าของที่แท้จริง มีเอกสารยืนยัน... (ขั้นต่ำ 10 ตัวอักษร)"
+        rows={3}
+        style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1.5px solid #fde68a", fontSize: 12, fontFamily: "inherit", resize: "none", boxSizing: "border-box", outline: "none" }}
+      />
+      <div style={{ display: "flex", gap: 6 }}>
+        <button onClick={() => setShowForm(false)}
+          style={{ flex: 1, padding: "8px 0", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#64748b", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+          ยกเลิก
+        </button>
+        <button
+          onClick={() => { onDispute(slug, reason); setShowForm(false); setReason(""); }}
+          disabled={isClaiming || reason.length < 10}
+          style={{ flex: 2, padding: "8px 0", borderRadius: 10, border: "none", background: isClaiming || reason.length < 10 ? "#e2e8f0" : "#dc2626", color: isClaiming || reason.length < 10 ? "#94a3b8" : "#fff", fontSize: 12, fontWeight: 800, cursor: isClaiming || reason.length < 10 ? "not-allowed" : "pointer", fontFamily: "inherit" }}>
+          {isClaiming ? "⏳ กำลังส่ง..." : "⚔️ ส่งคำขอโต้แย้ง"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function BusinessDashboardPage() {
   const [data, setData] = useState<BusinessData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -296,7 +341,8 @@ export default function BusinessDashboardPage() {
         if (category) params.set("category", category);
         const res = await fetch(`/api/places?${params}`);
         const data = await res.json();
-        setClaimResults((data.places ?? []).filter((p: any) => !p.business));
+        // แสดงทั้งสถานที่ไม่มีเจ้าของ และสถานที่ที่มีเจ้าของ (สำหรับ dispute)
+        setClaimResults(data.places ?? []);
       } catch {}
       setClaimLoading(false);
     }, 400);
@@ -305,16 +351,27 @@ export default function BusinessDashboardPage() {
     setClaimQuery(q);
     runClaimSearch(q, claimProvince, claimDistrict, claimCategory);
   };
-  const claimPlace = async (slug: string) => {
+  const claimPlace = async (slug: string, reason?: string) => {
     setClaimingSlug(slug);
     setClaimMessage("");
     try {
-      const res = await fetch(`/api/places/${slug}/claim`, { method: "POST" });
+      const res = await fetch(`/api/places/${slug}/claim`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: reason ?? null }),
+      });
       const d = await res.json();
-      setClaimMessage(res.ok ? `✅ ${d.message}` : `❌ ${d.message}`);
       if (res.ok) {
+        const msg = d.isDispute
+          ? `✅ ${d.message}`
+          : d.hasCompetition
+          ? `✅ ${d.message} · ⚠️ มีธุรกิจอื่นขอ claim อยู่ ${d.competingCount} ราย แอดมินจะเป็นคนตัดสิน`
+          : `✅ ${d.message}`;
+        setClaimMessage(msg);
         setClaimResults(prev => prev.filter(p => p.slug !== slug));
-        fetchData(); // refresh dashboard
+        fetchData();
+      } else {
+        setClaimMessage(`❌ ${d.message}`);
       }
     } catch { setClaimMessage("❌ เกิดข้อผิดพลาด"); }
     setClaimingSlug(null);
@@ -539,25 +596,43 @@ export default function BusinessDashboardPage() {
                         {p.province?.split(" (")[0]}
                       </span>
                     )}
-                    <span style={{ position: "absolute", bottom: 8, left: 8, background: "rgba(15,23,42,0.7)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>
-                      ⭕ ไม่มีเจ้าของ
-                    </span>
+                    {p.business ? (
+                      <span style={{ position: "absolute", bottom: 8, left: 8, background: "rgba(245,158,11,0.85)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>
+                        🏢 มีเจ้าของ
+                      </span>
+                    ) : (
+                      <span style={{ position: "absolute", bottom: 8, left: 8, background: "rgba(15,23,42,0.7)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>
+                        ⭕ ไม่มีเจ้าของ
+                      </span>
+                    )}
+                    {!p.business && (p.pendingClaimCount ?? 0) > 0 && (
+                      <span style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(245,158,11,0.9)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>
+                        🔥 {p.pendingClaimCount} คำขอ
+                      </span>
+                    )}
                   </div>
 
                   {/* Info */}
                   <div style={{ padding: "12px 14px" }}>
                     <div style={{ fontWeight: 800, fontSize: 14, color: "#1e293b", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.title}</div>
-                    <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>📍 {[p.district, p.province?.split(" (")[0]].filter(Boolean).join(", ")}</div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <a href={`/place/${p.slug}`} target="_blank" rel="noreferrer"
-                        style={{ flex: 1, padding: "8px 0", textAlign: "center", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
-                        ดูสถานที่
-                      </a>
-                      <button onClick={() => claimPlace(p.slug)} disabled={claimingSlug === p.slug}
-                        style={{ flex: 2, padding: "8px 0", borderRadius: 10, border: "none", background: claimingSlug === p.slug ? "#e2e8f0" : "#10b981", color: claimingSlug === p.slug ? "#94a3b8" : "#fff", fontSize: 12, fontWeight: 800, cursor: claimingSlug === p.slug ? "wait" : "pointer", fontFamily: "inherit" }}>
-                        {claimingSlug === p.slug ? "⏳ กำลังยืนยัน..." : "🏢 เป็นเจ้าของ"}
-                      </button>
-                    </div>
+                    <div style={{ fontSize: 12, color: "#64748b", marginBottom: p.business ? 6 : 10 }}>📍 {[p.district, p.province?.split(" (")[0]].filter(Boolean).join(", ")}</div>
+                    {p.business && (
+                      <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700, marginBottom: 8 }}>🏢 {p.business.businessName}</div>
+                    )}
+                    {p.business ? (
+                      <DisputeButton slug={p.slug} claimingSlug={claimingSlug} onDispute={claimPlace} />
+                    ) : (
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <a href={`/place/${p.slug}`} target="_blank" rel="noreferrer"
+                          style={{ flex: 1, padding: "8px 0", textAlign: "center", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
+                          ดูสถานที่
+                        </a>
+                        <button onClick={() => claimPlace(p.slug)} disabled={claimingSlug === p.slug}
+                          style={{ flex: 2, padding: "8px 0", borderRadius: 10, border: "none", background: claimingSlug === p.slug ? "#e2e8f0" : "#10b981", color: claimingSlug === p.slug ? "#94a3b8" : "#fff", fontSize: 12, fontWeight: 800, cursor: claimingSlug === p.slug ? "wait" : "pointer", fontFamily: "inherit" }}>
+                          {claimingSlug === p.slug ? "⏳ กำลังยืนยัน..." : "🏢 เป็นเจ้าของ"}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

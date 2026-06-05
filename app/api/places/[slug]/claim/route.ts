@@ -19,9 +19,6 @@ export async function POST(req: Request, { params }: Params) {
       select: { id: true, businessId: true, title: true },
     });
     if (!place) return NextResponse.json({ message: "ไม่พบสถานที่" }, { status: 404 });
-    if (place.businessId) {
-      return NextResponse.json({ message: "สถานที่นี้มีเจ้าของแล้ว" }, { status: 409 });
-    }
 
     const business = await prisma.business.findUnique({
       where: { userId: session.userId },
@@ -29,23 +26,47 @@ export async function POST(req: Request, { params }: Params) {
     });
     if (!business) return NextResponse.json({ message: "ไม่พบข้อมูลธุรกิจ" }, { status: 404 });
 
-    // เช็คว่ามีคำขอ pending อยู่แล้วหรือไม่
-    const existing = await (prisma as any).placeClaim.findFirst({
-      where: { placeId: place.id, businessId: business.id, status: "PENDING" },
-    });
-    if (existing) {
-      return NextResponse.json({ message: "คุณมีคำขอรอการอนุมัติอยู่แล้ว" }, { status: 409 });
-    }
-
     const body = await req.json().catch(() => ({}));
     const message = (body as any)?.message?.trim() || null;
+    const isDispute = !!place.businessId; // สถานที่มีเจ้าของอยู่แล้ว → เป็น dispute
 
-    // สร้าง PlaceClaim รอแอดมินอนุมัติ (ไม่ set businessId ทันที)
+    if (isDispute) {
+      // ต้องมีเหตุผลประกอบการโต้แย้ง
+      if (!message || message.length < 10) {
+        return NextResponse.json({ message: "กรุณาระบุเหตุผลในการโต้แย้ง (อย่างน้อย 10 ตัวอักษร)" }, { status: 400 });
+      }
+      // เช็คว่าเคย dispute รอผลอยู่แล้วหรือไม่
+      const existingDispute = await (prisma as any).placeClaim.findFirst({
+        where: { placeId: place.id, businessId: business.id, status: "DISPUTED" },
+      });
+      if (existingDispute) {
+        return NextResponse.json({ message: "คุณมีคำขอโต้แย้งที่รอผลอยู่แล้ว" }, { status: 409 });
+      }
+      // ห้าม dispute สถานที่ตัวเองเป็นเจ้าของอยู่แล้ว
+      if (place.businessId === business.id) {
+        return NextResponse.json({ message: "คุณเป็นเจ้าของสถานที่นี้อยู่แล้ว" }, { status: 409 });
+      }
+    } else {
+      // claim ปกติ — เช็คว่ามีคำขอ pending อยู่แล้วหรือไม่
+      const existing = await (prisma as any).placeClaim.findFirst({
+        where: { placeId: place.id, businessId: business.id, status: "PENDING" },
+      });
+      if (existing) {
+        return NextResponse.json({ message: "คุณมีคำขอรอการอนุมัติอยู่แล้ว" }, { status: 409 });
+      }
+    }
+
+    // เช็คว่ามีธุรกิจอื่น claim/dispute อยู่แล้วหรือไม่
+    const competingCount = await (prisma as any).placeClaim.count({
+      where: { placeId: place.id, status: { in: ["PENDING", "DISPUTED"] }, businessId: { not: business.id } },
+    });
+
+    // สร้าง PlaceClaim
     await (prisma as any).placeClaim.create({
       data: {
         placeId:    place.id,
         businessId: business.id,
-        status:     "PENDING",
+        status:     isDispute ? "DISPUTED" : "PENDING",
         message,
       },
     });
@@ -53,14 +74,20 @@ export async function POST(req: Request, { params }: Params) {
     await prisma.adminLog.create({
       data: {
         adminId:    session.userId,
-        action:     "REQUEST_CLAIM_PLACE",
+        action:     isDispute ? "REQUEST_DISPUTE_PLACE" : "REQUEST_CLAIM_PLACE",
         targetId:   place.id,
         targetType: "PLACE",
-        detail:     `Business requested claim: ${place.title}`,
+        detail:     `Business ${isDispute ? "disputed" : "requested claim"}: ${place.title}`,
       },
     }).catch(() => {});
 
-    return NextResponse.json({ message: "ส่งคำขอเรียบร้อย รอแอดมินอนุมัติ", pending: true });
+    return NextResponse.json({
+      message: isDispute ? "ส่งคำขอโต้แย้งเรียบร้อย รอแอดมินตรวจสอบ" : "ส่งคำขอเรียบร้อย รอแอดมินอนุมัติ",
+      pending: true,
+      isDispute,
+      hasCompetition: !isDispute && competingCount > 0,
+      competingCount: !isDispute ? competingCount : 0,
+    });
   } catch (err) {
     console.error("POST /api/places/[slug]/claim:", err);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });

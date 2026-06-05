@@ -86,9 +86,24 @@ export async function GET(request: Request) {
       }
     }
 
+    // นับ pending claims ของแต่ละสถานที่ที่ไม่มีเจ้าของ (สำหรับแสดงในหน้า claim)
+    const unownedIds = placesWithAvg.filter(p => !p.business).map(p => p.id);
+    const pendingClaimCounts: Record<string, number> = {};
+    if (unownedIds.length > 0) {
+      const claimCounts = await (prisma as any).placeClaim.groupBy({
+        by: ["placeId"],
+        where: { placeId: { in: unownedIds }, status: "PENDING" },
+        _count: { placeId: true },
+      });
+      for (const c of claimCounts) {
+        pendingClaimCounts[c.placeId] = c._count.placeId;
+      }
+    }
+
     const placesWithCover = placesWithAvg.map(p => ({
       ...p,
       communityCover: coverByPlaceId[p.id] ?? coverByName[p.title.toLowerCase()] ?? null,
+      pendingClaimCount: pendingClaimCounts[p.id] ?? 0,
     }));
 
     return NextResponse.json({ places: placesWithCover, total, page, totalPages: Math.ceil(total / limit) });

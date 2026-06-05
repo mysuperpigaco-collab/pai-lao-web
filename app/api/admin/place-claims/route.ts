@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     const status = searchParams.get("status") ?? "PENDING";
 
     const claims = await (prisma as any).placeClaim.findMany({
-      where: status === "ALL" ? {} : { status },
+      where: status === "ALL" ? {} : status === "ACTIVE" ? { status: { in: ["PENDING", "DISPUTED"] } } : { status },
       orderBy: { createdAt: "desc" },
       include: {
         place: {
@@ -64,6 +64,7 @@ export async function POST(req: Request) {
     }
 
     const newStatus = action === "APPROVE" ? "APPROVED" : "REJECTED";
+    const isDispute = claim.status === "DISPUTED";
 
     // Update claim
     await (prisma as any).placeClaim.update({
@@ -71,18 +72,30 @@ export async function POST(req: Request) {
       data: { status: newStatus, adminNote: adminNote?.trim() || null },
     });
 
-    // If approved: link place to business (if still unclaimed)
-    if (action === "APPROVE" && !claim.place.businessId) {
-      await prisma.place.update({
-        where: { id: claim.place.id },
-        data: { businessId: claim.business.id },
-      });
-
-      // Reject all other pending claims for this place
-      await (prisma as any).placeClaim.updateMany({
-        where: { placeId: claim.place.id, status: "PENDING", id: { not: claimId } },
-        data: { status: "REJECTED", adminNote: "มีเจ้าของอนุมัติแล้ว" },
-      });
+    if (action === "APPROVE") {
+      if (isDispute) {
+        // โอนความเป็นเจ้าของจากเจ้าของเดิมไปยังผู้โต้แย้ง
+        await prisma.place.update({
+          where: { id: claim.place.id },
+          data: { businessId: claim.business.id },
+        });
+        // reject claim/dispute อื่นๆ ทั้งหมดของ place นี้
+        await (prisma as any).placeClaim.updateMany({
+          where: { placeId: claim.place.id, id: { not: claimId }, status: { in: ["PENDING", "DISPUTED", "APPROVED"] } },
+          data: { status: "REJECTED", adminNote: "สิทธิ์ความเป็นเจ้าของถูกโอนให้ผู้โต้แย้งรายใหม่" },
+        });
+      } else if (!claim.place.businessId) {
+        // claim ปกติ: link place กับ business
+        await prisma.place.update({
+          where: { id: claim.place.id },
+          data: { businessId: claim.business.id },
+        });
+        // reject pending/disputed claims อื่นๆ
+        await (prisma as any).placeClaim.updateMany({
+          where: { placeId: claim.place.id, status: { in: ["PENDING", "DISPUTED"] }, id: { not: claimId } },
+          data: { status: "REJECTED", adminNote: "มีเจ้าของอนุมัติแล้ว" },
+        });
+      }
     }
 
     await prisma.adminLog.create({
