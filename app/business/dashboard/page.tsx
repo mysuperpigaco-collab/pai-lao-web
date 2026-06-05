@@ -421,7 +421,7 @@ export default function BusinessDashboardPage() {
       <PromotionBar places={places.map(p => ({ id: p.id, slug: p.slug, title: p.title }))} />
 
       {/* ── STATS ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginBottom: "32px" }}>
+      <div className="stats-grid">
         <StatCard
           value={String(stats.totalPlaces)}
           label="สถานที่ทั้งหมด" labelEn="Total Places"
@@ -685,6 +685,8 @@ export default function BusinessDashboardPage() {
         .section-title { font-size: 18px; font-weight: 900; margin: 0; color: #0f172a; }
         .section-sub { font-size: 12px; color: #64748b; margin: 3px 0 0; }
 
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px; }
+
         .manage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
 
         .claim-card { display: flex; align-items: center; gap: 14px; background: white; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: box-shadow 0.2s; }
@@ -694,6 +696,7 @@ export default function BusinessDashboardPage() {
           .dashboard-page { padding: 20px 16px 60px; }
           .dashboard-hero { padding: 28px 24px; border-radius: 22px; flex-direction: column; align-items: flex-start; }
           .dashboard-hero h1 { font-size: 28px; }
+          .stats-grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; }
         }
       `}</style>
     </div>

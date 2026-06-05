@@ -358,7 +358,7 @@ export default function EditBusinessProfilePage() {
             <div className="ui-password-box">
               <h3>🔒 เปลี่ยนรหัสผ่าน · Change Password</h3>
               <p>กรอกเฉพาะเมื่อต้องการเปลี่ยนรหัสผ่าน · Only fill in if you want to change your password</p>
-              <div className="ui-password-grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
+              <div className="ui-password-grid">
                 <div>
                   <InputField label="รหัสผ่านปัจจุบัน" labelEn="Current password" type="password" value={currentPw} onChange={e => setCurrentPw((e.target as HTMLInputElement).value)} />
                 </div>
