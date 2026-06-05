@@ -6,6 +6,15 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const SUPPORT_EMAIL = "supportpailao@gmail.com";
 const RATE_LIMIT_MINUTES = 10; // 1 email ต่อ 10 นาทีต่อ email address
 
+function esc(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
 export async function POST(req: Request) {
   try {
     const { name, email, subject, message, category } = await req.json();
@@ -64,15 +73,15 @@ export async function POST(req: Request) {
           </div>
           <div style="padding:28px 32px;">
             <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px;">
-              <tr><td style="padding:8px 0;color:#64748b;width:120px;">ชื่อผู้ส่ง</td><td style="padding:8px 0;font-weight:700;color:#0f172a;">${name.trim()}</td></tr>
-              <tr><td style="padding:8px 0;color:#64748b;">อีเมล</td><td style="padding:8px 0;"><a href="mailto:${email}" style="color:#2563eb;">${email}</a></td></tr>
+              <tr><td style="padding:8px 0;color:#64748b;width:120px;">ชื่อผู้ส่ง</td><td style="padding:8px 0;font-weight:700;color:#0f172a;">${esc(name.trim())}</td></tr>
+              <tr><td style="padding:8px 0;color:#64748b;">อีเมล</td><td style="padding:8px 0;"><a href="mailto:${esc(email)}" style="color:#2563eb;">${esc(email)}</a></td></tr>
               <tr><td style="padding:8px 0;color:#64748b;">หมวดหมู่</td><td style="padding:8px 0;color:#0f172a;">${categoryLabel[category] ?? "ทั่วไป"}</td></tr>
-              <tr><td style="padding:8px 0;color:#64748b;">หัวข้อ</td><td style="padding:8px 0;font-weight:700;color:#0f172a;">${subject?.trim() || "—"}</td></tr>
+              <tr><td style="padding:8px 0;color:#64748b;">หัวข้อ</td><td style="padding:8px 0;font-weight:700;color:#0f172a;">${esc(subject?.trim() || "—")}</td></tr>
               <tr><td style="padding:8px 0;color:#64748b;">วันที่</td><td style="padding:8px 0;color:#0f172a;">${now}</td></tr>
             </table>
             <div style="background:#f8fafc;border-radius:12px;padding:20px;border:1px solid #e2e8f0;">
               <div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">ข้อความ</div>
-              <div style="font-size:15px;color:#1e293b;line-height:1.8;white-space:pre-wrap;">${message.trim()}</div>
+              <div style="font-size:15px;color:#1e293b;line-height:1.8;white-space:pre-wrap;">${esc(message.trim())}</div>
             </div>
             <div style="margin-top:20px;padding:12px 16px;background:#eff6ff;border-radius:8px;font-size:12px;color:#2563eb;">
               💡 กด Reply เพื่อตอบกลับหาผู้ส่งโดยตรง
