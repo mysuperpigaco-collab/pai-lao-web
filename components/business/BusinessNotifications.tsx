@@ -46,21 +46,42 @@ export default function BusinessNotifications() {
   const [editAlerts, setEditAlerts] = useState<EditNotification[]>([]);
   const [dismissedEdits, setDismissedEdits] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [skip, setSkip] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(true);
 
   useEffect(() => {
-    fetch("/api/business/notifications")
+    fetch("/api/business/notifications?skip=0")
       .then(r => r.json())
       .then(d => {
         setItems(d.notifications ?? []);
         setEditAlerts(d.editNotifications ?? []);
+        setHasMore(d.hasMore ?? false);
+        setUnreadCount(d.unreadCount ?? 0);
+        setSkip(d.notifications?.length ?? 0);
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
 
+  const loadMore = () => {
+    setLoadingMore(true);
+    fetch(`/api/business/notifications?skip=${skip}`)
+      .then(r => r.json())
+      .then(d => {
+        setItems(prev => [...prev, ...(d.notifications ?? [])]);
+        setHasMore(d.hasMore ?? false);
+        setSkip(prev => prev + (d.notifications?.length ?? 0));
+        setLoadingMore(false);
+      })
+      .catch(() => setLoadingMore(false));
+  };
+
   const visibleEditAlerts = editAlerts.filter(a => !dismissedEdits.has(a.id));
-  const unread = items.filter(n => n.replies.length === 0).length + visibleEditAlerts.length;
+  // unread = ยังไม่ตอบกลับทั้งหมด (จาก API) + edit alerts ที่ยังไม่ dismiss
+  const unread = unreadCount + visibleEditAlerts.length;
 
   return (
     <div style={{ background: "white", borderRadius: 20, border: "1.5px solid #f1f5f9", marginBottom: 28, overflow: "hidden", boxShadow: "0 4px 24px rgba(15,23,42,0.06)" }}>
@@ -213,6 +234,16 @@ export default function BusinessNotifications() {
                   </div>
                 );
               })}
+
+              {/* โหลดเพิ่ม */}
+              {hasMore && (
+                <div style={{ padding: "12px 22px", borderTop: "1px solid #f8fafc" }}>
+                  <button onClick={loadMore} disabled={loadingMore}
+                    style={{ width: "100%", padding: "10px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontWeight: 700, fontSize: 13, cursor: loadingMore ? "wait" : "pointer", fontFamily: "inherit" }}>
+                    {loadingMore ? "⏳ กำลังโหลด..." : "⬇️ โหลดเพิ่ม"}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
