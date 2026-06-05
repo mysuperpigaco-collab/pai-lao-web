@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { PROVINCES, getDistricts } from "@/data/thailand";
+import { PROVINCES, getDistricts, normalizeProvince } from "@/data/thailand";
 import "./page.css";
 
 type PlaceCategory =
@@ -118,8 +118,13 @@ export default function EditPlacePage({ params }: Props) {
         const p = data.place;
         setTitle(p.title ?? "");
         setTitleEn(p.titleEn ?? "");
-        setProvince(p.province ?? "");
-        setDistrict(p.district ?? "");
+        const normalizedProv = normalizeProvince(p.province ?? "");
+        setProvince(normalizedProv);
+        // normalize district: ตรวจว่า district ที่ DB เก็บอยู่ใน list ของจังหวัดนั้นไหม
+        const districtList = getDistricts(normalizedProv);
+        const rawDist = p.district ?? "";
+        const matchedDist = districtList.find(d => d === rawDist || d.startsWith(rawDist) || rawDist.startsWith(d)) ?? rawDist;
+        setDistrict(matchedDist);
         setAddress(p.address ?? "");
         setGoogleMaps(p.googleMapsUrl ?? "");
         setCategory(ENUM_TO_THAI[p.category] ?? p.category ?? "ธรรมชาติ");
