@@ -186,12 +186,13 @@ export default function Loading() {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
         background: "#0a1628",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        position: "relative",
         overflow: "hidden",
       }}
     >
