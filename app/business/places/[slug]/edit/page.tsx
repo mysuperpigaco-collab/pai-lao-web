@@ -261,17 +261,15 @@ export default function EditPlacePage({ params }: Props) {
   );
 
   if (submitted) return (
-    <div className="edit-page" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"24px",minHeight:"60vh"}}>
-      <div style={{fontSize:"56px"}}>⏳</div>
-      <div style={{textAlign:"center"}}>
-        <h2 style={{fontSize:"22px",fontWeight:700,color:"#1e293b",marginBottom:"8px"}}>ส่งคำขอแก้ไขแล้ว!</h2>
-        <p style={{color:"#64748b",fontSize:"15px",maxWidth:"360px"}}>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"80px 20px"}}>
+      <div style={{background:"white",borderRadius:24,padding:"48px 40px",textAlign:"center",maxWidth:400,boxShadow:"0 8px 40px rgba(15,23,42,0.10)"}}>
+        <div style={{fontSize:"52px",marginBottom:16}}>⏳</div>
+        <h2 style={{fontSize:"20px",fontWeight:800,color:"#1e293b",marginBottom:8}}>ส่งคำขอแก้ไขแล้ว!</h2>
+        <p style={{color:"#64748b",fontSize:"14px",lineHeight:1.7,marginBottom:24}}>
           การแก้ไขข้อมูลสถานที่จะถูกตรวจสอบโดยแอดมินก่อนที่จะมีผล<br/>
           โดยปกติใช้เวลา 1–2 วันทำการ
         </p>
-      </div>
-      <div style={{display:"flex",gap:"12px"}}>
-        <Link href="/business/dashboard" style={{padding:"10px 20px",background:"#10b981",color:"#fff",borderRadius:"8px",textDecoration:"none",fontWeight:600,fontSize:"14px"}}>
+        <Link href="/business/dashboard" style={{display:"inline-block",padding:"11px 28px",background:"#10b981",color:"#fff",borderRadius:12,textDecoration:"none",fontWeight:700,fontSize:"14px"}}>
           กลับหน้าแดชบอร์ด
         </Link>
       </div>
