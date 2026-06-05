@@ -17,9 +17,7 @@ export async function GET() {
 
     // Get the last 15 reviews on this business's places
     const reviews = await prisma.review.findMany({
-      where: {
-        place: { businessId: business.id },
-      },
+      where: { place: { businessId: business.id } },
       orderBy: { createdAt: "desc" },
       take: 15,
       include: {
@@ -29,7 +27,32 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json({ notifications: reviews });
+    // Get rejected edits for this business's places (แจ้งเตือนการแก้ไขถูกปฏิเสธ)
+    const businessPlaces = await prisma.place.findMany({
+      where: { businessId: business.id },
+      select: { id: true, slug: true, title: true, coverUrl: true },
+    });
+    const placeMap = Object.fromEntries(businessPlaces.map(p => [p.id, p]));
+    const placeIds = businessPlaces.map(p => p.id);
+
+    const rejectedEdits = placeIds.length > 0
+      ? await (prisma as any).pendingEdit.findMany({
+          where: { targetType: "PLACE", targetId: { in: placeIds }, status: "REJECTED" },
+          select: { id: true, targetId: true, rejectionReason: true, updatedAt: true },
+          orderBy: { updatedAt: "desc" },
+          take: 10,
+        })
+      : [];
+
+    const editNotifications = rejectedEdits.map((e: any) => ({
+      id: `edit-${e.id}`,
+      type: "EDIT_REJECTED" as const,
+      place: placeMap[e.targetId] ?? null,
+      rejectionReason: e.rejectionReason ?? "ไม่ผ่านเกณฑ์",
+      createdAt: e.updatedAt,
+    })).filter((n: any) => n.place !== null);
+
+    return NextResponse.json({ notifications: reviews, editNotifications });
   } catch (error) {
     console.error("GET /api/business/notifications:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });

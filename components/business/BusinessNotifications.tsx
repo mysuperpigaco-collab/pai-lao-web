@@ -33,19 +33,32 @@ function timeAgo(iso: string) {
   return "เมื่อกี้";
 }
 
+interface EditNotification {
+  id: string;
+  type: "EDIT_REJECTED";
+  place: { id: string; slug: string; title: string; coverUrl: string } | null;
+  rejectionReason: string;
+  createdAt: string;
+}
+
 export default function BusinessNotifications() {
   const [items, setItems] = useState<Notification[]>([]);
+  const [editAlerts, setEditAlerts] = useState<EditNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(true);
 
   useEffect(() => {
     fetch("/api/business/notifications")
       .then(r => r.json())
-      .then(d => { setItems(d.notifications ?? []); setLoading(false); })
+      .then(d => {
+        setItems(d.notifications ?? []);
+        setEditAlerts(d.editNotifications ?? []);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, []);
 
-  const unread = items.filter(n => n.replies.length === 0).length;
+  const unread = items.filter(n => n.replies.length === 0).length + editAlerts.length;
 
   return (
     <div style={{ background: "white", borderRadius: 20, border: "1.5px solid #f1f5f9", marginBottom: 28, overflow: "hidden", boxShadow: "0 4px 24px rgba(15,23,42,0.06)" }}>
@@ -97,14 +110,44 @@ export default function BusinessNotifications() {
               ))}
               <style>{`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
             </div>
-          ) : items.length === 0 ? (
-            <div style={{ padding: "48px 24px", textAlign: "center" }}>
-              <div style={{ fontSize: 40, marginBottom: 10 }}>📭</div>
-              <div style={{ fontWeight: 700, fontSize: 15, color: "#334155", marginBottom: 4 }}>ยังไม่มีรีวิว</div>
-              <div style={{ fontSize: 13, color: "#94a3b8" }}>เมื่อมีคนรีวิวสถานที่ของคุณ จะแสดงที่นี่</div>
-            </div>
           ) : (
             <div style={{ maxHeight: 480, overflowY: "auto" }}>
+              {/* ── Rejected edit alerts ── */}
+              {editAlerts.map((alert) => (
+                <div key={alert.id} style={{
+                  display: "flex", gap: 14, padding: "14px 22px",
+                  borderBottom: "1px solid #f8fafc", background: "#fff5f5",
+                }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 12, overflow: "hidden", background: "#fee2e2", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
+                    ✗
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+                      <span style={{ fontWeight: 800, fontSize: 13, color: "#991b1b" }}>การแก้ไขถูกปฏิเสธ</span>
+                      <span style={{ fontSize: 11, color: "#94a3b8", flexShrink: 0 }}>{timeAgo(alert.createdAt)}</span>
+                    </div>
+                    <p style={{ fontSize: 12, color: "#475569", margin: "0 0 6px", fontWeight: 600 }}>
+                      📍 {alert.place?.title}
+                    </p>
+                    <p style={{ fontSize: 12, color: "#dc2626", margin: "0 0 8px" }}>
+                      เหตุผล: {alert.rejectionReason}
+                    </p>
+                    {alert.place && (
+                      <a href={`/business/places/${alert.place.slug}/edit`} style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 8, background: "#fee2e2", color: "#dc2626", textDecoration: "none", border: "1px solid #fecaca" }}>
+                        แก้ไขใหม่
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {/* empty state — เมื่อไม่มีทั้ง review และ alert */}
+              {items.length === 0 && editAlerts.length === 0 && (
+                <div style={{ padding: "48px 24px", textAlign: "center" }}>
+                  <div style={{ fontSize: 40, marginBottom: 10 }}>📭</div>
+                  <div style={{ fontWeight: 700, fontSize: 15, color: "#334155", marginBottom: 4 }}>ยังไม่มีการแจ้งเตือน</div>
+                  <div style={{ fontSize: 13, color: "#94a3b8" }}>เมื่อมีรีวิวหรือการแจ้งเตือน จะแสดงที่นี่</div>
+                </div>
+              )}
               {items.map((item, idx) => {
                 const authorName = item.author.displayName || item.author.firstName;
                 const hasReply   = item.replies.length > 0;

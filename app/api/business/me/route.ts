@@ -27,16 +27,22 @@ export async function GET() {
 
     if (!business) return NextResponse.json({ message: "ไม่พบข้อมูลธุรกิจ" }, { status: 404 });
 
-    // ดึง pending edits ของทุก place ในธุรกิจนี้ (PendingEdit ใช้ generic targetType/targetId)
+    // ดึง pending/rejected edits ของทุก place ในธุรกิจนี้
     const placeIds = business.places.map(p => p.id);
-    const pendingEditIds = placeIds.length > 0
-      ? new Set(
-          (await (prisma as any).pendingEdit.findMany({
-            where: { targetType: "PLACE", targetId: { in: placeIds }, status: "PENDING" },
-            select: { targetId: true },
-          })).map((e: any) => e.targetId)
-        )
-      : new Set<string>();
+    // map: placeId → { status, rejectionReason } (เอาอันล่าสุด)
+    const editStatusMap = new Map<string, { status: string; reason: string | null }>();
+    if (placeIds.length > 0) {
+      const edits = await (prisma as any).pendingEdit.findMany({
+        where: { targetType: "PLACE", targetId: { in: placeIds }, status: { in: ["PENDING", "REJECTED"] } },
+        select: { targetId: true, status: true, rejectionReason: true, updatedAt: true },
+        orderBy: { updatedAt: "desc" },
+      });
+      for (const e of edits) {
+        if (!editStatusMap.has(e.targetId)) {
+          editStatusMap.set(e.targetId, { status: e.status, reason: e.rejectionReason ?? null });
+        }
+      }
+    }
 
     const placesWithStats = business.places.map(p => {
       const avgRating = p.reviews.length
@@ -51,7 +57,8 @@ export async function GET() {
         rejectionReason: p.rejectionReason ?? null,
         claimStatus: null as string | null,
         isClaimedPlace: (p as any).claims?.some((c: any) => c.businessId === business.id),
-        hasPendingEdit: pendingEditIds.has(p.id),
+        editStatus: editStatusMap.get(p.id)?.status ?? null,
+        editRejectionReason: editStatusMap.get(p.id)?.reason ?? null,
       };
     });
 
