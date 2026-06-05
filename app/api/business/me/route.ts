@@ -20,13 +20,23 @@ export async function GET() {
             _count: { select: { reviews: true, bookmarks: true } },
             reviews: { select: { rating: true } },
             claims: { where: { status: "APPROVED" }, select: { id: true } },
-            pendingEdits: { where: { status: "PENDING" }, select: { id: true }, take: 1 },
           },
         },
       },
     });
 
     if (!business) return NextResponse.json({ message: "ไม่พบข้อมูลธุรกิจ" }, { status: 404 });
+
+    // ดึง pending edits ของทุก place ในธุรกิจนี้ (PendingEdit ใช้ generic targetType/targetId)
+    const placeIds = business.places.map(p => p.id);
+    const pendingEditIds = placeIds.length > 0
+      ? new Set(
+          (await (prisma as any).pendingEdit.findMany({
+            where: { targetType: "PLACE", targetId: { in: placeIds }, status: "PENDING" },
+            select: { targetId: true },
+          })).map((e: any) => e.targetId)
+        )
+      : new Set<string>();
 
     const placesWithStats = business.places.map(p => {
       const avgRating = p.reviews.length
@@ -41,7 +51,7 @@ export async function GET() {
         rejectionReason: (p as any).rejectionReason ?? null,
         claimStatus: null as string | null,
         isClaimedPlace: (p as any).claims?.length > 0,
-        hasPendingEdit: (p as any).pendingEdits?.length > 0,
+        hasPendingEdit: pendingEditIds.has(p.id),
       };
     });
 
