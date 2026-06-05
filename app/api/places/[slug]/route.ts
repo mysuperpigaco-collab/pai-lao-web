@@ -154,9 +154,9 @@ export async function PUT(request: Request, { params }: Params) {
     if (amenities        !== undefined) pendingData.amenities        = amenities;
     if (petPolicy        !== undefined) pendingData.petPolicy        = petPolicy;
 
-    // ยกเลิก PendingEdit เก่าที่ยังรออยู่ (ถ้ามี)
+    // ลบ PendingEdit เก่าทุกสถานะ (PENDING + REJECTED) ก่อนสร้างใหม่
     await (prisma as any).pendingEdit.deleteMany({
-      where: { targetId: place.id, targetType: "PLACE", status: "PENDING" },
+      where: { targetId: place.id, targetType: "PLACE", status: { in: ["PENDING", "REJECTED"] } },
     });
 
     await (prisma as any).pendingEdit.create({

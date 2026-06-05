@@ -110,9 +110,13 @@ export async function PUT(request: Request) {
       }).catch(() => {});
     }
 
+    // approve record นี้ และลบ record ซ้ำอื่นๆ ของ place/trip เดียวกัน
     await (prisma as any).pendingEdit.update({
       where: { id: editId },
       data: { status: "APPROVED" },
+    });
+    await (prisma as any).pendingEdit.deleteMany({
+      where: { targetId: edit.targetId, targetType: edit.targetType, id: { not: editId }, status: { in: ["PENDING", "REJECTED"] } },
     });
     await prisma.adminLog.create({ data: {
       adminId: session.userId, action: "APPROVE_EDIT",
@@ -127,6 +131,10 @@ export async function PUT(request: Request) {
     await (prisma as any).pendingEdit.update({
       where: { id: editId },
       data: { status: "REJECTED", rejectionReason: reason },
+    });
+    // ลบ PENDING ซ้ำอื่นๆ ที่อาจหลุดรอด
+    await (prisma as any).pendingEdit.deleteMany({
+      where: { targetId: edit.targetId, targetType: edit.targetType, id: { not: editId }, status: "PENDING" },
     });
     await prisma.adminLog.create({ data: {
       adminId: session.userId, action: "REJECT_EDIT",

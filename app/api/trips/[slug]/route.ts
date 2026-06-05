@@ -230,9 +230,9 @@ export async function PUT(request: Request, { params }: Params) {
     if (tiktokUrl   !== undefined) pendingData.tiktokUrl   = tiktokUrl  || null;
     if (timeline    !== undefined) pendingData.timeline    = timeline;
 
-    // ยกเลิก PendingEdit เก่า
+    // ลบ PendingEdit เก่าทุกสถานะ (PENDING + REJECTED) ก่อนสร้างใหม่
     await (prisma as any).pendingEdit.deleteMany({
-      where: { targetId: trip.id, targetType: "TRIP", status: "PENDING" },
+      where: { targetId: trip.id, targetType: "TRIP", status: { in: ["PENDING", "REJECTED"] } },
     });
 
     await (prisma as any).pendingEdit.create({
