@@ -206,7 +206,49 @@ export async function PUT(request: Request, { params }: Params) {
       return NextResponse.json({ message: "บันทึกแบบร่างแล้ว", trip: updated });
     }
 
-    // ── เจ้าของ: สร้าง PendingEdit รอตรวจสอบ ─────────────────
+    // ── เจ้าของ: ถ้าทริปยังรออนุมัติครั้งแรก → อัปเดตตรงได้เลย ──
+    if ((trip as any).approvalStatus === "PENDING") {
+      if (timeline !== undefined) {
+        await prisma.timelineStop.deleteMany({ where: { trip: { slug } } });
+      }
+      await (prisma as any).trip.update({
+        where: { slug },
+        data: {
+          ...(title       !== undefined && { title }),
+          ...(subtitle    !== undefined && { subtitle }),
+          ...(description !== undefined && { description }),
+          ...(coverUrl    !== undefined && { coverUrl }),
+          ...(gallery     !== undefined && { gallery }),
+          ...(mood        !== undefined && { mood }),
+          ...(budget      !== undefined && { budget: budget ? Math.round(Number(budget)) : null }),
+          ...(location    !== undefined && { location }),
+          ...(tags        !== undefined && { tags }),
+          ...(youtubeUrl  !== undefined && { youtubeUrl: youtubeUrl || null }),
+          ...(tiktokUrl   !== undefined && { tiktokUrl: tiktokUrl  || null }),
+          ...(timeline?.length && {
+            timeline: {
+              create: (timeline as any[]).map((stop: any, index: number) => ({
+                order: index, date: stop.date ?? "", time: stop.time ?? "",
+                placeName: stop.place ?? stop.placeName ?? "",
+                province: stop.province ?? "", district: stop.district ?? "",
+                description: stop.description ?? "",
+                transport: stop.transport ?? null, duration: stop.duration ?? null,
+                cost: stop.cost ?? null,
+                images: stop.images ?? (stop.image ? [stop.image] : []),
+                stopType: stop.stopType ?? null,
+                googleMapsUrl: stop.googleMapsUrl ?? null,
+                tips: stop.tips ?? null,
+                shareToPlace: stop.shareToPlace ?? false,
+                placeId: stop.placeId ?? null,
+              })),
+            },
+          }),
+        },
+      });
+      return NextResponse.json({ message: "อัปเดตข้อมูลสำเร็จ รอแอดมินอนุมัติอยู่", pending: true });
+    }
+
+    // ── เจ้าของ: ทริป approved แล้ว → สร้าง PendingEdit รอตรวจสอบ ──
     const originalData = {
       title: trip.title, subtitle: trip.subtitle,
       description: trip.description, coverUrl: trip.coverUrl,

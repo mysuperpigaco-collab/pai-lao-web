@@ -115,7 +115,37 @@ export async function PUT(request: Request, { params }: Params) {
       return NextResponse.json({ message: "อัปเดตสำเร็จ", place: updated });
     }
 
-    // ── เจ้าของ: สร้าง PendingEdit รอตรวจสอบ ───────────────
+    // ── เจ้าของ: ถ้าสถานที่ยังรออนุมัติครั้งแรก → อัปเดตตรงได้เลย ──
+    // (แอดมินยังไม่ได้ review ดังนั้นไม่ต้องสร้าง PendingEdit ซ้อน)
+    if (place.approvalStatus === "PENDING") {
+      const updateData: Record<string, any> = {};
+      if (title            !== undefined) updateData.title            = title;
+      if (titleEn          !== undefined) updateData.titleEn          = titleEn;
+      if (province         !== undefined) updateData.province         = province;
+      if (district         !== undefined) updateData.district         = district;
+      if (address          !== undefined) updateData.address          = address;
+      if (googleMapsUrl    !== undefined) updateData.googleMapsUrl    = googleMapsUrl;
+      if (lat              !== undefined) updateData.lat              = lat ? Number(lat) : null;
+      if (lng              !== undefined) updateData.lng              = lng ? Number(lng) : null;
+      if (category         !== undefined) updateData.category         = category;
+      if (tags             !== undefined) updateData.tags             = tags;
+      if (coverUrl         !== undefined) updateData.coverUrl         = coverUrl;
+      if (gallery          !== undefined) updateData.gallery          = gallery;
+      if (description      !== undefined) updateData.description      = description;
+      if (descriptionShort !== undefined) updateData.descriptionShort = descriptionShort;
+      if (openHours        !== undefined) updateData.openHours        = openHours;
+      if (closedDays       !== undefined) updateData.closedDays       = closedDays;
+      if (entryFee         !== undefined) updateData.entryFee         = entryFee;
+      if (phone            !== undefined) updateData.phone            = phone;
+      if (website          !== undefined) updateData.website          = website;
+      if (lineId           !== undefined) updateData.lineId           = lineId;
+      if (amenities        !== undefined) updateData.amenities        = amenities;
+      if (petPolicy        !== undefined) updateData.petPolicy        = petPolicy;
+      await prisma.place.update({ where: { slug }, data: updateData });
+      return NextResponse.json({ message: "อัปเดตข้อมูลสำเร็จ รอแอดมินอนุมัติอยู่", pending: true });
+    }
+
+    // ── เจ้าของ: สถานที่ approved แล้ว → สร้าง PendingEdit รอตรวจสอบ ──
     // Original snapshot
     const originalData = {
       title: place.title, titleEn: place.titleEn,
