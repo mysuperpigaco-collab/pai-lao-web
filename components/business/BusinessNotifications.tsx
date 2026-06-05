@@ -44,6 +44,7 @@ interface EditNotification {
 export default function BusinessNotifications() {
   const [items, setItems] = useState<Notification[]>([]);
   const [editAlerts, setEditAlerts] = useState<EditNotification[]>([]);
+  const [dismissedEdits, setDismissedEdits] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(true);
 
@@ -58,7 +59,8 @@ export default function BusinessNotifications() {
       .catch(() => setLoading(false));
   }, []);
 
-  const unread = items.filter(n => n.replies.length === 0).length + editAlerts.length;
+  const visibleEditAlerts = editAlerts.filter(a => !dismissedEdits.has(a.id));
+  const unread = items.filter(n => n.replies.length === 0).length + visibleEditAlerts.length;
 
   return (
     <div style={{ background: "white", borderRadius: 20, border: "1.5px solid #f1f5f9", marginBottom: 28, overflow: "hidden", boxShadow: "0 4px 24px rgba(15,23,42,0.06)" }}>
@@ -82,7 +84,7 @@ export default function BusinessNotifications() {
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 1 }}>รีวิวล่าสุดบนสถานที่ของคุณ</div>
+            <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 1 }}>รีวิวและการแจ้งเตือนสถานที่ของคุณ</div>
           </div>
         </div>
         <span style={{ fontSize: 18, color: "#cbd5e1", transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.3s" }}>⌄</span>
@@ -113,7 +115,7 @@ export default function BusinessNotifications() {
           ) : (
             <div style={{ maxHeight: 480, overflowY: "auto" }}>
               {/* ── Rejected edit alerts ── */}
-              {editAlerts.map((alert) => (
+              {visibleEditAlerts.map((alert) => (
                 <div key={alert.id} style={{
                   display: "flex", gap: 14, padding: "14px 22px",
                   borderBottom: "1px solid #f8fafc", background: "#fff5f5",
@@ -124,7 +126,11 @@ export default function BusinessNotifications() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
                       <span style={{ fontWeight: 800, fontSize: 13, color: "#991b1b" }}>การแก้ไขถูกปฏิเสธ</span>
-                      <span style={{ fontSize: 11, color: "#94a3b8", flexShrink: 0 }}>{timeAgo(alert.createdAt)}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 11, color: "#94a3b8" }}>{timeAgo(alert.createdAt)}</span>
+                        <button onClick={() => setDismissedEdits(prev => new Set([...prev, alert.id]))}
+                          style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 16, lineHeight: 1, padding: 0 }}>×</button>
+                      </div>
                     </div>
                     <p style={{ fontSize: 12, color: "#475569", margin: "0 0 6px", fontWeight: 600 }}>
                       📍 {alert.place?.title}
@@ -141,7 +147,7 @@ export default function BusinessNotifications() {
                 </div>
               ))}
               {/* empty state — เมื่อไม่มีทั้ง review และ alert */}
-              {items.length === 0 && editAlerts.length === 0 && (
+              {items.length === 0 && visibleEditAlerts.length === 0 && (
                 <div style={{ padding: "48px 24px", textAlign: "center" }}>
                   <div style={{ fontSize: 40, marginBottom: 10 }}>📭</div>
                   <div style={{ fontWeight: 700, fontSize: 15, color: "#334155", marginBottom: 4 }}>ยังไม่มีการแจ้งเตือน</div>
