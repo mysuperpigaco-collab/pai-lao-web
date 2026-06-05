@@ -122,6 +122,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "เฉพาะเจ้าของธุรกิจเท่านั้น" }, { status: 403 });
     }
 
+    const userCheck = await prisma.user.findUnique({ where: { id: session.userId }, select: { postBannedUntil: true, bannedUntil: true } });
+    const now = new Date();
+    if (userCheck?.bannedUntil && userCheck.bannedUntil > now) {
+      return NextResponse.json({ message: "บัญชีของคุณถูกระงับ ไม่สามารถดำเนินการได้" }, { status: 403 });
+    }
+    if (userCheck?.postBannedUntil && userCheck.postBannedUntil > now) {
+      return NextResponse.json({ message: "คุณถูกจำกัดการสร้างเนื้อหา ไม่สามารถเพิ่มสถานที่ได้" }, { status: 403 });
+    }
+
     const body = await request.json();
     const { title, titleEn, province, district, address, googleMapsUrl, lat, lng,
             category: categoryRaw, tags, coverUrl, gallery, description, descriptionShort,
