@@ -221,6 +221,8 @@ type BusinessData = {
     bookmarkCount: number;
     approvalStatus?: string;
     rejectionReason?: string | null;
+    claimStatus?: string | null;
+    claimNote?: string | null;
   }[];
   stats: {
     totalPlaces: number;
@@ -426,9 +428,11 @@ export default function BusinessDashboardPage() {
               isVerified={p.isVerified}
               reviewCount={p.reviewCount}
               bookmarkCount={p.bookmarkCount}
-              onDeleted={handlePlaceDeleted}
+              onDeleted={p.claimStatus ? undefined : handlePlaceDeleted}
               approvalStatus={p.approvalStatus}
               rejectionReason={p.rejectionReason}
+              claimStatus={p.claimStatus}
+              claimNote={p.claimNote}
             />
           ))}
         </section>

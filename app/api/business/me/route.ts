@@ -37,6 +37,39 @@ export async function GET() {
         reviewCount: p._count.reviews, bookmarkCount: p._count.bookmarks, createdAt: p.createdAt,
         approvalStatus: (p as any).approvalStatus ?? "APPROVED",
         rejectionReason: (p as any).rejectionReason ?? null,
+        claimStatus: null as string | null,
+      };
+    });
+
+    // ดึง pending/rejected claims ที่ยังไม่ได้รับการอนุมัติ (businessId ยังเป็น null)
+    const pendingClaims = await (prisma as any).placeClaim.findMany({
+      where: { businessId: business.id, status: { in: ["PENDING", "REJECTED"] } },
+      include: {
+        place: {
+          include: {
+            _count: { select: { reviews: true, bookmarks: true } },
+            reviews: { select: { rating: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const claimPlaces = pendingClaims.map((c: any) => {
+      const p = c.place;
+      const avgRating = p.reviews?.length
+        ? Math.round((p.reviews.reduce((s: number, r: any) => s + r.rating, 0) / p.reviews.length) * 10) / 10
+        : null;
+      return {
+        id: p.id, slug: p.slug, title: p.title, titleEn: p.titleEn,
+        province: p.province, district: p.district, category: p.category,
+        coverUrl: p.coverUrl, isVerified: p.isVerified, avgRating,
+        reviewCount: p._count?.reviews ?? 0, bookmarkCount: p._count?.bookmarks ?? 0,
+        createdAt: p.createdAt,
+        approvalStatus: p.approvalStatus ?? "APPROVED",
+        rejectionReason: p.rejectionReason ?? null,
+        claimStatus: c.status as string,   // "PENDING" | "REJECTED"
+        claimNote: c.adminNote ?? null,
       };
     });
 
@@ -67,7 +100,7 @@ export async function GET() {
         categories:   business.categories,
         isVerified:   business.isVerified,
       },
-      places: placesWithStats,
+      places: [...placesWithStats, ...claimPlaces],
       stats: { totalPlaces: placesWithStats.length, totalReviews, overallAvg },
     });
   } catch (error) {

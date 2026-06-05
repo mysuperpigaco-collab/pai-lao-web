@@ -17,6 +17,8 @@ type Props = {
   onDeleted?: (slug: string) => void;
   approvalStatus?: string;
   rejectionReason?: string | null;
+  claimStatus?: string | null;
+  claimNote?: string | null;
 };
 
 const CAT_ICON: Record<string, string> = {
@@ -64,6 +66,7 @@ export default function BusinessPlaceCard({
   slug, title, province, district, coverUrl,
   category, avgRating, isVerified, reviewCount, bookmarkCount, onDeleted,
   approvalStatus = "APPROVED", rejectionReason,
+  claimStatus, claimNote,
 }: Props) {
   const icon = CAT_ICON[category] ?? "📍";
   const [confirm, setConfirm] = useState(false);
@@ -100,18 +103,29 @@ export default function BusinessPlaceCard({
             ✓ Verified
           </span>
         )}
-        {/* Approval status badge */}
-        {approvalStatus === "PENDING" && (
+        {/* Claim status badge (แสดงแทน approval badge เมื่อเป็น claim place) */}
+        {claimStatus === "PENDING" && (
+          <span style={{ position: "absolute", top: isVerified ? 36 : 10, right: 10, background: "#eff6ff", color: "#1d4ed8", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 999, border: "1px solid #bfdbfe" }}>
+            ⏳ รอยืนยันความเป็นเจ้าของ
+          </span>
+        )}
+        {claimStatus === "REJECTED" && (
+          <span style={{ position: "absolute", top: isVerified ? 36 : 10, right: 10, background: "#fee2e2", color: "#991b1b", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 999, border: "1px solid #fecaca" }}>
+            ✗ คำขอถูกปฏิเสธ
+          </span>
+        )}
+        {/* Approval status badge (แสดงเฉพาะสถานที่ที่เป็นเจ้าของแล้ว ไม่ใช่ claim) */}
+        {!claimStatus && approvalStatus === "PENDING" && (
           <span style={{ position: "absolute", top: isVerified ? 36 : 10, right: 10, background: "#fef9c3", color: "#854d0e", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 999, border: "1px solid #fde68a" }}>
             ⏳ รอตรวจสอบ
           </span>
         )}
-        {approvalStatus === "APPROVED" && (
+        {!claimStatus && approvalStatus === "APPROVED" && (
           <span style={{ position: "absolute", top: isVerified ? 36 : 10, right: 10, background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 999, border: "1px solid #bbf7d0" }}>
             ✓ อนุมัติแล้ว
           </span>
         )}
-        {approvalStatus === "REJECTED" && (
+        {!claimStatus && approvalStatus === "REJECTED" && (
           <span style={{ position: "absolute", top: isVerified ? 36 : 10, right: 10, background: "#fee2e2", color: "#991b1b", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 999, border: "1px solid #fecaca" }}>
             ✗ ไม่อนุมัติ
           </span>
@@ -122,7 +136,17 @@ export default function BusinessPlaceCard({
       <div style={{ padding: "14px 16px 4px", flex: 1 }}>
         <h4 style={{ fontSize: 14, fontWeight: 800, color: "#1e293b", margin: "0 0 4px", lineHeight: 1.4 }}>{title}</h4>
         <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 8px" }}>📍 {province} · {district}</p>
-        {approvalStatus === "REJECTED" && rejectionReason && (
+        {claimStatus === "PENDING" && (
+          <p style={{ fontSize: 11, color: "#1d4ed8", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 6, padding: "5px 8px", margin: "0 0 8px" }}>
+            📋 คำขอยืนยันความเป็นเจ้าของกำลังรอแอดมินอนุมัติ
+          </p>
+        )}
+        {claimStatus === "REJECTED" && (
+          <p style={{ fontSize: 11, color: "#dc2626", background: "#fff5f5", border: "1px solid #fecaca", borderRadius: 6, padding: "5px 8px", margin: "0 0 8px" }}>
+            ❌ {claimNote ? `เหตุผล: ${claimNote}` : "คำขอถูกปฏิเสธ"}
+          </p>
+        )}
+        {!claimStatus && approvalStatus === "REJECTED" && rejectionReason && (
           <p style={{ fontSize: 11, color: "#dc2626", background: "#fff5f5", border: "1px solid #fecaca", borderRadius: 6, padding: "5px 8px", margin: "0 0 8px" }}>
             ❌ เหตุผล: {rejectionReason}
           </p>
@@ -142,7 +166,13 @@ export default function BusinessPlaceCard({
 
       {/* Actions */}
       <div style={{ padding: "10px 12px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
-        {!confirm ? (
+        {/* Claim place — แค่ดูสถานที่ได้ ยังแก้ไข/ลบไม่ได้ */}
+        {claimStatus ? (
+          <Link href={`/place/${slug}`} style={{ ...btnStyle("view"), flexDirection: "row", justifyContent: "center", gap: 6, padding: "10px" }}>
+            <IconEye />
+            <span style={{ fontSize: 12, fontWeight: 700 }}>ดูสถานที่</span>
+          </Link>
+        ) : !confirm ? (
           <div style={{ display: "grid", gridTemplateColumns: onDeleted ? "1fr 1fr 1fr" : "1fr 1fr", gap: 6 }}>
             <Link href={`/place/${slug}`} style={btnStyle("view")}>
               <IconEye />
