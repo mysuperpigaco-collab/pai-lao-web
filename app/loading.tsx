@@ -186,7 +186,7 @@ export default function Loading() {
   return (
     <div
       style={{
-        minHeight: "82vh",
+        minHeight: "calc(100vh - 64px)",
         background: "#0a1628",
         display: "flex",
         alignItems: "center",
