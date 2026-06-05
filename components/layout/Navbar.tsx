@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -25,6 +25,7 @@ const IconPlus = () => (
 export default function Navbar() {
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
+  const navRef = useRef<HTMLElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQ, setSearchQ] = useState("");
   const [searchType, setSearchType] = useState("ทริป");
@@ -32,6 +33,25 @@ export default function Navbar() {
 
   useEffect(() => {
     fetch("/api/settings").then(r=>r.json()).then(d=>setSiteSettings(d.settings||{}));
+  }, []);
+
+  // ปิดเมนูเมื่อคลิกนอก navbar
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
+  // ปิดเมนูเมื่อ resize กลับขึ้น desktop
+  useEffect(() => {
+    const handler = () => { if (window.innerWidth > 768) setMenuOpen(false); };
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
   }, []);
 
   const handleSearch = () => {
@@ -45,7 +65,7 @@ export default function Navbar() {
   const avatarInitial = user ? (user.displayName || user.firstName).charAt(0).toUpperCase() : "";
 
   return (
-    <nav className="nb-nav">
+    <nav className="nb-nav" ref={navRef}>
       <style>{`
         .nb-nav {
           position: sticky; top: 0; z-index: 1000;
