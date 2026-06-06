@@ -10,7 +10,30 @@ export default function SignupPage() {
   const [accountType, setAccountType] = useState("user");
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
-  const [emailSent, setEmailSent] = useState("");
+  const [emailSent,     setEmailSent    ] = useState("");
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendDone,    setResendDone   ] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  const handleResend = async () => {
+    if (resendLoading || resendCooldown > 0) return;
+    setResendLoading(true);
+    await fetch("/api/auth/resend-verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ emailOrUsername: emailSent }),
+    });
+    setResendLoading(false);
+    setResendDone(true);
+    // cooldown 60 วินาที
+    setResendCooldown(60);
+    const timer = setInterval(() => {
+      setResendCooldown(prev => {
+        if (prev <= 1) { clearInterval(timer); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  };
   const today = new Date().toISOString().split("T")[0];
 
   const [formData, setFormData] = useState({
@@ -128,6 +151,31 @@ export default function SignupPage() {
                 borderRadius: "12px", fontWeight: 900, fontSize: "15px", textDecoration: "none" }}>
                 ไปหน้าเข้าสู่ระบบ
               </Link>
+
+              <div style={{ marginTop: "24px" }}>
+                {resendDone && resendCooldown === 0 ? (
+                  <p style={{ color: "#15803d", fontSize: "14px", fontWeight: 600 }}>
+                    ✅ ส่งลิงก์ใหม่แล้ว กรุณาตรวจสอบอีเมล
+                  </p>
+                ) : (
+                  <p style={{ color: "#94a3b8", fontSize: "13px" }}>
+                    ไม่ได้รับอีเมล?{" "}
+                    <button onClick={handleResend}
+                      disabled={resendLoading || resendCooldown > 0}
+                      style={{ background: "none", border: "none", color: resendCooldown > 0 ? "#94a3b8" : "#3b82f6",
+                        fontWeight: 700, fontSize: "13px",
+                        cursor: resendCooldown > 0 ? "default" : "pointer",
+                        textDecoration: resendCooldown > 0 ? "none" : "underline",
+                        padding: 0, opacity: resendLoading ? 0.6 : 1 }}>
+                      {resendLoading
+                        ? "กำลังส่ง..."
+                        : resendCooldown > 0
+                          ? `ส่งใหม่ได้ใน ${resendCooldown}s`
+                          : "ส่งลิงก์ยืนยันอีกครั้ง"}
+                    </button>
+                  </p>
+                )}
+              </div>
             </div>
           ) : (
           <>
