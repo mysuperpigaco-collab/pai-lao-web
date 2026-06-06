@@ -64,7 +64,7 @@ export async function PUT(request: Request, { params }: Params) {
   // ── Remove stop ──
   if (action === "remove-stop") {
     const { stopId } = body;
-    await (prisma as any).tripPlanStop.delete({ where: { id: stopId } });
+    await (prisma as any).tripPlanStop.deleteMany({ where: { id: stopId, planId: id } });
     // Re-number remaining stops
     const remaining = await (prisma as any).tripPlanStop.findMany({ where: { planId: id }, orderBy: { order: "asc" } });
     for (let i = 0; i < remaining.length; i++) {
@@ -107,6 +107,8 @@ export async function PUT(request: Request, { params }: Params) {
   // ── Update stop notes ──
   if (action === "update-stop") {
     const { stopId, notes, googleMapsUrl, arrivalTime, duration, day } = body;
+    const owned = await (prisma as any).tripPlanStop.findFirst({ where: { id: stopId, planId: id } });
+    if (!owned) return NextResponse.json({ message: "Not found" }, { status: 404 });
     const stop = await (prisma as any).tripPlanStop.update({
       where: { id: stopId },
       data: { notes: notes?.trim() || null, googleMapsUrl: googleMapsUrl?.trim() || null, arrivalTime: arrivalTime?.trim() || null, duration: duration !== undefined ? (duration ? Number(duration) : null) : undefined, ...(day !== undefined ? { day: Number(day) } : {}) },

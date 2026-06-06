@@ -42,7 +42,9 @@ export default function DistrictSelect({
     !q || d.includes(q) || d.toLowerCase().includes(q.toLowerCase())
   );
 
-  const displayVal = value || placeholder;
+  // Match stored Thai-only value to full bilingual string for display
+  const fullMatch = value ? districts.find(d => d === value || d.startsWith(value + " (")) : null;
+  const displayVal = fullMatch || value || placeholder;
 
   if (!province || districts.length === 0) {
     return (
@@ -123,14 +125,14 @@ export default function DistrictSelect({
                 <button
                   key={d}
                   type="button"
-                  onClick={() => { onChange(d); setOpen(false); setQ(""); }}
+                  onClick={() => { onChange(d.split(" (")[0]); setOpen(false); setQ(""); }}
                   style={{
                     width: "100%", textAlign: "left", padding: "9px 14px",
                     border: "none", cursor: "pointer", fontSize: 13,
                     fontFamily: "inherit",
-                    background: value === d ? "#eff6ff" : "none",
-                    color:      value === d ? "#2563eb" : "#334155",
-                    fontWeight: value === d ? 700 : 400,
+                    background: value === d.split(" (")[0] ? "#eff6ff" : "none",
+                    color:      value === d.split(" (")[0] ? "#2563eb" : "#334155",
+                    fontWeight: value === d.split(" (")[0] ? 700 : 400,
                   }}
                 >
                   {d}

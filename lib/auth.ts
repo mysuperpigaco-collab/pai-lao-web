@@ -4,8 +4,15 @@ import { cookies } from "next/headers";
 
 // ── Config ───────────────────────────────────────────────────
 
+if (!process.env.JWT_SECRET) {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("JWT_SECRET environment variable is not set. Set it before deploying.");
+  }
+  console.warn("[auth] JWT_SECRET not set — using insecure dev fallback. DO NOT use in production.");
+}
+
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "pai-lao-dev-secret-change-in-production"
+  process.env.JWT_SECRET || "pai-lao-dev-secret-do-not-use-in-production"
 );
 const COOKIE_NAME = "pl_token";
 const TOKEN_EXPIRES = "7d"; // 7 วัน

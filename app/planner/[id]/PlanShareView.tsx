@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import MapsButton from "@/components/common/MapsButton";
+import QRModal from "@/components/common/QRModal";
 
 const STOP_LABELS: Record<string, { icon: string; label: string; color: string; bg: string }> = {
   ATTRACTION: { icon: "🏞️", label: "ที่เที่ยว",  color: "#3b82f6", bg: "#eff6ff" },
@@ -61,8 +62,17 @@ function fmtDuration(min: number) {
   return m > 0 ? `${h} ชม. ${m} นาที` : `${h} ชม.`;
 }
 
+const QRIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+    <rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none"/><rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none"/><rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none"/>
+    <path d="M14 14h3M14 18h3M17 14v7M21 14v3M21 21h-4"/>
+  </svg>
+);
+
 export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl: string }) {
   const [copied, setCopied] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
 
   const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}`;
@@ -109,6 +119,9 @@ export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl
             ) : (
               <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>คัดลอกลิงก์</>
             )}
+          </button>
+          <button onClick={() => setShowQR(true)} className="pv-share-btn pv-qr-btn">
+            <QRIcon /><span>QR Code</span>
           </button>
           <button onClick={savePdf} className="pv-share-btn pv-pdf-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
@@ -261,6 +274,14 @@ export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
               บันทึกเป็น PDF
             </button>
+            <button onClick={() => setShowQR(true)} className="pv-share-big-btn pv-qr-big">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+                <rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none"/><rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none"/><rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none"/>
+                <path d="M14 14h3M14 18h3M17 14v7M21 14v3M21 21h-4"/>
+              </svg>
+              แสดง QR Code
+            </button>
           </div>
         </div>
 
@@ -279,6 +300,8 @@ export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl
         </div>
         </div>
       </div>
+
+      {showQR && <QRModal url={shareUrl} title={plan.title} onClose={() => setShowQR(false)} />}
     </div>
   );
 }

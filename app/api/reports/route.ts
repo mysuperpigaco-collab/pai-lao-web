@@ -14,6 +14,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "ข้อมูลไม่ครบ" }, { status: 400 });
     }
 
+    const VALID_TARGET_TYPES = ["REVIEW", "REPLY", "TRIP", "PLACE", "USER"];
+    const VALID_REASONS = ["SPAM", "INAPPROPRIATE", "FAKE", "HARASSMENT", "OTHER"];
+    if (!VALID_TARGET_TYPES.includes(targetType)) {
+      return NextResponse.json({ message: "targetType ไม่ถูกต้อง" }, { status: 400 });
+    }
+    if (!VALID_REASONS.includes(reason)) {
+      return NextResponse.json({ message: "reason ไม่ถูกต้อง" }, { status: 400 });
+    }
+
     // prevent duplicate report by same user on same target
     const existing = await prisma.report.findFirst({
       where: { reporterId: session.userId, targetId },

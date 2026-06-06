@@ -88,7 +88,7 @@ export async function POST(req: Request) {
             </div>
           </div>
           <div style="padding:16px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;">
-            ส่งจากหน้าติดต่อ pai-lao-web.vercel.app/contact
+            ส่งจากหน้าติดต่อ ${(process.env.NEXT_PUBLIC_BASE_URL || "pai-lao-web.vercel.app").replace("https://","")}/contact
           </div>
         </div>
       `,

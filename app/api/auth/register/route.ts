@@ -128,6 +128,7 @@ export async function POST(request: NextRequest) {
 
     // ── ส่งอีเมลยืนยัน (ไม่บล็อก response ถ้า fail) ─────────
     const verifyUrl = `${BASE_URL}/api/auth/verify-email?token=${verifyToken}`;
+    const safeFirstName = firstName.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     resend.emails.send({
       from: "PAI-LAO <onboarding@resend.dev>",
       to: email,
@@ -139,14 +140,14 @@ export async function POST(request: NextRequest) {
             <h1 style="margin:16px 0 4px;font-size:24px;font-weight:900;color:#0f172a;">ยืนยันอีเมลของคุณ</h1>
             <p style="margin:0;color:#64748b;font-size:14px;">PAI-LAO EXPERIENCE</p>
           </div>
-          <p style="color:#334155;font-size:15px;line-height:1.7;">สวัสดีคุณ <strong>${firstName}</strong> 👋</p>
+          <p style="color:#334155;font-size:15px;line-height:1.7;">สวัสดีคุณ <strong>${safeFirstName}</strong> 👋</p>
           <p style="color:#334155;font-size:15px;line-height:1.7;">ขอบคุณที่สมัครสมาชิกกับ PAI-LAO กดปุ่มด้านล่างเพื่อยืนยันอีเมลและเริ่มใช้งานได้เลย</p>
           <div style="text-align:center;margin:32px 0;">
             <a href="${verifyUrl}" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#4facfe,#43e97b);color:#fff;text-decoration:none;border-radius:12px;font-weight:900;font-size:15px;">✅ ยืนยันอีเมล</a>
           </div>
           <p style="color:#94a3b8;font-size:13px;line-height:1.6;">ลิงก์นี้จะหมดอายุใน <strong>24 ชั่วโมง</strong><br/>หากคุณไม่ได้สมัครสมาชิก สามารถเพิกเฉยต่ออีเมลนี้ได้เลย</p>
           <hr style="border:none;border-top:1px solid #f1f5f9;margin:24px 0;"/>
-          <p style="color:#cbd5e1;font-size:12px;text-align:center;">© 2026 PAI-LAO EXPERIENCE · <a href="${BASE_URL}" style="color:#94a3b8;">pai-lao-web.vercel.app</a></p>
+          <p style="color:#cbd5e1;font-size:12px;text-align:center;">© 2026 PAI-LAO EXPERIENCE · <a href="${BASE_URL}" style="color:#94a3b8;">${BASE_URL.replace("https://","")}</a></p>
         </div>
       `,
     }).catch((err: unknown) => console.error("ส่ง verify email ไม่สำเร็จ:", err));

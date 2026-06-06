@@ -43,6 +43,8 @@ a { text-decoration: none; }
 .pv-copy-btn.copied { background: #10b981; color: #fff; border-color: #10b981; }
 .pv-pdf-btn   { background: #f59e0b; color: #fff; }
 .pv-pdf-btn:hover   { background: #d97706; }
+.pv-qr-btn    { background: rgba(255,255,255,0.1); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.15); }
+.pv-qr-btn:hover    { background: rgba(255,255,255,0.18); }
 
 /* ── Page container ──────────────────────────────── */
 .pv-page {
@@ -178,6 +180,8 @@ a { text-decoration: none; }
 .pv-fb-big:hover   { background: #1669d9; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(24,119,242,0.35); }
 .pv-pdf-big  { background: #f59e0b; color: #fff; }
 .pv-pdf-big:hover  { background: #d97706; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(245,158,11,0.35); }
+.pv-qr-big   { background: #6366f1; color: #fff; }
+.pv-qr-big:hover   { background: #4f46e5; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(99,102,241,0.35); }
 
 /* ── Travel wishes ──────────────────────────────── */
 .pv-wishes {

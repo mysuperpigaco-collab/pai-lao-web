@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import crypto from "crypto";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://pai-lao-web.vercel.app";
@@ -10,6 +11,16 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://pai-lao-web.vercel
 export async function POST(req: NextRequest) {
   const ip        = getClientIp(req);
   const userAgent = req.headers.get("user-agent") ?? null;
+
+  // ── Rate limit: 5 ครั้ง / 15 นาที ต่อ IP ────────────────
+  const rl = checkRateLimit(`forgot:${ip}`, 5, 15 * 60_000);
+  if (!rl.allowed) {
+    const retryAfter = Math.ceil((rl.resetAt - Date.now()) / 1000 / 60);
+    return NextResponse.json(
+      { error: `ขอรีเซ็ตรหัสผ่านบ่อยเกินไป กรุณารอ ${retryAfter} นาที` },
+      { status: 429 }
+    );
+  }
 
   try {
     const { email } = await req.json();
@@ -35,6 +46,7 @@ export async function POST(req: NextRequest) {
     }).catch(() => {});
 
     const resetUrl = `${BASE_URL}/reset-password?token=${token}`;
+    const safeFirstName = user.firstName.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
     await resend.emails.send({
       from: "PAI-LAO <onboarding@resend.dev>",
@@ -47,14 +59,14 @@ export async function POST(req: NextRequest) {
             <h1 style="margin:16px 0 4px;font-size:24px;font-weight:900;color:#0f172a;">รีเซ็ตรหัสผ่าน</h1>
             <p style="margin:0;color:#64748b;font-size:14px;">PAI-LAO EXPERIENCE</p>
           </div>
-          <p style="color:#334155;font-size:15px;line-height:1.7;">สวัสดีคุณ <strong>${user.firstName}</strong>,</p>
+          <p style="color:#334155;font-size:15px;line-height:1.7;">สวัสดีคุณ <strong>${safeFirstName}</strong>,</p>
           <p style="color:#334155;font-size:15px;line-height:1.7;">เราได้รับคำขอรีเซ็ตรหัสผ่านสำหรับบัญชีของคุณ กดปุ่มด้านล่างเพื่อตั้งรหัสผ่านใหม่</p>
           <div style="text-align:center;margin:32px 0;">
             <a href="${resetUrl}" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#2563eb,#10b981);color:#fff;text-decoration:none;border-radius:12px;font-weight:900;font-size:15px;">ตั้งรหัสผ่านใหม่</a>
           </div>
           <p style="color:#94a3b8;font-size:13px;line-height:1.6;">ลิงก์นี้จะหมดอายุใน <strong>1 ชั่วโมง</strong><br/>หากคุณไม่ได้ขอรีเซ็ตรหัสผ่าน สามารถเพิกเฉยต่ออีเมลนี้ได้เลย</p>
           <hr style="border:none;border-top:1px solid #f1f5f9;margin:24px 0;"/>
-          <p style="color:#cbd5e1;font-size:12px;text-align:center;">© 2026 PAI-LAO EXPERIENCE · <a href="${BASE_URL}" style="color:#94a3b8;">pai-lao-web.vercel.app</a></p>
+          <p style="color:#cbd5e1;font-size:12px;text-align:center;">© 2026 PAI-LAO EXPERIENCE · <a href="${BASE_URL}" style="color:#94a3b8;">${BASE_URL.replace("https://","")}</a></p>
         </div>
       `,
     });

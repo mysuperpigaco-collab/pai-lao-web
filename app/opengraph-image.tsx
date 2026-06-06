@@ -95,7 +95,7 @@ export default function Image() {
           color: "rgba(255,255,255,0.3)",
           display: "flex",
         }}>
-          pai-lao-web.vercel.app
+          {(process.env.NEXT_PUBLIC_SITE_URL || "pai-lao-web.vercel.app").replace("https://", "")}
         </div>
       </div>
     ),

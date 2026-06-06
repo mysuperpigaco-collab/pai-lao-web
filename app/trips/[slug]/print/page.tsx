@@ -156,7 +156,7 @@ export default async function PrintTripPage({ params }: Props) {
 
         {/* Footer */}
         <div className="print-footer">
-          ไปเล่า · pai-lao.vercel.app/trips/{slug}
+          ไปเล่า · {(process.env.NEXT_PUBLIC_SITE_URL || "pai-lao-web.vercel.app").replace("https://", "")}/trips/{slug}
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 // bucket ใน Supabase Storage (ต้องสร้างไว้ก่อน)
 const BUCKET = "pai-lao-media";
@@ -10,6 +11,12 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+
+    // ── Rate limit: 30 uploads / นาที ต่อ user ──────────────
+    const rl = checkRateLimit(`upload:${session.userId}`, 30, 60_000);
+    if (!rl.allowed) {
+      return NextResponse.json({ message: "อัปโหลดบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
+    }
 
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
