@@ -64,12 +64,7 @@ function ResetPasswordForm() {
   };
 
   return (
-    <>
-    <style>{`
-      html::before { background-image: none !important; }
-      html { background-image: none !important; background-color: #eff6ff !important; }
-    `}</style>
-    <section className="reset-page" style={{ background: "linear-gradient(135deg,#eff6ff,#ecfdf5)", minHeight: "100vh" }}>
+    <section className="reset-page" style={{ background: "linear-gradient(135deg,#eff6ff,#ecfdf5)", minHeight: "100vh", position: "relative", zIndex: 1 }}>
       <div className="shell">
         <div className="panel copy-panel">
           <span className="eyebrow"><ShieldCheck size={16} /> Secure password reset</span>
@@ -195,7 +190,6 @@ function ResetPasswordForm() {
         @media (max-width:520px) { .reset-page { padding:24px 14px; } .copy-panel,.form-panel { padding:24px; } .copy-panel h1,.form-heading h2,.success-state h2 { font-size:28px; } }
       `}</style>
     </section>
-    </>
   );
 }
 
