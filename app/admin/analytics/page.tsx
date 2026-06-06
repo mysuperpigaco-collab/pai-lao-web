@@ -16,6 +16,7 @@ interface Stats {
 
 interface DataPoint { date: string; count: number }
 interface TimeSeries {
+  days:    number;
   signups: DataPoint[];
   logins:  DataPoint[];
   trips:   DataPoint[];
@@ -25,23 +26,24 @@ interface TimeSeries {
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-function fill30Days(series: DataPoint[]): DataPoint[] {
+function fillDays(series: DataPoint[], days: number): DataPoint[] {
   const map = Object.fromEntries(series.map(d => [d.date, d.count]));
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  return Array.from({ length: 30 }, (_, i) => {
+  return Array.from({ length: days }, (_, i) => {
     const d = new Date(today);
-    d.setDate(d.getDate() - (29 - i));
+    d.setDate(d.getDate() - (days - 1 - i));
     const key = d.toISOString().slice(0, 10);
     return { date: key, count: map[key] ?? 0 };
   });
 }
 
 function trend(filled: DataPoint[]) {
-  const last7 = filled.slice(-7).reduce((s, d) => s + d.count, 0);
-  const prev7 = filled.slice(-14, -7).reduce((s, d) => s + d.count, 0);
-  const delta = prev7 === 0 ? (last7 > 0 ? 100 : 0) : Math.round(((last7 - prev7) / prev7) * 100);
-  return { last7, prev7, delta };
+  const half = Math.min(7, Math.floor(filled.length / 2));
+  const last  = filled.slice(-half).reduce((s, d) => s + d.count, 0);
+  const prev  = filled.slice(-half * 2, -half).reduce((s, d) => s + d.count, 0);
+  const delta = prev === 0 ? (last > 0 ? 100 : 0) : Math.round(((last - prev) / prev) * 100);
+  return { delta };
 }
 
 // ─── components ──────────────────────────────────────────────────────────────
@@ -108,10 +110,11 @@ interface SparkCardProps {
   titleEn: string;
   data: DataPoint[];
   color: string;
+  days: number;
 }
 
-function SparkCard({ icon, title, titleEn, data, color }: SparkCardProps) {
-  const filled = fill30Days(data);
+function SparkCard({ icon, title, titleEn, data, color, days }: SparkCardProps) {
+  const filled = fillDays(data, days);
   const total  = filled.reduce((s, d) => s + d.count, 0);
   const today  = filled[filled.length - 1].count;
   const { delta } = trend(filled);
@@ -135,7 +138,7 @@ function SparkCard({ icon, title, titleEn, data, color }: SparkCardProps) {
       <div style={{ display: "flex", gap: 16, alignItems: "flex-end" }}>
         <div>
           <div style={{ fontSize: "1.7rem", fontWeight: 900, color, lineHeight: 1 }}>{total.toLocaleString()}</div>
-          <div style={{ fontSize: "0.68rem", color: "#64748b", marginTop: 2 }}>รวม 30 วัน</div>
+          <div style={{ fontSize: "0.68rem", color: "#64748b", marginTop: 2 }}>รวม {days} วัน</div>
         </div>
         <div style={{ borderLeft: "1px solid #1e293b", paddingLeft: 16 }}>
           <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "#e2e8f0", lineHeight: 1 }}>{today.toLocaleString()}</div>
@@ -146,7 +149,7 @@ function SparkCard({ icon, title, titleEn, data, color }: SparkCardProps) {
       <SparkBars data={filled} color={color} />
 
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.62rem", color: "#475569" }}>
-        <span>30 วันที่แล้ว</span>
+        <span>{days} วันที่แล้ว</span>
         <span>วันนี้</span>
       </div>
     </div>
@@ -156,22 +159,40 @@ function SparkCard({ icon, title, titleEn, data, color }: SparkCardProps) {
 // ─── page ─────────────────────────────────────────────────────────────────────
 
 const CAT_COLORS = ["#4facfe","#43e97b","#f59e0b","#a78bfa","#22d3ee","#f87171","#34d399","#fb923c","#c084fc","#60a5fa"];
+const RANGE_OPTIONS = [
+  { label: "7 วัน",  days: 7   },
+  { label: "30 วัน", days: 30  },
+  { label: "60 วัน", days: 60  },
+  { label: "90 วัน", days: 90  },
+  { label: "1 ปี",   days: 365 },
+];
 
 export default function AdminAnalyticsPage() {
-  const [stats,   setStats  ] = useState<Stats | null>(null);
-  const [series,  setSeries ] = useState<TimeSeries | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [stats,      setStats     ] = useState<Stats | null>(null);
+  const [series,     setSeries    ] = useState<TimeSeries | null>(null);
+  const [loading,    setLoading   ] = useState(true);
+  const [seriesLoad, setSeriesLoad] = useState(false);
+  const [selectedDays, setSelectedDays] = useState(30);
 
   useEffect(() => {
     Promise.all([
       fetch("/api/admin/stats").then(r => r.json()),
-      fetch("/api/admin/analytics").then(r => r.json()),
+      fetch(`/api/admin/analytics?days=${selectedDays}`).then(r => r.json()),
     ]).then(([s, a]) => {
       setStats(s);
       setSeries(a);
       setLoading(false);
     });
   }, []);
+
+  const handleRangeChange = (days: number) => {
+    if (days === selectedDays) return;
+    setSelectedDays(days);
+    setSeriesLoad(true);
+    fetch(`/api/admin/analytics?days=${days}`)
+      .then(r => r.json())
+      .then(a => { setSeries(a); setSeriesLoad(false); });
+  };
 
   if (loading) return <div className="adm-content"><div className="adm-empty">⏳ กำลังโหลด Analytics...</div></div>;
   if (!stats || !series) return <div className="adm-content"><div className="adm-empty">โหลดข้อมูลไม่สำเร็จ</div></div>;
@@ -230,19 +251,38 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
 
-        {/* ── 30-day time-series ── */}
+        {/* ── time-series ── */}
         <div className="adm-card" style={{ marginBottom: 24 }}>
-          <div className="adm-card-head">
-            <span className="adm-card-title">📅 กิจกรรม 30 วันที่ผ่านมา</span>
+          <div className="adm-card-head" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+            <span className="adm-card-title">
+              📅 กิจกรรม {selectedDays === 365 ? "1 ปี" : `${selectedDays} วัน`}ที่ผ่านมา
+              {seriesLoad && <span style={{ marginLeft: 10, fontSize: "0.72rem", color: "#64748b" }}>⏳ โหลด...</span>}
+            </span>
+            <div style={{ display: "flex", gap: 6 }}>
+              {RANGE_OPTIONS.map(opt => (
+                <button
+                  key={opt.days}
+                  onClick={() => handleRangeChange(opt.days)}
+                  style={{
+                    padding: "4px 12px", borderRadius: 99, border: "none", cursor: "pointer",
+                    fontSize: "0.75rem", fontWeight: 700, transition: "0.2s",
+                    background: selectedDays === opt.days ? "#3b82f6" : "#1e293b",
+                    color:      selectedDays === opt.days ? "#fff"    : "#64748b",
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="adm-card-body">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}>
-              <SparkCard icon="👥" title="ผู้ใช้ใหม่"      titleEn="New Registrations"           data={series.signups} color="#4facfe" />
-              <SparkCard icon="🔑" title="ล็อกอินสำเร็จ"   titleEn="Successful Logins"            data={series.logins}  color="#43e97b" />
-              <SparkCard icon="📝" title="คอนเทนต์ใหม่"    titleEn="Trips + Places + Reviews"     data={contentSeries}  color="#f59e0b" />
-              <SparkCard icon="🗺️" title="ทริปใหม่"        titleEn="New Trips Created"             data={series.trips}   color="#a78bfa" />
-              <SparkCard icon="📍" title="สถานที่ใหม่"     titleEn="New Places Added"              data={series.places}  color="#22d3ee" />
-              <SparkCard icon="⭐" title="รีวิวใหม่"        titleEn="New Reviews"                  data={series.reviews} color="#f9a8d4" />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16, opacity: seriesLoad ? 0.5 : 1, transition: "opacity 0.2s" }}>
+              <SparkCard icon="👥" title="ผู้ใช้ใหม่"     titleEn="New Registrations"        data={series.signups} color="#4facfe" days={selectedDays} />
+              <SparkCard icon="🔑" title="ล็อกอินสำเร็จ"  titleEn="Successful Logins"         data={series.logins}  color="#43e97b" days={selectedDays} />
+              <SparkCard icon="📝" title="คอนเทนต์ใหม่"   titleEn="Trips + Places + Reviews"  data={contentSeries}  color="#f59e0b" days={selectedDays} />
+              <SparkCard icon="🗺️" title="ทริปใหม่"       titleEn="New Trips Created"          data={series.trips}   color="#a78bfa" days={selectedDays} />
+              <SparkCard icon="📍" title="สถานที่ใหม่"    titleEn="New Places Added"           data={series.places}  color="#22d3ee" days={selectedDays} />
+              <SparkCard icon="⭐" title="รีวิวใหม่"       titleEn="New Reviews"               data={series.reviews} color="#f9a8d4" days={selectedDays} />
             </div>
           </div>
         </div>
