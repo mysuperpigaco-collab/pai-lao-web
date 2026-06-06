@@ -680,19 +680,13 @@ export default function CreateStoryPage() {
                 </div>
 
                 {/* Row 2: Place name search (full width) */}
-                <div style={{ position: "relative", marginBottom: 12 }}>
+                <div style={{ position: "relative", marginBottom: item.placeId ? 4 : 12 }}>
                   <input type="text" className="form-control" placeholder="🔍 ค้นหาสถานที่ หรือพิมพ์ชื่อจุดแวะ"
                     value={item.place}
                     onChange={(e) => { updateTimeline(idx, "place", e.target.value); clearPlaceLink(idx); searchPlaces(idx, e.target.value); }}
                     style={{ width: "100%", boxSizing: "border-box",
                       borderColor: item.placeId ? "#10b981" : undefined,
                       background: item.placeId ? "#f0fdf4" : undefined }} />
-                  {item.placeId && (
-                    <div style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ fontSize: 12, color: "#10b981", fontWeight: 700 }}>🔗 เชื่อมสถานที่แล้ว</span>
-                      <button type="button" onClick={() => clearPlaceLink(idx)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 16, lineHeight: 1, padding: 0 }}>×</button>
-                    </div>
-                  )}
                   {(placeSuggestions[idx]?.length > 0) && (
                       <div style={{ position: "absolute", top: "110%", left: 0, right: 0, background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.1)", zIndex: 50, maxHeight: 240, overflowY: "auto" }}>
                         {placeSuggestions[idx].map((p: any) => (
@@ -724,6 +718,12 @@ export default function CreateStoryPage() {
                       </div>
                     )}
                 </div>
+                {item.placeId && (
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12, padding:"6px 12px", background:"#f0fdf4", border:"1px solid #6ee7b7", borderRadius:8 }}>
+                    <span style={{ fontSize:12, color:"#10b981", fontWeight:700, flex:1 }}>🔗 เชื่อมสถานที่แล้ว</span>
+                    <button type="button" onClick={() => clearPlaceLink(idx)} style={{ background:"none", border:"none", color:"#94a3b8", cursor:"pointer", fontSize:13, fontWeight:700, padding:"2px 6px", borderRadius:4 }}>ยกเลิก ×</button>
+                  </div>
+                )}
 
                 {/* Suggest new place button */}
                 {item.place.trim().length >= 2 && !item.placeId && (
