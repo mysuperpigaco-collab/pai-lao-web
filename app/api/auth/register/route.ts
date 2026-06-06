@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     // ── ส่งอีเมลยืนยัน (ไม่บล็อก response ถ้า fail) ─────────
     const verifyUrl = `${BASE_URL}/api/auth/verify-email?token=${verifyToken}`;
     const safeFirstName = firstName.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-    resend.emails.send({
+    const emailResult = await resend.emails.send({
       from: "PAI-LAO <noreply@pai-lao.com>",
       to: email,
       subject: "ยืนยันอีเมล — PAI-LAO EXPERIENCE",
@@ -150,7 +150,10 @@ export async function POST(request: NextRequest) {
           <p style="color:#cbd5e1;font-size:12px;text-align:center;">© 2026 PAI-LAO EXPERIENCE · <a href="${BASE_URL}" style="color:#94a3b8;">${BASE_URL.replace("https://","")}</a></p>
         </div>
       `,
-    }).catch((err: unknown) => console.error("ส่ง verify email ไม่สำเร็จ:", err));
+    });
+    if (emailResult.error) {
+      console.error("ส่ง verify email ไม่สำเร็จ:", JSON.stringify(emailResult.error));
+    }
 
     // ── บันทึก log การสมัคร ───────────────────────────────────
     await logActivity({

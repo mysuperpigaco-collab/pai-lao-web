@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     const verifyUrl = `${BASE_URL}/api/auth/verify-email?token=${verifyToken}`;
     const safeName  = user.firstName.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-    resend.emails.send({
+    const emailResult = await resend.emails.send({
       from: "PAI-LAO <noreply@pai-lao.com>",
       to: user.email,
       subject: "ยืนยันอีเมล — PAI-LAO EXPERIENCE",
@@ -67,7 +67,10 @@ export async function POST(req: NextRequest) {
           <p style="color:#cbd5e1;font-size:12px;text-align:center;">© 2026 PAI-LAO EXPERIENCE · <a href="${BASE_URL}" style="color:#94a3b8;">pai-lao.com</a></p>
         </div>
       `,
-    }).catch((err: unknown) => console.error("resend-verify email failed:", err));
+    });
+    if (emailResult.error) {
+      console.error("resend-verify email failed:", JSON.stringify(emailResult.error));
+    }
 
     return NextResponse.json({ ok: true });
   } catch (e) {
