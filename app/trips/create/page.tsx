@@ -106,7 +106,6 @@ export default function CreateStoryPage() {
 
   const [polishing,  setPolishing] = useState<string | null>(null);
   const [aiPreview,  setAiPreview] = useState<{ target: string; text: string } | null>(null);
-  const [polishErr,  setPolishErr] = useState("");
 
   // ── Handlers ─────────────────────────────────────────────
   const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -213,9 +212,8 @@ export default function CreateStoryPage() {
 
   const handlePolish = async (rawText: string, target: string) => {
     const text = target === "content" ? stripHtml(rawText) : rawText;
-    if (text.length < 10) { setPolishErr("ข้อความสั้นเกินไป"); return; }
+    if (text.length < 10) return;
     setPolishing(target);
-    setPolishErr("");
     setAiPreview(null);
     try {
       const res  = await fetch("/api/ai/polish-text", {
@@ -225,9 +223,9 @@ export default function CreateStoryPage() {
       });
       const data = await res.json();
       if (data.polished) setAiPreview({ target, text: data.polished });
-      else setPolishErr(data.error ?? "AI ไม่ตอบกลับ");
-    } catch {
-      setPolishErr("เกิดข้อผิดพลาด");
+      else console.error("[AI polish]", data.error ?? "AI ไม่ตอบกลับ");
+    } catch (e) {
+      console.error("[AI polish] error", e);
     } finally {
       setPolishing(null);
     }
@@ -674,9 +672,6 @@ export default function CreateStoryPage() {
                     </button>
                   </div>
                 </div>
-              )}
-              {polishErr && aiPreview?.target !== "content" && polishing === null && (
-                <p style={{ color:"#dc2626", fontSize:13, marginTop:6 }}>{polishErr}</p>
               )}
             </div>
             <div className="form-group">
