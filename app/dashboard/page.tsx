@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import ProfileHeader from "@/components/dashboard/ProfileHeader";
 import StoryCard from "@/components/dashboard/StoryCard";
 import { useAuth } from "@/context/AuthContext";
+import { uploadFile } from "@/lib/uploadHelper";
 
 type TripItem = {
   slug: string;
@@ -34,7 +35,7 @@ type BookmarkItem = {
   place?: { slug: string; title: string; coverUrl: string | null; createdAt: string } | null;
 };
 
-type Notice = { id: string; type: "info" | "tip" | "success" | "warning"; icon: string; title: string; body: string; action?: { label: string; href: string } };
+type Notice = { id: string; type: "info" | "tip" | "success" | "warning"; icon: string; title: string; body: string; action?: { label: string; href?: string; onClick?: () => void } };
 
 type ReplyNotif = {
   id: string;
@@ -67,9 +68,13 @@ function NoticeCard({ n, onDismiss }: { n: Notice; onDismiss: (id: string) => vo
         <p style={{ fontWeight: 800, fontSize: "14px", color: s.title, margin: "0 0 3px" }}>{n.title}</p>
         <p style={{ fontSize: "13px", color: "#475569", margin: 0, lineHeight: 1.5 }}>{n.body}</p>
         {n.action && (
-          <Link href={n.action.href} style={{ display: "inline-block", marginTop: "8px", fontSize: "12px", fontWeight: 700, color: s.icon_bg, textDecoration: "none", background: "rgba(255,255,255,0.7)", padding: "4px 12px", borderRadius: "999px", border: `1px solid ${s.border}` }}>
-            {n.action.label} →
-          </Link>
+          n.action.onClick
+            ? <button onClick={n.action.onClick} style={{ display: "inline-block", marginTop: "8px", fontSize: "12px", fontWeight: 700, color: s.icon_bg, textDecoration: "none", background: "rgba(255,255,255,0.7)", padding: "4px 12px", borderRadius: "999px", border: `1px solid ${s.border}`, cursor: "pointer" }}>
+                {n.action.label} →
+              </button>
+            : <Link href={n.action.href!} style={{ display: "inline-block", marginTop: "8px", fontSize: "12px", fontWeight: 700, color: s.icon_bg, textDecoration: "none", background: "rgba(255,255,255,0.7)", padding: "4px 12px", borderRadius: "999px", border: `1px solid ${s.border}` }}>
+                {n.action.label} →
+              </Link>
         )}
       </div>
       <button onClick={() => onDismiss(n.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "16px", lineHeight: 1, padding: "2px 4px", flexShrink: 0 }} aria-label="ปิด">×</button>
@@ -78,7 +83,7 @@ function NoticeCard({ n, onDismiss }: { n: Notice; onDismiss: (id: string) => vo
 }
 
 export default function DashboardPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, refresh } = useAuth();
   const [activeTab, setActiveTab]   = useState<"my-stories" | "saved" | "saved-places">("my-stories");
   const [myTrips, setMyTrips]       = useState<TripItem[]>([]);
   const [bookmarks, setBookmarks]   = useState<BookmarkItem[]>([]);
@@ -171,6 +176,29 @@ export default function DashboardPage() {
   const handleTripDeleted = (slug: string) => setMyTrips(prev => prev.filter(t => t.slug !== slug));
   const dismiss = (id: string) => setDismissed(prev => new Set([...prev, id]));
 
+  // ─── avatar quick-upload ──────────────────────────────────
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+
+  const handleAvatarFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    try {
+      const url = await uploadFile(file, "avatars");
+      await fetch("/api/auth/me", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatarUrl: url }),
+      });
+      await refresh();
+      dismiss("no-avatar");
+    } finally {
+      setAvatarUploading(false);
+      e.target.value = "";
+    }
+  };
+
   // ─── สร้าง notices แบบ dynamic ตามข้อมูลจริง ───
   const notices: Notice[] = [];
 
@@ -178,7 +206,7 @@ export default function DashboardPage() {
     id: "no-avatar", type: "tip", icon: "📸",
     title: "เพิ่มรูปโปรไฟล์ของคุณ",
     body: "รูปโปรไฟล์ช่วยให้คนอื่นจดจำคุณได้ง่ายขึ้น · Add a photo to stand out",
-    action: { label: "อัปโหลดรูปเลย", href: "/dashboard/edit-profile" },
+    action: { label: avatarUploading ? "กำลังอัปโหลด..." : "อัปโหลดรูปเลย", onClick: () => avatarInputRef.current?.click() },
   });
 
   if (!loadingTrips && myTrips.length === 0) notices.push({
@@ -213,6 +241,7 @@ export default function DashboardPage() {
 
   return (
     <div className="dp-page">
+      <input ref={avatarInputRef} type="file" accept="image/*" hidden onChange={handleAvatarFile} />
       <div className="dp-container">
 
         {/* ─── Page header ─── */}
