@@ -15,10 +15,13 @@ function LoginInner() {
   const searchParams = useSearchParams();
   const { login }    = useAuth();
 
-  const [formData,   setFormData  ] = useState({ identifier: "", password: "", rememberMe: false });
-  const [error,      setError     ] = useState("");
-  const [notice,     setNotice    ] = useState("");
-  const [isLoading,  setIsLoading ] = useState(false);
+  const [formData,      setFormData     ] = useState({ identifier: "", password: "", rememberMe: false });
+  const [error,         setError        ] = useState("");
+  const [notice,        setNotice       ] = useState("");
+  const [isLoading,     setIsLoading    ] = useState(false);
+  const [unverified,    setUnverified   ] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendDone,    setResendDone   ] = useState(false);
 
   useEffect(() => {
     const v = searchParams.get("verified");
@@ -26,6 +29,17 @@ function LoginInner() {
     if (v === "invalid") setNotice("❌ ลิงก์ยืนยันหมดอายุหรือไม่ถูกต้อง");
     if (v === "error")   setNotice("❌ เกิดข้อผิดพลาด กรุณาลองใหม่");
   }, [searchParams]);
+
+  const handleResend = async () => {
+    setResendLoading(true);
+    await fetch("/api/auth/resend-verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ emailOrUsername: formData.identifier }),
+    });
+    setResendLoading(false);
+    setResendDone(true);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -43,6 +57,7 @@ function LoginInner() {
 
     if (!result.ok) {
       setError(result.message);
+      setUnverified(result.unverified === true);
       setIsLoading(false);
       return;
     }
@@ -75,6 +90,20 @@ function LoginInner() {
           <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "12px",
             padding: "12px 16px", marginBottom: "20px", color: "#b91c1c", fontSize: "14px", textAlign: "left" }}>
             ⚠️ {error}
+            {unverified && (
+              <div style={{ marginTop: "10px" }}>
+                {resendDone ? (
+                  <p style={{ color: "#15803d", fontSize: "13px", margin: 0 }}>✅ ส่งลิงก์ยืนยันใหม่แล้ว กรุณาตรวจสอบอีเมล</p>
+                ) : (
+                  <button onClick={handleResend} disabled={resendLoading}
+                    style={{ background: "none", border: "1px solid #b91c1c", borderRadius: "8px",
+                      padding: "6px 14px", color: "#b91c1c", fontSize: "13px", cursor: "pointer",
+                      fontWeight: 600, opacity: resendLoading ? 0.6 : 1 }}>
+                    {resendLoading ? "กำลังส่ง..." : "ส่งลิงก์ยืนยันใหม่"}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 
