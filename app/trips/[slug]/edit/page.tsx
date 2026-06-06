@@ -56,7 +56,7 @@ export default function EditTripPage({ params }: Props) {
   const [timeline, setTimeline] = useState<{
     date: string; time: string; place: string; province: string; district: string;
     description: string; imageFile: File | null; imagePreview: string | null;
-    existingImage?: string; shareToPlace: boolean; placeId: string | null;
+    existingImage?: string; shareToPlace: boolean; placeId: string | null; placeSlug?: string;
   }[]>([]);
 
   // ── Place search state ─────────────────────────────────
@@ -104,18 +104,24 @@ export default function EditTripPage({ params }: Props) {
   const suggestPlace = async (idx: number) => {
     const item = timeline[idx];
     const form = suggestForm[idx];
+    if (!item.place.trim()) return;
     setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], saving: true } }));
-    const res = await fetch("/api/places/suggest", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: item.place, province: item.province, district: item.district, category: form.cat, googleMapsUrl: form.mapsUrl || null }),
-    });
-    const data = await res.json();
-    if (res.ok && data.place) {
-      const updated = [...timeline];
-      updated[idx].placeId = data.place.id;
-      setTimeline(updated);
-      closeSuggest(idx);
-    }
+    try {
+      const res = await fetch("/api/places/suggest", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: item.place, province: item.province, district: item.district, category: form?.cat ?? "NATURE", googleMapsUrl: form?.mapsUrl || undefined }),
+      });
+      const data = await res.json();
+      if (res.ok && data.place) {
+        const updated = [...timeline];
+        updated[idx].placeId  = data.place.id;
+        updated[idx].placeSlug = data.place.slug;
+        setTimeline(updated);
+        closeSuggest(idx);
+      } else {
+        alert(data.message ?? "เกิดข้อผิดพลาด");
+      }
+    } catch { alert("ไม่สามารถเชื่อมต่อระบบได้"); }
     setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], saving: false } }));
   };
 
