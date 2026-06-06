@@ -64,7 +64,7 @@ function ResetPasswordForm() {
   };
 
   return (
-    <section className="reset-page">
+    <section className="reset-page" style={{ background: "linear-gradient(135deg,#eff6ff,#ecfdf5)", minHeight: "100vh" }}>
       <div className="shell">
         <div className="panel copy-panel">
           <span className="eyebrow"><ShieldCheck size={16} /> Secure password reset</span>
