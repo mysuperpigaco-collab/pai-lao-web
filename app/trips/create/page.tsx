@@ -9,6 +9,43 @@ import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
 import { getDistricts, normalizeProvince, PROVINCES } from "@/data/thailand";
 import RichTextEditor from "@/components/common/RichTextEditor";
 
+function HintTooltip({ text }: { text: string }) {
+  const [show, setShow] = useState(false);
+  return (
+    <span style={{ position: "relative", display: "inline-flex", alignItems: "center", marginLeft: 5, verticalAlign: "middle" }}>
+      <button
+        type="button"
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        onClick={e => { e.stopPropagation(); setShow(v => !v); }}
+        aria-label="ดูคำแนะนำ"
+        style={{
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          width: 17, height: 17, borderRadius: "50%",
+          background: "#e0e7ff", color: "#4338ca",
+          border: "none", fontSize: 11, fontWeight: 900, cursor: "pointer",
+          padding: 0, lineHeight: 1, flexShrink: 0,
+        }}
+      >?</button>
+      {show && (
+        <span style={{
+          position: "absolute", bottom: "calc(100% + 8px)", left: "50%",
+          transform: "translateX(-50%)",
+          background: "#1e293b", color: "#f8fafc",
+          padding: "8px 12px", borderRadius: 10,
+          fontSize: 12, fontWeight: 500, lineHeight: 1.6,
+          width: 230, zIndex: 200,
+          boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+          pointerEvents: "none",
+        }}>
+          {text}
+          <span style={{ position: "absolute", bottom: -5, left: "50%", transform: "translateX(-50%) rotate(45deg)", width: 10, height: 10, background: "#1e293b", display: "block" }} />
+        </span>
+      )}
+    </span>
+  );
+}
+
 export default function CreateStoryPage() {
   const router   = useRouter();
   const { user } = useAuth();
@@ -600,13 +637,13 @@ export default function CreateStoryPage() {
           {/* 2. ข้อมูลพื้นฐาน */}
           <div className="info-grid">
             <div className="form-group full-width">
-              <label>หัวข้อเรื่องเล่า | <small>TITLE</small> <span>*</span></label>
+              <label>หัวข้อเรื่องเล่า | <small>TITLE</small> <span>*</span><HintTooltip text="ตั้งชื่อให้น่าดึงดูด บอกจุดเด่นหรืออารมณ์ทริป เช่น '3 วันคนเดียวเชียงราย ไม่อ้างว้างอย่างที่คิด'" /></label>
               <input type="text" className="form-control" value={title}
                 onChange={(e) => setTitle(e.target.value)} placeholder="ตั้งชื่อทริปให้น่าสนใจ..." required />
             </div>
             <div className="form-group full-width">
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
-                <label style={{ margin:0 }}>เรื่องเล่าโดยรวม | <small>OVERALL</small> <span>*</span></label>
+                <label style={{ margin:0 }}>เรื่องเล่าโดยรวม | <small>OVERALL</small> <span>*</span><HintTooltip text="เล่าภาพรวมทริป — ความประทับใจ ไฮไลต์ อารมณ์ที่ได้รับ ไม่ต้องลงรายละเอียดทุกจุด ส่วนนั้นใส่ใน Timeline" /></label>
                 <button type="button" onClick={() => handlePolish(content, "content")}
                   disabled={polishing === "content" || !content || content === "<p></p>"}
                   style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 14px", borderRadius:20,
@@ -643,12 +680,12 @@ export default function CreateStoryPage() {
               )}
             </div>
             <div className="form-group">
-              <label>งบประมาณ | <small>BUDGET (บาท)</small></label>
+              <label>งบประมาณ | <small>BUDGET (บาท)</small><HintTooltip text="ประมาณการงบรวมทั้งทริป รวมค่าเดินทาง ที่พัก และอาหาร ไม่จำเป็นต้องแม่นยำ" /></label>
               <input type="number" className="form-control" value={budget}
                 onChange={(e) => setBudget(e.target.value)} placeholder="เช่น 2500" step="1" max="2000000000" />
             </div>
             <div className="form-group">
-              <label>สไตล์ทริป | <small>MOOD</small></label>
+              <label>สไตล์ทริป | <small>MOOD</small><HintTooltip text="เลือกสไตล์ที่ตรงทริปนี้มากที่สุด ช่วยให้คนที่ชอบท่องเที่ยวสไตล์เดียวกันค้นหาพบ" /></label>
               <select className="form-control" value={mood} onChange={(e) => setMood(e.target.value)}>
                 <option>Cafe Hopping</option>
                 <option>สายลุย Adventurous</option>
@@ -659,7 +696,7 @@ export default function CreateStoryPage() {
               </select>
             </div>
             <div className="form-group full-width">
-              <label>แท็ก | <small>TAGS (คั่นด้วยจุลภาค)</small></label>
+              <label>แท็ก | <small>TAGS (คั่นด้วยจุลภาค)</small><HintTooltip text="คีย์เวิร์ดที่ช่วยให้คนค้นหาทริปนี้เจอ เช่น กาญจนบุรี, น้ำตก, วันเดียว — คั่นด้วย , (จุลภาค)" /></label>
               <input type="text" className="form-control" value={tags}
                 onChange={(e) => setTags(e.target.value)} placeholder="เช่น กาญจนบุรี, น้ำตก, วันเดียว" />
             </div>
@@ -679,7 +716,7 @@ export default function CreateStoryPage() {
 
           {/* 3. Gallery */}
           <div className="section-box">
-            <h3 className="section-label">🖼️ แกลเลอรี่ | <small>GALLERY</small></h3>
+            <h3 className="section-label">🖼️ แกลเลอรี่ | <small>GALLERY</small><HintTooltip text="รูปภาพเพิ่มเติมที่แสดงบรรยากาศทริป นอกเหนือจากรูปปก สามารถเพิ่มได้หลายรูป" /></h3>
             <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:16}}>
               {galleryPreviews.map((src,i) => (
                 <div key={i} style={{position:"relative",width:100,height:80}}>
@@ -702,19 +739,18 @@ export default function CreateStoryPage() {
 
           {/* 4. Timeline */}
           <div className="section-box">
-            <h3 className="section-label">🕘 เส้นทางเดินทาง | <small>TIMELINE</small></h3>
+            <h3 className="section-label">🕘 เส้นทางเดินทาง | <small>TIMELINE</small><HintTooltip text="เพิ่มแต่ละจุดแวะตามลำดับเวลา ใส่ชื่อสถานที่ วันที่ เวลา และเรื่องเล่าสั้นๆ ของจุดนั้น" /></h3>
             {timeline.map((item, idx) => (
               <div key={idx} className="timeline-card">
                 {/* Row 1: Date + Time + Remove */}
-                <div style={{ display: "flex", gap: 12, marginBottom: 12, alignItems: "center" }}>
+                <div style={{ display: "flex", gap: 10, marginBottom: 12, alignItems: "center", flexWrap: "wrap" }}>
                   <input type="date" className="form-control" value={item.date} max={today}
                     onChange={(e) => updateTimeline(idx, "date", e.target.value)}
-                    style={{ flex: "0 0 180px" }} />
+                    style={{ flex: "1 1 140px", minWidth: 0 }} />
                   <input type="time" className="form-control" value={item.time}
                     onChange={(e) => updateTimeline(idx, "time", e.target.value)}
-                    style={{ flex: "0 0 140px" }} />
-                  <div style={{ flex: 1 }} />
-                  <button type="button" className="btn-remove-circle" onClick={() => removeTimeline(idx)}>×</button>
+                    style={{ flex: "0 0 110px", minWidth: 0 }} />
+                  <button type="button" className="btn-remove-circle" style={{ marginLeft: "auto" }} onClick={() => removeTimeline(idx)}>×</button>
                 </div>
 
                 {/* Row 2: Place name search (full width) */}
@@ -1033,7 +1069,32 @@ export default function CreateStoryPage() {
         .pv-info h4{margin:0;font-size:24px;color:#1e293b;font-weight:800}
         .pv-desc{color:#64748b;line-height:1.8;margin:15px 0;font-size:16px}
         .pv-checkpoint-img{width:100%;max-width:500px;border-radius:30px;margin-top:20px;box-shadow:0 20px 40px rgba(0,0,0,0.1)}
-        @media(max-width:768px){.info-grid{grid-template-columns:1fr}.timeline-detail-row{grid-template-columns:1fr}.main-actions{flex-direction:column}.create-card{padding:30px}}@media(max-width:480px){.create-card{padding:20px;border-radius:24px}.create-container{padding:20px 12px}.timeline-card{padding:18px;border-radius:20px}.btn-action-publish{font-size:15px;padding:16px}}
+        @media(max-width:768px){
+          .info-grid{grid-template-columns:1fr}
+          .full-width{grid-column:span 1}
+          .timeline-detail-row{grid-template-columns:1fr}
+          .main-actions{flex-direction:column}
+          .create-card{padding:24px;border-radius:32px}
+          .create-container{padding:16px 10px}
+          .cover-upload-area{height:240px;border-radius:24px}
+          .section-box{padding:20px;border-radius:28px}
+          .section-label{font-size:17px}
+          .header-text h2{font-size:24px}
+        }
+        @media(max-width:600px){
+          .timeline-location-row{flex-direction:column;gap:10px}
+          .cp-upload-container{height:auto;min-height:80px}
+          .cp-label{height:80px}
+        }
+        @media(max-width:480px){
+          .create-card{padding:16px;border-radius:20px}
+          .create-container{padding:10px 6px}
+          .timeline-card{padding:14px;border-radius:16px}
+          .btn-action-publish{font-size:15px;padding:16px}
+          .btn-add-checkpoint-premium{padding:14px 12px;font-size:13px;border-radius:18px}
+          .btn-add-checkpoint-premium .plus{font-size:18px}
+          .section-box{padding:14px;border-radius:20px}
+        }
       `}</style>
     </div>
   );
