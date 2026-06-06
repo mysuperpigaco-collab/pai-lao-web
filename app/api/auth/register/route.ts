@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { hashPassword, signToken, setAuthCookie } from "@/lib/auth";
+import { hashPassword } from "@/lib/auth";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { Resend } from "resend";
@@ -152,10 +152,6 @@ export async function POST(request: NextRequest) {
       `,
     }).catch((err: unknown) => console.error("ส่ง verify email ไม่สำเร็จ:", err));
 
-    // ── ออก JWT ───────────────────────────────────────────────
-    const token = await signToken({ userId: user.id, username: user.username, role: user.role });
-    await setAuthCookie(token);
-
     // ── บันทึก log การสมัคร ───────────────────────────────────
     await logActivity({
       userId: user.id, username: user.username,
@@ -165,7 +161,7 @@ export async function POST(request: NextRequest) {
     }).catch(() => {});
 
     return NextResponse.json(
-      { message: "สมัครสมาชิกสำเร็จ! กรุณาตรวจสอบอีเมลเพื่อยืนยันบัญชี", userId: user.id, role: user.role },
+      { message: "สมัครสมาชิกสำเร็จ! กรุณาตรวจสอบอีเมลเพื่อยืนยันบัญชีก่อนเข้าสู่ระบบ" },
       { status: 201 }
     );
 

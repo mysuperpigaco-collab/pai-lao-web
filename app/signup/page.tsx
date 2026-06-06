@@ -1,17 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import SignupTabs from "@/components/auth/SignupTabs";
 import TravelerFields from "@/components/auth/TravelerFields";
 import InputField from "@/components/ui/InputField";
 
 export default function SignupPage() {
-  const router = useRouter();
   const [accountType, setAccountType] = useState("user");
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [emailSent, setEmailSent] = useState("");
   const today = new Date().toISOString().split("T")[0];
 
   const [formData, setFormData] = useState({
@@ -82,7 +81,7 @@ export default function SignupPage() {
       });
       const data = await res.json();
       if (!res.ok) { setApiError(data.message || "เกิดข้อผิดพลาด"); setIsLoading(false); return; }
-      router.push(data.role === "BUSINESS" ? "/business/dashboard" : "/dashboard");
+      setEmailSent(formData.email);
     } catch {
       setApiError("ไม่สามารถเชื่อมต่อระบบได้ กรุณาลองใหม่");
       setIsLoading(false);
@@ -105,8 +104,33 @@ export default function SignupPage() {
           </div>
         </div>
 
-        {/* Right Side: Form (เอา Scroll ภายในออกแล้ว) */}
+        {/* Right Side: Form */}
         <div className="form-side">
+
+          {emailSent ? (
+            <div style={{ textAlign: "center", padding: "40px 20px" }}>
+              <div style={{ fontSize: "64px", marginBottom: "16px" }}>📧</div>
+              <h2 style={{ fontWeight: 900, fontSize: "22px", color: "#0f172a", marginBottom: "12px" }}>
+                ตรวจสอบอีเมลของคุณ
+              </h2>
+              <p style={{ color: "#64748b", fontSize: "15px", lineHeight: 1.7, marginBottom: "8px" }}>
+                เราส่งลิงก์ยืนยันไปที่
+              </p>
+              <p style={{ color: "#0f172a", fontWeight: 700, fontSize: "15px", marginBottom: "24px" }}>
+                {emailSent}
+              </p>
+              <p style={{ color: "#64748b", fontSize: "14px", lineHeight: 1.7, marginBottom: "32px" }}>
+                กดลิงก์ในอีเมลเพื่อยืนยันบัญชี แล้วกลับมาเข้าสู่ระบบ<br />
+                ลิงก์มีอายุ 24 ชั่วโมง
+              </p>
+              <Link href="/login" style={{ display: "inline-block", padding: "14px 36px",
+                background: "linear-gradient(135deg,#4facfe,#43e97b)", color: "#fff",
+                borderRadius: "12px", fontWeight: 900, fontSize: "15px", textDecoration: "none" }}>
+                ไปหน้าเข้าสู่ระบบ
+              </Link>
+            </div>
+          ) : (
+          <>
           <div className="form-header">
             <h2>{accountType === "user" ? "สมัครนักเล่าเรื่อง" : "สมัครเจ้าของสถานที่"} | Signup</h2>
             <p>ก้าวแรกสู่การเป็นนักเล่าเรื่อง | Step into the world of stories</p>
@@ -214,6 +238,8 @@ export default function SignupPage() {
           <p className="login-link-text">
             มีบัญชีแล้ว? <Link href="/login">เข้าสู่ระบบ | Login</Link>
           </p>
+          </>
+          )}
         </div>
       </div>
 

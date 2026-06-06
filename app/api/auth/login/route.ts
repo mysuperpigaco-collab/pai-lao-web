@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
         password: true,
         bannedUntil: true,
         banReason: true,
+        emailVerified: true,
         business: {
           select: { id: true, businessName: true, logoUrl: true, isVerified: true },
         },
@@ -77,6 +78,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { message: "อีเมล/ชื่อผู้ใช้ หรือรหัสผ่านไม่ถูกต้อง" },
         { status: 401 }
+      );
+    }
+
+    // ── เช็คว่ายืนยันอีเมลแล้วหรือยัง ──────────────────────────
+    if (!user.emailVerified && user.role !== "ADMIN" && user.role !== "SUPERADMIN") {
+      return NextResponse.json(
+        { message: "กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ", unverified: true },
+        { status: 403 }
       );
     }
 
