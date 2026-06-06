@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import ImageLightbox from "@/components/common/ImageLightbox";
 
 interface Props {
@@ -9,27 +9,21 @@ interface Props {
 
 export default function TripRichContent({ html }: Props) {
   const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
-  const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!ref.current) return;
-    const imgs = ref.current.querySelectorAll<HTMLImageElement>("img");
-    const handlers: Array<() => void> = [];
-    imgs.forEach(img => {
-      const fn = () => setLightbox({ src: img.src, alt: img.alt });
-      img.addEventListener("click", fn);
-      img.style.cursor = "zoom-in";
-      handlers.push(() => img.removeEventListener("click", fn));
-    });
-    return () => handlers.forEach(h => h());
-  }, [html]);
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === "IMG") {
+      const img = target as HTMLImageElement;
+      setLightbox({ src: img.src, alt: img.alt });
+    }
+  };
 
   return (
     <>
       <div
-        ref={ref}
         className="trip-rich-content"
         dangerouslySetInnerHTML={{ __html: html }}
+        onClick={handleClick}
       />
       {lightbox && (
         <ImageLightbox

@@ -13,6 +13,7 @@ import PlaceHero from "@/components/places/PlaceHero";
 import AdminPhotoUpload from "@/components/places/AdminPhotoUpload";
 import MissionSubmitBox from "@/components/places/MissionSubmitBox";
 import MapsButton from "@/components/common/MapsButton";
+import CommunityPhotosGallery from "@/components/places/CommunityPhotosGallery";
 import "./place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -397,18 +398,7 @@ export default async function PlaceDetailPage({ params }: Props) {
                 <p style={{ fontSize: 12, color: "#94a3b8", marginTop: -8, marginBottom: 12 }}>
                   รูปภาพที่นักเดินทางแชร์จากทริปของพวกเขา · Photos shared by travelers from their trips
                 </p>
-                <div className="pd-gallery">
-                  {communityImages.slice(0, 9).map((img, i) => (
-                    <div key={i} className="pd-gal-item">
-                      <img src={img} alt={"Community photo " + (i + 1)} />
-                    </div>
-                  ))}
-                </div>
-                {communityImages.length > 9 && (
-                  <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 8 }}>
-                    +{communityImages.length - 9} รูปเพิ่มเติม
-                  </p>
-                )}
+                <CommunityPhotosGallery images={communityImages} />
               </div>
             )}
 
