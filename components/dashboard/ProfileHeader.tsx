@@ -158,9 +158,10 @@ export default function ProfileHeader({ isOwner, loading, user = DEFAULT_USER }:
             )}
           </div>
           {isOwner && !avatarSrc && (
-            <Link href="/dashboard/edit-profile" style={{ display: "inline-flex", alignItems: "center", gap: "5px", marginTop: "6px", fontSize: "11px", fontWeight: 700, color: "#fff", background: "rgba(0,0,0,0.32)", backdropFilter: "blur(4px)", padding: "4px 10px", borderRadius: "999px", textDecoration: "none", border: "1px solid rgba(255,255,255,0.3)", whiteSpace: "nowrap" }}>
+            <label style={{ display: "inline-flex", alignItems: "center", gap: "5px", marginTop: "6px", fontSize: "11px", fontWeight: 700, color: "#fff", background: "rgba(0,0,0,0.32)", backdropFilter: "blur(4px)", padding: "4px 10px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.3)", whiteSpace: "nowrap", cursor: uploading ? "wait" : "pointer" }}>
               📸 เพิ่มรูปโปรไฟล์ · Add photo
-            </Link>
+              <input hidden type="file" accept="image/*" onChange={handleAvatarChange} disabled={uploading} />
+            </label>
           )}
         </div>
       </div>
