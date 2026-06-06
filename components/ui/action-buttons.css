@@ -222,11 +222,13 @@
     align-items: stretch;
   }
 
+  .ui-action-bar > *,
   .ui-back-btn,
   .ui-cancel-btn,
   .ui-save-btn {
     width: 100%;
     justify-content: center;
     min-width: unset;
+    box-sizing: border-box;
   }
 }

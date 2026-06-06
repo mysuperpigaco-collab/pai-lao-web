@@ -832,7 +832,7 @@ export default function EditTripPage({ params }: Props) {
                   color: tempSaved ? "#065f46" : "#92400e",
                   border: `1.5px solid ${tempSaved ? "#6ee7b7" : "#fcd34d"}`,
                   fontWeight: 700, fontSize: 14, cursor: isSavingTemp ? "not-allowed" : "pointer",
-                  display: "flex", alignItems: "center", gap: 6, transition: "all .2s",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all .2s",
                 }}
               >
                 {isSavingTemp ? "⏳ กำลังบันทึก..." : tempSaved ? "✅ บันทึกแล้ว!" : "💾 บันทึกชั่วคราว"}
