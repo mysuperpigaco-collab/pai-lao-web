@@ -275,6 +275,7 @@ function UserProfileInner() {
   const [followUsers, setFollowUsers] = useState<FollowUser[]>([]);
   const [followLoading, setFollowLoading] = useState(false);
   const [showCoverMgr, setShowCoverMgr] = useState(false);
+  const [avatarLightbox, setAvatarLightbox] = useState(false);
 
   useEffect(() => {
     if (me?.username && username && me.username === username && !isPreviewMode) {
@@ -446,10 +447,31 @@ function UserProfileInner() {
       <div className="up-avatar-row">
         <div className="up-avatar-wrap">
           {user.avatarUrl
-            ? <img src={user.avatarUrl} alt={displayName} className="up-avatar" />
+            ? <img src={user.avatarUrl} alt={displayName} className="up-avatar"
+                onClick={() => setAvatarLightbox(true)}
+                style={{ cursor: "zoom-in" }} />
             : <div className="up-avatar-circle">{displayName.charAt(0).toUpperCase()}</div>}
         </div>
       </div>
+
+      {/* ── Avatar lightbox ── */}
+      {avatarLightbox && user.avatarUrl && (
+        <div onClick={() => setAvatarLightbox(false)}
+          style={{ position:"fixed", inset:0, zIndex:9999, background:"rgba(0,0,0,0.65)",
+            display:"flex", alignItems:"center", justifyContent:"center", cursor:"zoom-out" }}>
+          <div onClick={e => e.stopPropagation()}
+            style={{ position:"relative", borderRadius:20, overflow:"hidden",
+              boxShadow:"0 24px 60px rgba(0,0,0,0.45)" }}>
+            <img src={user.avatarUrl} alt={displayName}
+              style={{ width:280, height:280, objectFit:"cover", display:"block" }} />
+            <button onClick={() => setAvatarLightbox(false)}
+              style={{ position:"absolute", top:8, right:8, width:28, height:28, borderRadius:"50%",
+                background:"rgba(0,0,0,0.5)", border:"none", color:"#fff", fontSize:16,
+                cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
+                lineHeight:1 }}>×</button>
+          </div>
+        </div>
+      )}
 
       {/* ── Body ── */}
       <div className="up-body">
