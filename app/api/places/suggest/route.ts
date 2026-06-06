@@ -39,9 +39,12 @@ export async function POST(request: Request) {
         province:       province ?? "",
         district:       district ?? "",
         category:       catEnum as any,
-        coverUrl:       "",          // ยังไม่มีรูป — จะถูกอัปเดตเมื่อมีเจ้าของ
+        coverUrl:       "",
+        gallery:        [],
+        amenities:      [],
+        tags:           [],
         description:    "สถานที่แนะนำโดยนักท่องเที่ยว ยังไม่มีเจ้าของ",
-        approvalStatus: "PENDING",   // รอแอดมินตรวจสอบก่อนแสดง
+        approvalStatus: "PENDING",
         businessId:     null,
         ...(googleMapsUrl?.trim() ? { googleMapsUrl: googleMapsUrl.trim() } : {}),
       },
