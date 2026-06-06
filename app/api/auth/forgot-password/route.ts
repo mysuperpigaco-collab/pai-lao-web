@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     const safeFirstName = user.firstName.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
     await resend.emails.send({
-      from: "PAI-LAO <onboarding@resend.dev>",
+      from: "PAI-LAO <noreply@pai-lao.com>",
       to: user.email,
       subject: "รีเซ็ตรหัสผ่าน — PAI-LAO EXPERIENCE",
       html: `

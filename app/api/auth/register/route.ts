@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     const verifyUrl = `${BASE_URL}/api/auth/verify-email?token=${verifyToken}`;
     const safeFirstName = firstName.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     resend.emails.send({
-      from: "PAI-LAO <onboarding@resend.dev>",
+      from: "PAI-LAO <noreply@pai-lao.com>",
       to: email,
       subject: "ยืนยันอีเมล — PAI-LAO EXPERIENCE",
       html: `

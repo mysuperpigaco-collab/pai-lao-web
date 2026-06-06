@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     });
 
     await resend.emails.send({
-      from: "PAI-LAO Contact <onboarding@resend.dev>",
+      from: "PAI-LAO Contact <noreply@pai-lao.com>",
       to: SUPPORT_EMAIL,
       replyTo: email,
       subject: `[ติดต่อไปเล่า] ${subject?.trim() || "ไม่ระบุหัวข้อ"} — ${categoryLabel[category] ?? "ทั่วไป"}`,
