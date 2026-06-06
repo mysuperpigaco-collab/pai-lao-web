@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 
 const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 const PROMPTS: Record<string, string> = {
   overall:
@@ -44,9 +44,15 @@ export async function POST(req: NextRequest) {
     });
 
     if (!res.ok) {
-      const err = await res.text();
-      console.error("Gemini error:", err);
-      return NextResponse.json({ error: "Gemini API error" }, { status: 502 });
+      const errText = await res.text();
+      console.error("Gemini error:", errText);
+      let msg = "Gemini API error";
+      try {
+        const j = JSON.parse(errText);
+        const m = j?.error?.message;
+        if (m) msg = m.length > 120 ? m.slice(0, 120) + "…" : m;
+      } catch {}
+      return NextResponse.json({ error: msg }, { status: 502 });
     }
 
     const data = await res.json();

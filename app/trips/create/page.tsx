@@ -878,23 +878,6 @@ export default function CreateStoryPage() {
                     </div>
                     <textarea className="form-control desc-area" placeholder="เล่าบรรยากาศที่จุดนี้..."
                       value={item.description} onChange={(e) => updateTimeline(idx, "description", e.target.value)} />
-                    {aiPreview?.target === `stop-${idx}` && (
-                      <div style={{ padding:"12px 14px", background:"#f5f3ff", border:"1.5px solid #a78bfa",
-                        borderRadius:12, fontSize:13, lineHeight:1.7 }}>
-                        <div style={{ fontWeight:700, color:"#7c3aed", marginBottom:6, fontSize:12 }}>✨ AI เกลาแล้ว</div>
-                        <div style={{ color:"#1e1b4b", whiteSpace:"pre-wrap" }}>{aiPreview.text}</div>
-                        <div style={{ display:"flex", gap:8, marginTop:10 }}>
-                          <button type="button" onClick={applyPolish}
-                            style={{ padding:"5px 14px", borderRadius:16, border:"none", background:"#7c3aed", color:"#fff", fontWeight:700, fontSize:12, cursor:"pointer" }}>
-                            ใช้
-                          </button>
-                          <button type="button" onClick={() => setAiPreview(null)}
-                            style={{ padding:"5px 14px", borderRadius:16, border:"1.5px solid #cbd5e1", background:"white", color:"#64748b", fontWeight:600, fontSize:12, cursor:"pointer" }}>
-                            ยกเลิก
-                          </button>
-                        </div>
-                      </div>
-                    )}
                   </div>
                   <div className="cp-upload-container">
                     {item.imagePreview ? (
@@ -914,6 +897,23 @@ export default function CreateStoryPage() {
                     )}
                   </div>
                 </div>
+                {aiPreview?.target === `stop-${idx}` && (
+                  <div style={{ marginTop:10, padding:"12px 14px", background:"#f5f3ff", border:"1.5px solid #a78bfa",
+                    borderRadius:12, fontSize:13, lineHeight:1.7 }}>
+                    <div style={{ fontWeight:700, color:"#7c3aed", marginBottom:6, fontSize:12 }}>✨ AI เกลาแล้ว</div>
+                    <div style={{ color:"#1e1b4b", whiteSpace:"pre-wrap" }}>{aiPreview.text}</div>
+                    <div style={{ display:"flex", gap:8, marginTop:10 }}>
+                      <button type="button" onClick={applyPolish}
+                        style={{ padding:"5px 14px", borderRadius:16, border:"none", background:"#7c3aed", color:"#fff", fontWeight:700, fontSize:12, cursor:"pointer" }}>
+                        ใช้
+                      </button>
+                      <button type="button" onClick={() => setAiPreview(null)}
+                        style={{ padding:"5px 14px", borderRadius:16, border:"1.5px solid #cbd5e1", background:"white", color:"#64748b", fontWeight:600, fontSize:12, cursor:"pointer" }}>
+                        ยกเลิก
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {/* shareToPlace toggle — only when place is linked AND has image */}
                 {item.placeId && item.imagePreview && (
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>

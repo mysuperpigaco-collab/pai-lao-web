@@ -751,23 +751,6 @@ export default function EditTripPage({ params }: Props) {
                     <textarea className="form-control desc-area" value={item.description}
                       onChange={e => updateTimeline(idx, "description", e.target.value)}
                       placeholder="อธิบายสถานที่นี้..." />
-                    {aiPreview?.target === `stop-${idx}` && (
-                      <div style={{ padding:"12px 14px", background:"#f5f3ff", border:"1.5px solid #a78bfa",
-                        borderRadius:12, fontSize:13, lineHeight:1.7 }}>
-                        <div style={{ fontWeight:700, color:"#7c3aed", marginBottom:6, fontSize:12 }}>✨ AI เกลาแล้ว</div>
-                        <div style={{ color:"#1e1b4b", whiteSpace:"pre-wrap" }}>{aiPreview.text}</div>
-                        <div style={{ display:"flex", gap:8, marginTop:10 }}>
-                          <button type="button" onClick={applyPolish}
-                            style={{ padding:"5px 14px", borderRadius:16, border:"none", background:"#7c3aed", color:"#fff", fontWeight:700, fontSize:12, cursor:"pointer" }}>
-                            ใช้
-                          </button>
-                          <button type="button" onClick={() => setAiPreview(null)}
-                            style={{ padding:"5px 14px", borderRadius:16, border:"1.5px solid #cbd5e1", background:"white", color:"#64748b", fontWeight:600, fontSize:12, cursor:"pointer" }}>
-                            ยกเลิก
-                          </button>
-                        </div>
-                      </div>
-                    )}
                   </div>
                   <div className="cp-upload-container">
                     {item.imagePreview ? (
@@ -791,6 +774,23 @@ export default function EditTripPage({ params }: Props) {
                   </div>
                 </div>
 
+                {aiPreview?.target === `stop-${idx}` && (
+                  <div style={{ marginTop:10, padding:"12px 14px", background:"#f5f3ff", border:"1.5px solid #a78bfa",
+                    borderRadius:12, fontSize:13, lineHeight:1.7 }}>
+                    <div style={{ fontWeight:700, color:"#7c3aed", marginBottom:6, fontSize:12 }}>✨ AI เกลาแล้ว</div>
+                    <div style={{ color:"#1e1b4b", whiteSpace:"pre-wrap" }}>{aiPreview.text}</div>
+                    <div style={{ display:"flex", gap:8, marginTop:10 }}>
+                      <button type="button" onClick={applyPolish}
+                        style={{ padding:"5px 14px", borderRadius:16, border:"none", background:"#7c3aed", color:"#fff", fontWeight:700, fontSize:12, cursor:"pointer" }}>
+                        ใช้
+                      </button>
+                      <button type="button" onClick={() => setAiPreview(null)}
+                        style={{ padding:"5px 14px", borderRadius:16, border:"1.5px solid #cbd5e1", background:"white", color:"#64748b", fontWeight:600, fontSize:12, cursor:"pointer" }}>
+                        ยกเลิก
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {/* Share to place toggle */}
                 <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10 }}>
                   <input type="checkbox" id={`stp-edit-${idx}`} checked={item.shareToPlace}
