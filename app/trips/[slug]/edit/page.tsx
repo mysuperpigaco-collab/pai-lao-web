@@ -36,9 +36,6 @@ export default function EditTripPage({ params }: Props) {
   const [isSavingTemp, setIsSavingTemp] = useState(false);
   const [tempSaved,    setTempSaved   ] = useState(false);
 
-  const [polishing, setPolishing] = useState<string | null>(null);
-  const [aiPreview, setAiPreview] = useState<{ target: string; text: string } | null>(null);
-
   // ── Form state ─────────────────────────────────────────
   const [coverFile,        setCoverFile       ] = useState<File | null>(null);
   const [coverPreview,     setCoverPreview    ] = useState<string | null>(null);
@@ -196,44 +193,6 @@ export default function EditTripPage({ params }: Props) {
     setGalleryPreviews(prev => [...prev, ...files.map(f => URL.createObjectURL(f))]);
   };
 
-  // ── AI Polish ─────────────────────────────────────────────
-  const stripHtml = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-
-  const handlePolish = async (rawText: string, target: string) => {
-    const text = target === "content" ? stripHtml(rawText) : rawText;
-    if (text.length < 10) return;
-    setPolishing(target);
-    setAiPreview(null);
-    try {
-      const res = await fetch("/api/ai/polish-text", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, mode: target === "content" ? "overall" : "stop" }),
-      });
-      const data = await res.json();
-      if (data.polished) setAiPreview({ target, text: data.polished });
-      else console.error("[AI polish]", data.error ?? "AI ไม่ตอบกลับ");
-    } catch (e) {
-      console.error("[AI polish] error", e);
-    } finally {
-      setPolishing(null);
-    }
-  };
-
-  const applyPolish = () => {
-    if (!aiPreview) return;
-    if (aiPreview.target === "content") {
-      const html = aiPreview.text
-        .split(/\n\n+/).filter(Boolean)
-        .map(p => `<p>${p.replace(/\n/g, "<br/>")}</p>`).join("");
-      setContent(html);
-    } else {
-      const idx = parseInt(aiPreview.target.replace("stop-", ""), 10);
-      updateTimeline(idx, "description", aiPreview.text);
-    }
-    setAiPreview(null);
-  };
-
   // ── Temp Save (บันทึกชั่วคราว) ────────────────────────────
   const saveTempDraft = async () => {
     if (!title.trim()) { setError("กรุณาใส่ชื่อทริปก่อนบันทึก"); return; }
@@ -265,6 +224,7 @@ export default function EditTripPage({ params }: Props) {
             description: stop.description,
             images: imageUrl ? [imageUrl] : [],
             shareToPlace: stop.shareToPlace ?? false,
+            placeId: stop.placeId ?? undefined,
           };
         })
       );
@@ -568,39 +528,12 @@ export default function EditTripPage({ params }: Props) {
             </div>
 
             <div className="form-group full-width">
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
-                <label style={{ margin:0 }}>เนื้อหา | <small>STORY CONTENT</small> <span style={{ color: "#ef4444" }}>*</span></label>
-                <button type="button" onClick={() => handlePolish(content, "content")}
-                  disabled={polishing === "content" || !content || content === "<p></p>"}
-                  style={{ display:"flex", alignItems:"center", gap:5, padding:"5px 14px", borderRadius:20,
-                    border:"1.5px solid #a78bfa", background: polishing === "content" ? "#f5f3ff" : "white",
-                    color:"#7c3aed", fontSize:13, fontWeight:700, cursor:"pointer", transition:"0.2s",
-                    opacity: (!content || content === "<p></p>") ? 0.4 : 1 }}>
-                  {polishing === "content" ? "⏳ กำลังเกลา..." : "✨ เกลาข้อความ AI"}
-                </button>
-              </div>
+              <label style={{ margin:0 }}>เนื้อหา | <small>STORY CONTENT</small> <span style={{ color: "#ef4444" }}>*</span></label>
               <RichTextEditor
                 value={content}
                 onChange={setContent}
                 placeholder="เล่าเรื่องราวการเดินทางของคุณ... แทรกรูปภาพได้เลย 🖼️"
               />
-              {aiPreview?.target === "content" && (
-                <div style={{ marginTop:10, padding:"14px 16px", background:"#f5f3ff", border:"1.5px solid #a78bfa",
-                  borderRadius:14, fontSize:14, lineHeight:1.75 }}>
-                  <div style={{ fontWeight:700, color:"#7c3aed", marginBottom:8, fontSize:13 }}>✨ ข้อความที่ AI เกลาแล้ว</div>
-                  <div style={{ color:"#1e1b4b", whiteSpace:"pre-wrap" }}>{aiPreview.text}</div>
-                  <div style={{ display:"flex", gap:8, marginTop:12 }}>
-                    <button type="button" onClick={applyPolish}
-                      style={{ padding:"6px 18px", borderRadius:20, border:"none", background:"#7c3aed", color:"#fff", fontWeight:700, fontSize:13, cursor:"pointer" }}>
-                      ใช้ข้อความนี้
-                    </button>
-                    <button type="button" onClick={() => setAiPreview(null)}
-                      style={{ padding:"6px 18px", borderRadius:20, border:"1.5px solid #cbd5e1", background:"white", color:"#64748b", fontWeight:600, fontSize:13, cursor:"pointer" }}>
-                      ยกเลิก
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
@@ -733,16 +666,6 @@ export default function EditTripPage({ params }: Props) {
 
                 <div className="timeline-detail-row">
                   <div style={{ display:"flex", flexDirection:"column", flex:1, gap:6 }}>
-                    <div style={{ display:"flex", justifyContent:"flex-end" }}>
-                      <button type="button" onClick={() => handlePolish(item.description, `stop-${idx}`)}
-                        disabled={polishing === `stop-${idx}` || !item.description.trim()}
-                        style={{ display:"flex", alignItems:"center", gap:4, padding:"3px 11px", borderRadius:20,
-                          border:"1.5px solid #a78bfa", background:"white", color:"#7c3aed",
-                          fontSize:12, fontWeight:700, cursor:"pointer", transition:"0.2s",
-                          opacity: !item.description.trim() ? 0.4 : 1 }}>
-                        {polishing === `stop-${idx}` ? "⏳..." : "✨ เกลา"}
-                      </button>
-                    </div>
                     <textarea className="form-control desc-area" value={item.description}
                       onChange={e => updateTimeline(idx, "description", e.target.value)}
                       placeholder="อธิบายสถานที่นี้..." />
@@ -769,23 +692,6 @@ export default function EditTripPage({ params }: Props) {
                   </div>
                 </div>
 
-                {aiPreview?.target === `stop-${idx}` && (
-                  <div style={{ marginTop:10, padding:"12px 14px", background:"#f5f3ff", border:"1.5px solid #a78bfa",
-                    borderRadius:12, fontSize:13, lineHeight:1.7 }}>
-                    <div style={{ fontWeight:700, color:"#7c3aed", marginBottom:6, fontSize:12 }}>✨ AI เกลาแล้ว</div>
-                    <div style={{ color:"#1e1b4b", whiteSpace:"pre-wrap" }}>{aiPreview.text}</div>
-                    <div style={{ display:"flex", gap:8, marginTop:10 }}>
-                      <button type="button" onClick={applyPolish}
-                        style={{ padding:"5px 14px", borderRadius:16, border:"none", background:"#7c3aed", color:"#fff", fontWeight:700, fontSize:12, cursor:"pointer" }}>
-                        ใช้
-                      </button>
-                      <button type="button" onClick={() => setAiPreview(null)}
-                        style={{ padding:"5px 14px", borderRadius:16, border:"1.5px solid #cbd5e1", background:"white", color:"#64748b", fontWeight:600, fontSize:12, cursor:"pointer" }}>
-                        ยกเลิก
-                      </button>
-                    </div>
-                  </div>
-                )}
                 {/* Share to place toggle */}
                 <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10 }}>
                   <input type="checkbox" id={`stp-edit-${idx}`} checked={item.shareToPlace}
