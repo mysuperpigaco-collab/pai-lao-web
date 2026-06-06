@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAnimatedCounter } from "@/hooks/useAnimatedCounter";
 import { useAuth } from "@/context/AuthContext";
@@ -80,6 +80,8 @@ export default function ProfileHeader({ isOwner, loading, user = DEFAULT_USER }:
   const [avatarSrc, setAvatarSrc] = useState(u.avatarUrl);
   const [uploading, setUploading] = useState(false);
 
+  useEffect(() => { setAvatarSrc(u.avatarUrl || ""); }, [u.avatarUrl]);
+
   const handleLogout = async () => { await logout(); };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,7 +106,7 @@ export default function ProfileHeader({ isOwner, loading, user = DEFAULT_USER }:
         <style>{`@keyframes _phsh{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
         <div style={{ height: "110px", background: "linear-gradient(135deg,#667eea 0%,#4facfe 50%,#43e97b 100%)", position: "relative" }}>
           <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle,rgba(255,255,255,0.15) 1px,transparent 1px)", backgroundSize: "20px 20px" }} />
-          <div style={{ position: "absolute", bottom: "-44px", left: "50%", transform: "translateX(-50%)" }}>
+          <div style={{ position: "absolute", bottom: "-44px", left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center" }}>
             <div style={{ width: "88px", height: "88px", borderRadius: "50%", border: "4px solid #fff", boxShadow: "0 8px 20px rgba(15,23,42,0.15)", background: "#e2e8f0", overflow: "hidden", position: "relative" }}>
               <Shim />
             </div>
@@ -141,7 +143,7 @@ export default function ProfileHeader({ isOwner, loading, user = DEFAULT_USER }:
     <div style={{ background: "#fff", borderRadius: "28px", overflow: "hidden", border: "1px solid #f1f5f9", boxShadow: "0 4px 24px rgba(15,23,42,0.07)" }}>
       <div style={{ height: "110px", background: "linear-gradient(135deg,#667eea 0%,#4facfe 50%,#43e97b 100%)", position: "relative" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle,rgba(255,255,255,0.15) 1px,transparent 1px)", backgroundSize: "20px 20px" }} />
-        <div style={{ position: "absolute", bottom: "-44px", left: "50%", transform: "translateX(-50%)" }}>
+        <div style={{ position: "absolute", bottom: "-44px", left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ position: "relative", width: "88px", height: "88px" }}>
             {avatarSrc ? (
               <img src={avatarSrc} alt={u.displayName} style={{ width: "88px", height: "88px", borderRadius: "50%", objectFit: "cover", border: "4px solid #fff", boxShadow: "0 8px 20px rgba(15,23,42,0.15)", opacity: uploading ? 0.5 : 1, display: "block", background: "#f1f5f9" }} />
