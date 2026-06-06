@@ -105,7 +105,7 @@ export default function EditTripPage({ params }: Props) {
     const item = timeline[idx];
     const form = suggestForm[idx];
     setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], saving: true } }));
-    const res = await fetch("/api/places", {
+    const res = await fetch("/api/places/suggest", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: item.place, province: item.province, district: item.district, category: form.cat, googleMapsUrl: form.mapsUrl || null }),
     });
