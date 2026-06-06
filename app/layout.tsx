@@ -4,6 +4,9 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/context/AuthContext";
+import Script from "next/script";
+
+const GA_ID = "G-42HZ2VCDXZ";
 
 const chakraPetch = Chakra_Petch({
   subsets: ["latin", "thai"],
@@ -53,6 +56,13 @@ export default function RootLayout({
   return (
     <html lang="th" className={chakraPetch.variable}>
       <body className={chakraPetch.className}>
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+        <Script id="ga4-init" strategy="afterInteractive">{`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${GA_ID}');
+        `}</Script>
         <AuthProvider>
           <Navbar />
           <main style={{overflowX:"clip",maxWidth:"100%"}}>{children}</main>
