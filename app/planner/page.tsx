@@ -797,7 +797,7 @@ export default function PlannerPage() {
                     <ProvinceSelect value={customProv} onChange={v => { setCustomProv(v); setCustomDist(""); }} placeholder="จังหวัด · Province" style={inp} />
                     <select value={customDist} onChange={e => setCustomDist(e.target.value)} disabled={!customProv} style={inp}>
                       <option value="">อำเภอ · District</option>
-                      {getDistricts(customProv).map(d => <option key={d} value={d}>{d}</option>)}
+                      {getDistricts(customProv).map(d => <option key={d} value={d.split(" (")[0]}>{d}</option>)}
                     </select>
                   </div>
                   <select value={String(customDay)} onChange={e => setCustomDay(Number(e.target.value))} style={{ ...inp, marginBottom: 8 }}>
@@ -982,7 +982,7 @@ export default function PlannerPage() {
                 {sProv && (
                   <select value={sDist} onChange={e => setSDist(e.target.value)} style={{ ...inp, marginBottom: 6 }}>
                     <option value="">ทุกอำเภอ · All Districts</option>
-                    {getDistricts(sProv).map(d => <option key={d} value={d}>{d}</option>)}
+                    {getDistricts(sProv).map(d => <option key={d} value={d.split(" (")[0]}>{d}</option>)}
                   </select>
                 )}
                 <select value={sCat} onChange={e => setSCat(e.target.value)} style={inp}>

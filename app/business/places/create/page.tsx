@@ -350,7 +350,7 @@ export default function CreatePlacePage() {
                 <select className="ui-input" value={district} onChange={e => setDistrict(e.target.value)}
                   disabled={!province} required>
                   <option value="">— เลือกอำเภอ / Select District —</option>
-                  {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                  {districts.map(d => <option key={d} value={d.split(" (")[0]}>{d}</option>)}
                 </select>
                 {!province && <span className="ui-hint" style={{fontSize:12,color:"#94a3b8"}}>เลือกจังหวัดก่อน</span>}
               </div>

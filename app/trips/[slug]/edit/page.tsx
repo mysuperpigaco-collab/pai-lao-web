@@ -658,7 +658,7 @@ export default function EditTripPage({ params }: Props) {
                     <select className="form-control" value={item.district}
                       onChange={e => updateTimeline(idx, "district", e.target.value)}>
                       <option value="">-- เลือกอำเภอ --</option>
-                      {getDistricts(item.province).map(d => <option key={d} value={d}>{d}</option>)}
+                      {getDistricts(item.province).map(d => <option key={d} value={d.split(" (")[0]}>{d}</option>)}
                     </select>
                   </div>
                 </div>

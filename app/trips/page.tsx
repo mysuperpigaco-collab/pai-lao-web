@@ -177,7 +177,7 @@ function TripsInner() {
                 disabled={!province}
               >
                 <option value="">{province ? "ทุกอำเภอ" : "เลือกจังหวัดก่อน"}</option>
-                {getDistricts(province).map(d => <option key={d} value={d}>{d}</option>)}
+                {getDistricts(province).map(d => <option key={d} value={d.split(" (")[0]}>{d}</option>)}
               </select>
             </div>
             <div className="tp-select-wrap tp-select-sm">

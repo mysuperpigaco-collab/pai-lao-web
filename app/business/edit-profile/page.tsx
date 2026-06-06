@@ -277,7 +277,7 @@ export default function EditBusinessProfilePage() {
                 <label>อำเภอ / เขต <span className="en">District</span></label>
                 <select className="ui-input" value={district} onChange={e => setDistrict(e.target.value)} disabled={!province}>
                   <option value="">— เลือกอำเภอ —</option>
-                  {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                  {districts.map(d => <option key={d} value={d.split(" (")[0]}>{d}</option>)}
                 </select>
                 {!province && <span style={{ fontSize: 12, color: "#94a3b8", marginTop: 4, display: "block" }}>เลือกจังหวัดก่อน</span>}
               </div>

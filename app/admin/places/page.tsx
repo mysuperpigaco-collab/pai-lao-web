@@ -317,7 +317,7 @@ export default function AdminPlacesPage() {
                   <select style={inp} value={form.district} onChange={e => setField("district", e.target.value)}
                           disabled={!form.province}>
                     <option value="">-- เลือกอำเภอ --</option>
-                    {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                    {districts.map(d => <option key={d} value={d.split(" (")[0]}>{d}</option>)}
                   </select>
                 </div>
               </div>

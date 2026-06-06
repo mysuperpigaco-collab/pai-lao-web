@@ -385,7 +385,7 @@ export default function EditPlacePage({ params }: Props) {
                 <label>อำเภอ / เขต · District <span className="req">*</span></label>
                 <select className="form-control" value={district} onChange={e => setDistrict(e.target.value)} disabled={!province} required>
                   <option value="">— เลือกอำเภอ / Select District —</option>
-                  {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                  {districts.map(d => <option key={d} value={d.split(" (")[0]}>{d}</option>)}
                 </select>
                 {!province && <span className="field-hint">เลือกจังหวัดก่อน</span>}
               </div>
