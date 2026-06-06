@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, LockKeyhole, ShieldCh
 import { useMemo, useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import styles from "./reset-password.module.css";
+import LoadingPage from "@/app/loading";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -147,7 +148,7 @@ function ResetPasswordForm() {
       </div>
 
       <style jsx>{`
-        .reset-page { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:48px 20px; background:linear-gradient(135deg,rgba(239,246,255,0.92),rgba(236,253,245,0.76)),#f8fafc; }
+        .reset-page { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:48px 20px; background:linear-gradient(135deg,#eff6ff,#ecfdf5); }
         .shell { width:100%; max-width:1080px; display:grid; grid-template-columns:minmax(0,0.92fr) minmax(360px,1fr); gap:18px; align-items:stretch; }
         .panel { border:1px solid rgba(226,232,240,0.95); border-radius:8px; background:rgba(255,255,255,0.92); box-shadow:0 24px 60px rgba(15,23,42,0.08); }
         .copy-panel { padding:42px; display:flex; flex-direction:column; justify-content:center; background:linear-gradient(160deg,rgba(15,23,42,0.94),rgba(30,64,175,0.9)),#0f172a; color:#fff; }
@@ -194,7 +195,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>Loading...</div>}>
+    <Suspense fallback={<LoadingPage />}>
       <ResetPasswordForm />
     </Suspense>
   );
