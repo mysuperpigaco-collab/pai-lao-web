@@ -1,7 +1,7 @@
 "use client";
 
 // ── Feature flag: แอดมินเปิด/ปิด Promotion ─────────────────────
-const PROMOTION_ENABLED = true;
+const PROMOTION_ENABLED = false;
 
 // ── PromotionModal ────────────────────────────────────────────────
 type Place = { id: string; slug: string; title: string };
