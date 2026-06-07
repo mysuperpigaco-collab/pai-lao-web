@@ -39,23 +39,36 @@ export async function GET(request: Request) {
       ]} : {}),
     };
 
-    // ── Trending: sort by likes in last 90 days ───────────
+    // ── Trending: composite score = likes(90d)×3 + bookmarks(90d)×5 + views×1 ──
     if (sort === "trending") {
       const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
-      const recentLikes = await prisma.tripLike.groupBy({
-        by: ["tripId"],
-        where: { createdAt: { gte: since }, trip: where },
-        _count: { tripId: true },
-        orderBy: { _count: { tripId: "desc" } },
-        take: limit,
-        skip,
-      });
-      const orderedIds = recentLikes.map((r: any) => r.tripId);
-      if (orderedIds.length === 0) {
+
+      // Fetch like and bookmark counts in last 90 days in parallel
+      const [recentLikes, recentBookmarks] = await Promise.all([
+        prisma.tripLike.groupBy({
+          by: ["tripId"],
+          where: { createdAt: { gte: since }, trip: where },
+          _count: { tripId: true },
+        }),
+        prisma.bookmark.groupBy({
+          by: ["tripId"],
+          where: { createdAt: { gte: since }, tripId: { not: null }, trip: where },
+          _count: { tripId: true },
+        }),
+      ]);
+
+      // Union of all trip IDs with any recent activity
+      const activeIds = [...new Set([
+        ...recentLikes.map((r: any) => r.tripId as string),
+        ...recentBookmarks.filter((r: any) => r.tripId).map((r: any) => r.tripId as string),
+      ])];
+
+      if (activeIds.length === 0) {
         return NextResponse.json({ trips: [], total: 0, page, totalPages: 0 });
       }
+
       const trendingTrips = await prisma.trip.findMany({
-        where: { id: { in: orderedIds } },
+        where: { id: { in: activeIds }, ...where },
         select: {
           id: true, slug: true, title: true, subtitle: true,
           coverUrl: true, mood: true, budget: true, location: true,
@@ -67,18 +80,25 @@ export async function GET(request: Request) {
           timeline: { select: { province: true, district: true }, take: 1, orderBy: { order: "asc" } },
         },
       });
-      // preserve order from recentLikes
-      const tripMap = Object.fromEntries(trendingTrips.map((t: any) => [t.id, t]));
-      const ordered = orderedIds.map((id: string) => tripMap[id]).filter(Boolean);
-      const flat = ordered.map(({ timeline, reviews, ...t }: any) => {
-        const ratings = (reviews ?? []).map((r: any) => r.rating).filter(Boolean);
-        const avgRating = ratings.length ? ratings.reduce((s: number, r: number) => s + r, 0) / ratings.length : null;
-        return { ...t, avgRating, province: timeline?.[0]?.province ?? null, district: timeline?.[0]?.district ?? null, hasPendingEdit: false };
-      });
-      const trendingTotal = await prisma.tripLike.groupBy({
-        by: ["tripId"], where: { createdAt: { gte: since }, trip: where }, _count: { tripId: true },
-      });
-      return NextResponse.json({ trips: flat, total: trendingTotal.length, page, totalPages: Math.ceil(trendingTotal.length / limit) });
+
+      const likesMap    = new Map(recentLikes.map((r: any)     => [r.tripId as string, r._count.tripId as number]));
+      const bookmarkMap = new Map(recentBookmarks.filter((r: any) => r.tripId).map((r: any) => [r.tripId as string, r._count.tripId as number]));
+
+      const scored = trendingTrips
+        .map(({ timeline, reviews, ...t }: any) => {
+          const ratings = (reviews ?? []).map((r: any) => r.rating).filter(Boolean);
+          const avgRating = ratings.length ? ratings.reduce((s: number, r: number) => s + r, 0) / ratings.length : null;
+          const trendScore =
+            (likesMap.get(t.id)    ?? 0) * 3 +
+            (bookmarkMap.get(t.id) ?? 0) * 5 +
+            (t.viewCount           ?? 0) * 1;
+          return { ...t, avgRating, province: timeline?.[0]?.province ?? null, district: timeline?.[0]?.district ?? null, hasPendingEdit: false, trendScore };
+        })
+        .sort((a: any, b: any) => b.trendScore - a.trendScore);
+
+      const total = scored.length;
+      const page_trips = scored.slice(skip, skip + limit).map(({ trendScore, ...t }: any) => t);
+      return NextResponse.json({ trips: page_trips, total, page, totalPages: Math.ceil(total / limit) });
     }
 
     const orderBy: any = sort === "popular"
