@@ -39,71 +39,59 @@ export async function GET(request: Request) {
       ]} : {}),
     };
 
-    // ── Trending: composite score = likes(90d)×3 + bookmarks(90d)×5 + views×1 ──
+    // ── Shared select for scored sorts ───────────────────────
+    const scoredSelect = {
+      id: true, slug: true, title: true, subtitle: true,
+      coverUrl: true, mood: true, budget: true, location: true,
+      tags: true, createdAt: true, isPublished: true, viewCount: true,
+      approvalStatus: true, rejectionReason: true,
+      author: { select: { id: true, username: true, displayName: true, firstName: true, avatarUrl: true } },
+      _count: { select: { reviews: true, bookmarks: true, likes: true } },
+      reviews: { select: { rating: true } },
+      timeline: { select: { province: true, district: true }, take: 1, orderBy: { order: "asc" as const } },
+    };
+
+    const computeScore = (t: any) =>
+      (t._count.likes     ?? 0) * 3 +
+      (t._count.bookmarks ?? 0) * 5 +
+      (t.viewCount        ?? 0) * 1;
+
+    const flattenTrip = ({ timeline, reviews, ...t }: any) => {
+      const ratings = (reviews ?? []).map((r: any) => r.rating).filter(Boolean);
+      const avgRating = ratings.length ? ratings.reduce((s: number, r: number) => s + r, 0) / ratings.length : null;
+      return { ...t, avgRating, province: timeline?.[0]?.province ?? null, district: timeline?.[0]?.district ?? null, hasPendingEdit: false };
+    };
+
+    // ── Trending: เฉพาะทริปอายุ ≤ 90 วัน เรียงด้วย composite score ──
     if (sort === "trending") {
       const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
-
-      // Fetch like and bookmark counts in last 90 days in parallel
-      const [recentLikes, recentBookmarks] = await Promise.all([
-        prisma.tripLike.groupBy({
-          by: ["tripId"],
-          where: { createdAt: { gte: since }, trip: where },
-          _count: { tripId: true },
-        }),
-        prisma.bookmark.groupBy({
-          by: ["tripId"],
-          where: { createdAt: { gte: since }, tripId: { not: null }, trip: where },
-          _count: { tripId: true },
-        }),
-      ]);
-
-      // Union of all trip IDs with any recent activity
-      const activeIds = [...new Set([
-        ...recentLikes.map((r: any) => r.tripId as string),
-        ...recentBookmarks.filter((r: any) => r.tripId).map((r: any) => r.tripId as string),
-      ])];
-
-      if (activeIds.length === 0) {
-        return NextResponse.json({ trips: [], total: 0, page, totalPages: 0 });
-      }
-
-      const trendingTrips = await prisma.trip.findMany({
-        where: { id: { in: activeIds }, ...where },
-        select: {
-          id: true, slug: true, title: true, subtitle: true,
-          coverUrl: true, mood: true, budget: true, location: true,
-          tags: true, createdAt: true, isPublished: true, viewCount: true,
-          approvalStatus: true, rejectionReason: true,
-          author: { select: { id: true, username: true, displayName: true, firstName: true, avatarUrl: true } },
-          _count: { select: { reviews: true, bookmarks: true, likes: true } },
-          reviews: { select: { rating: true } },
-          timeline: { select: { province: true, district: true }, take: 1, orderBy: { order: "asc" } },
-        },
+      const trips = await prisma.trip.findMany({
+        where: { ...where, createdAt: { gte: since } },
+        select: scoredSelect,
       });
-
-      const likesMap    = new Map(recentLikes.map((r: any)     => [r.tripId as string, r._count.tripId as number]));
-      const bookmarkMap = new Map(recentBookmarks.filter((r: any) => r.tripId).map((r: any) => [r.tripId as string, r._count.tripId as number]));
-
-      const scored = trendingTrips
-        .map(({ timeline, reviews, ...t }: any) => {
-          const ratings = (reviews ?? []).map((r: any) => r.rating).filter(Boolean);
-          const avgRating = ratings.length ? ratings.reduce((s: number, r: number) => s + r, 0) / ratings.length : null;
-          const trendScore =
-            (likesMap.get(t.id)    ?? 0) * 3 +
-            (bookmarkMap.get(t.id) ?? 0) * 5 +
-            (t.viewCount           ?? 0) * 1;
-          return { ...t, avgRating, province: timeline?.[0]?.province ?? null, district: timeline?.[0]?.district ?? null, hasPendingEdit: false, trendScore };
-        })
-        .sort((a: any, b: any) => b.trendScore - a.trendScore);
-
+      const scored = trips
+        .map((t: any) => ({ ...t, _score: computeScore(t) }))
+        .sort((a: any, b: any) => b._score - a._score);
       const total = scored.length;
-      const page_trips = scored.slice(skip, skip + limit).map(({ trendScore, ...t }: any) => t);
+      const page_trips = scored.slice(skip, skip + limit).map(({ _score, ...t }: any) => flattenTrip(t));
       return NextResponse.json({ trips: page_trips, total, page, totalPages: Math.ceil(total / limit) });
     }
 
-    const orderBy: any = sort === "popular"
-      ? { bookmarks: { _count: "desc" } }
-      : { createdAt: "desc" };
+    // ── Popular: ทุกทริปไม่จำกัดอายุ เรียงด้วย composite score all-time ──
+    if (sort === "popular") {
+      const trips = await prisma.trip.findMany({
+        where,
+        select: scoredSelect,
+      });
+      const scored = trips
+        .map((t: any) => ({ ...t, _score: computeScore(t) }))
+        .sort((a: any, b: any) => b._score - a._score);
+      const total = scored.length;
+      const page_trips = scored.slice(skip, skip + limit).map(({ _score, ...t }: any) => flattenTrip(t));
+      return NextResponse.json({ trips: page_trips, total, page, totalPages: Math.ceil(total / limit) });
+    }
+
+    const orderBy: any = { createdAt: "desc" };
 
     const [trips, total] = await Promise.all([
       prisma.trip.findMany({
