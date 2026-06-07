@@ -39,9 +39,6 @@ const DAYS = [
   { th: "อาทิตย์",  en: "Sun" },
 ];
 
-const HOURS   = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
-const MINUTES = ["00", "15", "30", "45"];
-
 const MAX_PHOTOS = 20;
 
 // uploadFile/uploadFiles imported from uploadHelper (includes resize)
@@ -50,31 +47,16 @@ const MAX_PHOTOS = 20;
 function TimePicker({
   label, value, onChange,
 }: { label: string; value: string; onChange: (v: string) => void }) {
-  const [h, m] = value ? value.split(":") : ["", ""];
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
       <label style={{ fontSize: 13, fontWeight: 700, color: "#334155" }}>{label}</label>
-      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-        <select
-          className="ui-input"
-          value={h}
-          onChange={e => onChange(`${e.target.value}:${m || "00"}`)}
-          style={{ flex: 1, minWidth: 0 }}
-        >
-          <option value="">ชั่วโมง</option>
-          {HOURS.map(hh => <option key={hh} value={hh}>{hh}</option>)}
-        </select>
-        <span style={{ color: "#94a3b8", fontWeight: 800, fontSize: 18 }}>:</span>
-        <select
-          className="ui-input"
-          value={m}
-          onChange={e => onChange(`${h || "00"}:${e.target.value}`)}
-          style={{ flex: 1, minWidth: 0 }}
-        >
-          <option value="">นาที</option>
-          {MINUTES.map(mm => <option key={mm} value={mm}>{mm}</option>)}
-        </select>
-      </div>
+      <input
+        type="time"
+        className="ui-input"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        style={{ width: "100%" }}
+      />
     </div>
   );
 }

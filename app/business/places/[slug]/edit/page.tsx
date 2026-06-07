@@ -41,10 +41,6 @@ const DAYS = [
   { th: "เสาร์",    en: "Sat" },
   { th: "อาทิตย์",  en: "Sun" },
 ];
-const HOURS   = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
-const MINUTES = ["00", "15", "30", "45"];
-
-
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
 import PageLoading from "@/components/ui/PageLoading";
 
@@ -479,40 +475,14 @@ export default function EditPlacePage({ params }: Props) {
                 <div style={{ display:"grid", gridTemplateColumns:"1fr auto 1fr", gap:8, alignItems:"end" }}>
                   <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                     <label style={{ fontSize:13, fontWeight:700, color:"#334155" }}>เปิด · Opens</label>
-                    <div style={{ display:"flex", gap:6, alignItems:"center" }}>
-                      <select className="form-control" value={openTime.split(":")[0] || ""}
-                        onChange={e => setOpenTime(`${e.target.value}:${openTime.split(":")[1] || "00"}`)}
-                        style={{ flex:1 }}>
-                        <option value="">ชั่วโมง</option>
-                        {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
-                      </select>
-                      <span style={{ color:"#94a3b8", fontWeight:800, fontSize:18 }}>:</span>
-                      <select className="form-control" value={openTime.split(":")[1] || ""}
-                        onChange={e => setOpenTime(`${openTime.split(":")[0] || "00"}:${e.target.value}`)}
-                        style={{ flex:1 }}>
-                        <option value="">นาที</option>
-                        {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
-                      </select>
-                    </div>
+                    <input type="time" className="form-control" value={openTime}
+                      onChange={e => setOpenTime(e.target.value)} style={{ width:"100%" }} />
                   </div>
                   <div style={{ paddingBottom:10, color:"#94a3b8", fontWeight:800, fontSize:20, textAlign:"center" }}>—</div>
                   <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                     <label style={{ fontSize:13, fontWeight:700, color:"#334155" }}>ปิด · Closes</label>
-                    <div style={{ display:"flex", gap:6, alignItems:"center" }}>
-                      <select className="form-control" value={closeTime.split(":")[0] || ""}
-                        onChange={e => setCloseTime(`${e.target.value}:${closeTime.split(":")[1] || "00"}`)}
-                        style={{ flex:1 }}>
-                        <option value="">ชั่วโมง</option>
-                        {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
-                      </select>
-                      <span style={{ color:"#94a3b8", fontWeight:800, fontSize:18 }}>:</span>
-                      <select className="form-control" value={closeTime.split(":")[1] || ""}
-                        onChange={e => setCloseTime(`${closeTime.split(":")[0] || "00"}:${e.target.value}`)}
-                        style={{ flex:1 }}>
-                        <option value="">นาที</option>
-                        {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
-                      </select>
-                    </div>
+                    <input type="time" className="form-control" value={closeTime}
+                      onChange={e => setCloseTime(e.target.value)} style={{ width:"100%" }} />
                   </div>
                 </div>
               )}
