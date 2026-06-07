@@ -30,13 +30,13 @@ const CATEGORIES: { th: PlaceCategory; en: string; icon: string }[] = [
 ];
 
 const DAYS = [
-  { th: "จันทร์",    en: "Mon" },
-  { th: "อังคาร",   en: "Tue" },
-  { th: "พุธ",      en: "Wed" },
-  { th: "พฤหัสบดี", en: "Thu" },
-  { th: "ศุกร์",    en: "Fri" },
-  { th: "เสาร์",    en: "Sat" },
-  { th: "อาทิตย์",  en: "Sun" },
+  { th: "จันทร์",    en: "Mon", s: "จ"  },
+  { th: "อังคาร",   en: "Tue", s: "อ"  },
+  { th: "พุธ",      en: "Wed", s: "พ"  },
+  { th: "พฤหัสบดี", en: "Thu", s: "พฤ" },
+  { th: "ศุกร์",    en: "Fri", s: "ศ"  },
+  { th: "เสาร์",    en: "Sat", s: "ส"  },
+  { th: "อาทิตย์",  en: "Sun", s: "อา" },
 ];
 
 const MAX_PHOTOS = 20;
@@ -469,7 +469,7 @@ export default function CreatePlacePage() {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
+              <div className="days-grid">
                 {DAYS.map(day => {
                   const active = closedDaysList.includes(day.th);
                   return (
@@ -477,20 +477,11 @@ export default function CreatePlacePage() {
                       key={day.th}
                       type="button"
                       onClick={() => toggleDay(day.th)}
-                      style={{
-                        padding: "10px 4px",
-                        borderRadius: 10,
-                        border: `2px solid ${active ? "#ef4444" : "#e2e8f0"}`,
-                        background: active ? "#fef2f2" : "#fff",
-                        cursor: "pointer",
-                        transition: "all 0.15s",
-                        display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
-                      }}
+                      className={`day-btn${active ? " day-active" : ""}`}
                     >
-                      <span style={{ fontSize: 11, fontWeight: 800,
-                        color: active ? "#ef4444" : "#64748b" }}>{day.en}</span>
-                      <span style={{ fontSize: 11, color: active ? "#ef4444" : "#94a3b8" }}>{day.th}</span>
-                      {active && <span style={{ fontSize: 14 }}>✕</span>}
+                      <span className="day-en">{day.en}</span>
+                      <span className="day-short">{day.s}</span>
+                      {active && <span className="day-x">✕</span>}
                     </button>
                   );
                 })}
@@ -679,10 +670,18 @@ export default function CreatePlacePage() {
         .ui-field { display: flex; flex-direction: column; gap: 6px; }
         .ui-hint { color: #94a3b8; font-weight: 400; font-size: 12px; }
 
-        .cat-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-        .cat-btn { padding: 8px 14px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; cursor: pointer; font-size: 13px; font-weight: 600; color: #475569; transition: 0.15s; }
+        .cat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 8px; }
+        .cat-btn { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; cursor: pointer; font-size: 13px; font-weight: 600; color: #475569; transition: 0.15s; width: 100%; text-align: left; }
         .cat-btn:hover { border-color: #93c5fd; background: #eff6ff; }
         .cat-active { border-color: #3b82f6 !important; background: #eff6ff !important; color: #1d4ed8 !important; }
+
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        .day-btn { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 2px; border-radius: 10px; border: 2px solid #e2e8f0; background: #fff; cursor: pointer; transition: all 0.15s; min-width: 0; }
+        .day-btn.day-active { border-color: #ef4444; background: #fef2f2; }
+        .day-en { font-size: 11px; font-weight: 800; color: #64748b; }
+        .day-short { font-size: 11px; color: #94a3b8; }
+        .day-x { font-size: 12px; color: #ef4444; line-height: 1; }
+        .day-btn.day-active .day-en, .day-btn.day-active .day-short { color: #ef4444; }
 
         .count-pill { padding: 4px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; }
         .count-pill.ok { background: #dcfce7; color: #16a34a; }
@@ -720,6 +719,7 @@ export default function CreatePlacePage() {
         @media (max-width: 768px) {
           .cp-cover-upload { height: 220px; }
           .ui-form-grid.two-col { grid-template-columns: 1fr; }
+          .cat-grid { grid-template-columns: repeat(2, 1fr); }
         }
       `}</style>
     </div>

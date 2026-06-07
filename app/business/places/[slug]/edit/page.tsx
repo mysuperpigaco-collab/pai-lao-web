@@ -33,13 +33,13 @@ const ENUM_TO_THAI: Record<string, PlaceCategory> = {
   MARKET: "ตลาด / ช้อปปิ้ง", ADVENTURE: "กีฬา / ผจญภัย", MUSEUM: "พิพิธภัณฑ์ / ประวัติศาสตร์",
 };
 const DAYS = [
-  { th: "จันทร์",    en: "Mon" },
-  { th: "อังคาร",   en: "Tue" },
-  { th: "พุธ",      en: "Wed" },
-  { th: "พฤหัสบดี", en: "Thu" },
-  { th: "ศุกร์",    en: "Fri" },
-  { th: "เสาร์",    en: "Sat" },
-  { th: "อาทิตย์",  en: "Sun" },
+  { th: "จันทร์",    en: "Mon", s: "จ"  },
+  { th: "อังคาร",   en: "Tue", s: "อ"  },
+  { th: "พุธ",      en: "Wed", s: "พ"  },
+  { th: "พฤหัสบดี", en: "Thu", s: "พฤ" },
+  { th: "ศุกร์",    en: "Fri", s: "ศ"  },
+  { th: "เสาร์",    en: "Sat", s: "ส"  },
+  { th: "อาทิตย์",  en: "Sun", s: "อา" },
 ];
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
 import PageLoading from "@/components/ui/PageLoading";
@@ -506,20 +506,15 @@ export default function EditPlacePage({ params }: Props) {
                   เลือกวันที่ปิดให้บริการ · Select days when closed
                 </div>
               </div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:6 }}>
+              <div className="days-grid">
                 {DAYS.map(day => {
                   const active = closedDaysList.includes(day.th);
                   return (
-                    <button key={day.th} type="button" onClick={() => toggleDay(day.th)} style={{
-                      padding:"10px 4px", borderRadius:10,
-                      border: `2px solid ${active ? "#ef4444" : "#e2e8f0"}`,
-                      background: active ? "#fef2f2" : "#fff",
-                      cursor:"pointer", transition:"all 0.15s",
-                      display:"flex", flexDirection:"column", alignItems:"center", gap:3,
-                    }}>
-                      <span style={{ fontSize:11, fontWeight:800, color: active ? "#ef4444" : "#64748b" }}>{day.en}</span>
-                      <span style={{ fontSize:11, color: active ? "#ef4444" : "#94a3b8" }}>{day.th}</span>
-                      {active && <span style={{ fontSize:14 }}>✕</span>}
+                    <button key={day.th} type="button" onClick={() => toggleDay(day.th)}
+                      className={`day-btn${active ? " day-active" : ""}`}>
+                      <span className="day-en">{day.en}</span>
+                      <span className="day-short">{day.s}</span>
+                      {active && <span className="day-x">✕</span>}
                     </button>
                   );
                 })}

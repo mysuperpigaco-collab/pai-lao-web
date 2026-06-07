@@ -410,17 +410,17 @@
 /* CATEGORY BUTTONS */
 
 .cat-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   gap: 8px;
   margin-top: 10px;
 }
 
 .cat-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 6px;
-  padding: 9px 16px;
+  padding: 9px 12px;
   border-radius: 12px;
   border: 1.5px solid #e2e8f0;
   background: #f8fafc;
@@ -430,6 +430,8 @@
   color: #475569;
   transition: all 0.15s;
   font-family: inherit;
+  width: 100%;
+  text-align: left;
 }
 
 .cat-btn:hover {
@@ -444,6 +446,56 @@
   color: #065f46 !important;
   font-weight: 800 !important;
   box-shadow: 0 2px 10px rgba(16,185,129,0.18);
+}
+
+/* DAYS GRID */
+
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.day-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 2px;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 0;
+  font-family: inherit;
+}
+
+.day-btn.day-active {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.day-en {
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+}
+
+.day-short {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.day-x {
+  font-size: 12px;
+  color: #ef4444;
+  line-height: 1;
+}
+
+.day-btn.day-active .day-en,
+.day-btn.day-active .day-short {
+  color: #ef4444;
 }
 
 /* ACTION */
@@ -546,6 +598,8 @@
 }
 
 @media (max-width: 640px) {
+
+  .cat-grid { grid-template-columns: repeat(2, 1fr); }
 
   .edit-page {
     padding: 24px 16px 70px;
