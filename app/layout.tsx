@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/context/AuthContext";
+import RippleProvider from "@/components/ui/RippleProvider";
 import Script from "next/script";
 
 const GA_ID = "G-42HZ2VCDXZ";
@@ -64,6 +65,7 @@ export default function RootLayout({
           gtag('config', '${GA_ID}');
         `}</Script>
         <AuthProvider>
+          <RippleProvider />
           <Navbar />
           <main style={{overflowX:"clip",maxWidth:"100%"}}>{children}</main>
           <Footer />

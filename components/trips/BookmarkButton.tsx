@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { tryFireConfetti } from "@/lib/confetti";
 
 type Props = {
   tripId: string;
@@ -40,6 +41,7 @@ export default function BookmarkButton({ tripId, initialSaved = false }: Props) 
       } else {
         const data = await res.json();
         setSaved(data.bookmarked);
+        if (data.bookmarked) tryFireConfetti(`pl_bm_${tripId}`, ["#3b82f6","#6366f1","#a78bfa","#4facfe"]);
       }
     } catch {
       setSaved(!optimistic);

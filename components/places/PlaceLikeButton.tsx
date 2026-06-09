@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { tryFireConfetti } from "@/lib/confetti";
 
 type Props = {
   placeId: string;
@@ -58,6 +59,7 @@ export default function PlaceLikeButton({ placeId, initialLiked = false, initial
         const d = await res.json();
         setLiked(d.liked);
         setCount(d.count);
+        if (d.liked) tryFireConfetti(`pl_liked_place_${placeId}`, ["#ef4444","#f97316","#f59e0b","#ec4899"]);
       } else {
         setLiked(!next);
         setCount(c => c + (next ? -1 : 1));

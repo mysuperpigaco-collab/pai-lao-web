@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { tryFireConfetti } from "@/lib/confetti";
 
 type Props = {
   tripId: string;
@@ -59,6 +60,7 @@ export default function LikeButton({ tripId, initialLiked = false, initialCount 
         const data = await res.json();
         setLiked(data.liked);
         setCount(data.count);
+        if (data.liked) tryFireConfetti(`pl_liked_${tripId}`, ["#ef4444","#f97316","#f59e0b","#ec4899"]);
       } else {
         setLiked(!optimistic);
         setCount(c => c + (optimistic ? -1 : 1));

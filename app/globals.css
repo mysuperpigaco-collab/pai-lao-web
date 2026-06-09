@@ -129,6 +129,10 @@ body {
 .logo-text p  { font-size: 11px; color: #999; letter-spacing: 2px; }
 
 /* ── Keyframes ── */
+@keyframes pl-ripple {
+  to { transform: scale(1); opacity: 0; }
+}
+
 @keyframes fadeSlide {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0);    }

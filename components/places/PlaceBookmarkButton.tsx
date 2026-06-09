@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { tryFireConfetti } from "@/lib/confetti";
 
 type Props = {
   placeId: string;
@@ -36,6 +37,7 @@ export default function PlaceBookmarkButton({ placeId, initialSaved = false }: P
       if (res.ok) {
         const d = await res.json();
         setSaved(d.bookmarked);
+        if (d.bookmarked) tryFireConfetti(`pl_bm_place_${placeId}`, ["#3b82f6","#6366f1","#a78bfa","#4facfe"]);
       } else {
         setSaved(!next);
       }
