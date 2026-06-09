@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef, Suspense } from "react";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import ProvinceSelect from "@/components/ui/ProvinceSelect";
@@ -120,6 +121,7 @@ function PlacesInner() {
     setPage(next);
     fetch_(next, true);
   };
+  const sentinelRef = useInfiniteScroll(loadMore, !loadingMore && !loading && page < totalPages);
 
   /* reset when cat/province/sort changes */
   const changeFilter = (setter: (v: string) => void, val: string) => {
@@ -251,12 +253,18 @@ function PlacesInner() {
           </div>
         )}
 
-        {/* Load more */}
-        {!loading && places.length > 0 && page < totalPages && (
+        {/* Infinite scroll sentinel */}
+        <div ref={sentinelRef} style={{ height: 1 }} />
+        {loadingMore && (
           <div className="pl-loadmore-wrap">
-            <button className="pl-loadmore-btn" onClick={loadMore} disabled={loadingMore}>
-              {loadingMore ? "⏳ กำลังโหลด..." : `โหลดเพิ่ม · Load more (${places.length} / ${total})`}
-            </button>
+            <div className="pl-loading-dot"><span/><span/><span/></div>
+          </div>
+        )}
+        {!loading && places.length > 0 && page >= totalPages && (
+          <div className="pl-loadmore-wrap">
+            <p style={{ color: "#94a3b8", fontSize: 13, fontWeight: 600 }}>
+              ดูครบทั้งหมดแล้ว · {total} สถานที่
+            </p>
           </div>
         )}
       </div>
@@ -387,15 +395,16 @@ function PlacesInner() {
         .pl-empty h3 { font-size: 20px; font-weight: 800; color: #1e293b; margin: 0 0 8px; }
         .pl-empty p { font-size: 14px; color: #94a3b8; margin: 0; }
 
-        /* Load more */
-        .pl-loadmore-wrap { display: flex; justify-content: center; margin-top: 40px; }
-        .pl-loadmore-btn {
-          padding: 14px 40px; border-radius: 14px; font-size: 14px; font-weight: 800;
-          background: white; border: 2px solid #e2e8f0; color: #334155;
-          cursor: pointer; font-family: inherit; transition: 0.2s;
+        /* Infinite scroll */
+        .pl-loadmore-wrap { display: flex; justify-content: center; align-items: center; margin-top: 40px; margin-bottom: 20px; }
+        .pl-loading-dot { display: flex; gap: 6px; }
+        .pl-loading-dot span {
+          width: 8px; height: 8px; border-radius: 50%; background: #4facfe;
+          animation: pl-dot-bounce 1.2s ease-in-out infinite;
         }
-        .pl-loadmore-btn:hover:not(:disabled) { background: #f8fafc; border-color: #4facfe; color: #2563eb; }
-        .pl-loadmore-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .pl-loading-dot span:nth-child(2) { animation-delay: 0.2s; }
+        .pl-loading-dot span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes pl-dot-bounce { 0%,80%,100% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
 
         /* Responsive */
         @media (max-width: 1200px) { .pl-grid, .pl-skeleton-grid { grid-template-columns: repeat(3, 1fr); } }

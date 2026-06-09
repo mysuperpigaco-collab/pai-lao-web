@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { PROVINCES, getDistricts } from "@/data/thailand";
@@ -100,6 +101,7 @@ function TripsInner() {
   };
 
   const loadMore = () => { const next = page + 1; setPage(next); fetch_(next, true); };
+  const sentinelRef = useInfiniteScroll(loadMore, !loadingMore && !loading && page < totalPages);
 
   const changeFilter = (setter: (v: string) => void, val: string) => {
     setter(val); setPage(1);
@@ -231,12 +233,18 @@ function TripsInner() {
           </div>
         )}
 
-        {/* Load more */}
-        {!loading && trips.length > 0 && page < totalPages && (
+        {/* Infinite scroll sentinel */}
+        <div ref={sentinelRef} style={{ height: 1 }} />
+        {loadingMore && (
           <div className="tp-loadmore-wrap">
-            <button className="tp-loadmore-btn" onClick={loadMore} disabled={loadingMore}>
-              {loadingMore ? "⏳ กำลังโหลด..." : `โหลดเพิ่ม · Load more (${trips.length} / ${total})`}
-            </button>
+            <div className="tp-loading-dot"><span/><span/><span/></div>
+          </div>
+        )}
+        {!loading && trips.length > 0 && page >= totalPages && (
+          <div className="tp-loadmore-wrap">
+            <p style={{ color: "#94a3b8", fontSize: 13, fontWeight: 600 }}>
+              ดูครบทั้งหมดแล้ว · {total} ทริป
+            </p>
           </div>
         )}
       </div>
@@ -361,14 +369,15 @@ function TripsInner() {
         .tp-empty h3 { font-size: 20px; font-weight: 800; color: #1e293b; margin: 0 0 8px; }
         .tp-empty p  { font-size: 14px; color: #94a3b8; margin: 0; }
 
-        .tp-loadmore-wrap { display: flex; justify-content: center; margin-top: 40px; }
-        .tp-loadmore-btn {
-          padding: 14px 40px; border-radius: 14px; font-size: 14px; font-weight: 800;
-          background: white; border: 2px solid #e2e8f0; color: #334155;
-          cursor: pointer; font-family: inherit; transition: 0.2s;
+        .tp-loadmore-wrap { display: flex; justify-content: center; align-items: center; margin-top: 40px; margin-bottom: 20px; }
+        .tp-loading-dot { display: flex; gap: 6px; }
+        .tp-loading-dot span {
+          width: 8px; height: 8px; border-radius: 50%; background: #a78bfa;
+          animation: tp-dot-bounce 1.2s ease-in-out infinite;
         }
-        .tp-loadmore-btn:hover:not(:disabled) { background: #f8fafc; border-color: #a78bfa; color: #7c3aed; }
-        .tp-loadmore-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .tp-loading-dot span:nth-child(2) { animation-delay: 0.2s; }
+        .tp-loading-dot span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes tp-dot-bounce { 0%,80%,100% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
 
         @media (max-width: 1200px) { .tp-grid, .tp-skeleton-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 900px)  { .tp-grid, .tp-skeleton-grid { grid-template-columns: repeat(2, 1fr); } }
