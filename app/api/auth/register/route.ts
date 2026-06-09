@@ -6,10 +6,11 @@ import { checkRateLimit } from "@/lib/rateLimit";
 import { Resend } from "resend";
 import crypto from "crypto";
 
-const resend  = new Resend(process.env.RESEND_API_KEY);
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://pai-lao-web.vercel.app";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
+  const resend  = new Resend(process.env.RESEND_API_KEY);
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://pai-lao-web.vercel.app";
   const ip        = getClientIp(request);
   const userAgent = request.headers.get("user-agent") ?? null;
 

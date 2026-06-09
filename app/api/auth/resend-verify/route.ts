@@ -5,10 +5,11 @@ import crypto from "crypto";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { getClientIp } from "@/lib/activityLogger";
 
-const resend  = new Resend(process.env.RESEND_API_KEY);
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://pai-lao.com";
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+  const resend  = new Resend(process.env.RESEND_API_KEY);
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://pai-lao.com";
   const ip = getClientIp(req);
   const rl = checkRateLimit(`resend-verify:${ip}`, 3, 15 * 60_000);
   if (!rl.allowed) {
