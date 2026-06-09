@@ -74,6 +74,9 @@ export default function TripSlider({ activeTab, onTabChange }: TripSliderProps) 
   const go   = (dir: number) => { setCurrent(p => (p + dir + trips.length) % trips.length); restartTimer(trips.length); };
   const goTo = (i: number)   => { setCurrent(i); restartTimer(trips.length); };
 
+  // must be before any early returns (React hooks rule)
+  const tilt = use3DTilt(6);
+
   // ── Tabs ──────────────────────────────────────────────────
   const TabBar = () => (
     <div style={{
@@ -129,7 +132,6 @@ export default function TripSlider({ activeTab, onTabChange }: TripSliderProps) 
     );
   }
 
-  const tilt = use3DTilt(6);
   const trip = trips[current];
   const authorName    = trip.author?.displayName || trip.author?.firstName || "ไม่ระบุ";
   const authorInitial = authorName.slice(0, 1).toUpperCase();
