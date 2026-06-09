@@ -410,7 +410,7 @@ function useSmallCols() {
 export default function HomePage() {
   const { user } = useAuth();
   const [spotlightTab, setSpotlightTab] = useState<"popular" | "trending">("popular");
-  const archiveGridRef  = useFadeIn();
+  const archiveGridRef  = useFadeIn(spotlightTab);
   const spotlightRef    = useSingleFadeIn();
   const exploreRef      = useSingleFadeIn();
   const [showArchive, setShowArchive] = useState(false);
@@ -555,15 +555,15 @@ export default function HomePage() {
                 ยังไม่มีเรื่องเล่า
               </div>
             ) : (
-              <>
-                <p style={{ fontSize: 14, fontWeight: 800, color: "#1e293b", margin: "0 0 18px", display: "flex", alignItems: "center", gap: 8 }}>
+              <div ref={archiveGridRef}>
+                <p className="pl-fade" style={{ fontSize: 14, fontWeight: 800, color: "#1e293b", margin: "0 0 18px", display: "flex", alignItems: "center", gap: 8 }}>
                   <span>{spotlightTab === "trending" ? "🔥" : "🏆"}</span>
                   {spotlightTab === "trending" ? "10 มาแรงล่าสุด · Trending in 90 days" : "10 เรื่องเล่ายอดนิยม · Most Bookmarked Stories"}
                 </p>
 
                 {/* Hero — rank 1 */}
                 {archiveTrips[0] && (
-                  <div style={{ marginBottom: 16, animation: "fadeSlide 0.35s ease" }}>
+                  <div className="pl-fade" style={{ marginBottom: 16 }}>
                     <HeroCard trip={archiveTrips[0]} />
                   </div>
                 )}
@@ -572,7 +572,7 @@ export default function HomePage() {
                 {archiveTrips.length > 1 && (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14, marginBottom: 16 }}>
                     {archiveTrips.slice(1, 3).map((trip, i) => (
-                      <div key={trip.slug} style={{ animation: `fadeSlide 0.35s ease ${i * 60}ms both` }}>
+                      <div key={trip.slug} className="pl-fade">
                         <MedCard trip={trip} rank={i + 1} />
                       </div>
                     ))}
@@ -587,7 +587,7 @@ export default function HomePage() {
                   return (
                     <div style={{ display: "grid", gridTemplateColumns: `repeat(${smallCols},1fr)`, gap: 12 }}>
                       {smallTrips.map((trip, i) => (
-                        <div key={trip.slug} style={{ animation: `fadeSlide 0.35s ease ${(i + 2) * 50}ms both` }}>
+                        <div key={trip.slug} className="pl-fade">
                           <SmallCard trip={trip} rank={i + 3} />
                         </div>
                       ))}
@@ -597,7 +597,7 @@ export default function HomePage() {
                     </div>
                   );
                 })()}
-              </>
+              </div>
             )}
           </div>
         )}

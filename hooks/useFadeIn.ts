@@ -13,12 +13,16 @@ import { useEffect, useRef } from "react";
  *     <div className="pl-fade">card 2</div>
  *   </div>
  */
-export function useFadeIn(threshold = 0.12) {
+export function useFadeIn(trigger?: unknown, threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const container = ref.current;
     if (!container) return;
+
+    // Reset previous visibility so stagger replays on trigger change
+    container.querySelectorAll<HTMLElement>(".pl-fade.pl-visible")
+      .forEach(el => el.classList.remove("pl-visible"));
 
     const targets = container.querySelectorAll<HTMLElement>(".pl-fade");
     if (targets.length === 0) return;
@@ -28,7 +32,7 @@ export function useFadeIn(threshold = 0.12) {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("pl-visible");
-            observer.unobserve(entry.target); // animate ครั้งเดียวพอ
+            observer.unobserve(entry.target);
           }
         });
       },
@@ -37,7 +41,8 @@ export function useFadeIn(threshold = 0.12) {
 
     targets.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, [threshold]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trigger, threshold]);
 
   return ref;
 }

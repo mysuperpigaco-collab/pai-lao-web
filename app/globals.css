@@ -134,6 +134,22 @@ body {
   to   { opacity: 1; transform: translateY(0);    }
 }
 
+@keyframes sl-enter {
+  from { opacity: 0; transform: scale(1.06); }
+  to   { opacity: 1; transform: scale(1);    }
+}
+
+@keyframes pl-float {
+  0%, 100% { transform: translateY(0);   }
+  50%       { transform: translateY(-7px); }
+}
+
+@keyframes pl-badge-pop {
+  0%   { opacity: 0; transform: scale(0.7) translateY(6px); }
+  70%  { transform: scale(1.08) translateY(-1px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 /* ── Animation Utilities ── */
 
 /* Scroll fade-in */
@@ -149,12 +165,24 @@ body {
 }
 
 /* Stagger delays สำหรับ grid items */
-.pl-fade:nth-child(1) { transition-delay: 0ms;   }
-.pl-fade:nth-child(2) { transition-delay: 60ms;  }
-.pl-fade:nth-child(3) { transition-delay: 120ms; }
-.pl-fade:nth-child(4) { transition-delay: 180ms; }
-.pl-fade:nth-child(5) { transition-delay: 240ms; }
-.pl-fade:nth-child(6) { transition-delay: 300ms; }
+.pl-fade:nth-child(1)  { transition-delay: 0ms;   }
+.pl-fade:nth-child(2)  { transition-delay: 70ms;  }
+.pl-fade:nth-child(3)  { transition-delay: 140ms; }
+.pl-fade:nth-child(4)  { transition-delay: 210ms; }
+.pl-fade:nth-child(5)  { transition-delay: 280ms; }
+.pl-fade:nth-child(6)  { transition-delay: 350ms; }
+.pl-fade:nth-child(7)  { transition-delay: 420ms; }
+.pl-fade:nth-child(8)  { transition-delay: 490ms; }
+.pl-fade:nth-child(9)  { transition-delay: 560ms; }
+.pl-fade:nth-child(10) { transition-delay: 630ms; }
+
+/* Floating utility */
+.pl-float { animation: pl-float 3.5s ease-in-out infinite; }
+.pl-float-slow { animation: pl-float 5s ease-in-out infinite; }
+
+/* 3D tilt container */
+.pl-tilt { transform-style: preserve-3d; will-change: transform; }
+.pl-tilt-inner { transform: translateZ(20px); }
 
 /* Hover card lift */
 .pl-card-hover {

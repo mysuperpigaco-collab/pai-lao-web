@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, CSSProperties } from "react";
+import { useFadeIn } from "@/hooks/useFadeIn";
 import Link from "next/link";
 
 interface Trip {
@@ -224,6 +225,7 @@ export default function AutoGridSection() {
   const [places,  setPlaces ] = useState<Place[]>([]);
   const [loading, setLoading] = useState(true);
   const cols = useColumns(5, 4);
+  const gridRef = useFadeIn(activeTab);
 
   const tab = TABS.find(t => t.id === activeTab)!;
 
@@ -259,15 +261,23 @@ export default function AutoGridSection() {
         <SkeletonGrid cols={tab.type === "trip" ? cols.trip : cols.place} />
       ) : tab.type === "trip" ? (
         trips.length === 0 ? <div style={S.empty}>ยังไม่มีเรื่องเล่า</div> : (
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols.trip},1fr)`, gap: 16 }}>
-            {trips.map(t => <TripCard key={t.slug} trip={t} />)}
+          <div ref={gridRef} style={{ display: "grid", gridTemplateColumns: `repeat(${cols.trip},1fr)`, gap: 16 }}>
+            {trips.map(t => (
+              <div key={t.slug} className="pl-fade">
+                <TripCard trip={t} />
+              </div>
+            ))}
           </div>
         )
       ) : (
         places.length === 0 ? <div style={S.empty}>ยังไม่มีสถานที่</div> : (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols.place},1fr)`, gap: 16 }}>
-              {places.map(p => <PlaceCard key={p.slug} place={p} />)}
+            <div ref={gridRef} style={{ display: "grid", gridTemplateColumns: `repeat(${cols.place},1fr)`, gap: 16 }}>
+              {places.map(p => (
+                <div key={p.slug} className="pl-fade">
+                  <PlaceCard place={p} />
+                </div>
+              ))}
             </div>
             <div style={{ textAlign: "center", marginTop: 28 }}>
               <Link href={`/place?category=${tab.param}&sort=popular`} style={S.seeAll}>

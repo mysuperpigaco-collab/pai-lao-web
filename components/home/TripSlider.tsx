@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { use3DTilt } from "@/hooks/use3DTilt";
 
 interface Trip {
   id: string;
@@ -128,6 +129,7 @@ export default function TripSlider({ activeTab, onTabChange }: TripSliderProps) 
     );
   }
 
+  const tilt = use3DTilt(6);
   const trip = trips[current];
   const authorName    = trip.author?.displayName || trip.author?.firstName || "ไม่ระบุ";
   const authorInitial = authorName.slice(0, 1).toUpperCase();
@@ -137,23 +139,29 @@ export default function TripSlider({ activeTab, onTabChange }: TripSliderProps) 
       <TabBar />
 
       {/* ── Main Card ── */}
-      <div style={{ position: "relative" }}>
-        <Link href={`/trips/${trip.slug}`} style={{ display: "block", textDecoration: "none", borderRadius: 24, overflow: "hidden", position: "relative", height: 320, boxShadow: "0 12px 40px rgba(0,0,0,0.14)" }}>
+      <div
+        ref={tilt.ref}
+        onMouseMove={tilt.onMouseMove}
+        onMouseLeave={tilt.onMouseLeave}
+        className="pl-tilt"
+        style={{ position: "relative" }}
+      >
+        <Link href={`/trips/${trip.slug}`} style={{ display: "block", textDecoration: "none", borderRadius: 24, overflow: "hidden", position: "relative", height: 320, boxShadow: "0 12px 40px rgba(0,0,0,0.18)" }}>
           {trip.coverUrl
-            ? <img src={trip.coverUrl} alt={trip.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s ease" }} />
+            ? <img key={trip.slug} src={trip.coverUrl} alt={trip.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", animation: "sl-enter 0.55s cubic-bezier(0.22,1,0.36,1) both" }} />
             : <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,#10b981,#06b6d4)" }} />
           }
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(5,15,30,0.85) 0%, rgba(5,15,30,0.3) 55%, transparent 100%)" }} />
 
           {/* Top badges */}
-          <div style={{ position: "absolute", top: 18, left: 20, display: "flex", gap: 8 }}>
+          <div key={`badges-${trip.slug}`} style={{ position: "absolute", top: 18, left: 20, display: "flex", gap: 8 }}>
             {activeTab === "trending" && (
-              <span style={{ background: "linear-gradient(135deg,rgba(249,115,22,0.85),rgba(239,68,68,0.85))", backdropFilter: "blur(8px)", color: "#fff", fontSize: 12, fontWeight: 800, padding: "4px 10px", borderRadius: 999 }}>
+              <span style={{ background: "linear-gradient(135deg,rgba(249,115,22,0.85),rgba(239,68,68,0.85))", backdropFilter: "blur(8px)", color: "#fff", fontSize: 12, fontWeight: 800, padding: "4px 10px", borderRadius: 999, animation: "pl-badge-pop 0.4s cubic-bezier(0.22,1,0.36,1) both" }}>
                 🔥 มาแรง
               </span>
             )}
             {activeTab === "popular" && (
-              <span style={{ background: "rgba(14,165,233,0.75)", backdropFilter: "blur(8px)", color: "#fff", fontSize: 12, fontWeight: 800, padding: "4px 10px", borderRadius: 999 }}>
+              <span style={{ background: "rgba(14,165,233,0.75)", backdropFilter: "blur(8px)", color: "#fff", fontSize: 12, fontWeight: 800, padding: "4px 10px", borderRadius: 999, animation: "pl-badge-pop 0.4s cubic-bezier(0.22,1,0.36,1) both" }}>
                 🏆 ยอดนิยม
               </span>
             )}
@@ -175,7 +183,7 @@ export default function TripSlider({ activeTab, onTabChange }: TripSliderProps) 
           </div>
 
           {/* Bottom content */}
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "24px 24px 22px" }}>
+          <div key={`content-${trip.slug}`} style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "24px 24px 22px", animation: "fadeSlide 0.45s cubic-bezier(0.22,1,0.36,1) both" }}>
             <h3 style={{ color: "#fff", fontSize: 22, fontWeight: 900, margin: "0 0 6px", lineHeight: 1.3, textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
               {trip.title}
             </h3>
