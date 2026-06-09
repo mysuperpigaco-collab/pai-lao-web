@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+export const dynamic = "force-dynamic";
+
 const SUPPORT_EMAIL = "supportpailao@gmail.com";
-const RATE_LIMIT_MINUTES = 10; // 1 email ต่อ 10 นาทีต่อ email address
+const RATE_LIMIT_MINUTES = 10;
 
 function esc(str: string): string {
   return str
@@ -16,6 +17,7 @@ function esc(str: string): string {
 }
 
 export async function POST(req: Request) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   try {
     const { name, email, subject, message, category } = await req.json();
 
