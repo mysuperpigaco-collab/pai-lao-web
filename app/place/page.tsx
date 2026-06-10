@@ -519,19 +519,33 @@ function PlaceCard({ place }: { place: Place }) {
     NATURE:"ธรรมชาติ",CAFE:"คาเฟ่",ACCOMMODATION:"ที่พัก",CAMPING:"แคมปิ้ง",
     FOOD:"อาหาร",TEMPLE:"วัด",BEACH:"ชายหาด",MARKET:"ตลาด",ADVENTURE:"ผจญภัย",MUSEUM:"พิพิธภัณฑ์",
   };
-  const catColor: Record<string, string> = {
-    NATURE:"#16a34a",CAFE:"#92400e",ACCOMMODATION:"#1d4ed8",CAMPING:"#15803d",
-    FOOD:"#b91c1c",TEMPLE:"#7c3aed",BEACH:"#0369a1",MARKET:"#b45309",ADVENTURE:"#c2410c",MUSEUM:"#6b21a8",
+  const catBg: Record<string, string> = {
+    NATURE:"rgba(22,163,74,0.8)",CAFE:"rgba(146,64,14,0.8)",ACCOMMODATION:"rgba(29,78,216,0.8)",CAMPING:"rgba(21,128,61,0.8)",
+    FOOD:"rgba(185,28,28,0.8)",TEMPLE:"rgba(124,58,237,0.8)",BEACH:"rgba(3,105,161,0.8)",MARKET:"rgba(180,83,9,0.8)",ADVENTURE:"rgba(194,65,12,0.8)",MUSEUM:"rgba(107,33,168,0.8)",
+  };
+  const catPlaceholder: Record<string, string> = {
+    NATURE:"linear-gradient(135deg,#d1fae5,#a7f3d0)",
+    CAFE:"linear-gradient(135deg,#fef3c7,#fde68a)",
+    ACCOMMODATION:"linear-gradient(135deg,#dbeafe,#bfdbfe)",
+    CAMPING:"linear-gradient(135deg,#dcfce7,#bbf7d0)",
+    FOOD:"linear-gradient(135deg,#fee2e2,#fecaca)",
+    TEMPLE:"linear-gradient(135deg,#ede9fe,#ddd6fe)",
+    BEACH:"linear-gradient(135deg,#e0f2fe,#bae6fd)",
+    MARKET:"linear-gradient(135deg,#fef9c3,#fef08a)",
+    ADVENTURE:"linear-gradient(135deg,#ffedd5,#fed7aa)",
+    MUSEUM:"linear-gradient(135deg,#f5f3ff,#ede9fe)",
   };
 
   const icon  = catIcon[place.category]  ?? "📍";
   const label = catLabel[place.category] ?? place.category;
-  const color = catColor[place.category] ?? "#0f172a";
+  const bg    = catBg[place.category]    ?? "rgba(15,23,42,0.8)";
+  const ph    = catPlaceholder[place.category] ?? "linear-gradient(135deg,#f1f5f9,#e2e8f0)";
   const avg   = place.avgRating;
   const revs  = place._count?.reviews ?? 0;
   const bms   = place._count?.bookmarks ?? 0;
   const likes = place._count?.likes ?? 0;
   const prov  = place.province?.split(" (")[0] ?? place.province ?? "";
+  const subtitle = (place as any).descriptionShort || place.titleEn || null;
   const displayImg = (!place.business && place.communityCover)
     ? place.communityCover
     : ((place.coverUrl && place.coverUrl !== "/images/default-place.svg") ? place.coverUrl : (place.communityCover || null));
@@ -544,11 +558,11 @@ function PlaceCard({ place }: { place: Place }) {
         <div className="plc-img">
           {showImg
             ? <img src={displayImg!} alt={place.title} loading="lazy" onError={() => setImgError(true)} />
-            : <div className="plc-img-ph" style={{ background: `linear-gradient(135deg, ${color}18, ${color}38)` }}>
-                <span>{icon}</span>
-              </div>
+            : <div className="plc-img-ph" style={{ background: ph }}><span>{icon}</span></div>
           }
-          {prov && <span className="plc-province">{prov}</span>}
+          {/* Category chip — bottom left, like TripCard mood chip */}
+          <span className="plc-cat" style={{ background: bg }}>{icon} {label}</span>
+          {/* Rating — top right, only when available */}
           {avg != null && avg > 0 && (
             <span className="plc-rating">
               <span className="plc-star">★</span>
@@ -556,27 +570,28 @@ function PlaceCard({ place }: { place: Place }) {
               {revs > 0 && <span className="plc-rating-count">{revs}</span>}
             </span>
           )}
-          <span className="plc-cat" style={{ background: color }}>{icon} {label}</span>
-          {place.business?.isVerified && <span className="plc-verified">✓ Verified</span>}
         </div>
 
         {/* Body */}
         <div className="plc-body">
           <h3 className="plc-title">{place.title}</h3>
-          {place.titleEn && <p className="plc-en">{place.titleEn}</p>}
+          {subtitle && <p className="plc-subtitle">{subtitle}</p>}
           <p className="plc-loc">📍 {[place.district, prov].filter(Boolean).join(", ")}</p>
 
           {/* Footer */}
           <div className="plc-footer">
-            <div>
-              {place.business
-                ? <span className="plc-owned">🏢 มีเจ้าของ</span>
-                : <span className="plc-community">⭕ ชุมชน</span>
+            <div className="plc-meta">
+              {place.business?.isVerified
+                ? <span className="plc-verified">✓ Verified</span>
+                : place.business
+                  ? <span className="plc-owned">🏢 มีเจ้าของ</span>
+                  : <span className="plc-community">⭕ ชุมชน</span>
               }
             </div>
             <div className="plc-stats">
               {likes > 0 && <span className="plc-stat">❤️ {likes}</span>}
               {bms > 0 && <span className="plc-stat">🔖 {bms}</span>}
+              {revs > 0 && <span className="plc-stat">💬 {revs}</span>}
             </div>
           </div>
         </div>
@@ -591,7 +606,7 @@ function PlaceCard({ place }: { place: Place }) {
         .plc-card:hover {
           transform: translateY(-5px);
           box-shadow: 0 16px 36px rgba(15,23,42,0.11);
-          border-color: #bfdbfe;
+          border-color: #e9d5ff;
         }
 
         .plc-img {
@@ -603,15 +618,17 @@ function PlaceCard({ place }: { place: Place }) {
         .plc-img-ph {
           width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
         }
-        .plc-img-ph span { font-size: 48px; }
+        .plc-img-ph span { font-size: 56px; }
 
-        .plc-province {
-          position: absolute; top: 10px; left: 10px;
-          background: rgba(255,255,255,0.88); color: #0f172a;
-          font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px;
-          backdrop-filter: blur(6px); box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-          max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        /* Category chip — matches TripCard .tc-mood-chip */
+        .plc-cat {
+          position: absolute; bottom: 10px; left: 10px;
+          backdrop-filter: blur(6px);
+          color: white; font-size: 11px; font-weight: 700;
+          padding: 4px 10px; border-radius: 999px;
+          max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
+        /* Rating — matches TripCard .tc-bm style */
         .plc-rating {
           position: absolute; top: 10px; right: 10px;
           background: rgba(15,23,42,0.75); backdrop-filter: blur(8px);
@@ -623,26 +640,17 @@ function PlaceCard({ place }: { place: Place }) {
         .plc-star { color: #fbbf24; }
         .plc-rating-count { font-size: 10px; color: rgba(255,255,255,0.6); font-weight: 500; }
 
-        .plc-cat {
-          position: absolute; bottom: 10px; left: 10px;
-          color: white; font-size: 11px; font-weight: 700;
-          padding: 4px 10px; border-radius: 999px;
-          max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        .plc-verified {
-          position: absolute; bottom: 10px; right: 10px;
-          background: rgba(16,185,129,0.85); color: white;
-          font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 999px;
-        }
+        /* Province chip — removed from image, now only in loc text */
 
         .plc-body { padding: 14px 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
         .plc-title { font-size: 15px; font-weight: 800; color: #1e293b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .plc-en { font-size: 12px; color: #94a3b8; font-style: italic; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .plc-subtitle { font-size: 13px; color: #64748b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .plc-loc { font-size: 13px; font-weight: 600; color: #64748b; margin: 2px 0 0; }
 
         .plc-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 10px; flex-wrap: wrap; gap: 6px; }
-        .plc-owned { font-size: 11px; font-weight: 700; color: #059669; background: #d1fae5; padding: 3px 9px; border-radius: 999px; }
+        .plc-meta { display: flex; align-items: center; }
+        .plc-verified { font-size: 11px; font-weight: 700; color: #059669; background: #d1fae5; padding: 3px 9px; border-radius: 999px; }
+        .plc-owned { font-size: 11px; font-weight: 700; color: #1d4ed8; background: #dbeafe; padding: 3px 9px; border-radius: 999px; }
         .plc-community { font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 3px 9px; border-radius: 999px; }
         .plc-stats { display: flex; align-items: center; gap: 8px; }
         .plc-stat { font-size: 12px; color: #94a3b8; font-weight: 700; }
@@ -650,3 +658,4 @@ function PlaceCard({ place }: { place: Place }) {
     </Link>
   );
 }
+
