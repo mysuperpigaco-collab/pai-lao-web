@@ -438,10 +438,37 @@ export default function ExplorerSection() {
       {/* Results */}
       <div style={{ minHeight: 160 }}>
         {!province ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "52px 20px", gap: 12, textAlign: "center", background: "#f8fafc", borderRadius: 18 }}>
-            <span style={{ fontSize: 44 }}>🗺️</span>
-            <p style={{ fontSize: 15, color: "#475569", fontWeight: 700, margin: 0 }}>เลือกจังหวัดเพื่อดูสถานที่ยอดนิยม</p>
-            <small style={{ fontSize: 12, color: "#94a3b8" }}>Select a province to explore popular places</small>
+          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"52px 20px 44px", gap:14, textAlign:"center", background:"linear-gradient(135deg,#f0fdf4,#eff6ff)", borderRadius:18, position:"relative", overflow:"hidden" }}>
+            {/* Pulsing rings */}
+            <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", pointerEvents:"none" }}>
+              {[1,2,3].map(i => (
+                <div key={i} style={{
+                  position:"absolute", borderRadius:"50%",
+                  border:`1.5px solid rgba(16,185,129,${0.18 - i*0.04})`,
+                  width: i*100, height: i*100,
+                  animation:`es-pulse ${1.6 + i*0.4}s ease-out infinite`,
+                  animationDelay:`${i*0.3}s`,
+                }} />
+              ))}
+            </div>
+            {/* Floating icons */}
+            {["✈️","📸","🏔️","☕","🌊"].map((icon, i) => (
+              <span key={i} style={{
+                position:"absolute", fontSize:18, opacity:0.45,
+                animation:`es-float ${2.5 + i*0.4}s ease-in-out infinite alternate`,
+                animationDelay:`${i*0.5}s`,
+                left:`${10 + i*18}%`, top:`${15 + (i%2)*55}%`,
+              }}>{icon}</span>
+            ))}
+            {/* Main icon */}
+            <div style={{ fontSize:52, animation:"es-bounce 2s ease-in-out infinite", position:"relative", zIndex:1 }}>🗺️</div>
+            <p style={{ fontSize:15, color:"#0f766e", fontWeight:800, margin:0, position:"relative", zIndex:1 }}>เลือกจังหวัดเพื่อดูสถานที่ยอดนิยม</p>
+            <small style={{ fontSize:12, color:"#64748b", position:"relative", zIndex:1 }}>Select a province to explore popular places</small>
+            <style>{`
+              @keyframes es-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+              @keyframes es-pulse { 0%{transform:scale(0.6);opacity:0.8} 100%{transform:scale(1.4);opacity:0} }
+              @keyframes es-float { from{transform:translateY(0) rotate(-5deg)} to{transform:translateY(-12px) rotate(5deg)} }
+            `}</style>
           </div>
         ) : loading ? (
           <>
