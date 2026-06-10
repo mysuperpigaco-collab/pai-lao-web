@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, CSSProperties } from "react";
 import Link from "next/link";
+import { useTiltCard } from "@/hooks/useTiltCard";
 import { PROVINCES, getDistricts } from "@/data/thailand";
 
 interface Place {
@@ -71,7 +72,7 @@ function useColumns() {
 
 // ── Place Card ───────────────────────────────────────────────────────────────
 function PlaceCard({ place, rank }: { place: Place; rank: number }) {
-  const [hovered, setHovered] = useState(false);
+  const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const [imgError, setImgError] = useState(false);
 
   const verified = place.business?.isVerified || place.isVerified;
@@ -83,16 +84,9 @@ function PlaceCard({ place, rank }: { place: Place; rank: number }) {
   const card: CSSProperties = {
     display: "flex",
     flexDirection: "column",
-    borderRadius: 20,
-    overflow: "hidden",
     background: "white",
     textDecoration: "none",
     color: "inherit",
-    boxShadow: hovered
-      ? "0 16px 40px rgba(15,23,42,0.14)"
-      : "0 2px 12px rgba(15,23,42,0.06)",
-    transform: hovered ? "translateY(-6px)" : "translateY(0)",
-    transition: "box-shadow 0.25s, transform 0.25s",
     border: "1px solid #f1f5f9",
     cursor: "pointer",
     minWidth: 0,
@@ -113,8 +107,7 @@ function PlaceCard({ place, rank }: { place: Place; rank: number }) {
     width: "100%",
     height: "100%",
     objectFit: "cover",
-    transition: "transform 0.35s",
-    transform: hovered ? "scale(1.06)" : "scale(1)",
+    display: "block",
   };
 
   const gradient: CSSProperties = {
@@ -223,11 +216,12 @@ function PlaceCard({ place, rank }: { place: Place; rank: number }) {
   };
 
   return (
+    <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
+      style={{ position: "relative", willChange: "transform", borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,0.06)" }}>
+      <div ref={shineRef} style={shineStyle} />
     <Link
       href={`/place/${place.slug}`}
       style={card}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       {/* Image */}
       <div style={imgWrap}>
@@ -311,6 +305,7 @@ function PlaceCard({ place, rank }: { place: Place; rank: number }) {
         )}
       </div>
     </Link>
+    </div>
   );
 }
 

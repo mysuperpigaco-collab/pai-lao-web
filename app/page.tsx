@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, CSSProperties } from "react";
+import { useTiltCard } from "@/hooks/useTiltCard";
 import Link from "next/link";
 import TripSlider from "@/components/home/TripSlider";
 import MissionSection from "@/components/home/MissionSection";
@@ -31,43 +32,30 @@ const RANK_META: Record<number, { emoji: string; color: string; glow: string }> 
 
 // ── Hero Card (rank 1) ───────────────────────────────────────────────────────
 function HeroCard({ trip }: { trip: Trip }) {
-  const [hovered, setHovered] = useState(false);
+  const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const bm = trip._count?.bookmarks ?? 0;
   const likes = trip._count?.likes ?? 0;
   const reviews = trip._count?.reviews ?? 0;
 
   return (
-    <Link
-      href={`/trips/${trip.slug}`}
+    <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
       style={{
-        display: "block",
-        position: "relative",
-        borderRadius: 24,
-        overflow: "hidden",
-        textDecoration: "none",
-        color: "inherit",
-        height: 320,
-        boxShadow: hovered
-          ? "0 20px 50px rgba(15,23,42,0.22), " + RANK_META[0].glow
-          : "0 6px 24px rgba(15,23,42,0.10)",
-        transform: hovered ? "translateY(-5px)" : "translateY(0)",
-        transition: "box-shadow 0.3s, transform 0.3s",
+        position: "relative", willChange: "transform",
+        borderRadius: 24, overflow: "hidden", height: 320,
+        boxShadow: "0 6px 24px rgba(15,23,42,0.10)",
         border: `2.5px solid ${RANK_META[0].color}`,
-      }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+      }}>
+      <div ref={shineRef} style={shineStyle} />
+      <Link
+        href={`/trips/${trip.slug}`}
+        style={{ display: "block", position: "absolute", inset: 0, textDecoration: "none", color: "inherit" }}
+      >
       {/* Image */}
       {trip.coverUrl ? (
         <img
           src={trip.coverUrl}
           alt={trip.title}
-          style={{
-            position: "absolute", inset: 0, width: "100%", height: "100%",
-            objectFit: "cover",
-            transform: hovered ? "scale(1.04)" : "scale(1)",
-            transition: "transform 0.4s",
-          }}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
           loading="lazy"
         />
       ) : (
@@ -142,48 +130,37 @@ function HeroCard({ trip }: { trip: Trip }) {
           )}
         </div>
       </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
 
 // ── Medium Card (rank 2–3) ────────────────────────────────────────────────────
 function MedCard({ trip, rank }: { trip: Trip; rank: number }) {
-  const [hovered, setHovered] = useState(false);
+  const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const meta = RANK_META[rank] ?? RANK_META[2];
   const bm = trip._count?.bookmarks ?? 0;
   const likes = trip._count?.likes ?? 0;
   const reviews = trip._count?.reviews ?? 0;
 
   return (
-    <Link
-      href={`/trips/${trip.slug}`}
-      className="pl-card-hover"
+    <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
       style={{
-        display: "block",
-        position: "relative",
-        borderRadius: 20,
-        overflow: "hidden",
-        textDecoration: "none",
-        color: "inherit",
-        height: 220,
-        boxShadow: hovered ? "0 14px 36px rgba(15,23,42,0.16)" : "0 4px 16px rgba(15,23,42,0.08)",
-        transform: hovered ? "translateY(-4px)" : "translateY(0)",
-        transition: "box-shadow 0.25s, transform 0.25s",
+        position: "relative", willChange: "transform",
+        borderRadius: 20, overflow: "hidden", height: 220,
+        boxShadow: "0 4px 16px rgba(15,23,42,0.08)",
         border: `2px solid ${meta.color}`,
-      }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+      }}>
+      <div ref={shineRef} style={shineStyle} />
+      <Link
+        href={`/trips/${trip.slug}`}
+        style={{ display: "block", position: "absolute", inset: 0, textDecoration: "none", color: "inherit" }}
+      >
       {trip.coverUrl ? (
         <img
           src={trip.coverUrl}
           alt={trip.title}
-          style={{
-            position: "absolute", inset: 0, width: "100%", height: "100%",
-            objectFit: "cover",
-            transform: hovered ? "scale(1.05)" : "scale(1)",
-            transition: "transform 0.35s",
-          }}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
           loading="lazy"
         />
       ) : (
@@ -226,37 +203,32 @@ function MedCard({ trip, rank }: { trip: Trip; rank: number }) {
           {reviews > 0 && <span style={{ fontSize: 11, color: "#93c5fd", fontWeight: 700 }}>💬 {reviews}</span>}
         </div>
       </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
 
 // ── Small Card (rank 4–10) ────────────────────────────────────────────────────
 function SmallCard({ trip, rank }: { trip: Trip; rank: number }) {
-  const [hovered, setHovered] = useState(false);
+  const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const [imgErr, setImgErr] = useState(false);
   const bm = trip._count?.bookmarks ?? 0;
   const likes = trip._count?.likes ?? 0;
   const reviews = trip._count?.reviews ?? 0;
 
   return (
+    <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
+      style={{ position: "relative", willChange: "transform", borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 10px rgba(15,23,42,0.06)", border: "1px solid #f1f5f9" }}>
+      <div ref={shineRef} style={shineStyle} />
     <Link
       href={`/trips/${trip.slug}`}
-      className="pl-card-hover"
       style={{
         display: "flex",
         flexDirection: "column",
-        borderRadius: 16,
-        overflow: "hidden",
+        background: "white",
         textDecoration: "none",
         color: "inherit",
-        boxShadow: hovered ? "0 10px 28px rgba(15,23,42,0.13)" : "0 2px 10px rgba(15,23,42,0.06)",
-        transform: hovered ? "translateY(-5px)" : "translateY(0)",
-        transition: "box-shadow 0.25s, transform 0.25s",
-        border: "1px solid #f1f5f9",
-        background: "white",
       }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       {/* Image */}
       <div style={{ position: "relative", paddingBottom: "62%", background: "#e2e8f0", overflow: "hidden", flexShrink: 0 }}>
@@ -264,12 +236,7 @@ function SmallCard({ trip, rank }: { trip: Trip; rank: number }) {
           <img
             src={trip.coverUrl}
             alt={trip.title}
-            style={{
-              position: "absolute", inset: 0, width: "100%", height: "100%",
-              objectFit: "cover",
-              transform: hovered ? "scale(1.06)" : "scale(1)",
-              transition: "transform 0.35s",
-            }}
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
             loading="lazy"
             onError={() => setImgErr(true)}
           />
@@ -314,6 +281,7 @@ function SmallCard({ trip, rank }: { trip: Trip; rank: number }) {
         </span>
       </div>
     </Link>
+    </div>
   );
 }
 

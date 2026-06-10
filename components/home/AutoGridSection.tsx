@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, CSSProperties } from "react";
 import Link from "next/link";
+import { useTiltCard } from "@/hooks/useTiltCard";
 
 interface Trip {
   slug: string; title: string; coverUrl?: string | null;
@@ -85,50 +86,52 @@ function useColumns(cols5: number, cols4: number) {
 }
 
 function TripCard({ trip }: { trip: Trip }) {
+  const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const province = trip.province?.split(" (")[0] ?? "";
   const author   = trip.author?.displayName || trip.author?.firstName || "";
   const avatar   = trip.author?.avatarUrl;
-  const [hovered, setHovered] = useState(false);
 
   return (
-    <Link href={`/trips/${trip.slug}`} style={{ ...S.card, ...(hovered ? { transform: "translateY(-6px)", boxShadow: "0 16px 36px rgba(15,23,42,.13)" } : {}) }}
-      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <div style={S.imgWrap}>
-        {trip.coverUrl
-          ? <img src={trip.coverUrl} alt={trip.title} loading="lazy" style={{ ...S.imgEl, transform: hovered ? "scale(1.06)" : "scale(1)", transition: "transform .35s ease" }} />
-          : <div style={{ ...S.imgEl, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>🗺️</div>
-        }
-        {province && <span style={S.chipProv}>{province}</span>}
-        {trip.avgRating != null && trip.avgRating > 0 && <span style={S.chipRate}>⭐ {trip.avgRating.toFixed(1)}</span>}
-        {trip.mood && <span style={S.chipMood}>{trip.mood}</span>}
-        <div style={S.grad} />
-      </div>
-      <div style={S.body}>
-        <h4 style={S.title}>{trip.title}</h4>
-        <div style={S.footer}>
-          <div style={S.author}>
-            {avatar
-              ? <img src={avatar} alt={author} style={S.avatarImg} />
-              : <div style={S.avatarPh}>{author?.[0] ?? "?"}</div>
-            }
-            <span style={S.authorName}>{author}</span>
-          </div>
-          <div style={S.stats}>
-            <span>👁 {fmt(trip.viewCount)}</span>
-            <span>❤️ {fmt(trip._count?.likes)}</span>
-            <span>💬 {fmt(trip._count?.reviews)}</span>
+    <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
+      style={{ position: "relative", willChange: "transform", borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,.06)" }}>
+      <div ref={shineRef} style={shineStyle} />
+      <Link href={`/trips/${trip.slug}`} style={{ ...S.card, boxShadow: "none" }}>
+        <div style={S.imgWrap}>
+          {trip.coverUrl
+            ? <img src={trip.coverUrl} alt={trip.title} loading="lazy" style={S.imgEl} />
+            : <div style={{ ...S.imgEl, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>🗺️</div>
+          }
+          {province && <span style={S.chipProv}>{province}</span>}
+          {trip.avgRating != null && trip.avgRating > 0 && <span style={S.chipRate}>⭐ {trip.avgRating.toFixed(1)}</span>}
+          {trip.mood && <span style={S.chipMood}>{trip.mood}</span>}
+          <div style={S.grad} />
+        </div>
+        <div style={S.body}>
+          <h4 style={S.title}>{trip.title}</h4>
+          <div style={S.footer}>
+            <div style={S.author}>
+              {avatar
+                ? <img src={avatar} alt={author} style={S.avatarImg} />
+                : <div style={S.avatarPh}>{author?.[0] ?? "?"}</div>
+              }
+              <span style={S.authorName}>{author}</span>
+            </div>
+            <div style={S.stats}>
+              <span>👁 {fmt(trip.viewCount)}</span>
+              <span>❤️ {fmt(trip._count?.likes)}</span>
+              <span>💬 {fmt(trip._count?.reviews)}</span>
+            </div>
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
 
 function PlaceCard({ place }: { place: Place }) {
-  const [hovered, setHovered] = useState(false);
+  const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const [imgError, setImgError] = useState(false);
   const prov = place.province?.split(" (")[0] ?? place.province;
-  // Unclaimed places prefer community photo; skip default-place.svg
   const displayImg = (!place.business && place.communityCover)
     ? place.communityCover
     : (place.coverUrl && place.coverUrl !== "/images/default-place.svg" ? place.coverUrl : (place.communityCover || ""));
@@ -144,34 +147,37 @@ function PlaceCard({ place }: { place: Place }) {
   const fallbackColor = catColors[place.category] ?? "#0f766e";
   const fallbackIcon  = catIcons[place.category]  ?? "📍";
   return (
-    <Link href={`/place/${place.slug}`} style={{ ...S.card, ...(hovered ? { transform: "translateY(-6px)", boxShadow: "0 16px 36px rgba(15,23,42,.13)" } : {}) }}
-      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <div style={S.imgWrap}>
-        {showImg
-          ? <img src={displayImg!} alt={place.title} loading="lazy"
-              style={{ ...S.imgEl, transform: hovered ? "scale(1.06)" : "scale(1)", transition: "transform .35s ease" }}
-              onError={() => setImgError(true)} />
-          : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center",
-              background:`linear-gradient(135deg, ${fallbackColor}22, ${fallbackColor}44)` }}>
-              <span style={{ fontSize:52 }}>{fallbackIcon}</span>
+    <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
+      style={{ position: "relative", willChange: "transform", borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,.06)" }}>
+      <div ref={shineRef} style={shineStyle} />
+      <Link href={`/place/${place.slug}`} style={{ ...S.card, boxShadow: "none" }}>
+        <div style={S.imgWrap}>
+          {showImg
+            ? <img src={displayImg!} alt={place.title} loading="lazy"
+                style={S.imgEl}
+                onError={() => setImgError(true)} />
+            : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center",
+                background:`linear-gradient(135deg, ${fallbackColor}22, ${fallbackColor}44)` }}>
+                <span style={{ fontSize:52 }}>{fallbackIcon}</span>
+              </div>
+          }
+          {prov && <span style={S.chipProv}>{prov}</span>}
+          {place.business?.isVerified && <span style={S.chipGreen}>✓ Verified</span>}
+          <div style={S.grad} />
+        </div>
+        <div style={S.body}>
+          <h4 style={S.title}>{place.title}</h4>
+          {place.titleEn && <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0 }}>{place.titleEn}</p>}
+          <div style={S.footer}>
+            <span style={S.loc}>📍 {[place.district, prov].filter(Boolean).join(", ")}</span>
+            <div style={S.stats}>
+              {(place._count?.reviews ?? 0) > 0 && <span>⭐ {place._count!.reviews}</span>}
+              {(place._count?.bookmarks ?? 0) > 0 && <span>🔖 {place._count!.bookmarks}</span>}
             </div>
-        }
-        {prov && <span style={S.chipProv}>{prov}</span>}
-        {place.business?.isVerified && <span style={S.chipGreen}>✓ Verified</span>}
-        <div style={S.grad} />
-      </div>
-      <div style={S.body}>
-        <h4 style={S.title}>{place.title}</h4>
-        {place.titleEn && <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0 }}>{place.titleEn}</p>}
-        <div style={S.footer}>
-          <span style={S.loc}>📍 {[place.district, prov].filter(Boolean).join(", ")}</span>
-          <div style={S.stats}>
-            {(place._count?.reviews ?? 0) > 0 && <span>⭐ {place._count!.reviews}</span>}
-            {(place._count?.bookmarks ?? 0) > 0 && <span>🔖 {place._count!.bookmarks}</span>}
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
 
