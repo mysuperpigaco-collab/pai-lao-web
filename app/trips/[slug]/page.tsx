@@ -13,6 +13,8 @@ import ShareButton from "@/components/common/ShareButton";
 import ReportButton from "@/components/common/ReportButton";
 import { TripGallery } from "@/components/places/PlaceGallery";
 import Link from "next/link";
+import ReadingProgress from "@/components/common/ReadingProgress";
+import BackToTop from "@/components/common/BackToTop";
 import "./trip-detail.css";
 
 /** Extract YouTube video ID from various URL formats */
@@ -189,6 +191,8 @@ export default async function TripDetailPage({ params }: Props) {
 
   return (
     <>
+    <ReadingProgress />
+    <BackToTop />
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <ViewTracker type="trips" slug={slug} />
     <div className="place-page">

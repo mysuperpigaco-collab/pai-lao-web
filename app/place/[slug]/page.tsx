@@ -15,6 +15,7 @@ import MissionSubmitBox from "@/components/places/MissionSubmitBox";
 import MapsButton from "@/components/common/MapsButton";
 import CommunityPhotosGallery from "@/components/places/CommunityPhotosGallery";
 import PlaceGalleryGrid from "@/components/places/PlaceGalleryGrid";
+import BackToTop from "@/components/common/BackToTop";
 import "./place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -227,6 +228,7 @@ export default async function PlaceDetailPage({ params }: Props) {
 
   return (
     <>
+    <BackToTop />
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <ViewTracker type="places" slug={slug} />
     <div className="pd-page">
