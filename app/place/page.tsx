@@ -494,8 +494,8 @@ function PlacesInner() {
           .plc-img { height: 160px; }
           .plc-body { padding: 12px 14px 14px; }
           .plc-title { font-size: 13px; }
-          .plc-desc { -webkit-line-clamp: 2; font-size: 11px; }
-          .plc-loc { font-size: 10px; }
+          .plc-en { font-size: 11px; }
+          .plc-loc { font-size: 11px; }
         }
 
         @media (max-width: 380px) {
@@ -509,7 +509,6 @@ function PlacesInner() {
 
 /* ─── Place Card ─────────────────────────────────────────── */
 function PlaceCard({ place }: { place: Place }) {
-  const [hovered, setHovered] = React.useState(false);
   const [imgError, setImgError] = React.useState(false);
 
   const catIcon: Record<string, string> = {
@@ -533,120 +532,121 @@ function PlaceCard({ place }: { place: Place }) {
   const bms   = place._count?.bookmarks ?? 0;
   const likes = place._count?.likes ?? 0;
   const prov  = place.province?.split(" (")[0] ?? place.province ?? "";
-  // Unclaimed places: prefer community photo (matches detail page logic)
   const displayImg = (!place.business && place.communityCover)
     ? place.communityCover
     : ((place.coverUrl && place.coverUrl !== "/images/default-place.svg") ? place.coverUrl : (place.communityCover || null));
   const showImg = !!displayImg && !imgError;
 
   return (
-    <Link
-      href={`/place/${place.slug}`}
-      style={{
-        display: "flex", flexDirection: "column",
-        borderRadius: 20, overflow: "hidden",
-        background: "#fff", textDecoration: "none", color: "inherit",
-        boxShadow: hovered ? "0 16px 36px rgba(15,23,42,.13)" : "0 2px 12px rgba(15,23,42,.06)",
-        border: "1px solid #f1f5f9",
-        transform: hovered ? "translateY(-6px)" : "none",
-        transition: "transform .22s ease, box-shadow .22s ease",
-        minWidth: 0,
-      }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {/* ── Image area ── */}
-      <div style={{ position: "relative", height: 164, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
-        {showImg
-          ? <img
-              src={displayImg!}
-              alt={place.title}
-              loading="lazy"
-              onError={() => setImgError(true)}
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block",
-                transform: hovered ? "scale(1.06)" : "scale(1)", transition: "transform .35s ease" }}
-            />
-          : <div style={{
-              width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center",
-              background: `linear-gradient(135deg, ${color}18, ${color}38)`,
-            }}>
-              <span style={{ fontSize: 48 }}>{icon}</span>
+    <Link href={`/place/${place.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
+      <div className="plc-card">
+        {/* Image */}
+        <div className="plc-img">
+          {showImg
+            ? <img src={displayImg!} alt={place.title} loading="lazy" onError={() => setImgError(true)} />
+            : <div className="plc-img-ph" style={{ background: `linear-gradient(135deg, ${color}18, ${color}38)` }}>
+                <span>{icon}</span>
+              </div>
+          }
+          {prov && <span className="plc-province">{prov}</span>}
+          {avg != null && avg > 0 && (
+            <span className="plc-rating">
+              <span className="plc-star">★</span>
+              {avg.toFixed(1)}
+              {revs > 0 && <span className="plc-rating-count">{revs}</span>}
+            </span>
+          )}
+          <span className="plc-cat" style={{ background: color }}>{icon} {label}</span>
+          {place.business?.isVerified && <span className="plc-verified">✓ Verified</span>}
+        </div>
+
+        {/* Body */}
+        <div className="plc-body">
+          <h3 className="plc-title">{place.title}</h3>
+          {place.titleEn && <p className="plc-en">{place.titleEn}</p>}
+          <p className="plc-loc">📍 {[place.district, prov].filter(Boolean).join(", ")}</p>
+
+          {/* Footer */}
+          <div className="plc-footer">
+            <div>
+              {place.business
+                ? <span className="plc-owned">🏢 มีเจ้าของ</span>
+                : <span className="plc-community">⭕ ชุมชน</span>
+              }
             </div>
+            <div className="plc-stats">
+              {likes > 0 && <span className="plc-stat">❤️ {likes}</span>}
+              {bms > 0 && <span className="plc-stat">🔖 {bms}</span>}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .plc-card {
+          background: white; border-radius: 20px; overflow: hidden;
+          border: 1px solid #f1f5f9; box-shadow: 0 2px 12px rgba(15,23,42,0.05);
+          transition: all 0.22s; display: flex; flex-direction: column;
+        }
+        .plc-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 16px 36px rgba(15,23,42,0.11);
+          border-color: #bfdbfe;
         }
 
-        {/* Gradient overlay */}
-        <div style={{ position: "absolute", inset: 0,
-          background: "linear-gradient(to top, rgba(15,23,42,.65) 0%, transparent 55%)",
-          pointerEvents: "none" }} />
+        .plc-img {
+          position: relative; height: 180px;
+          overflow: hidden; background: #e2e8f0; flex-shrink: 0;
+        }
+        .plc-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s; display: block; }
+        .plc-card:hover .plc-img img { transform: scale(1.05); }
+        .plc-img-ph {
+          width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+        }
+        .plc-img-ph span { font-size: 48px; }
 
-        {/* Top row */}
-        <div style={{ position: "absolute", top: 10, left: 10, right: 10,
-          display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 6 }}>
-          {prov && (
-            <span style={{
-              background: "rgba(255,255,255,.88)", color: "#0f172a",
-              fontSize: 11, fontWeight: 800, padding: "4px 10px", borderRadius: 999,
-              backdropFilter: "blur(6px)", boxShadow: "0 2px 6px rgba(0,0,0,.12)",
-              maxWidth: 130, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-            }}>{prov}</span>
-          )}
-          <div style={{ display: "flex", gap: 5, marginLeft: "auto", flexDirection: "column", alignItems: "flex-end" }}>
-            {place.business?.isVerified && (
-              <span style={{ background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "3px 9px", borderRadius: 999 }}>✓ Verified</span>
-            )}
-            {avg != null && avg > 0 && (
-              <span style={{
-                display: "flex", alignItems: "center", gap: 3,
-                background: "rgba(15,23,42,.75)", backdropFilter: "blur(8px)",
-                color: "white", fontSize: 12, fontWeight: 800,
-                padding: "4px 9px", borderRadius: 999,
-                border: "1px solid rgba(255,255,255,.15)",
-              }}>
-                <span style={{ color: "#fbbf24" }}>★</span>
-                {avg.toFixed(1)}
-                {revs > 0 && <span style={{ fontSize: 10, color: "rgba(255,255,255,.6)", fontWeight: 500 }}>{revs}</span>}
-              </span>
-            )}
-          </div>
-        </div>
+        .plc-province {
+          position: absolute; top: 10px; left: 10px;
+          background: rgba(255,255,255,0.88); color: #0f172a;
+          font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px;
+          backdrop-filter: blur(6px); box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+          max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .plc-rating {
+          position: absolute; top: 10px; right: 10px;
+          background: rgba(15,23,42,0.75); backdrop-filter: blur(8px);
+          color: white; font-size: 12px; font-weight: 800;
+          padding: 4px 9px; border-radius: 999px;
+          display: flex; align-items: center; gap: 3px;
+          border: 1px solid rgba(255,255,255,0.15);
+        }
+        .plc-star { color: #fbbf24; }
+        .plc-rating-count { font-size: 10px; color: rgba(255,255,255,0.6); font-weight: 500; }
 
-        {/* Bottom row: category + stats */}
-        <div style={{ position: "absolute", bottom: 10, left: 10, right: 10,
-          display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 6 }}>
-          <span style={{
-            background: color, color: "white",
-            fontSize: 11, fontWeight: 800, padding: "4px 10px", borderRadius: 999,
-            boxShadow: "0 2px 8px rgba(0,0,0,.2)",
-          }}>{icon} {label}</span>
-          <div style={{ display: "flex", gap: 5 }}>
-            {place.business
-              ? <span style={{ background: "rgba(16,185,129,.85)", color: "#fff", fontSize: 10, fontWeight: 800, padding: "3px 9px", borderRadius: 999 }}>🏢 มีเจ้าของ</span>
-              : <span style={{ background: "rgba(100,116,139,.75)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 999 }}>⭕ ยังไม่มี</span>
-            }
-          </div>
-        </div>
-      </div>
+        .plc-cat {
+          position: absolute; bottom: 10px; left: 10px;
+          color: white; font-size: 11px; font-weight: 700;
+          padding: 4px 10px; border-radius: 999px;
+          max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .plc-verified {
+          position: absolute; bottom: 10px; right: 10px;
+          background: rgba(16,185,129,0.85); color: white;
+          font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 999px;
+        }
 
-      {/* ── Body ── */}
-      <div style={{ padding: "12px 14px 13px", flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
-        <h3 style={{ fontSize: 14, fontWeight: 800, color: "#1e293b", margin: 0,
-          overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-          lineHeight: 1.35 } as React.CSSProperties}>{place.title}</h3>
-        {place.titleEn && (
-          <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0,
-            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{place.titleEn}</p>
-        )}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-          marginTop: "auto", paddingTop: 8, borderTop: "1px solid #f1f5f9" }}>
-          <span style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>
-            📍 {[place.district, prov].filter(Boolean).join(", ")}
-          </span>
-          <div style={{ display: "flex", gap: 6, fontSize: 11, fontWeight: 700, color: "#94a3b8" }}>
-            {likes > 0 && <span>❤️ {likes}</span>}
-            {bms > 0 && <span>🔖 {bms}</span>}
-          </div>
-        </div>
-      </div>
+        .plc-body { padding: 14px 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+        .plc-title { font-size: 15px; font-weight: 800; color: #1e293b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .plc-en { font-size: 12px; color: #94a3b8; font-style: italic; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .plc-loc { font-size: 13px; font-weight: 600; color: #64748b; margin: 2px 0 0; }
+
+        .plc-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 10px; flex-wrap: wrap; gap: 6px; }
+        .plc-owned { font-size: 11px; font-weight: 700; color: #059669; background: #d1fae5; padding: 3px 9px; border-radius: 999px; }
+        .plc-community { font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 3px 9px; border-radius: 999px; }
+        .plc-stats { display: flex; align-items: center; gap: 8px; }
+        .plc-stat { font-size: 12px; color: #94a3b8; font-weight: 700; }
+      `}</style>
     </Link>
   );
 }
