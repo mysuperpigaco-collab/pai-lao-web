@@ -42,11 +42,9 @@ const CATS = [
 ];
 
 const SORTS = [
-  { id: "popular", icon: "🔥", label: "ยอดนิยม" },
-  { id: "recent",  icon: "✨", label: "ล่าสุด" },
+  { id: "popular", icon: "🔥", label: "ยอดนิยม", en: "Popular" },
+  { id: "recent",  icon: "✨", label: "ล่าสุด",  en: "Newest" },
 ];
-
-const QUICK_PROVINCES = ["เชียงใหม่","กรุงเทพมหานคร","ภูเก็ต","กระบี่","เชียงราย","นครราชสีมา","สุราษฎร์ธานี","เพชรบูรณ์"];
 
 const PAGE_SIZE = 16;
 
@@ -182,19 +180,6 @@ function PlacesInner() {
             ))}
           </div>
 
-          {/* Quick province chips */}
-          <div style={{ display:"flex", flexWrap:"nowrap", overflowX:"auto", gap:6, paddingBottom:8, scrollbarWidth:"none" }}>
-            {QUICK_PROVINCES.map(p => {
-              const active = province.startsWith(p);
-              return (
-                <button key={p} onClick={() => { changeFilter(setProvince, active ? "" : p); setDistrict(""); }}
-                  className={`pl-qp-chip${active ? " pl-qp-active" : ""}`}>
-                  📍 {p}
-                </button>
-              );
-            })}
-          </div>
-
           {/* Province + District + Sort row */}
           <div className="pl-filter-row">
             <div className="pl-select-wrap">
@@ -219,7 +204,7 @@ function PlacesInner() {
               {SORTS.map(s => (
                 <button key={s.id} onClick={() => changeFilter(setSort, s.id)}
                   className={`pl-sort-chip${sort === s.id ? " pl-sort-active" : ""}`}>
-                  {s.icon} {s.label}
+                  {s.icon} {s.label} <span className="pl-sort-en">· {s.en}</span>
                 </button>
               ))}
             </div>
@@ -254,7 +239,13 @@ function PlacesInner() {
           </div>
         ) : places.length === 0 ? (
           <div className="pl-empty">
-            <div style={{ fontSize: 56, marginBottom: 16 }}>🔍</div>
+            <div className="pl-empty-anim">
+              {["🗺️","📍","🏔️","🌊","☕"].map((ic,i) => (
+                <span key={i} className="pl-empty-float" style={{ animationDelay:`${i*0.4}s`, left:`${8+i*18}%`, top:`${20+(i%2)*50}%` }}>{ic}</span>
+              ))}
+              <div className="pl-empty-pulse" /><div className="pl-empty-pulse" style={{animationDelay:"0.5s"}} /><div className="pl-empty-pulse" style={{animationDelay:"1s"}} />
+              <span className="pl-empty-icon">🔍</span>
+            </div>
             <h3>ไม่พบสถานที่ · No places found</h3>
             <p>ลองเปลี่ยนตัวกรองหรือค้นหาคำอื่น · Try adjusting your filters or search term</p>
             <button className="pl-clear-btn" style={{ marginTop: 16 }} onClick={() => { setCat(""); setProvince(""); setDistrict(""); setQ(""); setInputQ(""); }}>
@@ -364,17 +355,6 @@ function PlacesInner() {
         .pl-cat-active .pl-cat-th { color: white; }
         .pl-cat-active .pl-cat-en { color: rgba(255,255,255,0.8); }
 
-        /* Quick province chips */
-        .pl-qp-chip {
-          display: inline-flex; align-items: center; gap: 4px;
-          padding: 5px 12px; border-radius: 999px; white-space: nowrap; flex-shrink: 0;
-          border: 1.5px solid #e2e8f0; background: #f8fafc;
-          font-size: 12px; font-weight: 700; color: #475569;
-          cursor: pointer; font-family: inherit; transition: all 0.18s;
-        }
-        .pl-qp-chip:hover:not(.pl-qp-active) { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
-        .pl-qp-active { background: #0f172a; border-color: #0f172a; color: #fff; }
-
         /* Sort chips */
         .pl-sort-chip {
           display: inline-flex; align-items: center; gap: 5px;
@@ -385,6 +365,29 @@ function PlacesInner() {
         }
         .pl-sort-chip:hover:not(.pl-sort-active) { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
         .pl-sort-active { background: linear-gradient(135deg,#0f172a,#1e3a8a); border-color: transparent; color: #fff; box-shadow: 0 4px 12px rgba(15,23,42,0.2); }
+        .pl-sort-en { font-size: 11px; opacity: 0.75; font-weight: 500; }
+
+        /* Empty state animated */
+        .pl-empty { text-align: center; padding: 60px 20px 40px; }
+        .pl-empty h3 { font-size: 20px; font-weight: 800; color: #1e293b; margin: 0 0 8px; }
+        .pl-empty p { font-size: 14px; color: #94a3b8; margin: 0; }
+        .pl-empty-anim {
+          position: relative; width: 120px; height: 120px; margin: 0 auto 20px;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .pl-empty-icon { font-size: 52px; animation: es-bounce 2s ease-in-out infinite; position: relative; z-index: 1; }
+        .pl-empty-float {
+          position: absolute; font-size: 16px; opacity: 0.4;
+          animation: es-float 2.5s ease-in-out infinite alternate;
+        }
+        .pl-empty-pulse {
+          position: absolute; border-radius: 50%; border: 1.5px solid rgba(79,172,254,0.25);
+          width: 80px; height: 80px;
+          animation: es-pulse 2s ease-out infinite;
+        }
+        @keyframes es-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        @keyframes es-float { from{transform:translateY(0) rotate(-8deg)} to{transform:translateY(-14px) rotate(8deg)} }
+        @keyframes es-pulse { 0%{transform:scale(0.7);opacity:0.8} 100%{transform:scale(1.6);opacity:0} }
 
         /* Province + Sort row */
         .pl-filter-row { display: flex; gap: 12px; flex-wrap: wrap; padding: 0 20px; box-sizing: border-box; }
@@ -475,6 +478,9 @@ function PlacesInner() {
           .pl-filter-row { padding: 0 16px; gap: 8px; }
           .pl-select-wrap { padding: 7px 10px; border-radius: 10px; }
           .pl-select-sm { max-width: none; }
+
+          /* Sort chips — hide English label on mobile */
+          .pl-sort-en { display: none; }
 
           /* Results */
           .pl-results { padding: 16px 12px 60px; }

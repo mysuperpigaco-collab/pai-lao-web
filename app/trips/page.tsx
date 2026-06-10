@@ -33,8 +33,8 @@ const MOODS = [
 ];
 
 const SORTS = [
-  { id: "popular", label: "ยอดนิยม · Popular" },
-  { id: "recent",  label: "ล่าสุด · Newest" },
+  { id: "popular", icon: "🔥", label: "ยอดนิยม", en: "Popular" },
+  { id: "recent",  icon: "✨", label: "ล่าสุด",  en: "Newest" },
 ];
 
 const PAGE_SIZE = 16;
@@ -182,15 +182,13 @@ function TripsInner() {
                 {getDistricts(province).map(d => <option key={d} value={d.split(" (")[0]}>{d}</option>)}
               </select>
             </div>
-            <div className="tp-select-wrap tp-select-sm">
-              <span className="tp-select-icon">📊</span>
-              <select
-                className="tp-select"
-                value={sort}
-                onChange={e => changeFilter(setSort, e.target.value)}
-              >
-                {SORTS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-              </select>
+            <div style={{ display:"flex", gap:6, flexShrink:0 }}>
+              {SORTS.map(s => (
+                <button key={s.id} onClick={() => changeFilter(setSort, s.id)}
+                  className={`tp-sort-chip${sort === s.id ? " tp-sort-active" : ""}`}>
+                  {s.icon} {s.label} <span className="tp-sort-en">· {s.en}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -220,7 +218,13 @@ function TripsInner() {
           </div>
         ) : trips.length === 0 ? (
           <div className="tp-empty">
-            <div style={{ fontSize: 56, marginBottom: 16 }}>✈️</div>
+            <div className="tp-empty-anim">
+              {["🗺️","📸","🏕️","🌄","🧳"].map((ic,i) => (
+                <span key={i} className="tp-empty-float" style={{ animationDelay:`${i*0.4}s`, left:`${8+i*18}%`, top:`${20+(i%2)*50}%` }}>{ic}</span>
+              ))}
+              <div className="tp-empty-pulse" /><div className="tp-empty-pulse" style={{animationDelay:"0.5s"}} /><div className="tp-empty-pulse" style={{animationDelay:"1s"}} />
+              <span className="tp-empty-icon">✈️</span>
+            </div>
             <h3>ไม่พบทริป · No trips found</h3>
             <p>ลองเปลี่ยนตัวกรองหรือค้นหาคำอื่น · Try adjusting your filters or search term</p>
             <button className="tp-clear-btn" style={{ marginTop: 16 }} onClick={() => { setMood(""); setProvince(""); setQ(""); setInputQ(""); }}>
@@ -365,9 +369,39 @@ function TripsInner() {
         }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-        .tp-empty { text-align: center; padding: 80px 20px; }
+        /* Sort chips */
+        .tp-sort-chip {
+          display: inline-flex; align-items: center; gap: 5px;
+          padding: 8px 14px; border-radius: 12px;
+          border: 1.5px solid #e2e8f0; background: #f8fafc;
+          font-size: 13px; font-weight: 700; color: #475569;
+          cursor: pointer; font-family: inherit; transition: all 0.18s; white-space: nowrap;
+        }
+        .tp-sort-chip:hover:not(.tp-sort-active) { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
+        .tp-sort-active { background: linear-gradient(135deg,#0f172a,#1e3a8a); border-color: transparent; color: #fff; box-shadow: 0 4px 12px rgba(15,23,42,0.2); }
+        .tp-sort-en { font-size: 11px; opacity: 0.75; font-weight: 500; }
+
+        /* Empty state animated */
+        .tp-empty { text-align: center; padding: 60px 20px 40px; }
         .tp-empty h3 { font-size: 20px; font-weight: 800; color: #1e293b; margin: 0 0 8px; }
         .tp-empty p  { font-size: 14px; color: #94a3b8; margin: 0; }
+        .tp-empty-anim {
+          position: relative; width: 120px; height: 120px; margin: 0 auto 20px;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .tp-empty-icon { font-size: 52px; animation: tp-bounce 2s ease-in-out infinite; position: relative; z-index: 1; }
+        .tp-empty-float {
+          position: absolute; font-size: 16px; opacity: 0.4;
+          animation: tp-float 2.5s ease-in-out infinite alternate;
+        }
+        .tp-empty-pulse {
+          position: absolute; border-radius: 50%; border: 1.5px solid rgba(79,172,254,0.25);
+          width: 80px; height: 80px;
+          animation: tp-pulse 2s ease-out infinite;
+        }
+        @keyframes tp-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        @keyframes tp-float  { from{transform:translateY(0) rotate(-8deg)} to{transform:translateY(-14px) rotate(8deg)} }
+        @keyframes tp-pulse  { 0%{transform:scale(0.7);opacity:0.8} 100%{transform:scale(1.6);opacity:0} }
 
         .tp-loadmore-wrap { display: flex; justify-content: center; align-items: center; margin-top: 40px; margin-bottom: 20px; }
         .tp-loading-dot { display: flex; gap: 6px; }
@@ -381,6 +415,10 @@ function TripsInner() {
 
         @media (max-width: 1200px) { .tp-grid, .tp-skeleton-grid { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 900px)  { .tp-grid, .tp-skeleton-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 640px) {
+          .tp-sort-chip { padding: 7px 10px; font-size: 12px; }
+          .tp-sort-en { display: none; }
+        }
         @media (max-width: 640px) {
           .tp-hero-title { font-size: 34px; }
           .tp-grid, .tp-skeleton-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
