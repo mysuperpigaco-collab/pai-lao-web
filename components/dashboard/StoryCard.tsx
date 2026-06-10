@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useTiltCard } from "@/hooks/useTiltCard";
 
 interface TripItem {
   slug:            string;
@@ -44,6 +45,7 @@ export default function StoryCard({
   isOwner:    boolean;
   onDeleted?: (slug: string) => void;
 }) {
+  const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const [deleting, setDeleting] = useState(false);
   const [confirm,  setConfirm ] = useState(false);
 
@@ -62,10 +64,9 @@ export default function StoryCard({
   };
 
   return (
-    <div style={{ background: "#fff", borderRadius: "20px", border: "1px solid #f1f5f9", overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,0.05)", opacity: deleting ? 0.5 : 1, transition: "box-shadow 0.2s, transform 0.2s", display: "flex", flexDirection: "column" }}
-      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 10px 28px rgba(15,23,42,0.1)"; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ""; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 12px rgba(15,23,42,0.05)"; }}
-    >
+    <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
+      style={{ background: "#fff", borderRadius: "20px", border: "1px solid #f1f5f9", overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,0.05)", opacity: deleting ? 0.5 : 1, display: "flex", flexDirection: "column", position: "relative", willChange: "transform" }}>
+      <div ref={shineRef} style={shineStyle} />
       {/* Cover */}
       <div style={{ position: "relative", height: "170px", overflow: "hidden", background: "#f1f5f9", flexShrink: 0 }}>
         <img src={imgSrc} alt={story.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />

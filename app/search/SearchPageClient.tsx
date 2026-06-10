@@ -4,6 +4,7 @@ import DistrictSelect from "@/components/ui/DistrictSelect";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTiltCard } from "@/hooks/useTiltCard";
 
 // ── Types ───────────────────────────────────────────────
 interface TripResult {
@@ -48,28 +49,27 @@ const CAT_LABEL: Record<string,string> = { NATURE:"ธรรมชาติ",CAF
 const CAT_COLOR: Record<string,string> = { NATURE:"#16a34a",CAFE:"#92400e",ACCOMMODATION:"#1d4ed8",CAMPING:"#15803d",FOOD:"#b91c1c",TEMPLE:"#7c3aed",BEACH:"#0369a1",MARKET:"#b45309",ADVENTURE:"#c2410c",MUSEUM:"#6b21a8" };
 
 function SearchPlaceCard({ place }: { place: PlaceResult }) {
-  const [hovered, setHovered] = useState(false);
-  const [imgErr, setImgErr]   = useState(false);
+  const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
+  const [imgErr, setImgErr] = useState(false);
   const icon  = CAT_ICON[place.category]  ?? "📍";
   const color = CAT_COLOR[place.category] ?? "#0f172a";
   const prov  = place.province?.split(" (")[0] ?? "";
-  // ใช้ logic เดียวกับ PlaceCard ในหน้า place
   const displayImg = (!place.business && place.communityCover)
     ? place.communityCover
     : ((place.coverUrl && place.coverUrl !== "/images/default-place.svg") ? place.coverUrl : (place.communityCover || null));
   const showImg = !!displayImg && !imgErr;
 
   return (
-    <Link href={`/place/${place.slug}`} style={{ textDecoration: "none", color: "inherit", display: "flex", flexDirection: "column", borderRadius: 20, overflow: "hidden", background: "#fff", border: "1px solid #f1f5f9",
-      boxShadow: hovered ? "0 16px 36px rgba(15,23,42,.13)" : "0 2px 12px rgba(15,23,42,.06)",
-      transform: hovered ? "translateY(-6px)" : "none", transition: "transform .22s ease, box-shadow .22s ease" }}
-      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+    <Link href={`/place/${place.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
+      <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
+        style={{ display: "flex", flexDirection: "column", borderRadius: 20, overflow: "hidden", background: "#fff", border: "1px solid #f1f5f9", position: "relative", willChange: "transform" }}>
+        <div ref={shineRef} style={shineStyle} />
 
       {/* Image */}
       <div style={{ position: "relative", height: 164, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
         {showImg
           ? <img src={displayImg!} alt={place.title} loading="lazy" onError={() => setImgErr(true)}
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transform: hovered ? "scale(1.06)" : "scale(1)", transition: "transform .35s ease" }} />
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform .35s ease" }} />
           : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg, ${color}18, ${color}38)` }}>
               <span style={{ fontSize: 48 }}>{icon}</span>
             </div>
@@ -99,6 +99,40 @@ function SearchPlaceCard({ place }: { place: PlaceResult }) {
         <h4 style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", margin: "0 0 3px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{place.title}</h4>
         {place.titleEn && <p style={{ fontSize: 11, color: "#64748b", fontStyle: "italic", margin: "0 0 2px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{place.titleEn}</p>}
         <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>📍 {[place.district, place.province?.split(" (")[0]].filter(Boolean).join(", ")}</p>
+      </div>
+      </div>
+    </Link>
+  );
+}
+
+function SearchTripCard({ trip }: { trip: TripResult }) {
+  const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
+  return (
+    <Link href={`/trips/${trip.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
+      <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
+        style={{ borderRadius: 20, overflow: "hidden", background: "#fff", border: "1px solid #f1f5f9", position: "relative", willChange: "transform" }}>
+        <div ref={shineRef} style={shineStyle} />
+        <div style={{ position: "relative", height: 140, background: "#e2e8f0", overflow: "hidden" }}>
+          {trip.coverUrl
+            ? <img src={trip.coverUrl} alt={trip.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>🗺️</div>
+          }
+          {trip.avgRating != null && trip.avgRating > 0 && (
+            <span style={{ position: "absolute", top: 8, left: 8, background: "rgba(251,191,36,0.92)", color: "#1e293b", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 999 }}>⭐ {trip.avgRating.toFixed(1)}</span>
+          )}
+          <div style={{ position: "absolute", bottom: 8, right: 8, display: "flex", gap: 4 }}>
+            {(trip._count?.likes ?? 0) > 0 && <span style={{ background: "rgba(15,23,42,0.65)", color: "white", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999 }}>❤️ {trip._count!.likes}</span>}
+            {(trip._count?.reviews ?? 0) > 0 && <span style={{ background: "rgba(15,23,42,0.65)", color: "white", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999 }}>💬 {trip._count!.reviews}</span>}
+          </div>
+        </div>
+        <div style={{ padding: "11px 13px" }}>
+          <h4 style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", margin: "0 0 3px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{trip.title}</h4>
+          <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>
+            {trip.province ? `📍 ${trip.province}` : ""}
+            {trip.author ? ` · ${trip.author.displayName || trip.author.firstName}` : ""}
+          </p>
+          {trip.createdAt && <p style={{ fontSize: 10, color: "#cbd5e1", margin: "2px 0 0" }}>{formatDate(trip.createdAt)}</p>}
+        </div>
       </div>
     </Link>
   );
@@ -438,34 +472,7 @@ export default function SearchPageClient() {
               </h2>
               <div className="search-result-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
                 {trips.map(trip => (
-                  <Link key={trip.slug} href={`/trips/${trip.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
-                    <div style={{ background: "white", borderRadius: 16, overflow: "hidden", border: "1.5px solid #f1f5f9", boxShadow: "0 2px 10px rgba(15,23,42,0.04)", transition: "all 0.2s", cursor: "pointer" }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 24px rgba(15,23,42,0.10)"; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = "none"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 10px rgba(15,23,42,0.04)"; }}
-                    >
-                      <div style={{ position: "relative", height: 140, background: "#e2e8f0", overflow: "hidden" }}>
-                        {trip.coverUrl
-                          ? <img src={trip.coverUrl} alt={trip.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                          : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>🗺️</div>
-                        }
-                        {trip.avgRating != null && trip.avgRating > 0 && (
-                          <span style={{ position: "absolute", top: 8, left: 8, background: "rgba(251,191,36,0.92)", color: "#1e293b", fontSize: 10, fontWeight: 800, padding: "3px 8px", borderRadius: 999 }}>⭐ {trip.avgRating.toFixed(1)}</span>
-                        )}
-                        <div style={{ position: "absolute", bottom: 8, right: 8, display: "flex", gap: 4 }}>
-                          {(trip._count?.likes ?? 0) > 0 && <span style={{ background: "rgba(15,23,42,0.65)", color: "white", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999 }}>❤️ {trip._count!.likes}</span>}
-                          {(trip._count?.reviews ?? 0) > 0 && <span style={{ background: "rgba(15,23,42,0.65)", color: "white", fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999 }}>💬 {trip._count!.reviews}</span>}
-                        </div>
-                      </div>
-                      <div style={{ padding: "11px 13px" }}>
-                        <h4 style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", margin: "0 0 3px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{trip.title}</h4>
-                        <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>
-                          {trip.province ? `📍 ${trip.province}` : ""}
-                          {trip.author ? ` · ${trip.author.displayName || trip.author.firstName}` : ""}
-                        </p>
-                        {trip.createdAt && <p style={{ fontSize: 10, color: "#cbd5e1", margin: "2px 0 0" }}>{formatDate(trip.createdAt)}</p>}
-                      </div>
-                    </div>
-                  </Link>
+                  <SearchTripCard key={trip.slug} trip={trip} />
                 ))}
               </div>
               {totalTrips > 20 && (

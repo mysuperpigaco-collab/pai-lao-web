@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useTiltCard } from "@/hooks/useTiltCard";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 
@@ -80,6 +81,7 @@ function Toast({ message, type, onClose }: { message: string; type: "success" | 
 function MissionCard({ mission }: {
   mission: Mission;
 }) {
+  const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const myStatus = mission.participants?.[0]?.status;
   const isFull = mission.maxSlots ? mission._count.participants >= mission.maxSlots : false;
   const expired = new Date(mission.endDate) < new Date();
@@ -88,25 +90,18 @@ function MissionCard({ mission }: {
   const isUrgent = !expired && new Date(mission.endDate).getTime() - Date.now() < 3 * 86400000;
 
   return (
-    <div style={{
-      background: "#fff",
-      borderRadius: 16,
-      overflow: "hidden",
-      boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
-      transition: "transform 0.2s, box-shadow 0.2s",
-      cursor: "default",
-      display: "flex",
-      flexDirection: "column",
-    }}
-      onMouseEnter={e => {
-        (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)";
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 24px rgba(0,0,0,0.12)";
-      }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 12px rgba(0,0,0,0.07)";
-      }}
-    >
+    <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
+      style={{
+        background: "#fff",
+        borderRadius: 16,
+        overflow: "hidden",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+        willChange: "transform",
+      }}>
+      <div ref={shineRef} style={shineStyle} />
       {/* Cover */}
       <div style={{ position: "relative", height: 180, background: "linear-gradient(135deg,#f0fdf4,#dcfce7)", flexShrink: 0 }}>
         {mission.coverUrl ? (

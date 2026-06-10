@@ -5,6 +5,7 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { PROVINCES, getDistricts } from "@/data/thailand";
+import { useTiltCard } from "@/hooks/useTiltCard";
 
 /* ─── Types ──────────────────────────────────────────────── */
 interface Trip {
@@ -431,6 +432,7 @@ function TripsInner() {
 
 /* ─── Trip Card ──────────────────────────────────────────── */
 function TripCard({ trip }: { trip: Trip }) {
+  const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const moodIcon: Record<string, string> = {
     "Cafe Hopping": "☕",
     "สายลุย": "🧗",
@@ -449,7 +451,8 @@ function TripCard({ trip }: { trip: Trip }) {
 
   return (
     <Link href={`/trips/${trip.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
-      <div className="tc-card">
+      <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave} className="tc-card" style={{ position: "relative", willChange: "transform" }}>
+        <div ref={shineRef} style={shineStyle} />
         {/* Image */}
         <div className="tc-img">
           {trip.coverUrl
@@ -498,11 +501,9 @@ function TripCard({ trip }: { trip: Trip }) {
         .tc-card {
           background: white; border-radius: 20px; overflow: hidden;
           border: 1px solid #f1f5f9; box-shadow: 0 2px 12px rgba(15,23,42,0.05);
-          transition: all 0.22s; display: flex; flex-direction: column;
+          display: flex; flex-direction: column;
         }
         .tc-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 16px 36px rgba(15,23,42,0.11);
           border-color: #e9d5ff;
         }
 

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useTiltCard } from "@/hooks/useTiltCard";
 
 type Props = {
   slug: string;
@@ -72,6 +73,7 @@ export default function BusinessPlaceCard({
   claimStatus, claimNote, isClaimedPlace = false,
   editStatus, editRejectionReason,
 }: Props) {
+  const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const icon = CAT_ICON[category] ?? "📍";
   const [confirm, setConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -103,10 +105,9 @@ export default function BusinessPlaceCard({
   }
 
   return (
-    <div style={{ background: "#fff", borderRadius: "20px", border: "1px solid #f1f5f9", overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,0.05)", display: "flex", flexDirection: "column", opacity: deleting ? 0.5 : 1, transition: "box-shadow 0.2s, transform 0.2s" }}
-      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 10px 28px rgba(15,23,42,0.1)"; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ""; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 12px rgba(15,23,42,0.05)"; }}
-    >
+    <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
+      style={{ background: "#fff", borderRadius: "20px", border: "1px solid #f1f5f9", overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,0.05)", display: "flex", flexDirection: "column", opacity: deleting ? 0.5 : 1, position: "relative", willChange: "transform" }}>
+      <div ref={shineRef} style={shineStyle} />
       {/* Cover */}
       <div style={{ position: "relative", height: 180, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
         {coverUrl

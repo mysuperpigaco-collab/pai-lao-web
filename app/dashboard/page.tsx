@@ -6,6 +6,32 @@ import ProfileHeader from "@/components/dashboard/ProfileHeader";
 import StoryCard from "@/components/dashboard/StoryCard";
 import { useAuth } from "@/context/AuthContext";
 import { uploadFile } from "@/lib/uploadHelper";
+import { useTiltCard } from "@/hooks/useTiltCard";
+
+function SavedPlaceCard({ p }: { p: any }) {
+  const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
+  return (
+    <Link href={`/place/${p.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
+      <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
+        style={{ background: "#fff", borderRadius: 16, border: "1px solid #f1f5f9", overflow: "hidden", boxShadow: "0 2px 10px rgba(15,23,42,0.05)", position: "relative", willChange: "transform" }}>
+        <div ref={shineRef} style={shineStyle} />
+        <div style={{ height: 140, overflow: "hidden", background: "#e2e8f0", position: "relative" }}>
+          {p.coverUrl
+            ? <img src={p.coverUrl} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>📍</div>
+          }
+          <span style={{ position: "absolute", bottom: 8, left: 8, background: "rgba(15,23,42,0.65)", backdropFilter: "blur(6px)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>
+            {p.category}
+          </span>
+        </div>
+        <div style={{ padding: "12px 14px" }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.title}</div>
+          <div style={{ fontSize: 11, color: "#94a3b8" }}>📍 สถานที่บันทึก</div>
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 type TripItem = {
   slug: string;
@@ -572,26 +598,7 @@ export default function DashboardPage() {
                     </p>
                     <div className="story-grid">
                       {savedPlaces.map((p: any) => (
-                        <Link key={p.slug} href={`/place/${p.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
-                          <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #f1f5f9", overflow: "hidden", boxShadow: "0 2px 10px rgba(15,23,42,0.05)", transition: "transform 0.2s, box-shadow 0.2s" }}
-                            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 24px rgba(15,23,42,0.1)"; }}
-                            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ""; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 10px rgba(15,23,42,0.05)"; }}
-                          >
-                            <div style={{ height: 140, overflow: "hidden", background: "#e2e8f0", position: "relative" }}>
-                              {p.coverUrl
-                                ? <img src={p.coverUrl} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                                : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>📍</div>
-                              }
-                              <span style={{ position: "absolute", bottom: 8, left: 8, background: "rgba(15,23,42,0.65)", backdropFilter: "blur(6px)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 999 }}>
-                                {p.category}
-                              </span>
-                            </div>
-                            <div style={{ padding: "12px 14px" }}>
-                              <div style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.title}</div>
-                              <div style={{ fontSize: 11, color: "#94a3b8" }}>📍 สถานที่บันทึก</div>
-                            </div>
-                          </div>
-                        </Link>
+                        <SavedPlaceCard key={p.slug} p={p} />
                       ))}
                     </div>
                   </>

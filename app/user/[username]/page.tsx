@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback, Suspense } from "react";
+import { useTiltCard } from "@/hooks/useTiltCard";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -227,24 +228,22 @@ function fmt(n?: number) { return n == null ? 0 : n >= 1000 ? (n/1000).toFixed(1
 
 // ── Modern Trip Card ──────────────────────────────────────────
 function ModernTripCard({ trip, ownerAvatar, ownerName }: { trip: TripCard; ownerAvatar?: string; ownerName: string }) {
-  const [hovered, setHovered] = useState(false);
+  const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const province = trip.province?.split(" (")[0] ?? trip.location?.split(",").pop()?.trim() ?? "";
   return (
-    <Link href={"/trips/" + trip.slug}
-      style={{
-        display:"flex", flexDirection:"column", borderRadius:20, overflow:"hidden",
-        background:"rgba(255,255,255,0.88)", backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)",
-        textDecoration:"none", color:"inherit",
-        boxShadow: hovered ? "0 16px 36px rgba(15,23,42,.15)" : "0 2px 12px rgba(15,23,42,.06)",
-        border:"1px solid rgba(226,232,240,0.6)",
-        transform: hovered ? "translateY(-5px)" : "translateY(0)",
-        transition:"transform .22s ease, box-shadow .22s ease",
-      }}
-      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+    <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
+      style={{ position: "relative", willChange: "transform", borderRadius: 20, overflow: "hidden" }}>
+      <div ref={shineRef} style={shineStyle} />
+      <Link href={"/trips/" + trip.slug}
+        style={{
+          display:"flex", flexDirection:"column",
+          background:"rgba(255,255,255,0.88)", backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)",
+          textDecoration:"none", color:"inherit",
+          border:"1px solid rgba(226,232,240,0.6)",
+        }}>
       <div style={{position:"relative", height:164, overflow:"hidden", background:"#e2e8f0", flexShrink:0}}>
         <img src={trip.coverUrl} alt={trip.title} loading="lazy"
-          style={{width:"100%", height:"100%", objectFit:"cover", display:"block",
-            transform: hovered ? "scale(1.06)" : "scale(1)", transition:"transform .35s ease"}} />
+          style={{width:"100%", height:"100%", objectFit:"cover", display:"block"}} />
         <div style={{position:"absolute",inset:0,background:"linear-gradient(to top, rgba(15,23,42,.55) 0%, transparent 55%)",pointerEvents:"none"}} />
         {province && <span style={{position:"absolute",top:10,left:10,background:"rgba(255,255,255,.88)",color:"#0f172a",fontSize:11,fontWeight:800,padding:"4px 10px",borderRadius:999,backdropFilter:"blur(6px)"}}>
           {province}
@@ -270,7 +269,8 @@ function ModernTripCard({ trip, ownerAvatar, ownerName }: { trip: TripCard; owne
           </div>
         </div>
       </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
 
