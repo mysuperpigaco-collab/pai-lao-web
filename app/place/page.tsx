@@ -4,8 +4,7 @@ import React, { useState, useEffect, useCallback, useRef, Suspense } from "react
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import ProvinceSelect from "@/components/ui/ProvinceSelect";
-import DistrictSelect from "@/components/ui/DistrictSelect";
+import { PROVINCES, getDistricts } from "@/data/thailand";
 
 /* ─── Types ──────────────────────────────────────────────── */
 interface Place {
@@ -184,20 +183,26 @@ function PlacesInner() {
           <div className="pl-filter-row">
             <div className="pl-select-wrap">
               <span className="pl-select-icon">🗾</span>
-              <ProvinceSelect
+              <select
+                className="pl-select"
                 value={province}
-                onChange={v => { changeFilter(setProvince, v); setDistrict(""); }}
-                placeholder="ทุกจังหวัด · All Provinces"
-                style={{ borderRadius: 20, padding: "8px 14px", minHeight: 40, fontSize: 14 }}
-              />
+                onChange={e => { changeFilter(setProvince, e.target.value); setDistrict(""); }}
+              >
+                <option value="">ทุกจังหวัด · All Provinces</option>
+                {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
             </div>
             <div className="pl-select-wrap">
-              <DistrictSelect
-                province={province.split(" (")[0]}
+              <span className="pl-select-icon">🏘️</span>
+              <select
+                className="pl-select"
                 value={district}
-                onChange={v => changeFilter(setDistrict, v)}
-                placeholder="ทุกอำเภอ"
-              />
+                onChange={e => changeFilter(setDistrict, e.target.value)}
+                disabled={!province}
+              >
+                <option value="">{province ? "ทุกอำเภอ · All Districts" : "เลือกจังหวัดก่อน"}</option>
+                {getDistricts(province).map(d => <option key={d} value={d.split(" (")[0]}>{d}</option>)}
+              </select>
             </div>
             {/* Sort chips */}
             <div style={{ display:"flex", gap:6, flexShrink:0 }}>
@@ -509,6 +514,7 @@ function PlacesInner() {
 
 /* ─── Place Card ─────────────────────────────────────────── */
 function PlaceCard({ place }: { place: Place }) {
+  const [hovered, setHovered] = React.useState(false);
   const [imgError, setImgError] = React.useState(false);
 
   const catIcon: Record<string, string> = {
@@ -519,142 +525,133 @@ function PlaceCard({ place }: { place: Place }) {
     NATURE:"ธรรมชาติ",CAFE:"คาเฟ่",ACCOMMODATION:"ที่พัก",CAMPING:"แคมปิ้ง",
     FOOD:"อาหาร",TEMPLE:"วัด",BEACH:"ชายหาด",MARKET:"ตลาด",ADVENTURE:"ผจญภัย",MUSEUM:"พิพิธภัณฑ์",
   };
-  const catBg: Record<string, string> = {
-    NATURE:"rgba(22,163,74,0.8)",CAFE:"rgba(146,64,14,0.8)",ACCOMMODATION:"rgba(29,78,216,0.8)",CAMPING:"rgba(21,128,61,0.8)",
-    FOOD:"rgba(185,28,28,0.8)",TEMPLE:"rgba(124,58,237,0.8)",BEACH:"rgba(3,105,161,0.8)",MARKET:"rgba(180,83,9,0.8)",ADVENTURE:"rgba(194,65,12,0.8)",MUSEUM:"rgba(107,33,168,0.8)",
-  };
-  const catPlaceholder: Record<string, string> = {
-    NATURE:"linear-gradient(135deg,#d1fae5,#a7f3d0)",
-    CAFE:"linear-gradient(135deg,#fef3c7,#fde68a)",
-    ACCOMMODATION:"linear-gradient(135deg,#dbeafe,#bfdbfe)",
-    CAMPING:"linear-gradient(135deg,#dcfce7,#bbf7d0)",
-    FOOD:"linear-gradient(135deg,#fee2e2,#fecaca)",
-    TEMPLE:"linear-gradient(135deg,#ede9fe,#ddd6fe)",
-    BEACH:"linear-gradient(135deg,#e0f2fe,#bae6fd)",
-    MARKET:"linear-gradient(135deg,#fef9c3,#fef08a)",
-    ADVENTURE:"linear-gradient(135deg,#ffedd5,#fed7aa)",
-    MUSEUM:"linear-gradient(135deg,#f5f3ff,#ede9fe)",
+  const catColor: Record<string, string> = {
+    NATURE:"#16a34a",CAFE:"#92400e",ACCOMMODATION:"#1d4ed8",CAMPING:"#15803d",
+    FOOD:"#b91c1c",TEMPLE:"#7c3aed",BEACH:"#0369a1",MARKET:"#b45309",ADVENTURE:"#c2410c",MUSEUM:"#6b21a8",
   };
 
   const icon  = catIcon[place.category]  ?? "📍";
   const label = catLabel[place.category] ?? place.category;
-  const bg    = catBg[place.category]    ?? "rgba(15,23,42,0.8)";
-  const ph    = catPlaceholder[place.category] ?? "linear-gradient(135deg,#f1f5f9,#e2e8f0)";
+  const color = catColor[place.category] ?? "#0f172a";
   const avg   = place.avgRating;
   const revs  = place._count?.reviews ?? 0;
   const bms   = place._count?.bookmarks ?? 0;
   const likes = place._count?.likes ?? 0;
   const prov  = place.province?.split(" (")[0] ?? place.province ?? "";
-  const subtitle = (place as any).descriptionShort || place.titleEn || null;
+  // Unclaimed places: prefer community photo (matches detail page logic)
   const displayImg = (!place.business && place.communityCover)
     ? place.communityCover
     : ((place.coverUrl && place.coverUrl !== "/images/default-place.svg") ? place.coverUrl : (place.communityCover || null));
   const showImg = !!displayImg && !imgError;
 
   return (
-    <Link href={`/place/${place.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
-      <div className="plc-card">
-        {/* Image */}
-        <div className="plc-img">
-          {showImg
-            ? <img src={displayImg!} alt={place.title} loading="lazy" onError={() => setImgError(true)} />
-            : <div className="plc-img-ph" style={{ background: ph }}><span>{icon}</span></div>
-          }
-          {/* Category chip — bottom left, like TripCard mood chip */}
-          <span className="plc-cat" style={{ background: bg }}>{icon} {label}</span>
-          {/* Rating — top right, only when available */}
-          {avg != null && avg > 0 && (
-            <span className="plc-rating">
-              <span className="plc-star">★</span>
-              {avg.toFixed(1)}
-              {revs > 0 && <span className="plc-rating-count">{revs}</span>}
-            </span>
+    <Link
+      href={`/place/${place.slug}`}
+      style={{
+        display: "flex", flexDirection: "column",
+        borderRadius: 20, overflow: "hidden",
+        background: "#fff", textDecoration: "none", color: "inherit",
+        boxShadow: hovered ? "0 16px 36px rgba(15,23,42,.13)" : "0 2px 12px rgba(15,23,42,.06)",
+        border: "1px solid #f1f5f9",
+        transform: hovered ? "translateY(-6px)" : "none",
+        transition: "transform .22s ease, box-shadow .22s ease",
+        minWidth: 0,
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* ── Image area ── */}
+      <div style={{ position: "relative", height: 164, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
+        {showImg
+          ? <img
+              src={displayImg!}
+              alt={place.title}
+              loading="lazy"
+              onError={() => setImgError(true)}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block",
+                transform: hovered ? "scale(1.06)" : "scale(1)", transition: "transform .35s ease" }}
+            />
+          : <div style={{
+              width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+              background: `linear-gradient(135deg, ${color}18, ${color}38)`,
+            }}>
+              <span style={{ fontSize: 48 }}>{icon}</span>
+            </div>
+        }
+
+        {/* Gradient overlay */}
+        <div style={{ position: "absolute", inset: 0,
+          background: "linear-gradient(to top, rgba(15,23,42,.65) 0%, transparent 55%)",
+          pointerEvents: "none" }} />
+
+        {/* Top row */}
+        <div style={{ position: "absolute", top: 10, left: 10, right: 10,
+          display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 6 }}>
+          {prov && (
+            <span style={{
+              background: "rgba(255,255,255,.88)", color: "#0f172a",
+              fontSize: 11, fontWeight: 800, padding: "4px 10px", borderRadius: 999,
+              backdropFilter: "blur(6px)", boxShadow: "0 2px 6px rgba(0,0,0,.12)",
+              maxWidth: 130, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            }}>{prov}</span>
           )}
+          <div style={{ display: "flex", gap: 5, marginLeft: "auto", flexDirection: "column", alignItems: "flex-end" }}>
+            {place.business?.isVerified && (
+              <span style={{ background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "3px 9px", borderRadius: 999 }}>✓ Verified</span>
+            )}
+            {avg != null && avg > 0 && (
+              <span style={{
+                display: "flex", alignItems: "center", gap: 3,
+                background: "rgba(15,23,42,.75)", backdropFilter: "blur(8px)",
+                color: "white", fontSize: 12, fontWeight: 800,
+                padding: "4px 9px", borderRadius: 999,
+                border: "1px solid rgba(255,255,255,.15)",
+              }}>
+                <span style={{ color: "#fbbf24" }}>★</span>
+                {avg.toFixed(1)}
+                {revs > 0 && <span style={{ fontSize: 10, color: "rgba(255,255,255,.6)", fontWeight: 500 }}>{revs}</span>}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Body */}
-        <div className="plc-body">
-          <h3 className="plc-title">{place.title}</h3>
-          {subtitle && <p className="plc-subtitle">{subtitle}</p>}
-          <p className="plc-loc">📍 {[place.district, prov].filter(Boolean).join(", ")}</p>
-
-          {/* Footer */}
-          <div className="plc-footer">
-            <div className="plc-meta">
-              {place.business?.isVerified
-                ? <span className="plc-verified">✓ Verified</span>
-                : place.business
-                  ? <span className="plc-owned">🏢 มีเจ้าของ</span>
-                  : <span className="plc-community">⭕ ชุมชน</span>
-              }
-            </div>
-            <div className="plc-stats">
-              {likes > 0 && <span className="plc-stat">❤️ {likes}</span>}
-              {bms > 0 && <span className="plc-stat">🔖 {bms}</span>}
-              {revs > 0 && <span className="plc-stat">💬 {revs}</span>}
-            </div>
+        {/* Bottom row: category + stats */}
+        <div style={{ position: "absolute", bottom: 10, left: 10, right: 10,
+          display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 6 }}>
+          <span style={{
+            background: color, color: "white",
+            fontSize: 11, fontWeight: 800, padding: "4px 10px", borderRadius: 999,
+            boxShadow: "0 2px 8px rgba(0,0,0,.2)",
+          }}>{icon} {label}</span>
+          <div style={{ display: "flex", gap: 5 }}>
+            {place.business
+              ? <span style={{ background: "rgba(16,185,129,.85)", color: "#fff", fontSize: 10, fontWeight: 800, padding: "3px 9px", borderRadius: 999 }}>🏢 มีเจ้าของ</span>
+              : <span style={{ background: "rgba(100,116,139,.75)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 999 }}>⭕ ยังไม่มี</span>
+            }
           </div>
         </div>
       </div>
 
-      <style jsx>{`
-        .plc-card {
-          background: white; border-radius: 20px; overflow: hidden;
-          border: 1px solid #f1f5f9; box-shadow: 0 2px 12px rgba(15,23,42,0.05);
-          transition: all 0.22s; display: flex; flex-direction: column;
-        }
-        .plc-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 16px 36px rgba(15,23,42,0.11);
-          border-color: #e9d5ff;
-        }
-
-        .plc-img {
-          position: relative; height: 180px;
-          overflow: hidden; background: #e2e8f0; flex-shrink: 0;
-        }
-        .plc-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s; display: block; }
-        .plc-card:hover .plc-img img { transform: scale(1.05); }
-        .plc-img-ph {
-          width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
-        }
-        .plc-img-ph span { font-size: 56px; }
-
-        /* Category chip — matches TripCard .tc-mood-chip */
-        .plc-cat {
-          position: absolute; bottom: 10px; left: 10px;
-          backdrop-filter: blur(6px);
-          color: white; font-size: 11px; font-weight: 700;
-          padding: 4px 10px; border-radius: 999px;
-          max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
-        /* Rating — matches TripCard .tc-bm style */
-        .plc-rating {
-          position: absolute; top: 10px; right: 10px;
-          background: rgba(15,23,42,0.75); backdrop-filter: blur(8px);
-          color: white; font-size: 12px; font-weight: 800;
-          padding: 4px 9px; border-radius: 999px;
-          display: flex; align-items: center; gap: 3px;
-          border: 1px solid rgba(255,255,255,0.15);
-        }
-        .plc-star { color: #fbbf24; }
-        .plc-rating-count { font-size: 10px; color: rgba(255,255,255,0.6); font-weight: 500; }
-
-        /* Province chip — removed from image, now only in loc text */
-
-        .plc-body { padding: 14px 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
-        .plc-title { font-size: 15px; font-weight: 800; color: #1e293b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .plc-subtitle { font-size: 13px; color: #64748b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .plc-loc { font-size: 13px; font-weight: 600; color: #64748b; margin: 2px 0 0; }
-
-        .plc-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 10px; flex-wrap: wrap; gap: 6px; }
-        .plc-meta { display: flex; align-items: center; }
-        .plc-verified { font-size: 11px; font-weight: 700; color: #059669; background: #d1fae5; padding: 3px 9px; border-radius: 999px; }
-        .plc-owned { font-size: 11px; font-weight: 700; color: #1d4ed8; background: #dbeafe; padding: 3px 9px; border-radius: 999px; }
-        .plc-community { font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 3px 9px; border-radius: 999px; }
-        .plc-stats { display: flex; align-items: center; gap: 8px; }
-        .plc-stat { font-size: 12px; color: #94a3b8; font-weight: 700; }
-      `}</style>
+      {/* ── Body ── */}
+      <div style={{ padding: "12px 14px 13px", flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
+        <h3 style={{ fontSize: 14, fontWeight: 800, color: "#1e293b", margin: 0,
+          overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+          lineHeight: 1.35 } as React.CSSProperties}>{place.title}</h3>
+        {place.titleEn && (
+          <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0,
+            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{place.titleEn}</p>
+        )}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+          marginTop: "auto", paddingTop: 8, borderTop: "1px solid #f1f5f9" }}>
+          <span style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>
+            📍 {[place.district, prov].filter(Boolean).join(", ")}
+          </span>
+          <div style={{ display: "flex", gap: 6, fontSize: 11, fontWeight: 700, color: "#94a3b8" }}>
+            {likes > 0 && <span>❤️ {likes}</span>}
+            {bms > 0 && <span>🔖 {bms}</span>}
+          </div>
+        </div>
+      </div>
     </Link>
   );
 }
