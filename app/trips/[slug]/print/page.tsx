@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import ReadingProgress from "@/components/common/ReadingProgress";
+import BackToTop from "@/components/common/BackToTop";
 import "./print.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -53,6 +55,9 @@ export default async function PrintTripPage({ params }: Props) {
   });
 
   return (
+    <>
+    <ReadingProgress />
+    <BackToTop />
     <div className="print-root">
       {/* Print controls — hidden in print mode */}
       <div className="no-print print-controls">
@@ -160,5 +165,6 @@ export default async function PrintTripPage({ params }: Props) {
         </div>
       </div>
     </div>
+    </>
   );
 }
