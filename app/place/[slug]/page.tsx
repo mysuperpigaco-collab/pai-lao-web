@@ -14,6 +14,7 @@ import AdminPhotoUpload from "@/components/places/AdminPhotoUpload";
 import MissionSubmitBox from "@/components/places/MissionSubmitBox";
 import MapsButton from "@/components/common/MapsButton";
 import CommunityPhotosGallery from "@/components/places/CommunityPhotosGallery";
+import PlaceGalleryGrid from "@/components/places/PlaceGalleryGrid";
 import "./place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -361,13 +362,7 @@ export default async function PlaceDetailPage({ params }: Props) {
             {place.gallery?.length > 0 && (
               <div className="pd-card">
                 <h2>รูปภาพ Gallery</h2>
-                <div className="pd-gallery">
-                  {place.gallery.slice(0, 6).map((img, i) => (
-                    <div key={i} className="pd-gal-item">
-                      <img src={img} alt={place.title + " " + (i + 1)} />
-                    </div>
-                  ))}
-                </div>
+                <PlaceGalleryGrid images={place.gallery} title={place.title} />
               </div>
             )}
 

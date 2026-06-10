@@ -354,7 +354,21 @@ export default function DashboardPage() {
 
               {/* ─── Notifications (reply + trip-owner) ─── */}
               {(() => {
-                if (loadingNotifs) return null;
+                if (loadingNotifs) return (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 24 }}>
+                    {[1,2,3,4].map(i => (
+                      <div key={i} style={{ borderRadius: 16, padding: "13px 14px", border: "1.5px solid #e2e8f0", background: "#f8fafc" }}>
+                        <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                          <div className="pl-shimmer" style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0 }} />
+                          <div style={{ flex: 1 }}>
+                            <div className="pl-shimmer" style={{ height: 12, borderRadius: 6, marginBottom: 8, width: "70%" }} />
+                            <div className="pl-shimmer" style={{ height: 10, borderRadius: 6, width: "50%" }} />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
                 const allItems = [
                   ...tripReviews.map(n => ({ kind: "trip" as const, n })),
                   ...replyNotifs.map(n => ({ kind: "reply" as const, n })),

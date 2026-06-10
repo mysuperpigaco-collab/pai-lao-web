@@ -57,6 +57,7 @@ function CoverSlideshow({ images, defaultCover }: { images: string[]; defaultCov
   const all = images.length > 0 ? images : (defaultCover ? [defaultCover] : ["/images/hero-bg.png"]);
   const [idx, setIdx] = useState(0);
   const [fade, setFade] = useState(true);
+  const [lb, setLb] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const goTo = useCallback((i: number) => {
     setFade(false);
@@ -69,9 +70,28 @@ function CoverSlideshow({ images, defaultCover }: { images: string[]; defaultCov
   }, [idx, all.length, goTo]);
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
-      <img key={idx} src={all[idx]} alt="cover" style={{
+      {lb && (
+        <div onClick={() => setLb(false)} style={{
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: "rgba(0,0,0,0.92)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <button onClick={() => setLb(false)} style={{
+            position: "absolute", top: 16, right: 20,
+            background: "none", border: "none", color: "#fff",
+            fontSize: 32, cursor: "pointer", lineHeight: 1, zIndex: 2,
+          }}>✕</button>
+          <img
+            src={all[idx]}
+            alt="cover"
+            onClick={e => e.stopPropagation()}
+            style={{ maxWidth: "90vw", maxHeight: "88vh", objectFit: "contain", borderRadius: 10, boxShadow: "0 8px 40px rgba(0,0,0,0.6)", display: "block" }}
+          />
+        </div>
+      )}
+      <img key={idx} src={all[idx]} alt="cover" onClick={() => setLb(true)} style={{
         width: "100%", height: "100%", objectFit: "cover", display: "block",
-        opacity: fade ? 1 : 0, transition: "opacity 0.35s ease"
+        opacity: fade ? 1 : 0, transition: "opacity 0.35s ease", cursor: "zoom-in",
       }} />
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.52) 100%)", pointerEvents: "none" }} />
       {all.length > 1 && (
