@@ -51,7 +51,8 @@ const CAT_COLOR: Record<string,string> = { NATURE:"#16a34a",CAFE:"#92400e",ACCOM
 
 function SearchPlaceCard({ place }: { place: PlaceResult }) {
   const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
-  const [imgErr, setImgErr] = useState(false);
+  const [imgErr,    setImgErr   ] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
   const icon  = CAT_ICON[place.category]  ?? "📍";
   const color = CAT_COLOR[place.category] ?? "#0f172a";
   const prov  = place.province?.split(" (")[0] ?? "";
@@ -69,8 +70,10 @@ function SearchPlaceCard({ place }: { place: PlaceResult }) {
       {/* Image */}
       <div style={{ position: "relative", height: 164, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
         {showImg
-          ? <img src={displayImg!} alt={place.title} loading="lazy" onError={() => setImgErr(true)}
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform .35s ease" }} />
+          ? <img src={displayImg!} alt={place.title} loading="lazy"
+              onLoad={() => setImgLoaded(true)}
+              onError={() => setImgErr(true)}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", filter: imgLoaded ? "blur(0px)" : "blur(10px)", transform: imgLoaded ? "scale(1)" : "scale(1.06)", opacity: imgLoaded ? 1 : 0, transition: "filter 0.5s ease, transform 0.5s ease, opacity 0.4s ease" }} />
           : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: `linear-gradient(135deg, ${color}18, ${color}38)` }}>
               <span style={{ fontSize: 48 }}>{icon}</span>
             </div>
@@ -108,6 +111,7 @@ function SearchPlaceCard({ place }: { place: PlaceResult }) {
 
 function SearchTripCard({ trip }: { trip: TripResult }) {
   const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
+  const [imgLoaded, setImgLoaded] = useState(false);
   return (
     <Link href={`/trips/${trip.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
       <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
@@ -115,7 +119,9 @@ function SearchTripCard({ trip }: { trip: TripResult }) {
         <div ref={shineRef} style={shineStyle} />
         <div style={{ position: "relative", height: 140, background: "#e2e8f0", overflow: "hidden" }}>
           {trip.coverUrl
-            ? <img src={trip.coverUrl} alt={trip.title} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ? <img src={trip.coverUrl} alt={trip.title} loading="lazy"
+                onLoad={() => setImgLoaded(true)}
+                style={{ width: "100%", height: "100%", objectFit: "cover", filter: imgLoaded ? "blur(0px)" : "blur(10px)", transform: imgLoaded ? "scale(1)" : "scale(1.06)", opacity: imgLoaded ? 1 : 0, transition: "filter 0.5s ease, transform 0.5s ease, opacity 0.4s ease" }} />
             : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32 }}>🗺️</div>
           }
           {trip.avgRating != null && trip.avgRating > 0 && (

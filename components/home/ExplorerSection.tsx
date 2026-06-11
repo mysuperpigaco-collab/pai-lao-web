@@ -74,7 +74,8 @@ function useColumns() {
 // ── Place Card ───────────────────────────────────────────────────────────────
 function PlaceCard({ place, rank }: { place: Place; rank: number }) {
   const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
-  const [imgError, setImgError] = useState(false);
+  const [imgError,  setImgError ] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   const verified = place.business?.isVerified || place.isVerified;
   const bookmarks = place._count?.bookmarks ?? 0;
@@ -242,9 +243,10 @@ function PlaceCard({ place, rank }: { place: Place; rank: number }) {
             <img
               src={src}
               alt={place.title}
-              style={imgStyle}
               loading="lazy"
+              onLoad={() => setImgLoaded(true)}
               onError={() => setImgError(true)}
+              style={{ ...imgStyle, filter: imgLoaded ? "blur(0px)" : "blur(10px)", transform: imgLoaded ? "scale(1)" : "scale(1.06)", opacity: imgLoaded ? 1 : 0, transition: "filter 0.5s ease, transform 0.5s ease, opacity 0.4s ease" }}
             />
           ) : (
             <div style={{ ...placeholder, background: `linear-gradient(135deg, ${catBg}88, ${catBg})` }}>

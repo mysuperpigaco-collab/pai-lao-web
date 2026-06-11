@@ -88,6 +88,7 @@ function useColumns(cols5: number, cols4: number) {
 
 function TripCard({ trip }: { trip: Trip }) {
   const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
+  const [imgLoaded, setImgLoaded] = useState(false);
   const province = trip.province?.split(" (")[0] ?? "";
   const author   = trip.author?.displayName || trip.author?.firstName || "";
   const avatar   = trip.author?.avatarUrl;
@@ -99,7 +100,9 @@ function TripCard({ trip }: { trip: Trip }) {
       <Link href={`/trips/${trip.slug}`} style={{ ...S.card, boxShadow: "none" }}>
         <div style={S.imgWrap}>
           {trip.coverUrl
-            ? <img src={trip.coverUrl} alt={trip.title} loading="lazy" style={S.imgEl} />
+            ? <img src={trip.coverUrl} alt={trip.title} loading="lazy"
+                onLoad={() => setImgLoaded(true)}
+                style={{ ...S.imgEl, filter: imgLoaded ? "blur(0px)" : "blur(10px)", transform: imgLoaded ? "scale(1)" : "scale(1.06)", opacity: imgLoaded ? 1 : 0, transition: "filter 0.5s ease, transform 0.5s ease, opacity 0.4s ease" }} />
             : <div style={{ ...S.imgEl, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>🗺️</div>
           }
           {province && <span style={S.chipProv}>{province}</span>}
@@ -131,7 +134,8 @@ function TripCard({ trip }: { trip: Trip }) {
 
 function PlaceCard({ place }: { place: Place }) {
   const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
-  const [imgError, setImgError] = useState(false);
+  const [imgError,  setImgError ] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
   const prov = place.province?.split(" (")[0] ?? place.province;
   const displayImg = (!place.business && place.communityCover)
     ? place.communityCover
@@ -155,8 +159,9 @@ function PlaceCard({ place }: { place: Place }) {
         <div style={S.imgWrap}>
           {showImg
             ? <img src={displayImg!} alt={place.title} loading="lazy"
-                style={S.imgEl}
-                onError={() => setImgError(true)} />
+                onLoad={() => setImgLoaded(true)}
+                onError={() => setImgError(true)}
+                style={{ ...S.imgEl, filter: imgLoaded ? "blur(0px)" : "blur(10px)", transform: imgLoaded ? "scale(1)" : "scale(1.06)", opacity: imgLoaded ? 1 : 0, transition: "filter 0.5s ease, transform 0.5s ease, opacity 0.4s ease" }} />
             : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center",
                 background:`linear-gradient(135deg, ${fallbackColor}22, ${fallbackColor}44)` }}>
                 <span style={{ fontSize:52 }}>{fallbackIcon}</span>

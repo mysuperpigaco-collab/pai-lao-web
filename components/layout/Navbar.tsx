@@ -57,22 +57,6 @@ export default function Navbar() {
     return () => window.removeEventListener("resize", handler);
   }, []);
 
-  // Progressive blur — อัปเดต style ตรงบน DOM ไม่ใช้ state เพื่อ 0 re-render
-  useEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-    const onScroll = () => {
-      const t = Math.min(window.scrollY / 90, 1);
-      const alpha = 0.25 + t * 0.55;
-      nav.style.background = `linear-gradient(135deg, rgba(5,150,105,${alpha}) 0%, rgba(8,145,178,${alpha}) 100%)`;
-      nav.style.backdropFilter = `blur(${4 + t * 10}px)`;
-      (nav.style as CSSStyleDeclaration & { webkitBackdropFilter: string }).webkitBackdropFilter = `blur(${4 + t * 10}px)`;
-      nav.style.boxShadow = t > 0.4 ? `0 2px 16px rgba(5,150,105,${t * 0.18})` : "none";
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const handleSearch = () => {
     const q = searchQ.trim();

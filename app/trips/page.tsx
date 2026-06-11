@@ -438,6 +438,7 @@ function TripsInner() {
 /* ─── Trip Card ──────────────────────────────────────────── */
 function TripCard({ trip }: { trip: Trip }) {
   const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
+  const [imgLoaded, setImgLoaded] = useState(false);
   const moodIcon: Record<string, string> = {
     "Cafe Hopping": "☕",
     "สายลุย": "🧗",
@@ -461,7 +462,9 @@ function TripCard({ trip }: { trip: Trip }) {
         {/* Image */}
         <div className="tc-img">
           {trip.coverUrl
-            ? <img src={trip.coverUrl} alt={trip.title} loading="lazy" />
+            ? <img src={trip.coverUrl} alt={trip.title} loading="lazy"
+                onLoad={() => setImgLoaded(true)}
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", filter: imgLoaded ? "blur(0px)" : "blur(10px)", transform: imgLoaded ? "scale(1)" : "scale(1.06)", opacity: imgLoaded ? 1 : 0, transition: "filter 0.5s ease, transform 0.5s ease, opacity 0.4s ease" }} />
             : <div className="tc-img-ph">{icon}</div>
           }
           {/* Mood chip */}
