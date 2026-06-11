@@ -27,28 +27,36 @@ export async function GET(request: Request) {
       ]} : {}),
     };
 
-    const orderBy: any = sort === "popular"
-      ? { bookmarks: { _count: "desc" } }
-      : { createdAt: "desc" };
+    const select = {
+      id: true, slug: true, title: true, titleEn: true,
+      province: true, district: true, category: true, tags: true,
+      coverUrl: true, descriptionShort: true, entryFee: true,
+      isVerified: true, createdAt: true, shareCount: true,
+      business: { select: { id: true, businessName: true, logoUrl: true, isVerified: true } },
+      _count: { select: { reviews: true, bookmarks: true, likes: true } },
+      reviews: { select: { rating: true } },
+    };
 
-    const [places, total] = await Promise.all([
-      prisma.place.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy,
-        select: {
-          id: true, slug: true, title: true, titleEn: true,
-          province: true, district: true, category: true, tags: true,
-          coverUrl: true, descriptionShort: true, entryFee: true,
-          isVerified: true, createdAt: true, shareCount: true,
-          business: { select: { id: true, businessName: true, logoUrl: true, isVerified: true } },
-          _count: { select: { reviews: true, bookmarks: true, likes: true } },
-          reviews: { select: { rating: true } },
-        },
-      }),
-      prisma.place.count({ where }),
-    ]);
+    let places;
+    if (sort === "popular") {
+      // Weighted score: bookmark×3 + like×1 — Prisma can't do formula orderBy so sort in JS
+      const all = await prisma.place.findMany({ where, select });
+      all.sort((a, b) => {
+        const sa = a._count.bookmarks * 3 + a._count.likes;
+        const sb = b._count.bookmarks * 3 + b._count.likes;
+        if (sb !== sa) return sb - sa;
+        return b.id > a.id ? 1 : b.id < a.id ? -1 : 0; // tie-break: id desc
+      });
+      places = all.slice(skip, skip + limit);
+    } else {
+      places = await prisma.place.findMany({
+        where, skip, take: limit,
+        orderBy: { createdAt: "desc" },
+        select,
+      });
+    }
+
+    const total = await prisma.place.count({ where });
 
     // Compute avgRating per place
     const placesWithAvg = places.map(p => {
