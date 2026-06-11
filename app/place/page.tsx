@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { PROVINCES, getDistricts } from "@/data/thailand";
@@ -259,7 +260,11 @@ function PlacesInner() {
           </div>
         ) : (
           <div className="pl-grid">
-            {places.map(place => <PlaceCard key={place.slug} place={place} />)}
+            {places.map((place, i) => (
+              <ScrollReveal key={place.slug} delay={Math.min(i, 5) * 70}>
+                <PlaceCard place={place} />
+              </ScrollReveal>
+            ))}
           </div>
         )}
 

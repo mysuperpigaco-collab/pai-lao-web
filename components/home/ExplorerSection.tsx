@@ -2,6 +2,7 @@
 import { useState, useEffect, CSSProperties } from "react";
 import Link from "next/link";
 import { useTiltCard } from "@/hooks/useTiltCard";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 import { PROVINCES, getDistricts } from "@/data/thailand";
 
 interface Place {
@@ -519,7 +520,9 @@ export default function ExplorerSection() {
             {/* Grid */}
             <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols},1fr)`, gap: 16, maxWidth: "100%" }}>
               {places.map((place, i) => (
-                <PlaceCard key={place.slug} place={place} rank={i} />
+                <ScrollReveal key={place.slug} delay={Math.min(i, 5) * 70}>
+                  <PlaceCard place={place} rank={i} />
+                </ScrollReveal>
               ))}
             </div>
 

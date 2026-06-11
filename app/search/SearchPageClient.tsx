@@ -2,6 +2,7 @@
 import ProvinceSelect from "@/components/ui/ProvinceSelect";
 import DistrictSelect from "@/components/ui/DistrictSelect";
 import { useState, useEffect, useRef } from "react";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTiltCard } from "@/hooks/useTiltCard";
@@ -471,8 +472,10 @@ export default function SearchPageClient() {
                 <span style={{ fontSize: 12, fontWeight: 700, background: "#eff6ff", color: "#2563eb", padding: "2px 8px", borderRadius: 999 }}>{totalTrips}</span>
               </h2>
               <div className="search-result-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
-                {trips.map(trip => (
-                  <SearchTripCard key={trip.slug} trip={trip} />
+                {trips.map((trip, i) => (
+                  <ScrollReveal key={trip.slug} delay={Math.min(i, 5) * 70}>
+                    <SearchTripCard trip={trip} />
+                  </ScrollReveal>
                 ))}
               </div>
               {totalTrips > 20 && (
@@ -491,7 +494,11 @@ export default function SearchPageClient() {
                 <span style={{ fontSize: 12, fontWeight: 700, background: "#f0fdf4", color: "#15803d", padding: "2px 8px", borderRadius: 999 }}>{totalPlaces}</span>
               </h2>
               <div className="search-result-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
-                {places.map(place => <SearchPlaceCard key={place.slug} place={place} />)}
+                {places.map((place, i) => (
+                <ScrollReveal key={place.slug} delay={Math.min(i, 5) * 70}>
+                  <SearchPlaceCard place={place} />
+                </ScrollReveal>
+              ))}
               </div>
               {totalPlaces > 20 && (
                 <div style={{ textAlign: "center", marginTop: 14 }}>

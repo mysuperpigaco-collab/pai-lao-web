@@ -2,6 +2,7 @@
 import { useState, useEffect, CSSProperties } from "react";
 import Link from "next/link";
 import { useTiltCard } from "@/hooks/useTiltCard";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 interface Trip {
   slug: string; title: string; coverUrl?: string | null;
@@ -266,14 +267,22 @@ export default function AutoGridSection() {
       ) : tab.type === "trip" ? (
         trips.length === 0 ? <div style={S.empty}>ยังไม่มีเรื่องเล่า</div> : (
           <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols.trip},1fr)`, gap: 16 }}>
-            {trips.map(t => <TripCard key={t.slug} trip={t} />)}
+            {trips.map((t, i) => (
+              <ScrollReveal key={t.slug} delay={Math.min(i, 5) * 70}>
+                <TripCard trip={t} />
+              </ScrollReveal>
+            ))}
           </div>
         )
       ) : (
         places.length === 0 ? <div style={S.empty}>ยังไม่มีสถานที่</div> : (
           <>
             <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols.place},1fr)`, gap: 16 }}>
-              {places.map(p => <PlaceCard key={p.slug} place={p} />)}
+              {places.map((p, i) => (
+                <ScrollReveal key={p.slug} delay={Math.min(i, 5) * 70}>
+                  <PlaceCard place={p} />
+                </ScrollReveal>
+              ))}
             </div>
             <div style={{ textAlign: "center", marginTop: 28 }}>
               <Link href={`/place?category=${tab.param}&sort=popular`} style={S.seeAll}>
