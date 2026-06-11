@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useMagneticButton } from "@/hooks/useMagneticButton";
 import { ArrowRight, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
@@ -47,8 +48,9 @@ function HintTooltip({ text }: { text: string }) {
 }
 
 export default function CreateStoryPage() {
-  const router   = useRouter();
-  const { user } = useAuth();
+  const router      = useRouter();
+  const { user }    = useAuth();
+  const magPublish  = useMagneticButton();
 
   // ── Guard: ADMIN/SUPERADMIN ไม่สามารถสร้างทริปได้ ──────────
   useEffect(() => {
@@ -866,7 +868,7 @@ export default function CreateStoryPage() {
                 {isSavingDraft ? "⏳ กำลังบันทึก..." : "📌 บันทึกชั่วคราว"}
               </button>
             )}
-            <button type="submit" className="btn-action-publish" disabled={isLoading}>
+            <button ref={magPublish.ref} onMouseMove={magPublish.onMouseMove} onMouseLeave={magPublish.onMouseLeave} type="submit" className="btn-action-publish" disabled={isLoading}>
               {isLoading ? "⏳ กำลังโพสต์..." : "🚀 ลงเรื่องเล่าเลย! | Publish Now"}
             </button>
           </div>

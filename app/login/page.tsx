@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import InputField from "@/components/ui/InputField";
 import { useAuth } from "@/context/AuthContext";
+import { useMagneticButton } from "@/hooks/useMagneticButton";
 
 export default function LoginPage() {
   return <Suspense fallback={null}><LoginInner /></Suspense>;
@@ -14,6 +15,7 @@ function LoginInner() {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const { login }    = useAuth();
+  const magSubmit    = useMagneticButton();
 
   const [formData,      setFormData     ] = useState({ identifier: "", password: "", rememberMe: false });
   const [error,         setError        ] = useState("");
@@ -129,7 +131,7 @@ function LoginInner() {
             </Link>
           </div>
 
-          <button type="submit" className="btn-login-submit" disabled={isLoading}>
+          <button ref={magSubmit.ref} onMouseMove={magSubmit.onMouseMove} onMouseLeave={magSubmit.onMouseLeave} type="submit" className="btn-login-submit" disabled={isLoading}>
             {isLoading ? "กำลังตรวจสอบ..." : "เข้าสู่ระบบ | Sign In"}
           </button>
         </form>

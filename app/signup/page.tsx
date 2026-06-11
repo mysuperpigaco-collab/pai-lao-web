@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useMagneticButton } from "@/hooks/useMagneticButton";
 import SignupTabs from "@/components/auth/SignupTabs";
 import TravelerFields from "@/components/auth/TravelerFields";
 import InputField from "@/components/ui/InputField";
 
 export default function SignupPage() {
+  const magSubmit = useMagneticButton();
   const [accountType, setAccountType] = useState("user");
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
@@ -278,7 +280,7 @@ export default function SignupPage() {
               </label>
             </div>
 
-            <button type="submit" className={`btn-submit ${accountType}`} disabled={isLoading || !acceptedTerms} style={{ opacity: !acceptedTerms ? 0.6 : 1 }}>
+            <button ref={magSubmit.ref} onMouseMove={magSubmit.onMouseMove} onMouseLeave={magSubmit.onMouseLeave} type="submit" className={`btn-submit ${accountType}`} disabled={isLoading || !acceptedTerms} style={{ opacity: !acceptedTerms ? 0.6 : 1 }}>
               {isLoading ? "กำลังสมัคร..." : "ยืนยันสมัครสมาชิก | Register Now"}
             </button>
           </form>

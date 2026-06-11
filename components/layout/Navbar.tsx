@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useMagneticButton } from "@/hooks/useMagneticButton";
 
 const IconSearch = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -27,6 +28,8 @@ export default function Navbar() {
   const router = useRouter();
   const navRef = useRef<HTMLElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const magWrite = useMagneticButton();
+  const magSignup = useMagneticButton();
   const [searchQ, setSearchQ] = useState("");
   const [searchType, setSearchType] = useState("ทริป");
   const [siteSettings, setSiteSettings] = useState<Record<string,string>>({});
@@ -297,17 +300,17 @@ export default function Navbar() {
               {/* Write / Add Place */}
               {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && (
                 user.role === "BUSINESS" ? (
-                  <Link href="/business/places/create" className="nb-write-btn">
+                  <Link ref={magWrite.ref} onMouseMove={magWrite.onMouseMove} onMouseLeave={magWrite.onMouseLeave} href="/business/places/create" className="nb-write-btn">
                     <IconPlus /><span>เพิ่มสถานที่</span>
                   </Link>
                 ) : (
-                  <Link href="/trips/create" className="nb-write-btn">
+                  <Link ref={magWrite.ref} onMouseMove={magWrite.onMouseMove} onMouseLeave={magWrite.onMouseLeave} href="/trips/create" className="nb-write-btn">
                     <IconPencil /><span>เขียนทริป</span>
                   </Link>
                 )
               )}
               {(user.role === "ADMIN" || user.role === "SUPERADMIN") && (
-                <Link href="/admin" className="nb-write-btn">
+                <Link ref={magWrite.ref} onMouseMove={magWrite.onMouseMove} onMouseLeave={magWrite.onMouseLeave} href="/admin" className="nb-write-btn">
                   <IconPencil /><span>แอดมิน</span>
                 </Link>
               )}
@@ -328,7 +331,7 @@ export default function Navbar() {
           ) : (
             <>
               <Link href="/login"  className="nb-login">เข้าสู่ระบบ</Link>
-              <Link href="/signup" className="nb-signup">สมัครสมาชิก</Link>
+              <Link ref={magSignup.ref} onMouseMove={magSignup.onMouseMove} onMouseLeave={magSignup.onMouseLeave} href="/signup" className="nb-signup">สมัครสมาชิก</Link>
             </>
           )}
         </div>
