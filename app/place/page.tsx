@@ -519,7 +519,8 @@ function PlacesInner() {
 
 /* ─── Place Card ─────────────────────────────────────────── */
 function PlaceCard({ place }: { place: Place }) {
-  const [imgError, setImgError] = React.useState(false);
+  const [imgError,  setImgError ] = React.useState(false);
+  const [imgLoaded, setImgLoaded] = React.useState(false);
   const cardRef  = React.useRef<HTMLDivElement>(null);
   const shineRef = React.useRef<HTMLDivElement>(null);
 
@@ -603,8 +604,15 @@ function PlaceCard({ place }: { place: Place }) {
               src={displayImg!}
               alt={place.title}
               loading="lazy"
+              onLoad={() => setImgLoaded(true)}
               onError={() => setImgError(true)}
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform .35s ease" }}
+              style={{
+                width: "100%", height: "100%", objectFit: "cover", display: "block",
+                filter:     imgLoaded ? "blur(0px)"    : "blur(10px)",
+                transform:  imgLoaded ? "scale(1)"     : "scale(1.06)",
+                opacity:    imgLoaded ? 1               : 0,
+                transition: "filter 0.5s ease, transform 0.5s ease, opacity 0.4s ease",
+              }}
             />
           : <div style={{
               width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center",
