@@ -80,6 +80,18 @@ export default function TripSlider({ activeTab, onTabChange }: TripSliderProps) 
       background: "#f1f5f9", borderRadius: 16, padding: 4,
       border: "1.5px solid #e2e8f0", marginBottom: 14,
     }}>
+      <style>{`
+        @keyframes trophy-swing {
+          0%,100% { transform: rotate(-10deg) scale(1); }
+          50%      { transform: rotate(10deg) scale(1.15); }
+        }
+        @keyframes fire-flicker {
+          0%,100% { transform: scale(1)    rotate(-4deg); }
+          25%     { transform: scale(1.2)  rotate(4deg);  }
+          50%     { transform: scale(1.05) rotate(-3deg); }
+          75%     { transform: scale(1.25) rotate(3deg);  }
+        }
+      `}</style>
       {TABS.map(t => {
         const isActive = t.key === activeTab;
         const isTrending = t.key === "trending";
@@ -96,7 +108,13 @@ export default function TripSlider({ activeTab, onTabChange }: TripSliderProps) 
             color: isActive ? "#fff" : "#64748b",
             boxShadow: isActive ? "0 4px 14px rgba(0,0,0,0.14)" : "none",
           }}>
-            <span style={{ fontSize: 16 }}>{t.icon}</span>
+            <span style={{
+              fontSize: 16,
+              display: "inline-block",
+              animation: isTrending
+                ? "fire-flicker 0.85s ease-in-out infinite"
+                : "trophy-swing 1.8s ease-in-out infinite",
+            }}>{t.icon}</span>
             <span>{t.label}</span>
           </button>
         );
