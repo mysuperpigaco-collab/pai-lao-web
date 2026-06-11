@@ -71,6 +71,15 @@ html {
   background-color: #1a3a2a;
 }
 
+/* Hide scrollbars globally — scroll still works, just no visible bar */
+*, *::before, *::after {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
 /* Fixed background layer — ใช้ pseudo-element แทน background-attachment: fixed
    เพราะ overflow-x: clip บน html ทำให้ background-attachment: fixed ไม่ทำงานใน Chrome */
 html::before {
