@@ -118,7 +118,7 @@ export default async function PlaceDetailPage({ params }: Props) {
       },
       _count: { select: { reviews: true, bookmarks: true } },
     },
-  });
+  }).catch(() => null);
 
   if (!place) return notFound();
 
