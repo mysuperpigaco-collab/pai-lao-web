@@ -21,9 +21,16 @@ export default function PlaceError({
       <h2 style={{ color: "#f1f5f9", fontWeight: 800, fontSize: 20, marginBottom: 8 }}>
         ไม่สามารถโหลดหน้านี้ได้
       </h2>
-      <p style={{ color: "#64748b", fontSize: 14, marginBottom: 24, maxWidth: 360 }}>
-        เกิดข้อผิดพลาดขณะโหลดข้อมูลสถานที่ กรุณาลองใหม่อีกครั้ง
+      <p style={{ color: "#64748b", fontSize: 14, marginBottom: 8, maxWidth: 360 }}>
+        เกิดข้อผิดพลาดขณะโหลดข้อมูลสถานที่ อาจเกิดจากข้อมูลใน DB ไม่ถูกต้อง
       </p>
+      {error.message && (
+        <pre style={{ fontSize: 11, color: "#475569", background: "#0f172a",
+          border: "1px solid #334155", borderRadius: 8, padding: "8px 14px",
+          marginBottom: 20, maxWidth: 480, overflowX: "auto", textAlign: "left" }}>
+          {error.message}
+        </pre>
+      )}
       <div style={{ display: "flex", gap: 12 }}>
         <button onClick={unstable_retry}
           style={{ padding: "8px 20px", borderRadius: 8, background: "#2563eb",
@@ -35,6 +42,12 @@ export default function PlaceError({
             color: "#94a3b8", border: "1px solid #334155", fontWeight: 700, fontSize: 14,
             textDecoration: "none" }}>
           ← กลับหน้าสถานที่
+        </Link>
+        <Link href="/admin/places"
+          style={{ padding: "8px 20px", borderRadius: 8, background: "#1e293b",
+            color: "#94a3b8", border: "1px solid #334155", fontWeight: 700, fontSize: 14,
+            textDecoration: "none" }}>
+          🗂️ Admin Places
         </Link>
       </div>
     </div>

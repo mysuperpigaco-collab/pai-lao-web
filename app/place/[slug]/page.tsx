@@ -95,6 +95,9 @@ export default async function PlaceDetailPage({ params }: Props) {
   const raw = await params;
   const slug = decodeURIComponent(raw.slug);
 
+  const session = await getCurrentUser();
+  const isAdmin = session?.role === "ADMIN" || session?.role === "SUPERADMIN";
+
   const place = await prisma.place.findUnique({
     where: { slug },
     include: {
@@ -118,11 +121,14 @@ export default async function PlaceDetailPage({ params }: Props) {
       },
       _count: { select: { reviews: true, bookmarks: true } },
     },
-  }).catch(() => null);
+  }).catch((err) => {
+    // Admin: re-throw so error.tsx shows (they can see the error and investigate)
+    // Non-admin: swallow and show 404
+    if (isAdmin) throw err;
+    return null;
+  });
 
   if (!place) return notFound();
-
-  const session = await getCurrentUser();
   const avgRating = place.reviews.length
     ? place.reviews.reduce((s, r) => s + r.rating, 0) / place.reviews.length
     : 0;
