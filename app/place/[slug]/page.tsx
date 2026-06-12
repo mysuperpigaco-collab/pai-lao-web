@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props) {
   const desc = place.descriptionShort
     || place.description?.replace(/<[^>]+>/g, "").slice(0, 160)
     || `${place.title} · ${place.province}`;
-  const image  = place.coverUrl || `${SITE_URL}/images/og-default.png`;
+  const image  = place.coverUrl || `${SITE_URL}/opengraph-image`;
   const locStr = [place.district, place.province].filter(Boolean).join(", ");
 
   return {

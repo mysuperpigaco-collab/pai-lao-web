@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: Props) {
   const desc       = trip.subtitle
     || trip.description?.replace(/<[^>]+>/g, "").slice(0, 160)
     || `เรื่องเล่าการเดินทางโดย ${authorName}`;
-  const image      = trip.coverUrl || `${SITE_URL}/images/og-default.png`;
+  const image      = trip.coverUrl || `${SITE_URL}/opengraph-image`;
 
   return {
     title:       `${trip.title} | ไปเล่า`,
