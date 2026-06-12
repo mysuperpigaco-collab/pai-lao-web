@@ -352,7 +352,7 @@ export default function SearchPageClient() {
       {/* ── Results ── */}
       {loading ? (
         <>
-            <div style={{display:"grid",gridTemplateColumns:`repeat(3,1fr)`,gap:12}}>
+            <div style={{display:"grid",gridTemplateColumns:`repeat(3,minmax(0,1fr))`,gap:12}}>
               <div style={{borderRadius:16,overflow:"hidden",border:"1px solid #f1f5f9",background:"white"}}>
                 <div style={{position:"relative",paddingBottom:"62%",background:"#f1f5f9",overflow:"hidden"}}>
                   <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg,#f1f5f9 0%,#e2e8f0 45%,#f1f5f9 90%)",backgroundSize:"200% 100%",animation:`_sh 1.5s ease infinite 0.00s`}}/>
@@ -477,7 +477,7 @@ export default function SearchPageClient() {
                 ✈️ ทริป · Trips
                 <span style={{ fontSize: 12, fontWeight: 700, background: "#eff6ff", color: "#2563eb", padding: "2px 8px", borderRadius: 999 }}>{totalTrips}</span>
               </h2>
-              <div className="search-result-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+              <div className="search-result-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 14 }}>
                 {trips.map((trip, i) => (
                   <ScrollReveal key={trip.slug} delay={Math.min(i, 5) * 70}>
                     <SearchTripCard trip={trip} />
@@ -499,7 +499,7 @@ export default function SearchPageClient() {
                 🗺️ สถานที่ · Places
                 <span style={{ fontSize: 12, fontWeight: 700, background: "#f0fdf4", color: "#15803d", padding: "2px 8px", borderRadius: 999 }}>{totalPlaces}</span>
               </h2>
-              <div className="search-result-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+              <div className="search-result-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 14 }}>
                 {places.map((place, i) => (
                 <ScrollReveal key={place.slug} delay={Math.min(i, 5) * 70}>
                   <SearchPlaceCard place={place} />
@@ -521,7 +521,7 @@ export default function SearchPageClient() {
         :global(.srch-page) { overflow-x: hidden; box-sizing: border-box; }
 
         @media (max-width: 900px) {
-          :global(.search-result-grid) { grid-template-columns: repeat(2, 1fr) !important; }
+          :global(.search-result-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
         }
 
         @media (max-width: 640px) {
@@ -540,7 +540,7 @@ export default function SearchPageClient() {
             padding: 5px 10px !important;
             font-size: 12px !important;
           }
-          :global(.search-result-grid) { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+          :global(.search-result-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; }
         }
 
         @media (max-width: 400px) {

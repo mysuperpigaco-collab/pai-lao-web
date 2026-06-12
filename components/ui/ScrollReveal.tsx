@@ -36,7 +36,7 @@ export default function ScrollReveal({ children, delay = 0, style, className }: 
   }, [delay]);
 
   return (
-    <div ref={ref} style={style} className={className}>
+    <div ref={ref} style={{ minWidth: 0, ...style }} className={className}>
       {children}
     </div>
   );
