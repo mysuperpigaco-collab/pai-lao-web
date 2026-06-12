@@ -166,7 +166,7 @@ export default async function TripDetailPage({ params }: Props) {
     orderBy: { createdAt: "desc" },
     take: 3,
     select: { slug: true, title: true, coverUrl: true, author: { select: { firstName: true, displayName: true } } },
-  });
+  }).catch(() => []);
 
   const isOwner = session?.userId === trip.author.id;
   const isAdmin = session?.role === "ADMIN" || session?.role === "SUPERADMIN";
