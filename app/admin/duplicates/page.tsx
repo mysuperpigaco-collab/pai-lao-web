@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 
 interface PlaceNode {
@@ -17,12 +17,88 @@ interface DupPair {
   distanceM: number;
   similarity: number;
 }
+type ConfirmTarget = { placeId: string; title: string; action: "hide" | "delete" };
 
 function fmt(d: string) {
   return new Date(d).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" });
 }
 
-function PlaceCard({ p, label }: { p: PlaceNode; label: string }) {
+/* ── Confirm Modal ── */
+function ConfirmModal({ target, onClose, onDone }: {
+  target: ConfirmTarget;
+  onClose: () => void;
+  onDone: (id: string) => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState("");
+  const isDelete = target.action === "delete";
+
+  async function confirm() {
+    setLoading(true);
+    try {
+      let res: Response;
+      if (isDelete) {
+        res = await fetch(`/api/admin/places?placeId=${target.placeId}`, { method: "DELETE" });
+      } else {
+        res = await fetch("/api/admin/places", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ placeId: target.placeId, action: "hide", rejectionReason: "ซ้ำกับสถานที่อื่น" }),
+        });
+      }
+      const d = await res.json();
+      if (res.ok) {
+        onDone(target.placeId);
+      } else {
+        setMsg(d.message || "เกิดข้อผิดพลาด");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="adm-modal-backdrop" onClick={onClose}>
+      <div className="adm-modal" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+        <div className="adm-modal-title">
+          {isDelete ? "🗑️ ลบสถานที่ถาวร" : "🙈 ซ่อนสถานที่"}
+        </div>
+        <div className="adm-modal-body">
+          <p style={{ color: "#94a3b8", marginBottom: 12 }}>
+            สถานที่: <strong style={{ color: "#f1f5f9" }}>{target.title}</strong>
+          </p>
+          {isDelete ? (
+            <div style={{ background: "#450a0a", borderRadius: 8, padding: "10px 14px",
+              color: "#fca5a5", fontSize: 13, lineHeight: 1.6 }}>
+              ⚠️ การลบไม่สามารถเรียกคืนได้ รีวิวและ bookmark ทั้งหมดจะถูกลบตามด้วย
+            </div>
+          ) : (
+            <div style={{ background: "#1c1003", borderRadius: 8, padding: "10px 14px",
+              color: "#fbbf24", fontSize: 13, lineHeight: 1.6 }}>
+              สถานที่จะถูกตั้งเป็น REJECTED และไม่แสดงบนเว็บไซต์ แต่ข้อมูลยังคงอยู่
+            </div>
+          )}
+          {msg && <p style={{ color: "#ef4444", fontSize: 13, marginTop: 10 }}>{msg}</p>}
+        </div>
+        <div className="adm-modal-actions">
+          <button className="adm-btn ghost" onClick={onClose} disabled={loading}>ยกเลิก</button>
+          <button className="adm-btn" disabled={loading}
+            style={{ background: isDelete ? "#dc2626" : "#92400e" }}
+            onClick={confirm}>
+            {loading ? "⏳..." : isDelete ? "🗑️ ลบถาวร" : "🙈 ซ่อนสถานที่"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Place Card ── */
+function PlaceCard({ p, label, onAction }: {
+  p: PlaceNode;
+  label: string;
+  onAction: (action: "hide" | "delete") => void;
+}) {
   return (
     <div style={{ flex: 1, minWidth: 0, background: "#0f172a", borderRadius: 10, overflow: "hidden",
       border: "1px solid #1e293b" }}>
@@ -42,33 +118,46 @@ function PlaceCard({ p, label }: { p: PlaceNode; label: string }) {
         <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>
           📍 {p.province} · {p.district} · {p.category}
         </div>
-        <div style={{ fontSize: 11, color: "#475569", marginBottom: 8 }}>
+        <div style={{ fontSize: 11, color: "#475569", marginBottom: 10 }}>
           ⭐ {p._count.reviews} รีวิว · 🔖 {p._count.bookmarks} · {fmt(p.createdAt)}
         </div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           <Link href={`/place/${p.slug}`} target="_blank"
             style={{ fontSize: 11, color: "#4facfe", textDecoration: "none",
               background: "#0f172a", border: "1px solid #334155", borderRadius: 6, padding: "3px 10px" }}>
-            🔗 ดูสถานที่
+            🔗 ดู
           </Link>
           {p.googleMapsUrl && (
             <a href={p.googleMapsUrl} target="_blank" rel="noreferrer"
               style={{ fontSize: 11, color: "#4facfe", textDecoration: "none",
                 background: "#0f172a", border: "1px solid #334155", borderRadius: 6, padding: "3px 10px" }}>
-              Google Maps
+              Maps
             </a>
           )}
+          <button onClick={() => onAction("hide")}
+            style={{ fontSize: 11, background: "#1c1003", border: "1px solid #78350f",
+              color: "#fbbf24", borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}>
+            🙈 ซ่อน
+          </button>
+          <button onClick={() => onAction("delete")}
+            style={{ fontSize: 11, background: "#450a0a", border: "1px solid #7f1d1d",
+              color: "#fca5a5", borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}>
+            🗑️ ลบ
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
+/* ── Main Page ── */
 export default function AdminDuplicatesPage() {
   const [pairs, setPairs] = useState<DupPair[]>([]);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [filter, setFilter] = useState<"all" | "exact" | "near">("all");
+  const [confirm, setConfirm] = useState<ConfirmTarget | null>(null);
+  const [msg, setMsg] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -80,6 +169,14 @@ export default function AdminDuplicatesPage() {
       setLoading(false);
     }
   }, []);
+
+  function handleDone(removedId: string) {
+    // remove pairs that involve the deleted/hidden place
+    setPairs(prev => prev.filter(p => p.a.id !== removedId && p.b.id !== removedId));
+    setConfirm(null);
+    setMsg(confirm?.action === "delete" ? "✅ ลบสำเร็จ" : "✅ ซ่อนสำเร็จ");
+    setTimeout(() => setMsg(""), 3000);
+  }
 
   const filtered = pairs.filter(p => {
     if (filter === "exact") return p.similarity >= 90;
@@ -99,16 +196,13 @@ export default function AdminDuplicatesPage() {
             </span>
           )}
         </div>
-        <div className="adm-topbar-right">
+        <div className="adm-topbar-right" style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          {msg && <span style={{ fontWeight: 700, fontSize: 13, color: msg.startsWith("✅") ? "#22c55e" : "#ef4444" }}>{msg}</span>}
           {!loaded && !loading && (
-            <button className="adm-btn primary" onClick={load}>
-              🔍 เริ่มตรวจสอบ
-            </button>
+            <button className="adm-btn primary" onClick={load}>🔍 เริ่มตรวจสอบ</button>
           )}
           {loaded && (
-            <button className="adm-btn ghost" onClick={load} disabled={loading}>
-              🔄 รีเฟรช
-            </button>
+            <button className="adm-btn ghost" onClick={load} disabled={loading}>🔄 รีเฟรช</button>
           )}
         </div>
       </div>
@@ -138,7 +232,6 @@ export default function AdminDuplicatesPage() {
 
         {loaded && !loading && (
           <>
-            {/* Filter bar */}
             <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
               <div style={{ color: "#64748b", fontSize: 12, marginRight: 4 }}>กรอง:</div>
               {([["all", "ทั้งหมด"], ["exact", "ชื่อเหมือนมาก ≥90%"], ["near", "ระยะ ≤10ม."]] as [string, string][]).map(([v, l]) => (
@@ -160,9 +253,7 @@ export default function AdminDuplicatesPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {filtered.map((pair, i) => (
                   <div key={`${pair.a.id}:${pair.b.id}`} className="adm-card" style={{ padding: 16 }}>
-                    {/* Header */}
-                    <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 14,
-                      flexWrap: "wrap" }}>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 14, flexWrap: "wrap" }}>
                       <span style={{ color: "#64748b", fontSize: 12, fontWeight: 700 }}>#{i + 1}</span>
                       <span style={{
                         background: pair.distanceM <= 10 ? "#450a0a" : "#1c1003",
@@ -186,10 +277,11 @@ export default function AdminDuplicatesPage() {
                       )}
                     </div>
 
-                    {/* Two place cards side by side */}
                     <div style={{ display: "flex", gap: 12 }}>
-                      <PlaceCard p={pair.a} label="สถานที่ A" />
-                      <PlaceCard p={pair.b} label="สถานที่ B" />
+                      <PlaceCard p={pair.a} label="สถานที่ A"
+                        onAction={action => setConfirm({ placeId: pair.a.id, title: pair.a.title, action })} />
+                      <PlaceCard p={pair.b} label="สถานที่ B"
+                        onAction={action => setConfirm({ placeId: pair.b.id, title: pair.b.title, action })} />
                     </div>
                   </div>
                 ))}
@@ -198,6 +290,14 @@ export default function AdminDuplicatesPage() {
           </>
         )}
       </div>
+
+      {confirm && (
+        <ConfirmModal
+          target={confirm}
+          onClose={() => setConfirm(null)}
+          onDone={handleDone}
+        />
+      )}
     </>
   );
 }

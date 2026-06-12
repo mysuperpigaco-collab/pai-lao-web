@@ -78,6 +78,19 @@ export async function PUT(request: Request) {
     return NextResponse.json({ message: "ปฏิเสธสถานที่แล้ว" });
   }
 
+  if (action === "hide") {
+    await prisma.place.update({
+      where: { id: placeId },
+      data: { approvalStatus: "REJECTED", rejectionReason: rejectionReason?.trim() || "ซ้ำกับสถานที่อื่น" },
+    });
+    await prisma.adminLog.create({ data: {
+      adminId: session.userId, action: "HIDE_PLACE",
+      targetId: placeId, targetType: "PLACE",
+      detail: `Hidden: ${place.title}`,
+    }});
+    return NextResponse.json({ message: "ซ่อนสถานที่สำเร็จ" });
+  }
+
   if (action === "revoke-ownership") {
     const fullPlace = await prisma.place.findUnique({ where: { id: placeId }, select: { businessId: true, title: true } });
     if (!fullPlace?.businessId) return NextResponse.json({ message: "สถานที่นี้ไม่มีเจ้าของอยู่แล้ว" }, { status: 400 });
@@ -96,6 +109,29 @@ export async function PUT(request: Request) {
   }
 
   return NextResponse.json({ message: "action ไม่ถูกต้อง" }, { status: 400 });
+}
+
+// DELETE /api/admin/places?placeId=xxx — ลบสถานที่ถาวร (cascade)
+export async function DELETE(request: Request) {
+  const session = await getCurrentUser();
+  if (!session || (session.role !== "ADMIN" && session.role !== "SUPERADMIN"))
+    return NextResponse.json({ message: "ไม่มีสิทธิ์" }, { status: 403 });
+
+  const { searchParams } = new URL(request.url);
+  const placeId = searchParams.get("placeId");
+  if (!placeId) return NextResponse.json({ message: "ต้องระบุ placeId" }, { status: 400 });
+
+  const place = await prisma.place.findUnique({ where: { id: placeId }, select: { title: true } });
+  if (!place) return NextResponse.json({ message: "ไม่พบสถานที่" }, { status: 404 });
+
+  await prisma.place.delete({ where: { id: placeId } });
+  await prisma.adminLog.create({ data: {
+    adminId: session.userId, action: "DELETE_PLACE",
+    targetId: placeId, targetType: "PLACE",
+    detail: `Deleted: ${place.title}`,
+  }});
+
+  return NextResponse.json({ message: `ลบ "${place.title}" สำเร็จ` });
 }
 
 // POST /api/admin/places — admin สร้างสถานที่โดยตรง (APPROVED + verified ทันที)
