@@ -159,10 +159,12 @@ export default async function PlaceDetailPage({ params }: Props) {
         { placeId: place.id },
         { placeId: null, placeName: { equals: place.title, mode: "insensitive" } },
       ],
+      images: { isEmpty: false },
     },
     include: {
       trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true } } } },
     },
+    take: 100,
   });
 
   const communityStopsSorted = communityStops
@@ -198,7 +200,6 @@ export default async function PlaceDetailPage({ params }: Props) {
   }));
 
   const realCoverUrl = (place.coverUrl && place.coverUrl !== "/images/default-place.svg") ? place.coverUrl : null;
-  const communityCover = !realCoverUrl && communityImages.length > 0 ? communityImages[0] : null;
 
   const jsonLd = {
     "@context": "https://schema.org",
