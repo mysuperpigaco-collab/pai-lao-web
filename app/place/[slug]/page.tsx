@@ -139,11 +139,11 @@ export default async function PlaceDetailPage({ params }: Props) {
 
   let initialLiked = false;
   let initialSaved = false;
-  const likeCount = await prisma.placeLike.count({ where: { placeId: place.id } });
+  const likeCount = await prisma.placeLike.count({ where: { placeId: place.id } }).catch(() => 0);
   if (session) {
     const [pl, bm] = await Promise.all([
-      prisma.placeLike.findUnique({ where: { userId_placeId: { userId: session.userId, placeId: place.id } } }),
-      prisma.bookmark.findUnique({ where: { userId_placeId: { userId: session.userId, placeId: place.id } } }),
+      prisma.placeLike.findUnique({ where: { userId_placeId: { userId: session.userId, placeId: place.id } } }).catch(() => null),
+      prisma.bookmark.findUnique({ where: { userId_placeId: { userId: session.userId, placeId: place.id } } }).catch(() => null),
     ]);
     initialLiked = !!pl;
     initialSaved = !!bm;
@@ -151,10 +151,12 @@ export default async function PlaceDetailPage({ params }: Props) {
 
   const serializedReviews = place.reviews.map(r => ({
     ...r,
-    createdAt: r.createdAt.toISOString(),
+    createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt ?? ""),
+    updatedAt: r.updatedAt instanceof Date ? r.updatedAt.toISOString() : String(r.updatedAt ?? ""),
     replies: r.replies.map(rp => ({
       ...rp,
-      createdAt: rp.createdAt.toISOString(),
+      createdAt: rp.createdAt instanceof Date ? rp.createdAt.toISOString() : String(rp.createdAt ?? ""),
+      updatedAt: (rp as any).updatedAt instanceof Date ? (rp as any).updatedAt.toISOString() : String((rp as any).updatedAt ?? ""),
     })),
   }));
 
@@ -163,15 +165,14 @@ export default async function PlaceDetailPage({ params }: Props) {
     where: {
       OR: [
         { placeId: place.id },
-        { placeId: null, placeName: { equals: place.title, mode: "insensitive" } },
+        ...(place.title ? [{ placeId: null, placeName: { equals: place.title, mode: "insensitive" as const } }] : []),
       ],
-      images: { isEmpty: false },
     },
     include: {
       trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true } } } },
     },
     take: 100,
-  });
+  }).catch(() => []);
 
   const communityStopsSorted = communityStops
     .filter(s => s.images.length > 0)
