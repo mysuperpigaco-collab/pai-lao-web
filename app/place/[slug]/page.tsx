@@ -389,7 +389,6 @@ export default async function PlaceDetailPage({ params }: Props) {
                   placeId={place.id}
                   initialGallery={place.gallery ?? []}
                   initialCoverUrl={realCoverUrl}
-                  onUpdate={() => {}}
                 />
               </div>
             )}

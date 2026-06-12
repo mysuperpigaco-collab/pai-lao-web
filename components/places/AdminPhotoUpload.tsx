@@ -6,10 +6,9 @@ interface Props {
   placeId: string;
   initialGallery: string[];
   initialCoverUrl: string | null;
-  onUpdate: (gallery: string[], coverUrl: string | null) => void;
 }
 
-export default function AdminPhotoUpload({ placeId, initialGallery, initialCoverUrl, onUpdate }: Props) {
+export default function AdminPhotoUpload({ placeId, initialGallery, initialCoverUrl }: Props) {
   const [gallery, setGallery] = useState<string[]>(initialGallery);
   const [cover, setCover] = useState<string | null>(initialCoverUrl);
   const [uploading, setUploading] = useState(false);
@@ -35,7 +34,6 @@ export default function AdminPhotoUpload({ placeId, initialGallery, initialCover
     if (res.ok) {
       const { place } = await res.json();
       setGallery(place.gallery);
-      onUpdate(place.gallery, place.coverUrl);
     }
     setUploading(false);
   }
@@ -50,7 +48,6 @@ export default function AdminPhotoUpload({ placeId, initialGallery, initialCover
       const { place } = await res.json();
       setGallery(place.gallery);
       if (cover === url) setCover(null);
-      onUpdate(place.gallery, place.coverUrl === url ? null : place.coverUrl);
     }
   }
 
@@ -62,7 +59,6 @@ export default function AdminPhotoUpload({ placeId, initialGallery, initialCover
     });
     if (res.ok) {
       setCover(url);
-      onUpdate(gallery, url);
     }
   }
 
