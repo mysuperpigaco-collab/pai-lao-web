@@ -95,9 +95,9 @@ function TripCard({ trip }: { trip: Trip }) {
 
   return (
     <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
-      style={{ position: "relative", willChange: "transform", borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,.06)" }}>
+      style={{ position: "relative", willChange: "transform", borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,.06)", height: "100%" }}>
       <div ref={shineRef} style={shineStyle} />
-      <Link href={`/trips/${trip.slug}`} style={{ ...S.card, boxShadow: "none" }}>
+      <Link href={`/trips/${trip.slug}`} style={{ ...S.card, boxShadow: "none", height: "100%" }}>
         <div style={S.imgWrap}>
           {trip.coverUrl
             ? <img src={trip.coverUrl} alt={trip.title} loading="lazy"
@@ -153,9 +153,9 @@ function PlaceCard({ place }: { place: Place }) {
   const fallbackIcon  = catIcons[place.category]  ?? "📍";
   return (
     <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
-      style={{ position: "relative", willChange: "transform", borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,.06)" }}>
+      style={{ position: "relative", willChange: "transform", borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,.06)", height: "100%" }}>
       <div ref={shineRef} style={shineStyle} />
-      <Link href={`/place/${place.slug}`} style={{ ...S.card, boxShadow: "none" }}>
+      <Link href={`/place/${place.slug}`} style={{ ...S.card, boxShadow: "none", height: "100%" }}>
         <div style={S.imgWrap}>
           {showImg
             ? <img src={displayImg!} alt={place.title} loading="lazy"

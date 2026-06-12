@@ -576,7 +576,7 @@ function PlaceCard({ place }: { place: Place }) {
   };
 
   return (
-    <Link href={`/place/${place.slug}`} style={{ textDecoration: "none", color: "inherit", display: "block", minWidth: 0 }}>
+    <Link href={`/place/${place.slug}`} style={{ textDecoration: "none", color: "inherit", display: "block", minWidth: 0, height: "100%" }}>
       <div
         ref={cardRef}
         onMouseMove={onMove}

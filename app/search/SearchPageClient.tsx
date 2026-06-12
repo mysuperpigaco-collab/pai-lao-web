@@ -62,9 +62,9 @@ function SearchPlaceCard({ place }: { place: PlaceResult }) {
   const showImg = !!displayImg && !imgErr;
 
   return (
-    <Link href={`/place/${place.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
+    <Link href={`/place/${place.slug}`} style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
       <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
-        style={{ display: "flex", flexDirection: "column", borderRadius: 20, overflow: "hidden", background: "#fff", border: "1px solid #f1f5f9", position: "relative", willChange: "transform" }}>
+        style={{ display: "flex", flexDirection: "column", borderRadius: 20, overflow: "hidden", background: "#fff", border: "1px solid #f1f5f9", position: "relative", willChange: "transform", height: "100%" }}>
         <div ref={shineRef} style={shineStyle} />
 
       {/* Image */}
@@ -113,9 +113,9 @@ function SearchTripCard({ trip }: { trip: TripResult }) {
   const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const [imgLoaded, setImgLoaded] = useState(false);
   return (
-    <Link href={`/trips/${trip.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
+    <Link href={`/trips/${trip.slug}`} style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
       <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
-        style={{ borderRadius: 20, overflow: "hidden", background: "#fff", border: "1px solid #f1f5f9", position: "relative", willChange: "transform" }}>
+        style={{ display: "flex", flexDirection: "column", borderRadius: 20, overflow: "hidden", background: "#fff", border: "1px solid #f1f5f9", position: "relative", willChange: "transform", height: "100%" }}>
         <div ref={shineRef} style={shineStyle} />
         <div style={{ position: "relative", height: 140, background: "#e2e8f0", overflow: "hidden" }}>
           {trip.coverUrl
