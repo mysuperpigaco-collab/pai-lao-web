@@ -193,14 +193,14 @@ export default async function PlaceDetailPage({ params }: Props) {
         : false,
     },
     orderBy: { endDate: "asc" },
-  });
+  }).catch(() => []);
   const missionsForComponent = activeMissions.map(m => ({
     id: m.id,
     title: m.title,
     description: m.description,
     rewardPoints: m.rewardPoints,
     badgeLabel: m.badgeLabel ?? null,
-    endDate: m.endDate.toISOString(),
+    endDate: m.endDate instanceof Date ? m.endDate.toISOString() : String(m.endDate ?? ""),
     myStatus: session && Array.isArray(m.participants) && m.participants.length > 0
       ? m.participants[0].status
       : null,
