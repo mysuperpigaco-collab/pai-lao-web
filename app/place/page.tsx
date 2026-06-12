@@ -589,6 +589,7 @@ function PlaceCard({ place }: { place: Place }) {
           border: "1px solid #f1f5f9",
           willChange: "transform",
           position: "relative",
+          height: "100%",
         }}
       >
         {/* Shine layer — follows cursor */}
@@ -679,7 +680,7 @@ function PlaceCard({ place }: { place: Place }) {
       <div style={{ padding: "12px 14px 13px", flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
         <h3 style={{ fontSize: 14, fontWeight: 800, color: "#1e293b", margin: 0,
           overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-          lineHeight: 1.35 } as React.CSSProperties}>{place.title}</h3>
+          lineHeight: 1.35, height: "2.7em" } as React.CSSProperties}>{place.title}</h3>
         <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0, minHeight: "1.4em",
           whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{place.titleEn || ""}</p>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",

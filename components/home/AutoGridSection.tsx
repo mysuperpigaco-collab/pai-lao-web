@@ -58,7 +58,7 @@ const S: Record<string, CSSProperties> = {
   chipMood: { position: "absolute", bottom: 10, left: 10, background: "rgba(99,102,241,.85)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 999, backdropFilter: "blur(4px)", maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
   chipGreen:{ position: "absolute", top: 10, right: 10, background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "4px 9px", borderRadius: 999 },
   body:    { padding: "12px 14px 13px", flex: 1, display: "flex", flexDirection: "column", gap: 6 },
-  title:   { fontSize: 14, fontWeight: 800, color: "#1e293b", margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", lineHeight: 1.35 } as CSSProperties,
+  title:   { fontSize: 14, fontWeight: 800, color: "#1e293b", margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", lineHeight: 1.35, height: "2.7em" } as CSSProperties,
   footer:  { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, marginTop: "auto", paddingTop: 6, borderTop: "1px solid #f1f5f9" },
   author:  { display: "flex", alignItems: "center", gap: 6, minWidth: 0, overflow: "hidden" },
   avatarImg: { width: 22, height: 22, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1.5px solid #e2e8f0", display: "block" },
