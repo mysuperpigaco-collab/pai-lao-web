@@ -29,18 +29,7 @@ enum Gender {
   PREFER_NOT_TO_SAY
 }
 
-enum PlaceCategory {
-  NATURE
-  CAFE
-  ACCOMMODATION
-  CAMPING
-  FOOD
-  TEMPLE
-  BEACH
-  MARKET
-  ADVENTURE
-  MUSEUM
-}
+// PlaceCategory values: NATURE | CAFE | ACCOMMODATION | CAMPING | FOOD | TEMPLE | BEACH | MARKET | ADVENTURE | MUSEUM
 
 // ── User ─────────────────────────────────────────────────────
 
@@ -156,7 +145,7 @@ model Place {
   lat              Float?
   lng              Float?
 
-  category         PlaceCategory
+  category         String
   tags             String[]
 
   coverUrl         String
