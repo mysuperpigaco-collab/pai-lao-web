@@ -68,6 +68,8 @@ model User {
 
   role        Role      @default(TRAVELER)
 
+  tripGalleryLimit  Int  @default(50)  // จำนวนรูป gallery สูงสุดต่อทริป (admin ปรับได้: 50/100/150/200)
+
   postBannedUntil DateTime?  // ห้ามโพสจนถึงวันที่นี้ (null = ไม่ถูกแบน)
   bannedUntil     DateTime?  // บัญชีถูกระงับจนถึงวันที่นี้ (null = ไม่ถูกแบน)
   banReason       String?    // เหตุผลที่ถูกแบน

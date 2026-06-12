@@ -59,6 +59,13 @@ export default function CreateStoryPage() {
     }
   }, [user, router]);
 
+  // ── Fetch gallery limit จาก user profile ──────────────────
+  useEffect(() => {
+    fetch("/api/auth/me").then(r => r.json()).then(d => {
+      if (d.user?.tripGalleryLimit) setGalleryLimit(d.user.tripGalleryLimit);
+    }).catch(() => {});
+  }, []);
+
   // (create page เริ่มใหม่เสมอ ไม่โหลด draft เก่า — ดู draft ได้ที่ dashboard)
 
   if (user && (user.role === "ADMIN" || user.role === "SUPERADMIN")) {
@@ -75,6 +82,7 @@ export default function CreateStoryPage() {
   const coverDragRef  = useRef({ dragging: false, startX: 0, startY: 0, startOX: 0, startOY: 0 });
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+  const [galleryLimit, setGalleryLimit] = useState(50);
 
   const [title,      setTitle     ] = useState("");
   const [content,    setContent   ] = useState("");
@@ -186,8 +194,11 @@ export default function CreateStoryPage() {
 
   const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setGalleryFiles(prev => [...prev, ...files]);
-    setGalleryPreviews(prev => [...prev, ...files.map(f => URL.createObjectURL(f))]);
+    const remaining = galleryLimit - galleryFiles.length;
+    if (remaining <= 0) return;
+    const valid = files.slice(0, remaining);
+    setGalleryFiles(prev => [...prev, ...valid]);
+    setGalleryPreviews(prev => [...prev, ...valid.map(f => URL.createObjectURL(f))]);
   };
 
   const updateTimeline = (index: number, field: string, value: any) => {
@@ -645,7 +656,24 @@ export default function CreateStoryPage() {
           {/* 3. Gallery */}
           <div className="section-box">
             <h3 className="section-label">🖼️ แกลเลอรี่ | <small>GALLERY</small><HintTooltip text="รูปภาพเพิ่มเติมที่แสดงบรรยากาศทริป นอกเหนือจากรูปปก สามารถเพิ่มได้หลายรูป" /></h3>
-            <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:16}}>
+            <p style={{fontSize:12,color:"#94a3b8",marginBottom:12}}>
+              {galleryFiles.length} / {galleryLimit} รูป
+              {galleryFiles.length >= galleryLimit && <span style={{color:"#ef4444",marginLeft:8}}>ถึงจำนวนสูงสุดแล้ว</span>}
+            </p>
+            <div
+              onDragOver={e => { e.preventDefault(); e.currentTarget.style.background = "#f0f9ff"; }}
+              onDragLeave={e => { e.currentTarget.style.background = ""; }}
+              onDrop={e => {
+                e.preventDefault();
+                e.currentTarget.style.background = "";
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"));
+                const remaining = galleryLimit - galleryFiles.length;
+                if (remaining <= 0) return;
+                const valid = files.slice(0, remaining);
+                setGalleryFiles(prev => [...prev, ...valid]);
+                setGalleryPreviews(prev => [...prev, ...valid.map(f => URL.createObjectURL(f))]);
+              }}
+              style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:16,padding:8,borderRadius:16,transition:"background 0.2s"}}>
               {galleryPreviews.map((src,i) => (
                 <div key={i} style={{position:"relative",width:100,height:80}}>
                   <img src={src} alt="" style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:12}} />
@@ -656,12 +684,14 @@ export default function CreateStoryPage() {
                     border:"none",borderRadius:"50%",width:20,height:20,cursor:"pointer",fontSize:12}}>×</button>
                 </div>
               ))}
-              <label style={{width:100,height:80,border:"2px dashed #cbd5e1",borderRadius:12,
-                display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
-                color:"#64748b",fontSize:12,fontWeight:700}}>
-                + เพิ่ม
-                <input type="file" hidden accept="image/*" multiple onChange={handleGalleryUpload} />
-              </label>
+              {galleryFiles.length < galleryLimit && (
+                <label style={{width:100,height:80,border:"2px dashed #cbd5e1",borderRadius:12,
+                  display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
+                  color:"#64748b",fontSize:12,fontWeight:700}}>
+                  + เพิ่ม
+                  <input type="file" hidden accept="image/*" multiple onChange={handleGalleryUpload} />
+                </label>
+              )}
             </div>
           </div>
 

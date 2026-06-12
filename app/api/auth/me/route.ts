@@ -17,7 +17,7 @@ export async function GET() {
         email: true, displayName: true, avatarUrl: true, coverUrl: true,
         bio: true, phone: true, gender: true, birthDate: true,
         lineId: true, facebook: true, instagram: true, tiktok: true,
-        role: true,
+        role: true, tripGalleryLimit: true,
         profilePrivacy: true, showEmail: true, showPhone: true,
         showSocial: true, showBirthDate: true,
         business: {

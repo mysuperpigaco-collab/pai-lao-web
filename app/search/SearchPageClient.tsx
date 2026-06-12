@@ -101,7 +101,7 @@ function SearchPlaceCard({ place }: { place: PlaceResult }) {
       {/* Body */}
       <div style={{ padding: "12px 14px", flex: 1 }}>
         <h4 style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", margin: "0 0 3px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{place.title}</h4>
-        {place.titleEn && <p style={{ fontSize: 11, color: "#64748b", fontStyle: "italic", margin: "0 0 2px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{place.titleEn}</p>}
+        <p style={{ fontSize: 11, color: "#64748b", fontStyle: "italic", margin: "0 0 2px", minHeight: "1.4em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{place.titleEn || ""}</p>
         <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>📍 {[place.district, place.province?.split(" (")[0]].filter(Boolean).join(", ")}</p>
       </div>
       </div>

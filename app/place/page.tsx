@@ -680,10 +680,8 @@ function PlaceCard({ place }: { place: Place }) {
         <h3 style={{ fontSize: 14, fontWeight: 800, color: "#1e293b", margin: 0,
           overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
           lineHeight: 1.35 } as React.CSSProperties}>{place.title}</h3>
-        {place.titleEn && (
-          <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0,
-            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{place.titleEn}</p>
-        )}
+        <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0, minHeight: "1.4em",
+          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{place.titleEn || ""}</p>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
           marginTop: "auto", paddingTop: 8, borderTop: "1px solid #f1f5f9" }}>
           <span style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>

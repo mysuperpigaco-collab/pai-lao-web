@@ -56,7 +56,7 @@ export async function GET(request: Request) {
         select: {
           id: true, username: true, email: true, firstName: true, lastName: true,
           displayName: true, avatarUrl: true, role: true, phone: true, createdAt: true,
-          bannedUntil: true, postBannedUntil: true, banReason: true,
+          bannedUntil: true, postBannedUntil: true, banReason: true, tripGalleryLimit: true,
           _count: { select: { trips: true, reviews: true, reports: true } },
           business: { select: { businessName: true, isVerified: true } },
         },
@@ -144,6 +144,22 @@ export async function PUT(request: Request) {
         data: { adminId: session.userId, action: "BAN_USER", targetId: userId, targetType: "USER", detail: "unban" },
       });
       return NextResponse.json({ message: "ยกเลิกแบนสำเร็จ" });
+    }
+
+    // setGalleryLimit — ตั้งจำนวนรูป gallery สูงสุดต่อทริป
+    if (action === "setGalleryLimit") {
+      const { limit } = body;
+      const VALID = [50, 100, 150, 200];
+      if (!VALID.includes(limit)) return NextResponse.json({ message: "ค่าที่อนุญาต: 50, 100, 150, 200" }, { status: 400 });
+      await prisma.user.update({
+        where: { id: userId },
+        data: { tripGalleryLimit: limit },
+      });
+      await prisma.adminLog.create({
+        data: { adminId: session.userId, action: "CHANGE_ROLE", targetId: userId, targetType: "USER",
+          detail: `setGalleryLimit: ${limit}` },
+      });
+      return NextResponse.json({ message: `ตั้งค่า gallery limit เป็น ${limit} รูปสำเร็จ` });
     }
 
     return NextResponse.json({ message: "action ไม่ถูกต้อง" }, { status: 400 });

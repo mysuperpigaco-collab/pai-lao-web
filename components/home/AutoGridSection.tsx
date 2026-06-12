@@ -173,7 +173,7 @@ function PlaceCard({ place }: { place: Place }) {
         </div>
         <div style={S.body}>
           <h4 style={S.title}>{place.title}</h4>
-          {place.titleEn && <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0 }}>{place.titleEn}</p>}
+          <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0, minHeight: "1.4em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{place.titleEn || ""}</p>
           <div style={S.footer}>
             <span style={S.loc}>📍 {[place.district, prov].filter(Boolean).join(", ")}</span>
             <div style={S.stats}>

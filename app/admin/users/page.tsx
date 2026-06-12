@@ -114,6 +114,15 @@ export default function AdminUsersPage() {
     loadBannedCount();
   };
 
+  const setGalleryLimit = async (userId: string, limit: number) => {
+    await fetch("/api/admin/users", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, action: "setGalleryLimit", limit }),
+    });
+    load();
+  };
+
   const colSpan = tab === "banned" ? 7 : 9;
 
   return (
@@ -240,6 +249,15 @@ export default function AdminUsersPage() {
                                 → {r}
                               </button>
                             ))}
+                            <select
+                              value={u.tripGalleryLimit ?? 50}
+                              onChange={e => setGalleryLimit(u.id, Number(e.target.value))}
+                              style={{ fontSize:"0.72rem", padding:"2px 4px", borderRadius:6,
+                                background:"#1e293b", color:"#94a3b8", border:"1px solid #334155", cursor:"pointer" }}
+                              title="Gallery limit ต่อทริป"
+                            >
+                              {[50,100,150,200].map(v => <option key={v} value={v}>🖼️ {v}</option>)}
+                            </select>
                             {isBanned(u) || isPostBanned(u) ? (
                               <button
                                 className="adm-btn ghost sm"
