@@ -139,20 +139,20 @@ export default async function TripDetailPage({ params }: Props) {
     const [bm, lk, fl] = await Promise.all([
       prisma.bookmark.findUnique({
         where: { userId_tripId: { userId: session.userId, tripId: trip.id } },
-      }),
+      }).catch(() => null),
       prisma.tripLike.findUnique({
         where: { userId_tripId: { userId: session.userId, tripId: trip.id } },
-      }),
+      }).catch(() => null),
       prisma.follow.findUnique({
         where: { followerId_followingId: { followerId: session.userId, followingId: trip.author.id } },
-      }),
+      }).catch(() => null),
     ]);
     initialSaved = !!bm;
     initialLiked = !!lk;
     initialFollowing = !!fl;
   }
-  likeCount = await prisma.tripLike.count({ where: { tripId: trip.id } });
-  followerCount = await prisma.follow.count({ where: { followingId: trip.author.id } });
+  likeCount = await prisma.tripLike.count({ where: { tripId: trip.id } }).catch(() => 0);
+  followerCount = await prisma.follow.count({ where: { followingId: trip.author.id } }).catch(() => 0);
 
   const avgRating = trip.reviews.length
     ? trip.reviews.reduce((s: number, r: any) => s + r.rating, 0) / trip.reviews.length
@@ -384,13 +384,13 @@ export default async function TripDetailPage({ params }: Props) {
                   id: r.id,
                   rating: r.rating,
                   text: r.text,
-                  createdAt: r.createdAt.toISOString(),
+                  createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt ?? ""),
                   author: r.author,
                   likes: r.likes ?? 0,
                   replies: r.replies.map((rep: any) => ({
                     id: rep.id,
                     text: rep.text,
-                    createdAt: rep.createdAt.toISOString(),
+                    createdAt: rep.createdAt instanceof Date ? rep.createdAt.toISOString() : String(rep.createdAt ?? ""),
                     author: rep.author,
                   })),
                 }))}
