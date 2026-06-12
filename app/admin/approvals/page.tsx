@@ -229,6 +229,142 @@ function EditDetailModal({ edit, onClose, onApprove, onReject }: {
   );
 }
 
+/* ─── Nearby Place Warning ───────────────────────────────── */
+function NearbyPlaceWarning({ placeId }: { placeId: string }) {
+  const [nearby, setNearby] = useState<any[] | null>(null);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/admin/nearby-places?placeId=${placeId}`)
+      .then(r => r.json())
+      .then(d => setNearby(d.nearby || []))
+      .catch(() => setNearby([]));
+  }, [placeId]);
+
+  if (!nearby || nearby.length === 0) return null;
+
+  return (
+    <div style={{ margin: "10px 0", borderRadius: 10, overflow: "hidden",
+      border: "1px solid #78350f", background: "#1c1003" }}>
+      <button onClick={() => setOpen(o => !o)}
+        style={{ width: "100%", background: "none", border: "none", cursor: "pointer",
+          padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 14 }}>⚠️</span>
+        <span style={{ color: "#fbbf24", fontWeight: 800, fontSize: 13 }}>
+          พบสถานที่ใกล้เคียง {nearby.length} แห่ง (อาจซ้ำ)
+        </span>
+        <span style={{ marginLeft: "auto", color: "#78350f", fontSize: 13 }}>{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div style={{ borderTop: "1px solid #78350f", padding: "10px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+          {nearby.map((p: any) => (
+            <div key={p.id} style={{ display: "flex", gap: 10, alignItems: "flex-start",
+              background: "#0f0a00", borderRadius: 8, padding: 10 }}>
+              {p.coverUrl && (
+                <img src={p.coverUrl} alt="" style={{ width: 56, height: 48, objectFit: "cover", borderRadius: 6, flexShrink: 0 }} />
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, color: "#fef3c7", fontSize: 13, marginBottom: 2 }}>{p.title}</div>
+                <div style={{ color: "#92400e", fontSize: 11 }}>
+                  📍 {p.distanceM}ม. · คล้าย {p.similarity}% · {p.category}
+                  {p.province && ` · ${p.province}`}
+                </div>
+                <div style={{ color: "#78350f", fontSize: 11, marginTop: 2 }}>
+                  ⭐ {p._count?.reviews ?? 0} รีวิว · 🔖 {p._count?.bookmarks ?? 0}
+                </div>
+                <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+                  <a href={`/place/${p.slug}`} target="_blank" rel="noreferrer"
+                    style={{ fontSize: 11, color: "#fbbf24", textDecoration: "none",
+                      background: "#1c1003", border: "1px solid #78350f", borderRadius: 6, padding: "2px 8px" }}>
+                    ดูสถานที่
+                  </a>
+                  {p.googleMapsUrl && (
+                    <a href={p.googleMapsUrl} target="_blank" rel="noreferrer"
+                      style={{ fontSize: 11, color: "#fbbf24", textDecoration: "none",
+                        background: "#1c1003", border: "1px solid #78350f", borderRadius: 6, padding: "2px 8px" }}>
+                      Google Maps
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Trip Place Check Warning ───────────────────────────── */
+function TripPlaceCheckWarning({ tripId }: { tripId: string }) {
+  const [flagged, setFlagged] = useState<any[] | null>(null);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/admin/trip-place-check?tripId=${tripId}`)
+      .then(r => r.json())
+      .then(d => setFlagged(d.flagged || []))
+      .catch(() => setFlagged([]));
+  }, [tripId]);
+
+  if (!flagged || flagged.length === 0) return null;
+
+  return (
+    <div style={{ margin: "10px 0", borderRadius: 10, overflow: "hidden",
+      border: "1px solid #1e3a5f", background: "#07111f" }}>
+      <button onClick={() => setOpen(o => !o)}
+        style={{ width: "100%", background: "none", border: "none", cursor: "pointer",
+          padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 14 }}>⚠️</span>
+        <span style={{ color: "#60a5fa", fontWeight: 800, fontSize: 13 }}>
+          มีจุดแวะที่รอตรวจสอบ {flagged.length} จุด
+        </span>
+        <span style={{ marginLeft: "auto", color: "#1e3a5f", fontSize: 13 }}>{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div style={{ borderTop: "1px solid #1e3a5f", padding: "10px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+          {flagged.map((s: any) => (
+            <div key={s.stopId} style={{ background: "#060e1c", borderRadius: 8, padding: "8px 10px" }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 4 }}>
+                <span style={{ fontSize: 11, color: "#475569", fontWeight: 700 }}>จุดที่ {s.order}</span>
+                <span style={{
+                  fontSize: 10, fontWeight: 800, borderRadius: 99, padding: "1px 7px",
+                  background: s.status === "PENDING" ? "#451a03" : "#1e293b",
+                  color: s.status === "PENDING" ? "#fbbf24" : "#94a3b8",
+                }}>
+                  {s.status === "PENDING" ? "⏳ PENDING" : "🔗 ไม่ได้ลิงก์"}
+                </span>
+              </div>
+              <div style={{ fontWeight: 700, color: "#bfdbfe", fontSize: 13 }}>{s.placeName}</div>
+              {(s.province || s.district) && (
+                <div style={{ color: "#1d4ed8", fontSize: 11, marginTop: 2 }}>
+                  📍 {[s.province, s.district].filter(Boolean).join(" · ")}
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+                {s.placeId && s.place?.slug && (
+                  <a href={`/place/${s.place.slug}`} target="_blank" rel="noreferrer"
+                    style={{ fontSize: 11, color: "#60a5fa", textDecoration: "none",
+                      background: "#07111f", border: "1px solid #1e3a5f", borderRadius: 6, padding: "2px 8px" }}>
+                    ดูสถานที่
+                  </a>
+                )}
+                {s.place?.googleMapsUrl && (
+                  <a href={s.place.googleMapsUrl} target="_blank" rel="noreferrer"
+                    style={{ fontSize: 11, color: "#60a5fa", textDecoration: "none",
+                      background: "#07111f", border: "1px solid #1e3a5f", borderRadius: 6, padding: "2px 8px" }}>
+                    Google Maps
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ═══════════════════════════════════════════════════════════
    Main Page
    ═══════════════════════════════════════════════════════════ */
@@ -451,6 +587,7 @@ export default function AdminApprovalsPage() {
                             <span style={{ fontSize: 12, color: "#94a3b8" }}>@{trip.author.username}</span>
                             <span style={{ fontSize: 11, color: "#475569", marginLeft: "auto" }}>{fmt(trip.createdAt)}</span>
                           </div>
+                          <TripPlaceCheckWarning tripId={trip.id} />
                           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                             <Link href={`/trips/${trip.slug}`} target="_blank" className="adm-btn ghost sm">🔗 ดูทริป</Link>
                             <button className="adm-btn primary sm" onClick={() => approveTrip(trip.id)}>✅ อนุมัติ</button>
@@ -503,6 +640,7 @@ export default function AdminApprovalsPage() {
                               <span style={{ fontSize: 11, color: "#475569", marginLeft: "auto" }}>{fmt(place.createdAt)}</span>
                             </div>
                           )}
+                          <NearbyPlaceWarning placeId={place.id} />
                           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                             <Link href={`/place/${place.slug}`} target="_blank" className="adm-btn ghost sm">🔗 ดูสถานที่</Link>
                             <button className="adm-btn primary sm" onClick={() => approvePlace(place.id)}>✅ อนุมัติ</button>

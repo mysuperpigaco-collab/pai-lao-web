@@ -21,7 +21,8 @@ const NAV_ADMIN = [
   { group: "จัดการเนื้อหา", items: [
     { href: "/admin/approvals", icon: "📝", label: "อนุมัติทริป", approval: true },
     { href: "/admin/trips",     icon: "🗺️", label: "ทริปทั้งหมด" },
-    { href: "/admin/places",    icon: "📍", label: "สถานที่" },
+    { href: "/admin/places",     icon: "📍", label: "สถานที่" },
+    { href: "/admin/duplicates", icon: "🔍", label: "ซ้ำซ้อน" },
   ]},
   { group: "V2 Features", items: [
     { href: "/admin/missions",   icon: "🎯", label: "ภารกิจ" },
