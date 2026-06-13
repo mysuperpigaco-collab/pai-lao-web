@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
+import { sanitizeRichHtml } from "@/lib/sanitize";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -87,7 +88,7 @@ export async function PUT(request: Request, { params }: Params) {
         data: {
           ...(title       !== undefined && { title }),
           ...(subtitle    !== undefined && { subtitle }),
-          ...(description !== undefined && { description }),
+          ...(description !== undefined && { description: sanitizeRichHtml(description) }),
           ...(coverUrl    !== undefined && { coverUrl }),
           ...(gallery     !== undefined && { gallery }),
           ...(mood        !== undefined && { mood }),
@@ -123,7 +124,7 @@ export async function PUT(request: Request, { params }: Params) {
       if (finalize) {
         // ตรวจสอบจาก request body (ไม่ใช่จาก DB ซึ่งอาจว่างสำหรับ draft)
         const finalTitle       = title       ?? trip.title;
-        const finalDescription = description ?? trip.description;
+        const finalDescription = sanitizeRichHtml(description ?? trip.description);
         const finalCoverUrl    = coverUrl    ?? trip.coverUrl;
         if (!finalTitle || !finalDescription || !finalCoverUrl) {
           return NextResponse.json({ message: "กรุณากรอกข้อมูลให้ครบก่อนเผยแพร่ (ชื่อ คำอธิบาย รูปปก)" }, { status: 400 });
@@ -176,7 +177,7 @@ export async function PUT(request: Request, { params }: Params) {
         data: {
           ...(title       !== undefined && { title }),
           ...(subtitle    !== undefined && { subtitle }),
-          ...(description !== undefined && { description }),
+          ...(description !== undefined && { description: sanitizeRichHtml(description) }),
           ...(coverUrl    !== undefined && { coverUrl }),
           ...(gallery     !== undefined && { gallery }),
           ...(mood        !== undefined && { mood }),
@@ -216,7 +217,7 @@ export async function PUT(request: Request, { params }: Params) {
         data: {
           ...(title       !== undefined && { title }),
           ...(subtitle    !== undefined && { subtitle }),
-          ...(description !== undefined && { description }),
+          ...(description !== undefined && { description: sanitizeRichHtml(description) }),
           ...(coverUrl    !== undefined && { coverUrl }),
           ...(gallery     !== undefined && { gallery }),
           ...(mood        !== undefined && { mood }),
@@ -310,7 +311,8 @@ export async function DELETE(req: NextRequest, { params }: Params) {
 
     const trip = await prisma.trip.findUnique({ where: { slug }, select: { id: true, title: true, authorId: true } });
     if (!trip) return NextResponse.json({ message: "ไม่พบทริป" }, { status: 404 });
-    if (trip.authorId !== session.userId && session.role !== "ADMIN") {
+    const canDelete = trip.authorId === session.userId || session.role === "ADMIN" || session.role === "SUPERADMIN";
+    if (!canDelete) {
       return NextResponse.json({ message: "ไม่มีสิทธิ์ลบ" }, { status: 403 });
     }
 

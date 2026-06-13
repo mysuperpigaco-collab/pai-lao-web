@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ImageLightbox from "@/components/common/ImageLightbox";
+import { sanitizeRichHtml } from "@/lib/sanitize";
 
 interface Props {
   html: string;
@@ -9,6 +10,7 @@ interface Props {
 
 export default function TripRichContent({ html }: Props) {
   const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
+  const safeHtml = sanitizeRichHtml(html);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
@@ -22,7 +24,7 @@ export default function TripRichContent({ html }: Props) {
     <>
       <div
         className="trip-rich-content"
-        dangerouslySetInnerHTML={{ __html: html }}
+        dangerouslySetInnerHTML={{ __html: safeHtml }}
         onClick={handleClick}
       />
       {lightbox && (

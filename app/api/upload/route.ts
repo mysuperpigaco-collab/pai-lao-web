@@ -24,9 +24,21 @@ export async function POST(request: NextRequest) {
 
     if (!file) return NextResponse.json({ message: "ไม่พบไฟล์" }, { status: 400 });
 
-    // ตรวจประเภทไฟล์
-    if (!file.type.startsWith("image/")) {
-      return NextResponse.json({ message: "อนุญาตเฉพาะไฟล์รูปภาพ" }, { status: 400 });
+    // ตรวจประเภทไฟล์ — whitelist เฉพาะ raster (ตัด svg เพราะฝัง script ได้)
+    const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
+    if (!ALLOWED_MIME.includes(file.type)) {
+      return NextResponse.json({ message: "อนุญาตเฉพาะ JPG, PNG, WEBP, GIF, AVIF" }, { status: 400 });
+    }
+
+    // ตรวจ magic bytes กันการปลอม MIME
+    const head = Buffer.from(await file.slice(0, 12).arrayBuffer());
+    const isJpeg = head[0] === 0xff && head[1] === 0xd8;
+    const isPng  = head[0] === 0x89 && head[1] === 0x50 && head[2] === 0x4e && head[3] === 0x47;
+    const isGif  = head[0] === 0x47 && head[1] === 0x49 && head[2] === 0x46;
+    const isWebp = head[8] === 0x57 && head[9] === 0x45 && head[10] === 0x42 && head[11] === 0x50;
+    const isAvif = head.toString("latin1", 4, 8) === "ftyp";
+    if (!(isJpeg || isPng || isGif || isWebp || isAvif)) {
+      return NextResponse.json({ message: "ไฟล์ไม่ใช่รูปภาพที่ถูกต้อง" }, { status: 400 });
     }
 
     // จำกัดขนาด 5MB

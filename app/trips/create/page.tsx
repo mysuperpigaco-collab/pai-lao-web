@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { sanitizeRichHtml } from "@/lib/sanitize";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMagneticButton } from "@/hooks/useMagneticButton";
@@ -920,7 +921,7 @@ export default function CreateStoryPage() {
             </div>
             <div className="pv-body">
               {content?.startsWith("<")
-                ? <div className="pv-main-content trip-rich-content" dangerouslySetInnerHTML={{ __html: content }} />
+                ? <div className="pv-main-content trip-rich-content" dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(content) }} />
                 : <p className="pv-main-content">{content}</p>
               }
               <div className="pv-timeline">

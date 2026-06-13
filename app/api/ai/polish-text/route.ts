@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
@@ -21,6 +22,11 @@ const PROMPTS: Record<string, string> = {
 export async function POST(req: NextRequest) {
   const session = await getCurrentUser();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const rl = checkRateLimit(`ai:${session.userId}`, 20, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "ใช้ AI บ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
+  }
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey || apiKey.startsWith("วางคีย์")) {

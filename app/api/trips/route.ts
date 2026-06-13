@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
+import { sanitizeRichHtml } from "@/lib/sanitize";
 
 // ── GET /api/trips ─────────────────────────────────────────
 export async function GET(request: Request) {
@@ -207,7 +208,7 @@ export async function POST(request: Request) {
         slug,
         title,
         subtitle:    subtitle    ?? "",
-        description: description ?? "",
+        description: sanitizeRichHtml(description ?? ""),
         coverUrl:    coverUrl    ?? "",
         gallery:     gallery     ?? [],
         mood:        mood        ?? "ทั่วไป",

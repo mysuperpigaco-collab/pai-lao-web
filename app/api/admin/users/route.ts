@@ -83,6 +83,20 @@ export async function PUT(request: Request) {
     const { userId, role, action, duration, reason } = body;
     if (!userId) return NextResponse.json({ message: "กรุณาระบุ userId" }, { status: 400 });
 
+    // ห้ามกระทำกับตัวเอง
+    if (userId === session.userId) {
+      return NextResponse.json({ message: "ไม่สามารถดำเนินการกับบัญชีตัวเองได้" }, { status: 403 });
+    }
+
+    // ดึง role ปัจจุบันของเป้าหมาย
+    const target = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+    if (!target) return NextResponse.json({ message: "ไม่พบผู้ใช้" }, { status: 404 });
+
+    // การกระทำใด ๆ ต่อ ADMIN/SUPERADMIN ต้องเป็น SUPERADMIN เท่านั้น
+    if ((target.role === "ADMIN" || target.role === "SUPERADMIN") && session.role !== "SUPERADMIN") {
+      return NextResponse.json({ message: "ต้องการสิทธิ์ SUPERADMIN เพื่อจัดการบัญชีแอดมิน" }, { status: 403 });
+    }
+
     // Only SUPERADMIN can promote to ADMIN/SUPERADMIN
     if ((role === "ADMIN" || role === "SUPERADMIN") && session.role !== "SUPERADMIN") {
       return NextResponse.json({ message: "ต้องการสิทธิ์ SUPERADMIN" }, { status: 403 });
