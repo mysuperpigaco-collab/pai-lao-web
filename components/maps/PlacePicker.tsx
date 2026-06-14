@@ -64,10 +64,12 @@ export default function PlacePicker({
   value,
   onChange,
   height = 320,
+  disabled = false,
 }: {
   value: { lat: number | null; lng: number | null };
   onChange: (lat: number, lng: number) => void;
   height?: number;
+  disabled?: boolean;
 }) {
   const hasCoords = value.lat != null && value.lng != null;
   const center: [number, number] = hasCoords
@@ -75,19 +77,19 @@ export default function PlacePicker({
     : [13.0, 101.0];
 
   return (
-    <div style={{ borderRadius: 16, overflow: "hidden", border: "2px dashed #93c5fd" }}>
+    <div style={{ borderRadius: 16, overflow: "hidden", border: `2px dashed ${disabled ? "#e2e8f0" : "#93c5fd"}` }}>
       <MapContainer
         center={center}
         zoom={hasCoords ? 15 : 6}
-        scrollWheelZoom
+        scrollWheelZoom={!disabled}
         style={{ height, width: "100%" }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <LocateButton onLocate={onChange} />
-        <ClickHandler onChange={onChange} />
+        {!disabled && <LocateButton onLocate={onChange} />}
+        {!disabled && <ClickHandler onChange={onChange} />}
         {hasCoords && <Marker position={[value.lat!, value.lng!]} />}
         <Recenter lat={value.lat} lng={value.lng} />
       </MapContainer>

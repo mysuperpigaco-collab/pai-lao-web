@@ -86,7 +86,7 @@ export default function EditTripPage({ params }: Props) {
     updated[idx].place    = p.title;
     const prov = p.province ? normalizeProvince(p.province) : updated[idx].province;
     updated[idx].province = prov;
-    const rawDist = (p.district ?? "").replace(/^อำเภอ|^อ\./, "").trim();
+    const rawDist = (p.district ?? "").split(" (")[0].replace(/^อำเภอ|^อ\.|^เขต/, "").trim();
     const distList = getDistricts(prov);
     const matchedDist = rawDist ? (distList.find(d => {
       const dClean = d.replace(/^เมือง/, "");
@@ -685,16 +685,21 @@ export default function EditTripPage({ params }: Props) {
                   <div className="form-group" style={{ flex: 1 }}>
                     <label>จังหวัด</label>
                     <select className="form-control" value={item.province}
+                      disabled={!!item.placeId}
                       onChange={e => updateTimeline(idx, "province", e.target.value)}>
                       <option value="">-- เลือกจังหวัด --</option>
                       {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </div>
                   <div className="form-group" style={{ flex: 1 }}>
-                    <label>อำเภอ</label>
+                    <label>อำเภอ / เขต</label>
                     <select className="form-control" value={item.district}
+                      disabled={!!item.placeId || !item.province}
                       onChange={e => updateTimeline(idx, "district", e.target.value)}>
-                      <option value="">-- เลือกอำเภอ --</option>
+                      <option value="">-- เลือกอำเภอ/เขต --</option>
+                      {item.district && !getDistricts(item.province).some(d => d.split(" (")[0] === item.district) && (
+                        <option value={item.district}>{item.district}</option>
+                      )}
                       {getDistricts(item.province).map(d => <option key={d} value={d.split(" (")[0]}>{d}</option>)}
                     </select>
                   </div>
@@ -756,12 +761,14 @@ export default function EditTripPage({ params }: Props) {
                   </div>
                   <input type="url" placeholder="วาง Google Maps URL เพื่อปักหมุดอัตโนมัติ…"
                     value={item.googleMapsUrl}
+                    disabled={!!item.placeId}
                     onChange={e => onMapsUrlChange(idx, e.target.value)}
-                    style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #cbd5e1", fontSize: 12, fontFamily: "inherit", background: "#fff", boxSizing: "border-box" as const, marginBottom: 8 }} />
+                    style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #cbd5e1", fontSize: 12, fontFamily: "inherit", background: item.placeId ? "#f8fafc" : "#fff", boxSizing: "border-box" as const, marginBottom: 8 }} />
                   <DynamicPlacePicker
                     value={{ lat: item.lat, lng: item.lng }}
                     onChange={(lat, lng) => { updateTimeline(idx, "lat", lat); updateTimeline(idx, "lng", lng); }}
                     height={220}
+                    disabled={!!item.placeId}
                   />
                 </div>
               </div>
