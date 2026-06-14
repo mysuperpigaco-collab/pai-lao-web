@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
 import PageLoading from "@/components/ui/PageLoading";
 import { getDistricts, normalizeProvince, PROVINCES } from "@/data/thailand";
+import { extractLatLngFromGoogleUrl } from "@/lib/maps";
 import {
   BackButton,
   CancelButton,
@@ -60,7 +61,7 @@ export default function EditTripPage({ params }: Props) {
     date: string; time: string; place: string; province: string; district: string;
     description: string; imageFile: File | null; imagePreview: string | null;
     existingImage?: string; shareToPlace: boolean; placeId: string | null; placeSlug?: string;
-    lat: number | null; lng: number | null;
+    lat: number | null; lng: number | null; googleMapsUrl: string;
   }[]>([]);
 
   // ── Place search state ─────────────────────────────────
@@ -95,6 +96,8 @@ export default function EditTripPage({ params }: Props) {
     }) ?? rawDist) : updated[idx].district;
     updated[idx].district = matchedDist.split(" (")[0];
     updated[idx].placeId  = p.id;
+    updated[idx].lat = p.lat ?? null;
+    updated[idx].lng = p.lng ?? null;
     setTimeline(updated);
     setPlaceSuggestions(prev => ({ ...prev, [idx]: [] }));
   };
@@ -120,6 +123,7 @@ export default function EditTripPage({ params }: Props) {
         const updated = [...timeline];
         updated[idx].placeId  = data.place.id;
         updated[idx].placeSlug = data.place.slug;
+        if (data.place.lat != null) { updated[idx].lat = data.place.lat; updated[idx].lng = data.place.lng; }
         setTimeline(updated);
         closeSuggest(idx);
       } else {
@@ -162,6 +166,7 @@ export default function EditTripPage({ params }: Props) {
           placeId:       stop.placeId        ?? null,
           lat:           stop.lat            ?? null,
           lng:           stop.lng            ?? null,
+          googleMapsUrl: stop.googleMapsUrl  ?? "",
         })));
       })
       .catch(() => setNotFound(true))
@@ -184,10 +189,23 @@ export default function EditTripPage({ params }: Props) {
     setTimeline(updated);
   };
 
+  const onMapsUrlChange = async (idx: number, url: string) => {
+    updateTimeline(idx, "googleMapsUrl", url);
+    const direct = extractLatLngFromGoogleUrl(url);
+    if (direct) { updateTimeline(idx, "lat", direct.lat); updateTimeline(idx, "lng", direct.lng); return; }
+    if (/(maps\.app\.goo\.gl|goo\.gl\/maps)/i.test(url)) {
+      try {
+        const res = await fetch("/api/maps/resolve", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
+        const { coord } = await res.json();
+        if (coord) { updateTimeline(idx, "lat", coord.lat); updateTimeline(idx, "lng", coord.lng); }
+      } catch {}
+    }
+  };
+
   const addStop = () => setTimeline(prev => [...prev, {
     date: today, time: "", place: "", province: "", district: "", description: "",
     imageFile: null, imagePreview: null, shareToPlace: false, placeId: null,
-    lat: null, lng: null,
+    lat: null, lng: null, googleMapsUrl: "",
   }]);
 
   const removeStop = (i: number) => setTimeline(prev => prev.filter((_, j) => j !== i));
@@ -317,6 +335,7 @@ export default function EditTripPage({ params }: Props) {
             placeId:      stop.placeId ?? undefined,
             lat:          stop.lat ?? null,
             lng:          stop.lng ?? null,
+            googleMapsUrl: stop.googleMapsUrl || null,
           };
         })
       );
@@ -735,6 +754,10 @@ export default function EditTripPage({ params }: Props) {
                     📍 ปักหมุดพิกัด (ไม่บังคับ)
                     {item.lat != null && <span style={{ color: "#10b981", marginLeft: 8 }}>✓ {item.lat.toFixed(5)}, {item.lng?.toFixed(5)}</span>}
                   </div>
+                  <input type="url" placeholder="วาง Google Maps URL เพื่อปักหมุดอัตโนมัติ…"
+                    value={item.googleMapsUrl}
+                    onChange={e => onMapsUrlChange(idx, e.target.value)}
+                    style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #cbd5e1", fontSize: 12, fontFamily: "inherit", background: "#fff", boxSizing: "border-box" as const, marginBottom: 8 }} />
                   <DynamicPlacePicker
                     value={{ lat: item.lat, lng: item.lng }}
                     onChange={(lat, lng) => { updateTimeline(idx, "lat", lat); updateTimeline(idx, "lng", lng); }}

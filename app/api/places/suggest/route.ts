@@ -36,7 +36,7 @@ export async function POST(request: Request) {
         title:    { equals: title.trim(), mode: "insensitive" },
         province: { equals: province,     mode: "insensitive" },
       },
-      select: { id: true, slug: true, title: true, approvalStatus: true },
+      select: { id: true, slug: true, title: true, approvalStatus: true, lat: true, lng: true },
     });
     if (existing) {
       // ถ้ามี googleMapsUrl ใหม่และ place ยังไม่มี → อัปเดตแบบ silent (ไม่ต้องรออนุมัติ เป็น metadata)
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
           data:  { googleMapsUrl: googleMapsUrl.trim() },
         });
       }
-      return NextResponse.json({ place: { id: existing.id, slug: existing.slug, title: existing.title }, existing: true });
+      return NextResponse.json({ place: { id: existing.id, slug: existing.slug, title: existing.title, lat: existing.lat ?? null, lng: existing.lng ?? null }, existing: true });
     }
 
     const catEnum = CAT_MAP[category] ?? "NATURE";
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ place: { id: place.id, slug: place.slug, title: place.title } }, { status: 201 });
+    return NextResponse.json({ place: { id: place.id, slug: place.slug, title: place.title, lat: place.lat ?? null, lng: place.lng ?? null } }, { status: 201 });
   } catch (err) {
     console.error("POST /api/places/suggest:", err);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });

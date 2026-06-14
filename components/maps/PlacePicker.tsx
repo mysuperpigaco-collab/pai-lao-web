@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -51,14 +51,11 @@ function ClickHandler({ onChange }: { onChange: (lat: number, lng: number) => vo
   return null;
 }
 
-// Fly to coords once — on first non-null value only (for edit page load)
-function FlyOnce({ lat, lng }: { lat: number; lng: number }) {
-  const map  = useMap();
-  const done = useRef(false);
+// Re-centers map every time lat/lng changes — fires on place selection from parent
+function Recenter({ lat, lng }: { lat: number | null; lng: number | null }) {
+  const map = useMap();
   useEffect(() => {
-    if (done.current) return;
-    done.current = true;
-    map.setView([lat, lng], 15);
+    if (lat != null && lng != null) map.setView([lat, lng], 15);
   }, [lat, lng, map]);
   return null;
 }
@@ -75,7 +72,7 @@ export default function PlacePicker({
   const hasCoords = value.lat != null && value.lng != null;
   const center: [number, number] = hasCoords
     ? [value.lat!, value.lng!]
-    : [13.0, 101.0]; // Thailand center
+    : [13.0, 101.0];
 
   return (
     <div style={{ borderRadius: 16, overflow: "hidden", border: "2px dashed #93c5fd" }}>
@@ -92,7 +89,7 @@ export default function PlacePicker({
         <LocateButton onLocate={onChange} />
         <ClickHandler onChange={onChange} />
         {hasCoords && <Marker position={[value.lat!, value.lng!]} />}
-        {hasCoords && <FlyOnce lat={value.lat!} lng={value.lng!} />}
+        <Recenter lat={value.lat} lng={value.lng} />
       </MapContainer>
     </div>
   );
