@@ -242,6 +242,8 @@ export async function POST(request: Request) {
             tips:          stop.tips          ?? null,
             shareToPlace:  stop.shareToPlace  ?? false,
             placeId:       stop.placeId       ?? null,
+            lat:           stop.lat           ?? null,
+            lng:           stop.lng           ?? null,
           })),
         } : undefined,
       },

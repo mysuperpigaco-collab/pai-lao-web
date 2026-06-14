@@ -10,6 +10,9 @@ import { useAuth } from "@/context/AuthContext";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
 import { getDistricts, normalizeProvince, PROVINCES } from "@/data/thailand";
 import RichTextEditor from "@/components/common/RichTextEditor";
+import dynamic from "next/dynamic";
+
+const DynamicPlacePicker = dynamic(() => import("@/components/maps/PlacePicker"), { ssr: false });
 
 function HintTooltip({ text }: { text: string }) {
   const [show, setShow] = useState(false);
@@ -97,7 +100,8 @@ export default function CreateStoryPage() {
     { date: today, time: "", place: "", province: "", district: "", description: "",
       imageFile: null as File | null, imagePreview: null as string | null,
       placeId: null as string | null, placeSlug: null as string | null,
-      shareToPlace: false }
+      shareToPlace: false,
+      lat: null as number | null, lng: null as number | null }
   ]);
   const [placeSuggestions, setPlaceSuggestions] = useState<Record<number, any[]>>({});
   const [placeSearchLoading, setPlaceSearchLoading] = useState<Record<number, boolean>>({});
@@ -216,7 +220,7 @@ export default function CreateStoryPage() {
   };
 
   const addTimeline    = () => setTimeline([...timeline,
-    { date: today, time: "", place: "", province: "", district: "", description: "", imageFile: null, imagePreview: null, placeId: null, placeSlug: null, shareToPlace: false }]);
+    { date: today, time: "", place: "", province: "", district: "", description: "", imageFile: null, imagePreview: null, placeId: null, placeSlug: null, shareToPlace: false, lat: null, lng: null }]);
   const removeTimeline = (i: number) => setTimeline(timeline.filter((_, idx) => idx !== i));
 
   // ── Place search for timeline stops ──────────────────────
@@ -313,6 +317,8 @@ export default function CreateStoryPage() {
             description: stop.description,
             placeId: stop.placeId ?? undefined,
             shareToPlace: stop.shareToPlace ?? false,
+            lat: stop.lat ?? null,
+            lng: stop.lng ?? null,
             images: stop.imageFile
               ? [await uploadFile(stop.imageFile, `trips/timeline/${i}`)]
               : (stop.imagePreview ? [stop.imagePreview] : []),
@@ -399,6 +405,8 @@ export default function CreateStoryPage() {
         timeline.map(async (stop, i) => ({
           placeId:      stop.placeId ?? undefined,
           shareToPlace: stop.shareToPlace ?? false,
+          lat:          stop.lat ?? null,
+          lng:          stop.lng ?? null,
           date:         stop.date,
           time:         stop.time,
           place:        stop.place,
@@ -864,6 +872,19 @@ export default function CreateStoryPage() {
                     </span>
                   </div>
                 )}
+
+                {/* PlacePicker — ปักหมุดพิกัดของจุดแวะ */}
+                <div style={{ marginTop: 14 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
+                    📍 ปักหมุดพิกัด (ไม่บังคับ)
+                    {item.lat != null && <span style={{ color: "#10b981", marginLeft: 8 }}>✓ {item.lat.toFixed(5)}, {item.lng?.toFixed(5)}</span>}
+                  </div>
+                  <DynamicPlacePicker
+                    value={{ lat: item.lat, lng: item.lng }}
+                    onChange={(lat, lng) => { updateTimeline(idx, "lat", lat); updateTimeline(idx, "lng", lng); }}
+                    height={220}
+                  />
+                </div>
               </div>
             ))}
             <button type="button" className="btn-add-checkpoint-premium" onClick={addTimeline}>

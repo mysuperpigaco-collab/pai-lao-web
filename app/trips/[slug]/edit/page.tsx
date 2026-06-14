@@ -16,6 +16,9 @@ import {
 } from "@/components/ui/ActionButtons";
 import "@/components/ui/action-buttons.css";
 import RichTextEditor from "@/components/common/RichTextEditor";
+import dynamic from "next/dynamic";
+
+const DynamicPlacePicker = dynamic(() => import("@/components/maps/PlacePicker"), { ssr: false });
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -57,6 +60,7 @@ export default function EditTripPage({ params }: Props) {
     date: string; time: string; place: string; province: string; district: string;
     description: string; imageFile: File | null; imagePreview: string | null;
     existingImage?: string; shareToPlace: boolean; placeId: string | null; placeSlug?: string;
+    lat: number | null; lng: number | null;
   }[]>([]);
 
   // ── Place search state ─────────────────────────────────
@@ -156,6 +160,8 @@ export default function EditTripPage({ params }: Props) {
           existingImage: stop.images?.[0]    ?? undefined,
           shareToPlace:  stop.shareToPlace   ?? false,
           placeId:       stop.placeId        ?? null,
+          lat:           stop.lat            ?? null,
+          lng:           stop.lng            ?? null,
         })));
       })
       .catch(() => setNotFound(true))
@@ -181,6 +187,7 @@ export default function EditTripPage({ params }: Props) {
   const addStop = () => setTimeline(prev => [...prev, {
     date: today, time: "", place: "", province: "", district: "", description: "",
     imageFile: null, imagePreview: null, shareToPlace: false, placeId: null,
+    lat: null, lng: null,
   }]);
 
   const removeStop = (i: number) => setTimeline(prev => prev.filter((_, j) => j !== i));
@@ -231,6 +238,8 @@ export default function EditTripPage({ params }: Props) {
             images: imageUrl ? [imageUrl] : [],
             shareToPlace: stop.shareToPlace ?? false,
             placeId: stop.placeId ?? undefined,
+            lat: stop.lat ?? null,
+            lng: stop.lng ?? null,
           };
         })
       );
@@ -306,6 +315,8 @@ export default function EditTripPage({ params }: Props) {
             images:       imageUrl ? [imageUrl] : [],
             shareToPlace: stop.shareToPlace ?? false,
             placeId:      stop.placeId ?? undefined,
+            lat:          stop.lat ?? null,
+            lng:          stop.lng ?? null,
           };
         })
       );
@@ -716,6 +727,19 @@ export default function EditTripPage({ params }: Props) {
                   <span style={{ fontSize: 12, fontWeight: 600, color: item.shareToPlace ? "#065f46" : "#64748b" }}>
                     {item.shareToPlace ? "✅ อนุญาตให้แสดงรูปบนหน้าสถานที่" : "อนุญาตให้แสดงรูปบนหน้าสถานที่"}
                   </span>
+                </div>
+
+                {/* PlacePicker — ปักหมุดพิกัดของจุดแวะ */}
+                <div style={{ marginTop: 14 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
+                    📍 ปักหมุดพิกัด (ไม่บังคับ)
+                    {item.lat != null && <span style={{ color: "#10b981", marginLeft: 8 }}>✓ {item.lat.toFixed(5)}, {item.lng?.toFixed(5)}</span>}
+                  </div>
+                  <DynamicPlacePicker
+                    value={{ lat: item.lat, lng: item.lng }}
+                    onChange={(lat, lng) => { updateTimeline(idx, "lat", lat); updateTimeline(idx, "lng", lng); }}
+                    height={220}
+                  />
                 </div>
               </div>
             ))}

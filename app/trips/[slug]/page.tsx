@@ -164,12 +164,12 @@ export default async function TripDetailPage({ params }: Props) {
     : 0;
 
   const routePoints = trip.timeline
-    .filter((s: any) => s.place?.lat != null && s.place?.lng != null)
+    .filter((s: any) => (s.lat ?? s.place?.lat) != null && (s.lng ?? s.place?.lng) != null)
     .map((s: any) => ({
-      lat: s.place.lat as number,
-      lng: s.place.lng as number,
-      label: s.placeName || s.place.title,
-      href: s.place.slug ? `${SITE_URL}/place/${s.place.slug}` : undefined,
+      lat: (s.lat ?? s.place?.lat) as number,
+      lng: (s.lng ?? s.place?.lng) as number,
+      label: s.placeName || s.place?.title,
+      href: s.place?.slug ? `${SITE_URL}/place/${s.place.slug}` : undefined,
     }));
 
   const authorName = trip.author.displayName || trip.author.firstName || "?";
