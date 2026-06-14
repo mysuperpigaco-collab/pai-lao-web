@@ -2,16 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
-
-// Regex-based sanitizer — ไม่ต้องการ DOM/jsdom, ใช้บน Vercel Lambda ได้
-function sanitizeHtml(html: string): string {
-  if (!html) return "";
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, "")
-    .replace(/javascript\s*:/gi, "")
-    .replace(/data:\s*text\/html/gi, "");
-}
+import { sanitizeServerHtml } from "@/lib/sanitize-server";
 
 // ── GET /api/trips ─────────────────────────────────────────
 export async function GET(request: Request) {
@@ -217,7 +208,7 @@ export async function POST(request: Request) {
         slug,
         title,
         subtitle:    subtitle    ?? "",
-        description: sanitizeHtml(description ?? ""),
+        description: sanitizeServerHtml(description ?? ""),
         coverUrl:    coverUrl    ?? "",
         gallery:     gallery     ?? [],
         mood:        mood        ?? "ทั่วไป",

@@ -2,15 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
-
-function sanitizeHtml(html: string): string {
-  if (!html) return "";
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, "")
-    .replace(/javascript\s*:/gi, "")
-    .replace(/data:\s*text\/html/gi, "");
-}
+import { sanitizeServerHtml } from "@/lib/sanitize-server";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -96,7 +88,7 @@ export async function PUT(request: Request, { params }: Params) {
         data: {
           ...(title       !== undefined && { title }),
           ...(subtitle    !== undefined && { subtitle }),
-          ...(description !== undefined && { description: sanitizeHtml(description) }),
+          ...(description !== undefined && { description: sanitizeServerHtml(description) }),
           ...(coverUrl    !== undefined && { coverUrl }),
           ...(gallery     !== undefined && { gallery }),
           ...(mood        !== undefined && { mood }),
@@ -132,7 +124,7 @@ export async function PUT(request: Request, { params }: Params) {
       if (finalize) {
         // ตรวจสอบจาก request body (ไม่ใช่จาก DB ซึ่งอาจว่างสำหรับ draft)
         const finalTitle       = title       ?? trip.title;
-        const finalDescription = sanitizeHtml(description ?? trip.description);
+        const finalDescription = sanitizeServerHtml(description ?? trip.description);
         const finalCoverUrl    = coverUrl    ?? trip.coverUrl;
         if (!finalTitle || !finalDescription || !finalCoverUrl) {
           return NextResponse.json({ message: "กรุณากรอกข้อมูลให้ครบก่อนเผยแพร่ (ชื่อ คำอธิบาย รูปปก)" }, { status: 400 });
@@ -185,7 +177,7 @@ export async function PUT(request: Request, { params }: Params) {
         data: {
           ...(title       !== undefined && { title }),
           ...(subtitle    !== undefined && { subtitle }),
-          ...(description !== undefined && { description: sanitizeHtml(description) }),
+          ...(description !== undefined && { description: sanitizeServerHtml(description) }),
           ...(coverUrl    !== undefined && { coverUrl }),
           ...(gallery     !== undefined && { gallery }),
           ...(mood        !== undefined && { mood }),
@@ -225,7 +217,7 @@ export async function PUT(request: Request, { params }: Params) {
         data: {
           ...(title       !== undefined && { title }),
           ...(subtitle    !== undefined && { subtitle }),
-          ...(description !== undefined && { description: sanitizeHtml(description) }),
+          ...(description !== undefined && { description: sanitizeServerHtml(description) }),
           ...(coverUrl    !== undefined && { coverUrl }),
           ...(gallery     !== undefined && { gallery }),
           ...(mood        !== undefined && { mood }),
