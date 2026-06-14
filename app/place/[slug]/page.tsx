@@ -16,6 +16,8 @@ import MapsButton from "@/components/common/MapsButton";
 import CommunityPhotosGallery from "@/components/places/CommunityPhotosGallery";
 import PlaceGalleryGrid from "@/components/places/PlaceGalleryGrid";
 import BackToTop from "@/components/common/BackToTop";
+import MapView from "@/components/maps/MapView";
+import { googleMapsPoint, MAPS_ENABLED } from "@/lib/maps";
 import "./place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -406,12 +408,31 @@ export default async function PlaceDetailPage({ params }: Props) {
               </div>
             )}
 
-            {place.googleMapsUrl && (
-              <div className="pd-card pd-map-card">
-                <h2>แผนที่ Map</h2>
+            <div className="pd-card pd-map-card">
+              <h2>แผนที่ <span style={{ fontSize: 14, fontWeight: 600, color: "#94a3b8" }}>Map</span></h2>
+              {MAPS_ENABLED && place.lat != null && place.lng != null ? (
+                <>
+                  <MapView
+                    points={[{ lat: place.lat, lng: place.lng, label: place.title }]}
+                    height={320}
+                  />
+                  <a
+                    href={googleMapsPoint(place.lat, place.lng)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-block", marginTop: 12,
+                      padding: "10px 20px", background: "#10b981", color: "#fff",
+                      borderRadius: 10, textDecoration: "none", fontWeight: 700, fontSize: 14,
+                    }}
+                  >
+                    🧭 นำทางด้วย Google Maps
+                  </a>
+                </>
+              ) : place.googleMapsUrl ? (
                 <MapsButton url={place.googleMapsUrl} placeName={place.title} className="pd-map-btn" />
-              </div>
-            )}
+              ) : null}
+            </div>
             <div className="pd-card">
               <h2>
                 รีวิว
