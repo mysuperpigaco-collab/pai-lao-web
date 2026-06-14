@@ -484,10 +484,13 @@ export default function PlannerPage() {
         }
         .planner-header-actions { display:flex; gap:8px; align-items:center; }
 
-        .planner-grid { display:grid; grid-template-columns:260px 1fr 320px; height:calc(100vh - 116px); overflow:hidden; }
+        .planner-grid { display:grid; grid-template-columns:300px 1fr 360px; height:calc(100vh - 116px); overflow:hidden; }
         .planner-sidebar { display:flex; flex-direction:column; overflow:hidden; }
         .planner-right { overflow-y:auto; }
 
+        @media (max-width: 1100px) {
+          .planner-grid { grid-template-columns:260px 1fr 320px; }
+        }
         @media (max-width: 900px) {
           .planner-grid { grid-template-columns:1fr; height:auto; overflow:visible; }
           .planner-sidebar { height:auto; max-height:40vh; overflow-y:auto; border-right:none !important; border-bottom:1px solid #e2e8f0; }
@@ -1156,7 +1159,7 @@ export default function PlannerPage() {
       {/* ── Edit stop modal ── */}
       {editStop && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setEditStop(null)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 24, padding: 28, width: "100%", maxWidth: 440, boxShadow: "0 40px 80px rgba(0,0,0,0.2)" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 24, padding: 28, width: "100%", maxWidth: 520, boxShadow: "0 40px 80px rgba(0,0,0,0.2)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
               <span style={{ fontSize: 24 }}>✏️</span>
               <div>
@@ -1181,17 +1184,17 @@ export default function PlannerPage() {
               </div>
             </div>
             {/* Arrival time + duration row */}
-            <div style={{ display:"flex", gap:12, marginBottom:14 }}>
-              <div style={{ flex:1 }}>
-                <label style={lbl}>🕐 เวลาที่คาดว่าจะถึง · Arrival Time</label>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:14, alignItems:"start" }}>
+              <div>
+                <label style={lbl}>🕐 เวลาถึง · Arrival</label>
                 <input type="time" value={editArrival} onChange={e => setEditArrival(e.target.value)}
                   style={{ ...inp, background:"#f0f9ff", border:"1.5px solid #bae6fd" }} />
               </div>
-              <div style={{ flex:1 }}>
-                <label style={lbl}>⏱ เวลาที่ใช้ที่จุดนี้ · Duration (นาที)</label>
+              <div>
+                <label style={lbl}>⏱ ระยะเวลา · Duration (นาที)</label>
                 <input type="number" min="0" step="15" value={editDuration}
                   onChange={e => setEditDuration(e.target.value)}
-                  placeholder="เช่น 60 = 1 ชั่วโมง"
+                  placeholder="เช่น 60 = 1ชม."
                   style={{ ...inp, background:"#f0fdf4", border:"1.5px solid #bbf7d0" }} />
               </div>
             </div>
@@ -1221,6 +1224,6 @@ export default function PlannerPage() {
   );
 }
 
-const lbl: React.CSSProperties = { display: "block", fontWeight: 700, fontSize: 11, color: "#64748b", marginBottom: 5, letterSpacing: "0.3px", textTransform: "uppercase" as const };
+const lbl: React.CSSProperties = { display: "block", fontWeight: 700, fontSize: 11, color: "#64748b", marginBottom: 5, letterSpacing: "0.3px" };
 const inp: React.CSSProperties = { width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const, color: "#1e293b" };
 const ab: React.CSSProperties  = { width: 28, height: 28, borderRadius: 8, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#64748b", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" };
