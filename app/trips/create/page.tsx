@@ -251,7 +251,7 @@ export default function CreateStoryPage() {
       return d === rawDist || d.startsWith(rawDist) || rawDist.startsWith(d) ||
         dClean === rClean || dClean.startsWith(rClean) || rClean.startsWith(dClean);
     }) ?? rawDist) : "";
-    updated[idx].district = matchedDist;
+    updated[idx].district = matchedDist.split(" (")[0];
     updated[idx].placeId  = p.id;
     updated[idx].placeSlug = p.slug;
     setTimeline(updated);

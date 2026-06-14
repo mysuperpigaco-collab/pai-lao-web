@@ -93,7 +93,7 @@ export default function EditTripPage({ params }: Props) {
       return d === rawDist || d.startsWith(rawDist) || rawDist.startsWith(d) ||
         dClean === rClean || dClean.startsWith(rClean) || rClean.startsWith(dClean);
     }) ?? rawDist) : updated[idx].district;
-    updated[idx].district = matchedDist;
+    updated[idx].district = matchedDist.split(" (")[0];
     updated[idx].placeId  = p.id;
     setTimeline(updated);
     setPlaceSuggestions(prev => ({ ...prev, [idx]: [] }));
@@ -153,7 +153,7 @@ export default function EditTripPage({ params }: Props) {
           time:          stop.time           ?? "",
           place:         stop.placeName      ?? "",
           province:      normalizeProvince(stop.province ?? ""),
-          district:      stop.district       ?? "",
+          district:      (stop.district ?? "").split(" (")[0],
           description:   stop.description    ?? "",
           imageFile:     null,
           imagePreview:  stop.images?.[0]    ?? null,
