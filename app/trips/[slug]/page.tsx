@@ -15,6 +15,8 @@ import { TripGallery } from "@/components/places/PlaceGallery";
 import Link from "next/link";
 import ReadingProgress from "@/components/common/ReadingProgress";
 import BackToTop from "@/components/common/BackToTop";
+import MapView from "@/components/maps/MapView";
+import { googleMapsRoute, MAPS_ENABLED } from "@/lib/maps";
 import "./trip-detail.css";
 
 /** Extract YouTube video ID from various URL formats */
@@ -98,7 +100,10 @@ export default async function TripDetailPage({ params }: Props) {
           _count: { select: { trips: true } },
         },
       },
-      timeline: { orderBy: { order: "asc" } },
+      timeline: {
+        orderBy: { order: "asc" },
+        include: { place: { select: { lat: true, lng: true, title: true, slug: true } } },
+      },
       reviews: {
         orderBy: { createdAt: "desc" },
         include: {
@@ -157,6 +162,15 @@ export default async function TripDetailPage({ params }: Props) {
   const avgRating = trip.reviews.length
     ? trip.reviews.reduce((s: number, r: any) => s + r.rating, 0) / trip.reviews.length
     : 0;
+
+  const routePoints = trip.timeline
+    .filter((s: any) => s.place?.lat != null && s.place?.lng != null)
+    .map((s: any) => ({
+      lat: s.place.lat as number,
+      lng: s.place.lng as number,
+      label: s.placeName || s.place.title,
+      href: s.place.slug ? `${SITE_URL}/place/${s.place.slug}` : undefined,
+    }));
 
   const authorName = trip.author.displayName || trip.author.firstName || "?";
   const authorInitial = authorName.slice(0, 1).toUpperCase();
@@ -369,6 +383,28 @@ export default async function TripDetailPage({ params }: Props) {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {MAPS_ENABLED && routePoints.length > 0 && (
+              <div className="content-card">
+                <h2>🗺️ เส้นทางทริป <span style={{ fontSize: 14, fontWeight: 600, color: "#94a3b8" }}>Route Map</span></h2>
+                <MapView points={routePoints} showRoute height={400} />
+                {routePoints.length > 1 && (
+                  <a
+                    href={googleMapsRoute(routePoints)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-block", marginTop: 12,
+                      padding: "10px 20px", background: "#2563eb",
+                      color: "#fff", borderRadius: 10,
+                      textDecoration: "none", fontWeight: 700, fontSize: 15,
+                    }}
+                  >
+                    🧭 นำทางทั้งเส้นทางด้วย Google Maps
+                  </a>
+                )}
               </div>
             )}
 
