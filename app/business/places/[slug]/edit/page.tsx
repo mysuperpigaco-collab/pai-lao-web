@@ -1,8 +1,14 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+
+const DynamicPlacePicker = dynamic(
+  () => import("@/components/maps/PlacePicker"),
+  { ssr: false, loading: () => <div style={{ height: 320, borderRadius: 16, background: "#e2e8f0" }} /> },
+);
 import { PROVINCES, getDistricts, normalizeProvince } from "@/data/thailand";
 import "./page.css";
 
@@ -76,6 +82,10 @@ export default function EditPlacePage({ params }: Props) {
   const [district, setDistrict]     = useState("");
   const [address, setAddress]       = useState("");
   const [googleMaps, setGoogleMaps] = useState("");
+  const [lat, setLat]               = useState<number | null>(null);
+  const [lng, setLng]               = useState<number | null>(null);
+  const [placeId, setPlaceId]       = useState<string | null>(null);
+  const [dupWarning, setDupWarning] = useState<{ id: string; slug: string; title: string; distanceM: number; similarity: number }[]>([]);
   const [category, setCategory]     = useState<PlaceCategory>("ธรรมชาติ");
   const [tagInput, setTagInput]     = useState("");
   const [tags, setTags]             = useState<string[]>([]);
@@ -124,6 +134,9 @@ export default function EditPlacePage({ params }: Props) {
         setDistrict(matchedDist);
         setAddress(p.address ?? "");
         setGoogleMaps(p.googleMapsUrl ?? "");
+        setLat(p.lat ?? null);
+        setLng(p.lng ?? null);
+        setPlaceId(p.id ?? null);
         setCategory(ENUM_TO_THAI[p.category] ?? p.category ?? "ธรรมชาติ");
         setTags(p.tags ?? []);
         setDescription(p.description ?? "");
@@ -155,6 +168,22 @@ export default function EditPlacePage({ params }: Props) {
   }, [slug]);
 
   const handleProvinceChange = (v: string) => { setProvince(v); setDistrict(""); };
+
+  useEffect(() => {
+    if (lat == null || lng == null || !title.trim()) { setDupWarning([]); return; }
+    const t = setTimeout(async () => {
+      try {
+        const r = await fetch("/api/places/nearby-check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lat, lng, name: title, excludeId: placeId }),
+        });
+        const { nearby } = await r.json();
+        setDupWarning(nearby ?? []);
+      } catch { setDupWarning([]); }
+    }, 500);
+    return () => clearTimeout(t);
+  }, [lat, lng, title, placeId]);
 
   const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -211,6 +240,7 @@ export default function EditPlacePage({ params }: Props) {
           province, district,
           address:          address       || undefined,
           googleMapsUrl:    googleMaps    || undefined,
+          ...(lat != null && lng != null ? { lat, lng } : {}),
           category, tags,
           coverUrl,
           gallery,
@@ -395,6 +425,42 @@ export default function EditPlacePage({ params }: Props) {
               <input className="form-control" type="url" value={googleMaps} onChange={e => setGoogleMaps(e.target.value)} placeholder="https://maps.google.com/?q=..." />
               {googleMaps && (
                 <a href={googleMaps} target="_blank" rel="noreferrer" className="map-preview-link">🗺️ ดูบน Google Maps</a>
+              )}
+            </div>
+            <div className="field mt16">
+              <label>
+                ปักหมุดตำแหน่ง · Pin Location
+                <span style={{fontSize:12,fontWeight:400,color:"#94a3b8",marginLeft:8}}>
+                  คลิกบนแผนที่เพื่อระบุพิกัดที่แน่นอน
+                </span>
+              </label>
+              <DynamicPlacePicker
+                value={{ lat, lng }}
+                onChange={(la, lo) => { setLat(la); setLng(lo); }}
+              />
+              {lat != null && lng != null && (
+                <div style={{fontSize:12,color:"#64748b",marginTop:6,display:"flex",alignItems:"center",gap:8}}>
+                  📍 {lat.toFixed(6)}, {lng.toFixed(6)}
+                  <button type="button" onClick={() => { setLat(null); setLng(null); }}
+                    style={{color:"#ef4444",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,padding:0}}>
+                    ✕ ล้างหมุด
+                  </button>
+                </div>
+              )}
+              {dupWarning.length > 0 && (
+                <div style={{background:"#fef9c3",border:"1px solid #fbbf24",borderRadius:10,
+                  padding:"10px 14px",marginTop:10,fontSize:13}}>
+                  ⚠️ <strong>พบสถานที่ใกล้เคียงที่อาจซ้ำกัน:</strong>
+                  {dupWarning.map(d => (
+                    <div key={d.id} style={{marginTop:4}}>
+                      <a href={`/place/${d.slug}`} target="_blank" rel="noreferrer"
+                        style={{color:"#92400e",fontWeight:700}}>{d.title}</a>
+                      <span style={{color:"#78350f",fontSize:11,marginLeft:8}}>
+                        ห่าง {d.distanceM}m · คล้าย {d.similarity}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
@@ -10,6 +11,11 @@ import {
 import { PROVINCES, getDistricts } from "@/data/thailand";
 import "@/components/ui/form-card.css";
 import "@/components/ui/action-buttons.css";
+
+const DynamicPlacePicker = dynamic(
+  () => import("@/components/maps/PlacePicker"),
+  { ssr: false, loading: () => <div style={{ height: 320, borderRadius: 16, background: "#e2e8f0" }} /> },
+);
 
 type PlaceCategory =
   | "ธรรมชาติ" | "คาเฟ่" | "ที่พัก" | "แคมปิ้ง" | "อาหาร"
@@ -81,6 +87,9 @@ export default function CreatePlacePage() {
   const [district, setDistrict] = useState("");
   const [address, setAddress]   = useState("");
   const [googleMaps, setGoogleMaps] = useState("");
+  const [lat, setLat] = useState<number | null>(null);
+  const [lng, setLng] = useState<number | null>(null);
+  const [dupWarning, setDupWarning] = useState<{ id: string; slug: string; title: string; distanceM: number; similarity: number }[]>([]);
 
   // description
   const [description, setDescription] = useState("");
@@ -122,6 +131,22 @@ export default function CreatePlacePage() {
     setProvince(v);
     setDistrict("");
   };
+
+  useEffect(() => {
+    if (lat == null || lng == null || !title.trim()) { setDupWarning([]); return; }
+    const t = setTimeout(async () => {
+      try {
+        const r = await fetch("/api/places/nearby-check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lat, lng, name: title }),
+        });
+        const { nearby } = await r.json();
+        setDupWarning(nearby ?? []);
+      } catch { setDupWarning([]); }
+    }, 500);
+    return () => clearTimeout(t);
+  }, [lat, lng, title]);
 
   const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -193,6 +218,7 @@ export default function CreatePlacePage() {
           province, district,
           address:          address     || undefined,
           googleMapsUrl:    googleMaps  || undefined,
+          ...(lat != null && lng != null ? { lat, lng } : {}),
           category, tags,
           coverUrl, gallery: galleryUrls,
           description,
@@ -351,6 +377,42 @@ export default function CreatePlacePage() {
                   style={{color:"#3b82f6",fontSize:13,marginTop:6,display:"block"}}>
                   🗺️ ดูบน Google Maps
                 </a>
+              )}
+            </div>
+            <div className="ui-field" style={{marginTop:16}}>
+              <label>
+                ปักหมุดตำแหน่ง · Pin Location
+                <span style={{fontSize:12,fontWeight:400,color:"#94a3b8",marginLeft:8}}>
+                  คลิกบนแผนที่เพื่อระบุพิกัดที่แน่นอน
+                </span>
+              </label>
+              <DynamicPlacePicker
+                value={{ lat, lng }}
+                onChange={(la, lo) => { setLat(la); setLng(lo); }}
+              />
+              {lat != null && lng != null && (
+                <div style={{fontSize:12,color:"#64748b",marginTop:6,display:"flex",alignItems:"center",gap:8}}>
+                  📍 {lat.toFixed(6)}, {lng.toFixed(6)}
+                  <button type="button" onClick={() => { setLat(null); setLng(null); }}
+                    style={{color:"#ef4444",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,padding:0}}>
+                    ✕ ล้างหมุด
+                  </button>
+                </div>
+              )}
+              {dupWarning.length > 0 && (
+                <div style={{background:"#fef9c3",border:"1px solid #fbbf24",borderRadius:10,
+                  padding:"10px 14px",marginTop:10,fontSize:13}}>
+                  ⚠️ <strong>พบสถานที่ใกล้เคียงที่อาจซ้ำกัน:</strong>
+                  {dupWarning.map(d => (
+                    <div key={d.id} style={{marginTop:4}}>
+                      <a href={`/place/${d.slug}`} target="_blank" rel="noreferrer"
+                        style={{color:"#92400e",fontWeight:700}}>{d.title}</a>
+                      <span style={{color:"#78350f",fontSize:11,marginLeft:8}}>
+                        ห่าง {d.distanceM}m · คล้าย {d.similarity}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>
