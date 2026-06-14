@@ -117,10 +117,8 @@ export default function AdminPlacesPage() {
 
   const handleDelete = async () => {
     if (!confirm || confirm.action !== "delete") return;
-    const res = await fetch("/api/admin/places", {
+    const res = await fetch(`/api/admin/places?placeId=${confirm.id}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ placeId: confirm.id }),
     });
     const d = await res.json();
     setMsg(d.message || "ลบแล้ว");
