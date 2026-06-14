@@ -29,6 +29,25 @@ export async function POST(request: Request) {
     if (!title?.trim()) return NextResponse.json({ message: "กรุณาระบุชื่อสถานที่" }, { status: 400 });
     if (!province)      return NextResponse.json({ message: "กรุณาระบุจังหวัด" }, { status: 400 });
 
+    // ── ถ้ามีสถานที่ชื่อเดียวกันในจังหวัดเดียวกันอยู่แล้ว → link ไปเลย ไม่สร้างซ้ำ ──
+    const existing = await prisma.place.findFirst({
+      where: {
+        title:    { equals: title.trim(), mode: "insensitive" },
+        province: { equals: province,     mode: "insensitive" },
+      },
+      select: { id: true, slug: true, title: true, approvalStatus: true },
+    });
+    if (existing) {
+      // ถ้ามี googleMapsUrl ใหม่และ place ยังไม่มี → อัปเดตแบบ silent (ไม่ต้องรออนุมัติ เป็น metadata)
+      if (googleMapsUrl?.trim()) {
+        await prisma.place.updateMany({
+          where: { id: existing.id, googleMapsUrl: null },
+          data:  { googleMapsUrl: googleMapsUrl.trim() },
+        });
+      }
+      return NextResponse.json({ place: { id: existing.id, slug: existing.slug, title: existing.title }, existing: true });
+    }
+
     const catEnum = CAT_MAP[category] ?? "NATURE";
     const slug    = slugify(title.trim());
 
