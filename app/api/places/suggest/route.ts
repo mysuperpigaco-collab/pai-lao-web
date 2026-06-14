@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { googleUrlToLatLng } from "@/lib/maps";
 
 function slugify(text: string) {
   return text.toLowerCase()
@@ -51,6 +52,10 @@ export async function POST(request: Request) {
     const catEnum = CAT_MAP[category] ?? "NATURE";
     const slug    = slugify(title.trim());
 
+    // Auto-extract lat/lng from Google Maps URL
+    const mapsUrl = googleMapsUrl?.trim() || null;
+    const coords  = mapsUrl ? await googleUrlToLatLng(mapsUrl) : null;
+
     const place = await prisma.place.create({
       data: {
         slug,
@@ -65,7 +70,8 @@ export async function POST(request: Request) {
         description:    "สถานที่แนะนำโดยนักท่องเที่ยว ยังไม่มีเจ้าของ",
         approvalStatus: "PENDING",
         businessId:     null,
-        ...(googleMapsUrl?.trim() ? { googleMapsUrl: googleMapsUrl.trim() } : {}),
+        ...(mapsUrl ? { googleMapsUrl: mapsUrl } : {}),
+        ...(coords  ? { lat: coords.lat, lng: coords.lng } : {}),
       },
     });
 
