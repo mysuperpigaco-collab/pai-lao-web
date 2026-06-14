@@ -10,7 +10,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "seed:fetch": "python scripts/fetch_places_osm_v2.py",
+    "seed:convert": "tsx scripts/convert-seed-json.ts",
+    "seed:import": "tsx scripts/import-places.ts",
+    "seed:dry": "tsx scripts/import-places.ts all --dry-run"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -64,6 +68,7 @@
     "jsdom": "^29.1.1",
     "playwright": "^1.60.0",
     "prisma": "^5.22.0",
+    "tsx": "^4.22.4",
     "typescript": "^5",
     "vitest": "^4.1.8"
   }
