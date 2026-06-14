@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { googleUrlToLatLng } from "@/lib/maps";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -73,6 +74,16 @@ export async function PUT(request: Request, { params }: Params) {
             openHours, closedDays, entryFee, phone, website, lineId,
             amenities, petPolicy } = body;
 
+    // Auto-extract lat/lng from Google Maps URL if URL is being updated but coords are not provided
+    let resolvedLat: number | null | undefined =
+      lat !== undefined ? (lat ? Number(lat) : null) : undefined;
+    let resolvedLng: number | null | undefined =
+      lng !== undefined ? (lng ? Number(lng) : null) : undefined;
+    if (googleMapsUrl !== undefined && resolvedLat == null && resolvedLng == null) {
+      const c = await googleUrlToLatLng(googleMapsUrl);
+      if (c) { resolvedLat = c.lat; resolvedLng = c.lng; }
+    }
+
     const CATEGORY_MAP: Record<string, string> = {
       "ธรรมชาติ": "NATURE", "คาเฟ่": "CAFE", "ที่พัก": "ACCOMMODATION",
       "แคมปิ้ง": "CAMPING", "อาหาร": "FOOD", "วัด / ศาสนสถาน": "TEMPLE",
@@ -93,9 +104,9 @@ export async function PUT(request: Request, { params }: Params) {
           ...(province         !== undefined && { province }),
           ...(district         !== undefined && { district }),
           ...(address          !== undefined && { address }),
-          ...(googleMapsUrl    !== undefined && { googleMapsUrl }),
-          ...(lat              !== undefined && { lat: lat ? Number(lat) : null }),
-          ...(lng              !== undefined && { lng: lng ? Number(lng) : null }),
+          ...(googleMapsUrl !== undefined && { googleMapsUrl }),
+          ...(resolvedLat  !== undefined && { lat: resolvedLat }),
+          ...(resolvedLng  !== undefined && { lng: resolvedLng }),
           ...(category         !== undefined && { category }),
           ...(tags             !== undefined && { tags }),
           ...(coverUrl         !== undefined && { coverUrl }),
@@ -124,9 +135,9 @@ export async function PUT(request: Request, { params }: Params) {
       if (province         !== undefined) updateData.province         = province;
       if (district         !== undefined) updateData.district         = district;
       if (address          !== undefined) updateData.address          = address;
-      if (googleMapsUrl    !== undefined) updateData.googleMapsUrl    = googleMapsUrl;
-      if (lat              !== undefined) updateData.lat              = lat ? Number(lat) : null;
-      if (lng              !== undefined) updateData.lng              = lng ? Number(lng) : null;
+      if (googleMapsUrl !== undefined) updateData.googleMapsUrl = googleMapsUrl;
+      if (resolvedLat   !== undefined) updateData.lat          = resolvedLat;
+      if (resolvedLng   !== undefined) updateData.lng          = resolvedLng;
       if (category         !== undefined) updateData.category         = category;
       if (tags             !== undefined) updateData.tags             = tags;
       if (coverUrl         !== undefined) updateData.coverUrl         = coverUrl;
@@ -166,9 +177,9 @@ export async function PUT(request: Request, { params }: Params) {
     if (province         !== undefined) pendingData.province         = province;
     if (district         !== undefined) pendingData.district         = district;
     if (address          !== undefined) pendingData.address          = address;
-    if (googleMapsUrl    !== undefined) pendingData.googleMapsUrl    = googleMapsUrl;
-    if (lat              !== undefined) pendingData.lat              = lat ? Number(lat) : null;
-    if (lng              !== undefined) pendingData.lng              = lng ? Number(lng) : null;
+    if (googleMapsUrl !== undefined) pendingData.googleMapsUrl = googleMapsUrl;
+    if (resolvedLat   !== undefined) pendingData.lat          = resolvedLat;
+    if (resolvedLng   !== undefined) pendingData.lng          = resolvedLng;
     if (category         !== undefined) pendingData.category         = category;
     if (tags             !== undefined) pendingData.tags             = tags;
     if (coverUrl         !== undefined) pendingData.coverUrl         = coverUrl;

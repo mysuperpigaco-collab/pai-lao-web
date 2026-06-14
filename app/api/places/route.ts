@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { googleUrlToLatLng } from "@/lib/maps";
 
 // ── GET /api/places ───────────────────────────────────────
 export async function GET(request: Request) {
@@ -140,7 +141,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title, titleEn, province, district, address, googleMapsUrl, lat, lng,
+    const { title, titleEn, province, district, address, googleMapsUrl,
             category: categoryRaw, tags, coverUrl, gallery, description, descriptionShort,
             openHours, closedDays, entryFee, phone, website, lineId,
             amenities, petPolicy } = body;
@@ -183,6 +184,14 @@ export async function POST(request: Request) {
       });
     }
 
+    // Auto-extract lat/lng from Google Maps URL if not explicitly provided
+    let resolvedLat: number | null = body.lat ? Number(body.lat) : null;
+    let resolvedLng: number | null = body.lng ? Number(body.lng) : null;
+    if ((resolvedLat == null || resolvedLng == null) && googleMapsUrl) {
+      const c = await googleUrlToLatLng(googleMapsUrl);
+      if (c) { resolvedLat = c.lat; resolvedLng = c.lng; }
+    }
+
     const slug = `${title.replace(/[^a-zA-Z0-9ก-๙]/g, "-").replace(/-+/g, "-").toLowerCase()}-${Date.now()}`;
 
     const place = await prisma.place.create({
@@ -191,8 +200,8 @@ export async function POST(request: Request) {
         province, district,
         address:          address          ?? null,
         googleMapsUrl:    googleMapsUrl    ?? null,
-        lat:              lat              ? Number(lat) : null,
-        lng:              lng              ? Number(lng) : null,
+        lat:              resolvedLat,
+        lng:              resolvedLng,
         category,
         tags:             tags             ?? [],
         coverUrl,

@@ -18,3 +18,49 @@ export function googleMapsRoute(points: { lat: number; lng: number }[]): string 
 }
 
 export const MAPS_ENABLED = process.env.NEXT_PUBLIC_ENABLE_MAPS !== "false";
+
+// ── ปุ่ม "เปิดใน Google Maps" — ใช้ URL ต้นฉบับก่อน (เห็นชื่อ/รีวิว) แล้ว fallback พิกัด ──
+export function googleMapsOpen(o: {
+  url?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+}): string {
+  if (o.url) return o.url;
+  if (o.lat != null && o.lng != null) return googleMapsPoint(o.lat, o.lng);
+  return "#";
+}
+
+// ── ดึง lat/lng จากลิงก์ Google Maps (sync, ใช้ที่ไหนก็ได้) ──
+export function extractLatLngFromGoogleUrl(
+  url: string,
+): { lat: number; lng: number } | null {
+  if (!url) return null;
+  const m =
+    url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) ||
+    url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) ||
+    url.match(/[?&](?:q|query|destination)=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (!m) return null;
+  const lat = parseFloat(m[1]);
+  const lng = parseFloat(m[2]);
+  if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+  return { lat, lng };
+}
+
+// ── resolve ลิงก์สั้น (maps.app.goo.gl / goo.gl/maps) — ⚠️ server only ──
+export async function googleUrlToLatLng(
+  url: string,
+): Promise<{ lat: number; lng: number } | null> {
+  if (!url) return null;
+  const direct = extractLatLngFromGoogleUrl(url);
+  if (direct) return direct;
+  if (/(maps\.app\.goo\.gl|goo\.gl\/maps)/i.test(url)) {
+    try {
+      const res = await fetch(url, { redirect: "follow" });
+      return extractLatLngFromGoogleUrl(res.url || "");
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}

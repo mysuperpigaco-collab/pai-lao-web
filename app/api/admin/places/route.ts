@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { googleUrlToLatLng } from "@/lib/maps";
 
 // GET /api/admin/places?approval=PENDING|APPROVED|REJECTED&page=&limit=
 export async function GET(request: Request) {
@@ -150,6 +151,14 @@ export async function POST(request: Request) {
       entryFee, phone, website, lineId,
     } = body;
 
+    // Auto-extract lat/lng from Google Maps URL if not explicitly provided
+    let resolvedLat: number | null = body.lat ? Number(body.lat) : null;
+    let resolvedLng: number | null = body.lng ? Number(body.lng) : null;
+    if ((resolvedLat == null || resolvedLng == null) && googleMapsUrl) {
+      const c = await googleUrlToLatLng(googleMapsUrl);
+      if (c) { resolvedLat = c.lat; resolvedLng = c.lng; }
+    }
+
     if (!title || !province || !district || !categoryRaw || !description) {
       return NextResponse.json({ message: "กรุณากรอกข้อมูลที่จำเป็นให้ครบ (ชื่อ, จังหวัด, อำเภอ, หมวดหมู่, คำอธิบาย)" }, { status: 400 });
     }
@@ -171,6 +180,8 @@ export async function POST(request: Request) {
         province, district,
         address:          address          ?? null,
         googleMapsUrl:    googleMapsUrl    ?? null,
+        lat:              resolvedLat,
+        lng:              resolvedLng,
         category,
         tags:             tags             ?? [],
         coverUrl:         coverUrl         ?? "",
