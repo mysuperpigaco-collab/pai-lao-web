@@ -10,7 +10,7 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "img-src 'self' https://*.supabase.co https://images.unsplash.com https://picsum.photos data: blob:",
+      "img-src 'self' https://*.supabase.co https://images.unsplash.com https://picsum.photos https://*.tile.openstreetmap.org https://unpkg.com data: blob:",
       "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
