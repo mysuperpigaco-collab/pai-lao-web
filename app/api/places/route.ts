@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import { googleUrlToLatLng } from "@/lib/maps";
+import { googleUrlToLatLng, googleMapsPoint } from "@/lib/maps";
 
 // ── GET /api/places ───────────────────────────────────────
 export async function GET(request: Request) {
@@ -191,6 +191,11 @@ export async function POST(request: Request) {
       const c = await googleUrlToLatLng(googleMapsUrl);
       if (c) { resolvedLat = c.lat; resolvedLng = c.lng; }
     }
+    // B.5: if coords set but no URL → generate URL from coords
+    let resolvedGoogleMapsUrl = googleMapsUrl ?? null;
+    if (resolvedLat != null && resolvedLng != null && !resolvedGoogleMapsUrl) {
+      resolvedGoogleMapsUrl = googleMapsPoint(resolvedLat, resolvedLng);
+    }
 
     const slug = `${title.replace(/[^a-zA-Z0-9ก-๙]/g, "-").replace(/-+/g, "-").toLowerCase()}-${Date.now()}`;
 
@@ -199,7 +204,7 @@ export async function POST(request: Request) {
         slug, title, titleEn: titleEn ?? null,
         province, district,
         address:          address          ?? null,
-        googleMapsUrl:    googleMapsUrl    ?? null,
+        googleMapsUrl:    resolvedGoogleMapsUrl,
         lat:              resolvedLat,
         lng:              resolvedLng,
         category,

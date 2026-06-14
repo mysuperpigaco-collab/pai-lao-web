@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import { googleUrlToLatLng } from "@/lib/maps";
+import { googleUrlToLatLng, googleMapsPoint } from "@/lib/maps";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -83,6 +83,11 @@ export async function PUT(request: Request, { params }: Params) {
       const c = await googleUrlToLatLng(googleMapsUrl);
       if (c) { resolvedLat = c.lat; resolvedLng = c.lng; }
     }
+    // B.5: if coords set but no URL sent and place has no URL → generate from coords
+    let resolvedGoogleMapsUrl: string | undefined = googleMapsUrl;
+    if (resolvedLat != null && resolvedLng != null && !googleMapsUrl && !place.googleMapsUrl) {
+      resolvedGoogleMapsUrl = googleMapsPoint(resolvedLat as number, resolvedLng as number);
+    }
 
     const CATEGORY_MAP: Record<string, string> = {
       "ธรรมชาติ": "NATURE", "คาเฟ่": "CAFE", "ที่พัก": "ACCOMMODATION",
@@ -104,7 +109,7 @@ export async function PUT(request: Request, { params }: Params) {
           ...(province         !== undefined && { province }),
           ...(district         !== undefined && { district }),
           ...(address          !== undefined && { address }),
-          ...(googleMapsUrl !== undefined && { googleMapsUrl }),
+          ...(resolvedGoogleMapsUrl !== undefined && { googleMapsUrl: resolvedGoogleMapsUrl }),
           ...(resolvedLat  !== undefined && { lat: resolvedLat }),
           ...(resolvedLng  !== undefined && { lng: resolvedLng }),
           ...(category         !== undefined && { category }),
@@ -135,7 +140,7 @@ export async function PUT(request: Request, { params }: Params) {
       if (province         !== undefined) updateData.province         = province;
       if (district         !== undefined) updateData.district         = district;
       if (address          !== undefined) updateData.address          = address;
-      if (googleMapsUrl !== undefined) updateData.googleMapsUrl = googleMapsUrl;
+      if (resolvedGoogleMapsUrl !== undefined) updateData.googleMapsUrl = resolvedGoogleMapsUrl;
       if (resolvedLat   !== undefined) updateData.lat          = resolvedLat;
       if (resolvedLng   !== undefined) updateData.lng          = resolvedLng;
       if (category         !== undefined) updateData.category         = category;
