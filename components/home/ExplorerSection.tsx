@@ -81,10 +81,6 @@ const inThailand = (lat: number, lng: number) =>
   lat >= TH_BOUNDS.minLat && lat <= TH_BOUNDS.maxLat && lng >= TH_BOUNDS.minLng && lng <= TH_BOUNDS.maxLng;
 const fmtDistance = (m: number) =>
   m < 1000 ? `${m} ม.` : `${(m / 1000).toFixed(m < 10000 ? 1 : 0)} กม.`;
-const CAT_ICON: Record<string, string> = {
-  NATURE: "🌿", CAFE: "☕", ACCOMMODATION: "🏨", CAMPING: "⛺",
-  FOOD: "🍲", TEMPLE: "🛕", BEACH: "🏖️", MARKET: "🛍️", ADVENTURE: "🧗", MUSEUM: "🏛️",
-};
 
 interface NearbyPlace {
   id: string; slug: string; title: string; titleEn?: string | null;
@@ -95,59 +91,6 @@ interface NearbyPlace {
   _count?: { reviews: number; bookmarks: number };
   avgRating?: number | null;
   distanceM: number;
-}
-
-// ── Nearby result card ────────────────────────────────────────────────────────
-function NearbyCard({ place }: { place: NearbyPlace }) {
-  const [catBg, catFg] = CAT_COLOR[place.category] ?? ["#eff6ff", "#2563eb"];
-  const [imgErr, setImgErr] = useState(false);
-  const verified = place.business?.isVerified || place.isVerified;
-  const src = place.coverUrl && place.coverUrl !== "/images/default-place.svg" ? place.coverUrl : "";
-
-  return (
-    <Link href={`/place/${place.slug}`} target="_blank" rel="noopener noreferrer" style={{
-      display: "flex", gap: 12, alignItems: "stretch",
-      background: "white", border: "1px solid #f1f5f9", borderRadius: 16,
-      overflow: "hidden", textDecoration: "none", color: "inherit",
-      boxShadow: "0 2px 10px rgba(15,23,42,0.05)",
-    }}>
-      {/* Thumb */}
-      <div style={{ position: "relative", width: 96, flexShrink: 0, background: `linear-gradient(135deg, ${catBg}88, ${catBg})` }}>
-        {src && !imgErr ? (
-          <img src={src} alt={place.title} loading="lazy" onError={() => setImgErr(true)}
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-        ) : (
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30 }}>
-            {CAT_ICON[place.category] ?? "📍"}
-          </div>
-        )}
-        {/* Distance pill */}
-        <span style={{ position: "absolute", bottom: 6, left: 6, background: "rgba(16,185,129,0.95)", color: "white", fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 999 }}>
-          {fmtDistance(place.distanceM)}
-        </span>
-      </div>
-      {/* Body */}
-      <div style={{ flex: 1, minWidth: 0, padding: "10px 12px 10px 0", display: "flex", flexDirection: "column", gap: 4 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 10, fontWeight: 800, background: catBg, color: catFg, padding: "2px 7px", borderRadius: 999 }}>
-            {CAT_LABEL[place.category] ?? place.category}
-          </span>
-          {verified && <span style={{ fontSize: 10, fontWeight: 800, color: "#15803d" }}>✓ ยืนยันแล้ว</span>}
-        </div>
-        <p style={{ fontSize: 14, fontWeight: 800, color: "#0f172a", margin: 0, lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-          {place.title}
-        </p>
-        <div style={{ fontSize: 11, color: "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          📍 {[place.district, place.province].filter(Boolean).join(", ")}
-        </div>
-        <div style={{ display: "flex", gap: 10, marginTop: "auto" }}>
-          {place.avgRating != null && <span style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700 }}>⭐ {place.avgRating.toFixed(1)}</span>}
-          {(place._count?.reviews ?? 0) > 0 && <span style={{ fontSize: 11, color: "#64748b" }}>💬 {place._count!.reviews}</span>}
-          {(place._count?.bookmarks ?? 0) > 0 && <span style={{ fontSize: 11, color: "#64748b" }}>🔖 {place._count!.bookmarks}</span>}
-        </div>
-      </div>
-    </Link>
-  );
 }
 
 // ── Responsive columns hook ──────────────────────────────────────────────────
@@ -166,7 +109,7 @@ function useColumns() {
 }
 
 // ── Place Card ───────────────────────────────────────────────────────────────
-function PlaceCard({ place, rank }: { place: Place; rank: number }) {
+function PlaceCard({ place, rank, distanceM }: { place: Place; rank: number; distanceM?: number }) {
   const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const [imgError,  setImgError ] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -360,6 +303,13 @@ function PlaceCard({ place, rank }: { place: Place; rank: number }) {
         {/* Rank badge */}
         {rank < 3 && <span style={rankBadge}>{RANK_EMOJI[rank]}</span>}
 
+        {/* Distance badge (nearby mode) */}
+        {distanceM != null && (
+          <span style={{ position: "absolute", bottom: 42, left: 10, zIndex: 3, background: "rgba(16,185,129,0.95)", color: "white", fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 999 }}>
+            {fmtDistance(distanceM)}
+          </span>
+        )}
+
         {/* Verified */}
         {verified && <span style={verifiedBadge}>✓ ยืนยันแล้ว</span>}
 
@@ -453,7 +403,7 @@ export default function ExplorerSection() {
     append ? setAreaLoadingMore(true) : setLoading(true);
     const params = new URLSearchParams({ limit: String(AREA_PAGE_SIZE), page: String(page), sort: "popular" });
     params.set("province", province.split(" (")[0]);
-    if (district) params.set("district", district);
+    if (district) params.set("district", district.split(" (")[0]);
     if (category) params.set("category", category);
     fetch(`/api/places?${params}`)
       .then(r => r.json())
@@ -929,10 +879,10 @@ export default function ExplorerSection() {
                     พบ <strong style={{ color: "#1e293b", fontWeight: 800 }}>{nearPlaces.length}</strong> สถานที่ในรัศมี {RADIUS_OPTIONS.find(r => r.v === radius)?.label}
                     {nearCat ? ` · ${CAT_LABEL[nearCat] ?? nearCat}` : ""}
                   </p>
-                  <div style={{ display: "grid", gridTemplateColumns: cols >= 3 ? "1fr 1fr" : "1fr", gap: 12 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 16 }}>
                     {nearShown.map((p, i) => (
                       <ScrollReveal key={p.id} delay={Math.min(i % 12, 6) * 50}>
-                        <NearbyCard place={p} />
+                        <PlaceCard place={{ ...p, communityCover: undefined }} rank={i} distanceM={p.distanceM} />
                       </ScrollReveal>
                     ))}
                   </div>
