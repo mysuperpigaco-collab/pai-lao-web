@@ -1,6 +1,15 @@
 "use client";
+import { useLayoutEffect } from "react";
 
 export default function Loading() {
+  useLayoutEffect(() => {
+    return () => {
+      // Fires synchronously before browser paints when RSC finishes and this unmounts.
+      // NavTransition listens for this to play the curtain-open animation.
+      document.dispatchEvent(new CustomEvent("pai-lao:curtain-open"));
+    };
+  }, []);
+
   return (
     <div style={{
       position: "fixed", inset: 0, zIndex: 9999, overflow: "hidden",
@@ -61,7 +70,6 @@ export default function Loading() {
         alignItems: "center", justifyContent: "center",
         gap: 20,
       }}>
-        {/* Cats */}
         <div style={{ display: "flex", alignItems: "flex-end", gap: 14 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/images/splash/cat-orange-1.png" alt="" style={{
@@ -75,7 +83,6 @@ export default function Loading() {
           }} />
         </div>
 
-        {/* Logo card */}
         <div style={{
           display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
           padding: "22px 40px 18px",
