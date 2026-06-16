@@ -51,7 +51,7 @@ export async function GET(request: Request) {
       take: 1000,
     });
 
-    const places = candidates
+    const placesFiltered = candidates
       .filter((p) => p.lat != null && p.lng != null)
       .map((p) => {
         const distanceM = Math.round(haversine(lat, lng, p.lat!, p.lng!));
@@ -63,6 +63,38 @@ export async function GET(request: Request) {
       .filter((p) => p.distanceM <= radius)
       .sort((a, b) => a.distanceM - b.distanceM)
       .slice(0, 300);
+
+    // ดึง community cover photos จาก timelineStop (เหมือน /api/places)
+    const placeIds    = placesFiltered.map((p) => p.id);
+    const placeTitles = placesFiltered.map((p) => p.title.toLowerCase());
+
+    const communityStops = await prisma.timelineStop.findMany({
+      where: {
+        OR: [
+          { placeId: { in: placeIds } },
+          { placeId: null, placeName: { in: placeTitles, mode: "insensitive" } },
+        ],
+      },
+      select: { placeId: true, placeName: true, images: true },
+      orderBy: { id: "desc" },
+    });
+
+    const coverByPlaceId: Record<string, string> = {};
+    const coverByName:    Record<string, string> = {};
+    for (const stop of communityStops) {
+      if (stop.images.length === 0) continue;
+      if (stop.placeId && !coverByPlaceId[stop.placeId]) {
+        coverByPlaceId[stop.placeId] = stop.images[0];
+      }
+      if (!stop.placeId && stop.placeName && !coverByName[stop.placeName.toLowerCase()]) {
+        coverByName[stop.placeName.toLowerCase()] = stop.images[0];
+      }
+    }
+
+    const places = placesFiltered.map((p) => ({
+      ...p,
+      communityCover: coverByPlaceId[p.id] ?? coverByName[p.title.toLowerCase()] ?? null,
+    }));
 
     return NextResponse.json({ places, total: places.length, radius });
   } catch (error) {

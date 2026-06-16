@@ -68,7 +68,8 @@ const inThailand = (lat: number, lng: number) =>
 interface NearbyPlace {
   id: string; slug: string; title: string; titleEn?: string | null;
   category: string; province: string; district: string;
-  coverUrl: string; lat: number | null; lng: number | null;
+  coverUrl: string; communityCover?: string | null;
+  lat: number | null; lng: number | null;
   isVerified?: boolean;
   business?: { businessName: string; isVerified?: boolean } | null;
   _count?: { reviews: number; bookmarks: number };
@@ -615,7 +616,7 @@ export default function ExplorerSection() {
                   <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 16 }}>
                     {nearShown.map((p, i) => (
                       <ScrollReveal key={p.id} delay={Math.min(i % 12, 6) * 50}>
-                        <SharedPlaceCard place={{ ...p, communityCover: undefined }} distanceM={p.distanceM} newTab={true} />
+                        <SharedPlaceCard place={p} distanceM={p.distanceM} newTab={true} />
                       </ScrollReveal>
                     ))}
                   </div>
