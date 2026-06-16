@@ -105,7 +105,7 @@ function NearbyCard({ place }: { place: NearbyPlace }) {
   const src = place.coverUrl && place.coverUrl !== "/images/default-place.svg" ? place.coverUrl : "";
 
   return (
-    <Link href={`/place/${place.slug}`} style={{
+    <Link href={`/place/${place.slug}`} target="_blank" rel="noopener noreferrer" style={{
       display: "flex", gap: 12, alignItems: "stretch",
       background: "white", border: "1px solid #f1f5f9", borderRadius: 16,
       overflow: "hidden", textDecoration: "none", color: "inherit",
@@ -317,6 +317,8 @@ function PlaceCard({ place, rank }: { place: Place; rank: number }) {
       <div ref={shineRef} style={shineStyle} />
     <Link
       href={`/place/${place.slug}`}
+      target="_blank"
+      rel="noopener noreferrer"
       style={card}
     >
       {/* Image */}

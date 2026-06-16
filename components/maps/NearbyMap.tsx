@@ -90,7 +90,7 @@ export default function NearbyMap({
             pathOptions={{ color: "#1d4ed8", fillColor: "#3b82f6", fillOpacity: 0.9, weight: 1.5 }}
           >
             <Popup>
-              <a href={`/place/${p.slug}`} style={{ fontWeight: 700, color: "#1d4ed8" }}>
+              <a href={`/place/${p.slug}`} target="_blank" rel="noopener noreferrer" style={{ fontWeight: 700, color: "#1d4ed8" }}>
                 {p.title}
               </a>
               <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>

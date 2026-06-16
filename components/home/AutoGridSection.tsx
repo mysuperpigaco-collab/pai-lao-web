@@ -1,6 +1,7 @@
 "use client";
-import { useState, useEffect, CSSProperties } from "react";
+import { useState, useEffect, useCallback, CSSProperties } from "react";
 import Link from "next/link";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useTiltCard } from "@/hooks/useTiltCard";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 
@@ -97,7 +98,7 @@ function TripCard({ trip }: { trip: Trip }) {
     <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
       style={{ position: "relative", willChange: "transform", borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,.06)", height: "100%" }}>
       <div ref={shineRef} style={shineStyle} />
-      <Link href={`/trips/${trip.slug}`} style={{ ...S.card, boxShadow: "none", height: "100%" }}>
+      <Link href={`/trips/${trip.slug}`} target="_blank" rel="noopener noreferrer" style={{ ...S.card, boxShadow: "none", height: "100%" }}>
         <div style={S.imgWrap}>
           {trip.coverUrl
             ? <img src={trip.coverUrl} alt={trip.title} loading="lazy"
@@ -155,7 +156,7 @@ function PlaceCard({ place }: { place: Place }) {
     <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
       style={{ position: "relative", willChange: "transform", borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,.06)", height: "100%" }}>
       <div ref={shineRef} style={shineStyle} />
-      <Link href={`/place/${place.slug}`} style={{ ...S.card, boxShadow: "none", height: "100%" }}>
+      <Link href={`/place/${place.slug}`} target="_blank" rel="noopener noreferrer" style={{ ...S.card, boxShadow: "none", height: "100%" }}>
         <div style={S.imgWrap}>
           {showImg
             ? <img src={displayImg!} alt={place.title} loading="lazy"
@@ -230,27 +231,57 @@ function SkeletonGrid({ cols }: { cols: number }) {
   );
 }
 
+const PAGE_SIZE = 12;
+
 export default function AutoGridSection() {
-  const [activeTab, setActiveTab] = useState("recent");
-  const [trips,   setTrips  ] = useState<Trip[]>([]);
-  const [places,  setPlaces ] = useState<Place[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [activeTab,   setActiveTab  ] = useState("recent");
+  const [trips,       setTrips      ] = useState<Trip[]>([]);
+  const [places,      setPlaces     ] = useState<Place[]>([]);
+  const [loading,     setLoading    ] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page,        setPage       ] = useState(1);
+  const [totalPages,  setTotalPages ] = useState(1);
+  const [total,       setTotal      ] = useState(0);
   const cols = useColumns(5, 4);
 
   const tab = TABS.find(t => t.id === activeTab)!;
 
-  useEffect(() => {
-    setLoading(true);
-    if (tab.type === "trip") {
-      fetch("/api/trips?limit=20&sort=recent")
-        .then(r => r.json()).then(d => { setTrips(d.trips ?? []); setLoading(false); })
-        .catch(() => setLoading(false));
-    } else {
-      fetch(`/api/places?limit=12&category=${tab.param}&sort=popular`)
-        .then(r => r.json()).then(d => { setPlaces(d.places ?? []); setLoading(false); })
-        .catch(() => setLoading(false));
-    }
+  const fetchData = useCallback((p: number, append: boolean) => {
+    const t = TABS.find(x => x.id === activeTab)!;
+    append ? setLoadingMore(true) : setLoading(true);
+    const url = t.type === "trip"
+      ? `/api/trips?limit=${PAGE_SIZE}&page=${p}&sort=recent`
+      : `/api/places?limit=${PAGE_SIZE}&page=${p}&category=${t.param}&sort=popular`;
+    fetch(url)
+      .then(r => r.json())
+      .then(d => {
+        if (t.type === "trip") {
+          setTrips(prev => append ? [...prev, ...(d.trips ?? [])] : (d.trips ?? []));
+        } else {
+          setPlaces(prev => append ? [...prev, ...(d.places ?? [])] : (d.places ?? []));
+        }
+        setTotalPages(d.totalPages ?? 1);
+        setTotal(d.total ?? 0);
+        append ? setLoadingMore(false) : setLoading(false);
+      })
+      .catch(() => { append ? setLoadingMore(false) : setLoading(false); });
   }, [activeTab]);
+
+  useEffect(() => {
+    setPage(1);
+    setTrips([]);
+    setPlaces([]);
+    fetchData(1, false);
+  }, [fetchData]);
+
+  const loadMore = useCallback(() => {
+    const next = page + 1;
+    setPage(next);
+    fetchData(next, true);
+  }, [page, fetchData]);
+
+  const hasMore = page < totalPages;
+  const sentinelRef = useInfiniteScroll(loadMore, hasMore && !loadingMore && !loading);
 
   return (
     <div style={S.root}>
@@ -271,25 +302,55 @@ export default function AutoGridSection() {
         <SkeletonGrid cols={tab.type === "trip" ? cols.trip : cols.place} />
       ) : tab.type === "trip" ? (
         trips.length === 0 ? <div style={S.empty}>ยังไม่มีเรื่องเล่า</div> : (
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols.trip},1fr)`, gap: 16 }}>
-            {trips.map((t, i) => (
-              <ScrollReveal key={t.slug} delay={Math.min(i, 5) * 70}>
-                <TripCard trip={t} />
-              </ScrollReveal>
-            ))}
-          </div>
+          <>
+            <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 14px" }}>
+              พบ <strong style={{ color: "#1e293b", fontWeight: 800 }}>{total}</strong> เรื่องเล่า
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols.trip},1fr)`, gap: 16 }}>
+              {trips.map((t, i) => (
+                <ScrollReveal key={t.slug} delay={Math.min(i % PAGE_SIZE, 5) * 70}>
+                  <TripCard trip={t} />
+                </ScrollReveal>
+              ))}
+            </div>
+            <div ref={sentinelRef} style={{ height: 1 }} />
+            {loadingMore && (
+              <div style={{ display: "flex", justifyContent: "center", padding: "20px 0" }}>
+                <div style={{ width: 26, height: 26, borderRadius: "50%", border: "3px solid #e2e8f0", borderTopColor: "#0f172a", animation: "ags-spin 0.8s linear infinite" }} />
+              </div>
+            )}
+            {!hasMore && trips.length > 0 && (
+              <p style={{ textAlign: "center", color: "#94a3b8", fontSize: 13, fontWeight: 600, marginTop: 18 }}>
+                ดูครบทั้ง {total} เรื่องเล่าแล้ว
+              </p>
+            )}
+          </>
         )
       ) : (
         places.length === 0 ? <div style={S.empty}>ยังไม่มีสถานที่</div> : (
           <>
+            <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 14px" }}>
+              พบ <strong style={{ color: "#1e293b", fontWeight: 800 }}>{total}</strong> สถานที่ · {tab.label}
+            </p>
             <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols.place},1fr)`, gap: 16 }}>
               {places.map((p, i) => (
-                <ScrollReveal key={p.slug} delay={Math.min(i, 5) * 70}>
+                <ScrollReveal key={p.slug} delay={Math.min(i % PAGE_SIZE, 5) * 70}>
                   <PlaceCard place={p} />
                 </ScrollReveal>
               ))}
             </div>
-            <div style={{ textAlign: "center", marginTop: 28 }}>
+            <div ref={sentinelRef} style={{ height: 1 }} />
+            {loadingMore && (
+              <div style={{ display: "flex", justifyContent: "center", padding: "20px 0" }}>
+                <div style={{ width: 26, height: 26, borderRadius: "50%", border: "3px solid #e2e8f0", borderTopColor: "#0f172a", animation: "ags-spin 0.8s linear infinite" }} />
+              </div>
+            )}
+            {!hasMore && places.length > 0 && (
+              <p style={{ textAlign: "center", color: "#94a3b8", fontSize: 13, fontWeight: 600, marginTop: 18 }}>
+                ดูครบทั้ง {total} สถานที่แล้ว
+              </p>
+            )}
+            <div style={{ textAlign: "center", marginTop: 20 }}>
               <Link href={`/place?category=${tab.param}&sort=popular`} style={S.seeAll}>
                 ดูสถานที่{tab.label}ทั้งหมด · See all {tab.en} →
               </Link>
@@ -297,6 +358,7 @@ export default function AutoGridSection() {
           </>
         )
       )}
+      <style>{`@keyframes ags-spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
