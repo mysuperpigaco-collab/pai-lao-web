@@ -7,6 +7,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import RippleProvider from "@/components/ui/RippleProvider";
 import SmoothScrollProvider from "@/components/SmoothScrollProvider";
 import SplashScreen from "@/components/SplashScreen";
+import NavTransition from "@/components/NavTransition";
 import Script from "next/script";
 
 const GA_ID = "G-42HZ2VCDXZ";
@@ -67,6 +68,7 @@ export default function RootLayout({
           gtag('config', '${GA_ID}');
         `}</Script>
         <SplashScreen />
+        <NavTransition />
         <AuthProvider>
           <SmoothScrollProvider>
             <RippleProvider />
