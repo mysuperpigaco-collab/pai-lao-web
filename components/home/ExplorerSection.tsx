@@ -823,7 +823,7 @@ export default function ExplorerSection() {
             </button>
 
             {coords && (
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 6, flexWrap: "nowrap", overflowX: "auto", scrollbarWidth: "none", WebkitOverflowScrolling: "touch" as any }}>
                 {RADIUS_OPTIONS.map(r => {
                   const active = radius === r.v;
                   return (
