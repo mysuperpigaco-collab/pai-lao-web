@@ -2,10 +2,10 @@
 import { useState, useEffect, useCallback, CSSProperties } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useTiltCard } from "@/hooks/useTiltCard";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { PROVINCES, getDistricts } from "@/data/thailand";
+import SharedPlaceCard from "@/components/places/PlaceCard";
 
 // แผนที่ปักหมุด — โหลดฝั่ง client เท่านั้น (Leaflet ใช้ window)
 const NearbyMap = dynamic(() => import("@/components/maps/NearbyMap"), {
@@ -53,21 +53,6 @@ const CAT_LABEL: Record<string, string> = {
   ADVENTURE: "ผจญภัย", MARKET: "ตลาด", MUSEUM: "พิพิธภัณฑ์", CAMPING: "แคมปิ้ง",
 };
 
-const CAT_COLOR: Record<string, [string, string]> = {
-  NATURE:        ["#d1fae5", "#065f46"],
-  CAFE:          ["#fef3c7", "#92400e"],
-  BEACH:         ["#e0f2fe", "#075985"],
-  ACCOMMODATION: ["#ede9fe", "#5b21b6"],
-  FOOD:          ["#fee2e2", "#991b1b"],
-  TEMPLE:        ["#fce7f3", "#9d174d"],
-  ADVENTURE:     ["#ecfdf5", "#14532d"],
-  MARKET:        ["#fff7ed", "#7c2d12"],
-  MUSEUM:        ["#f0f9ff", "#0c4a6e"],
-  CAMPING:       ["#f7fee7", "#365314"],
-};
-
-const RANK_EMOJI = ["🥇", "🥈", "🥉"];
-
 // ── Near-me config ────────────────────────────────────────────────────────────
 const RADIUS_OPTIONS = [
   { v: 500,  label: "500 ม." },
@@ -79,8 +64,6 @@ const AREA_PAGE_SIZE = 12;
 const TH_BOUNDS = { minLat: 5.5, maxLat: 20.6, minLng: 97.3, maxLng: 105.7 };
 const inThailand = (lat: number, lng: number) =>
   lat >= TH_BOUNDS.minLat && lat <= TH_BOUNDS.maxLat && lng >= TH_BOUNDS.minLng && lng <= TH_BOUNDS.maxLng;
-const fmtDistance = (m: number) =>
-  m < 1000 ? `${m} ม.` : `${(m / 1000).toFixed(m < 10000 ? 1 : 0)} กม.`;
 
 interface NearbyPlace {
   id: string; slug: string; title: string; titleEn?: string | null;
@@ -106,256 +89,6 @@ function useColumns() {
     return () => window.removeEventListener("resize", update);
   }, []);
   return cols;
-}
-
-// ── Place Card ───────────────────────────────────────────────────────────────
-function PlaceCard({ place, rank, distanceM }: { place: Place; rank: number; distanceM?: number }) {
-  const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
-  const [imgError,  setImgError ] = useState(false);
-  const [imgLoaded, setImgLoaded] = useState(false);
-
-  const verified = place.business?.isVerified || place.isVerified;
-  const bookmarks = place._count?.bookmarks ?? 0;
-  const reviews   = place._count?.reviews   ?? 0;
-  const rating    = place.avgRating;
-  const [catBg, catFg] = CAT_COLOR[place.category] ?? ["#eff6ff", "#2563eb"];
-
-  const card: CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    background: "white",
-    textDecoration: "none",
-    color: "inherit",
-    border: "1px solid #f1f5f9",
-    cursor: "pointer",
-    minWidth: 0,
-  };
-
-  const imgWrap: CSSProperties = {
-    position: "relative",
-    width: "100%",
-    paddingBottom: "65%", // ~3:2
-    background: "#e2e8f0",
-    overflow: "hidden",
-    flexShrink: 0,
-  };
-
-  const imgStyle: CSSProperties = {
-    position: "absolute",
-    inset: 0,
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-    display: "block",
-  };
-
-  const gradient: CSSProperties = {
-    position: "absolute",
-    inset: 0,
-    background: "linear-gradient(to top, rgba(10,10,20,0.72) 0%, rgba(10,10,20,0.18) 55%, transparent 100%)",
-    zIndex: 1,
-  };
-
-  const chipCat: CSSProperties = {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    zIndex: 3,
-    background: catBg,
-    color: catFg,
-    fontSize: 10,
-    fontWeight: 800,
-    padding: "3px 8px",
-    borderRadius: 999,
-    letterSpacing: 0.3,
-  };
-
-  const rankBadge: CSSProperties = {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    zIndex: 3,
-    fontSize: 22,
-    filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.4))",
-  };
-
-  const verifiedBadge: CSSProperties = {
-    position: "absolute",
-    top: rank < 3 ? 42 : 8,
-    right: 8,
-    zIndex: 3,
-    background: "rgba(220,252,231,0.95)",
-    color: "#15803d",
-    fontSize: 10,
-    fontWeight: 800,
-    padding: "3px 8px",
-    borderRadius: 999,
-  };
-
-  const bottomOverlay: CSSProperties = {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 2,
-    padding: "10px 12px 12px",
-  };
-
-  const titleStyle: CSSProperties = {
-    fontSize: 14,
-    fontWeight: 800,
-    color: "white",
-    margin: 0,
-    lineHeight: 1.35,
-    display: "-webkit-box",
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: "vertical",
-    overflow: "hidden",
-    textShadow: "0 1px 3px rgba(0,0,0,0.5)",
-  };
-
-  const locStyle: CSSProperties = {
-    fontSize: 11,
-    color: "rgba(255,255,255,0.82)",
-    marginTop: 3,
-    display: "flex",
-    alignItems: "center",
-    gap: 3,
-    overflow: "hidden",
-    whiteSpace: "nowrap",
-    textOverflow: "ellipsis",
-  };
-
-  const footer: CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    padding: "9px 12px",
-    borderTop: "1px solid #f1f5f9",
-    background: "white",
-  };
-
-  const statItem: CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    gap: 3,
-    fontSize: 11,
-    color: "#64748b",
-    fontWeight: 600,
-  };
-
-  const placeholder: CSSProperties = {
-    position: "absolute",
-    inset: 0,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 40,
-    background: "linear-gradient(135deg, #e2e8f0, #cbd5e1)",
-  };
-
-  return (
-    <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
-      style={{ position: "relative", willChange: "transform", borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,0.06)" }}>
-      <div ref={shineRef} style={shineStyle} />
-    <Link
-      href={`/place/${place.slug}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={card}
-    >
-      {/* Image */}
-      <div style={imgWrap}>
-        {/* Unclaimed: prefer community photo; owned: prefer coverUrl */}
-        {(() => {
-          const src = (!place.business && place.communityCover)
-            ? place.communityCover
-            : (place.coverUrl && place.coverUrl !== "/images/default-place.svg"
-               ? place.coverUrl
-               : (place.communityCover || ""));
-          const catIcons: Record<string,string> = {
-            NATURE:"🌿",CAFE:"☕",ACCOMMODATION:"🏨",CAMPING:"⛺",
-            FOOD:"🍲",TEMPLE:"🛕",BEACH:"🏖️",MARKET:"🛍️",ADVENTURE:"🧗",MUSEUM:"🏛️",
-          };
-          const fallbackIcon = catIcons[place.category] ?? "📍";
-          return src && !imgError ? (
-            <img
-              src={src}
-              alt={place.title}
-              loading="lazy"
-              onLoad={() => setImgLoaded(true)}
-              onError={() => setImgError(true)}
-              style={{ ...imgStyle, filter: imgLoaded ? "blur(0px)" : "blur(10px)", transform: imgLoaded ? "scale(1)" : "scale(1.06)", opacity: imgLoaded ? 1 : 0, transition: "filter 0.5s ease, transform 0.5s ease, opacity 0.4s ease" }}
-            />
-          ) : (
-            <div style={{ ...placeholder, background: `linear-gradient(135deg, ${catBg}88, ${catBg})` }}>
-              <span style={{ fontSize: 48 }}>{fallbackIcon}</span>
-            </div>
-          );
-        })()}
-
-        {/* Gradient overlay */}
-        <div style={gradient} />
-
-        {/* Category chip */}
-        <div style={chipCat}>{CAT_LABEL[place.category] ?? place.category}</div>
-
-        {/* Rank badge */}
-        {rank < 3 && <span style={rankBadge}>{RANK_EMOJI[rank]}</span>}
-
-        {/* Distance badge (nearby mode) */}
-        {distanceM != null && (
-          <span style={{ position: "absolute", bottom: 42, left: 10, zIndex: 3, background: "rgba(16,185,129,0.95)", color: "white", fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 999 }}>
-            {fmtDistance(distanceM)}
-          </span>
-        )}
-
-        {/* Verified */}
-        {verified && <span style={verifiedBadge}>✓ ยืนยันแล้ว</span>}
-
-        {/* Bottom text overlay */}
-        <div style={bottomOverlay}>
-          <p style={titleStyle}>{place.title}</p>
-          <div style={locStyle}>
-            <span>📍</span>
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
-              {[place.district, place.province].filter(Boolean).join(", ")}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer stats */}
-      <div style={footer}>
-        {rating != null && (
-          <span style={{ ...statItem, color: "#f59e0b" }}>
-            ⭐ {rating.toFixed(1)}
-          </span>
-        )}
-        {reviews > 0 && (
-          <span style={statItem}>
-            💬 {reviews} รีวิว
-          </span>
-        )}
-        {bookmarks > 0 && (
-          <span style={statItem}>
-            🔖 {bookmarks}
-          </span>
-        )}
-        {reviews === 0 && bookmarks === 0 && rating == null && (
-          <span style={{ ...statItem, color: "#94a3b8", fontStyle: "italic" }}>
-            ยังไม่มีรีวิว
-          </span>
-        )}
-        {place.titleEn && (
-          <span style={{ ...statItem, marginLeft: "auto", color: "#94a3b8", fontStyle: "italic", fontSize: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {place.titleEn}
-          </span>
-        )}
-      </div>
-    </Link>
-    </div>
-  );
 }
 
 // ── Main Section ─────────────────────────────────────────────────────────────
@@ -708,7 +441,7 @@ export default function ExplorerSection() {
             <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols},1fr)`, gap: 16, maxWidth: "100%" }}>
               {places.map((place, i) => (
                 <ScrollReveal key={place.slug} delay={Math.min(i % AREA_PAGE_SIZE, 5) * 70}>
-                  <PlaceCard place={place} rank={i} />
+                  <SharedPlaceCard place={place} newTab={true} />
                 </ScrollReveal>
               ))}
             </div>
@@ -882,7 +615,7 @@ export default function ExplorerSection() {
                   <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 16 }}>
                     {nearShown.map((p, i) => (
                       <ScrollReveal key={p.id} delay={Math.min(i % 12, 6) * 50}>
-                        <PlaceCard place={{ ...p, communityCover: undefined }} rank={i} distanceM={p.distanceM} />
+                        <SharedPlaceCard place={{ ...p, communityCover: undefined }} distanceM={p.distanceM} newTab={true} />
                       </ScrollReveal>
                     ))}
                   </div>
