@@ -141,6 +141,9 @@ function dedupSeed(places: SeedPlace[]): SeedPlace[] {
 async function main() {
   const args    = process.argv.slice(2);
   const dryRun  = args.includes("--dry-run");
+  // ค่าเริ่มต้น: ข้ามสถานที่ที่หาอำเภอไม่เจอ (district == province)
+  // ถ้าอยากนำเข้าทั้งหมดแม้อำเภอไม่ครบ ใส่ --keep-no-district
+  const keepNoDistrict = args.includes("--keep-no-district");
   const regionArg = args.find(a => !a.startsWith("--")) || "all";
 
   const regions: Region[] = regionArg === "all"
@@ -164,7 +167,7 @@ async function main() {
   });
   console.log(`   มีอยู่แล้ว ${dbPlaces.length} สถานที่ใน DB\n`);
 
-  let totalNew = 0, totalDup = 0, totalSkipped = 0;
+  let totalNew = 0, totalDup = 0, totalSkipped = 0, totalNoDistrict = 0;
 
   for (const region of regions) {
     const label   = REGION_LABEL[region];
@@ -185,17 +188,23 @@ async function main() {
     const deduped = dedupSeed(raw);
     console.log(`   dedup ภายใน JSON: ${raw.length} → ${deduped.length}`);
 
-    // 2. filter out DB duplicates
+    // 2. filter out DB duplicates + ตัวที่หาอำเภอไม่เจอ
     const toImport: SeedPlace[] = [];
     let dupCount = 0;
+    let noDistrictCount = 0;
     for (const p of deduped) {
       if (!p.title || !p.province) { totalSkipped++; continue; }
+      // ข้ามถ้าหาอำเภอไม่เจอ (district ว่าง หรือ district == province = placeholder)
+      if (!keepNoDistrict && (!p.district || p.district === p.province)) {
+        noDistrictCount++; totalNoDistrict++; continue;
+      }
       if (isDupWithDb(p, dbPlaces)) {
         dupCount++;
       } else {
         toImport.push(p);
       }
     }
+    console.log(`   หาอำเภอไม่เจอ (ข้าม): ${noDistrictCount}`);
     console.log(`   ซ้ำกับ DB: ${dupCount}`);
     console.log(`   จะนำเข้า: ${toImport.length}`);
 
@@ -276,8 +285,11 @@ async function main() {
   console.log(`📊 สรุป${dryRun ? " (dry-run)" : ""}:`);
   console.log(`   นำเข้าใหม่: ${totalNew}`);
   console.log(`   ซ้ำ (ข้าม): ${totalDup}`);
+  console.log(`   หาอำเภอไม่เจอ (ข้าม): ${totalNoDistrict}`);
   console.log(`   ข้อมูลไม่ครบ: ${totalSkipped}`);
   console.log("=".repeat(60));
+  if (totalNoDistrict > 0 && !keepNoDistrict)
+    console.log(`\nℹ️  ข้าม ${totalNoDistrict} ที่ที่หาอำเภอไม่เจอ — ถ้าอยากนำเข้าด้วย ใส่ --keep-no-district`);
   if (dryRun) console.log("\n💡 รันโดยไม่ --dry-run เพื่อนำเข้าจริง");
 }
 

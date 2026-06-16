@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/context/AuthContext";
 import RippleProvider from "@/components/ui/RippleProvider";
 import SmoothScrollProvider from "@/components/SmoothScrollProvider";
+import SplashScreen from "@/components/SplashScreen";
 import Script from "next/script";
 
 const GA_ID = "G-42HZ2VCDXZ";
@@ -65,6 +66,7 @@ export default function RootLayout({
           gtag('js', new Date());
           gtag('config', '${GA_ID}');
         `}</Script>
+        <SplashScreen />
         <AuthProvider>
           <SmoothScrollProvider>
             <RippleProvider />
