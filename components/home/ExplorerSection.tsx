@@ -1,9 +1,21 @@
 "use client";
-import { useState, useEffect, CSSProperties } from "react";
+import { useState, useEffect, useCallback, CSSProperties } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useTiltCard } from "@/hooks/useTiltCard";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { PROVINCES, getDistricts } from "@/data/thailand";
+
+// แผนที่ปักหมุด — โหลดฝั่ง client เท่านั้น (Leaflet ใช้ window)
+const NearbyMap = dynamic(() => import("@/components/maps/NearbyMap"), {
+  ssr: false,
+  loading: () => (
+    <div style={{ height: 320, borderRadius: 16, background: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 14, fontWeight: 600 }}>
+      กำลังโหลดแผนที่…
+    </div>
+  ),
+});
 
 interface Place {
   id: string;
@@ -55,6 +67,88 @@ const CAT_COLOR: Record<string, [string, string]> = {
 };
 
 const RANK_EMOJI = ["🥇", "🥈", "🥉"];
+
+// ── Near-me config ────────────────────────────────────────────────────────────
+const RADIUS_OPTIONS = [
+  { v: 500,  label: "500 ม." },
+  { v: 1000, label: "1 กม." },
+  { v: 3000, label: "3 กม." },
+  { v: 5000, label: "5 กม." },
+];
+const AREA_PAGE_SIZE = 12;
+const TH_BOUNDS = { minLat: 5.5, maxLat: 20.6, minLng: 97.3, maxLng: 105.7 };
+const inThailand = (lat: number, lng: number) =>
+  lat >= TH_BOUNDS.minLat && lat <= TH_BOUNDS.maxLat && lng >= TH_BOUNDS.minLng && lng <= TH_BOUNDS.maxLng;
+const fmtDistance = (m: number) =>
+  m < 1000 ? `${m} ม.` : `${(m / 1000).toFixed(m < 10000 ? 1 : 0)} กม.`;
+const CAT_ICON: Record<string, string> = {
+  NATURE: "🌿", CAFE: "☕", ACCOMMODATION: "🏨", CAMPING: "⛺",
+  FOOD: "🍲", TEMPLE: "🛕", BEACH: "🏖️", MARKET: "🛍️", ADVENTURE: "🧗", MUSEUM: "🏛️",
+};
+
+interface NearbyPlace {
+  id: string; slug: string; title: string; titleEn?: string | null;
+  category: string; province: string; district: string;
+  coverUrl: string; lat: number | null; lng: number | null;
+  isVerified?: boolean;
+  business?: { businessName: string; isVerified?: boolean } | null;
+  _count?: { reviews: number; bookmarks: number };
+  avgRating?: number | null;
+  distanceM: number;
+}
+
+// ── Nearby result card ────────────────────────────────────────────────────────
+function NearbyCard({ place }: { place: NearbyPlace }) {
+  const [catBg, catFg] = CAT_COLOR[place.category] ?? ["#eff6ff", "#2563eb"];
+  const [imgErr, setImgErr] = useState(false);
+  const verified = place.business?.isVerified || place.isVerified;
+  const src = place.coverUrl && place.coverUrl !== "/images/default-place.svg" ? place.coverUrl : "";
+
+  return (
+    <Link href={`/place/${place.slug}`} style={{
+      display: "flex", gap: 12, alignItems: "stretch",
+      background: "white", border: "1px solid #f1f5f9", borderRadius: 16,
+      overflow: "hidden", textDecoration: "none", color: "inherit",
+      boxShadow: "0 2px 10px rgba(15,23,42,0.05)",
+    }}>
+      {/* Thumb */}
+      <div style={{ position: "relative", width: 96, flexShrink: 0, background: `linear-gradient(135deg, ${catBg}88, ${catBg})` }}>
+        {src && !imgErr ? (
+          <img src={src} alt={place.title} loading="lazy" onError={() => setImgErr(true)}
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30 }}>
+            {CAT_ICON[place.category] ?? "📍"}
+          </div>
+        )}
+        {/* Distance pill */}
+        <span style={{ position: "absolute", bottom: 6, left: 6, background: "rgba(16,185,129,0.95)", color: "white", fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 999 }}>
+          {fmtDistance(place.distanceM)}
+        </span>
+      </div>
+      {/* Body */}
+      <div style={{ flex: 1, minWidth: 0, padding: "10px 12px 10px 0", display: "flex", flexDirection: "column", gap: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 10, fontWeight: 800, background: catBg, color: catFg, padding: "2px 7px", borderRadius: 999 }}>
+            {CAT_LABEL[place.category] ?? place.category}
+          </span>
+          {verified && <span style={{ fontSize: 10, fontWeight: 800, color: "#15803d" }}>✓ ยืนยันแล้ว</span>}
+        </div>
+        <p style={{ fontSize: 14, fontWeight: 800, color: "#0f172a", margin: 0, lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+          {place.title}
+        </p>
+        <div style={{ fontSize: 11, color: "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          📍 {[place.district, place.province].filter(Boolean).join(", ")}
+        </div>
+        <div style={{ display: "flex", gap: 10, marginTop: "auto" }}>
+          {place.avgRating != null && <span style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700 }}>⭐ {place.avgRating.toFixed(1)}</span>}
+          {(place._count?.reviews ?? 0) > 0 && <span style={{ fontSize: 11, color: "#64748b" }}>💬 {place._count!.reviews}</span>}
+          {(place._count?.bookmarks ?? 0) > 0 && <span style={{ fontSize: 11, color: "#64748b" }}>🔖 {place._count!.bookmarks}</span>}
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 // ── Responsive columns hook ──────────────────────────────────────────────────
 function useColumns() {
@@ -320,24 +414,121 @@ export default function ExplorerSection() {
   const [places,   setPlaces  ] = useState<Place[]>([]);
   const [loading,  setLoading ] = useState(false);
   const [total,    setTotal   ] = useState(0);
+  const [areaPage, setAreaPage] = useState(1);
+  const [areaTotalPages, setAreaTotalPages] = useState(1);
+  const [areaLoadingMore, setAreaLoadingMore] = useState(false);
   const cols = useColumns();
+
+  // ── Tab + near-me state ─────────────────────────────────────────────────────
+  const [mode, setMode] = useState<"area" | "nearby">("area");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [radius, setRadius] = useState(1000);
+  const [nearCat, setNearCat] = useState("");
+  const [nearPlaces, setNearPlaces] = useState<NearbyPlace[]>([]);
+  const [nearVisible, setNearVisible] = useState(12);
+  const [nearLoading, setNearLoading] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [geoMsg, setGeoMsg] = useState<string | null>(null);
+  const [recenterKey, setRecenterKey] = useState(0);
+
+  // หยุด auto-load เมื่อหัวข้อ "ไฮไลต์สถานที่" (section ถัดไป) โผล่เข้าจอ
+  const [reachedHighlight, setReachedHighlight] = useState(false);
+  useEffect(() => {
+    const el = typeof document !== "undefined" ? document.getElementById("explore-places-heading") : null;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => setReachedHighlight(entries[0]?.isIntersecting ?? false),
+      { rootMargin: "0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   const districts = province ? getDistricts(province) : [];
 
-  useEffect(() => {
-    if (!province) { setPlaces([]); setTotal(0); return; }
-    setLoading(true);
-    const params = new URLSearchParams({ limit: "12", sort: "popular" });
+  const fetchArea = useCallback((page: number, append: boolean) => {
+    if (!province) { setPlaces([]); setTotal(0); setAreaTotalPages(1); return; }
+    append ? setAreaLoadingMore(true) : setLoading(true);
+    const params = new URLSearchParams({ limit: String(AREA_PAGE_SIZE), page: String(page), sort: "popular" });
     params.set("province", province.split(" (")[0]);
     if (district) params.set("district", district);
     if (category) params.set("category", category);
     fetch(`/api/places?${params}`)
       .then(r => r.json())
-      .then(d => { setPlaces(d.places ?? []); setTotal(d.total ?? 0); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then(d => {
+        setPlaces(prev => append ? [...prev, ...(d.places ?? [])] : (d.places ?? []));
+        setTotal(d.total ?? 0);
+        setAreaTotalPages(d.totalPages ?? 1);
+        append ? setAreaLoadingMore(false) : setLoading(false);
+      })
+      .catch(() => { append ? setAreaLoadingMore(false) : setLoading(false); });
   }, [province, district, category]);
 
+  useEffect(() => { setAreaPage(1); fetchArea(1, false); }, [fetchArea]);
+
+  const areaLoadMore = () => { const n = areaPage + 1; setAreaPage(n); fetchArea(n, true); };
+  const areaHasMore = !!province && areaPage < areaTotalPages;
+  const areaSentinelRef = useInfiniteScroll(
+    areaLoadMore,
+    mode === "area" && areaHasMore && !areaLoadingMore && !loading && !reachedHighlight
+  );
+
   const handleProvinceChange = (v: string) => { setProvince(v); setDistrict(""); setCategory(""); };
+
+  // ── Near-me: locate, drag, fetch ────────────────────────────────────────────
+  const locateMe = () => {
+    if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
+      setGeoMsg("เบราว์เซอร์นี้ไม่รองรับการระบุตำแหน่ง");
+      return;
+    }
+    setLocating(true);
+    setGeoMsg(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        if (!inThailand(latitude, longitude)) {
+          setCoords({ lat: 13.7563, lng: 100.5018 }); // กลางกรุงเทพฯ ให้ลากเอง
+          setGeoMsg("ตำแหน่งของคุณอยู่นอกประเทศไทย — วางหมุดไว้ที่กรุงเทพฯ ลากไปยังจุดที่ต้องการได้เลย");
+        } else {
+          setCoords({ lat: latitude, lng: longitude });
+        }
+        setRecenterKey((k) => k + 1);
+        setLocating(false);
+      },
+      (err) => {
+        setLocating(false);
+        setGeoMsg(
+          err.code === err.PERMISSION_DENIED
+            ? "ไม่ได้รับอนุญาตให้เข้าถึงตำแหน่ง — เปิดสิทธิ์ตำแหน่งในเบราว์เซอร์แล้วลองใหม่"
+            : "ระบุตำแหน่งไม่สำเร็จ ลองอีกครั้ง"
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
+
+  const handlePinMove = (lat: number, lng: number) => setCoords({ lat, lng });
+
+  useEffect(() => {
+    if (mode !== "nearby" || !coords) return;
+    setNearLoading(true);
+    const params = new URLSearchParams({ lat: String(coords.lat), lng: String(coords.lng), radius: String(radius) });
+    if (nearCat) params.set("category", nearCat);
+    const ctrl = new AbortController();
+    fetch(`/api/places/nearby?${params}`, { signal: ctrl.signal })
+      .then((r) => r.json())
+      .then((d) => { setNearPlaces(d.places ?? []); setNearVisible(12); setNearLoading(false); })
+      .catch((e) => { if (e.name !== "AbortError") setNearLoading(false); });
+    return () => ctrl.abort();
+  }, [mode, coords, radius, nearCat]);
+
+  const nearShown = nearPlaces.slice(0, nearVisible);
+  const nearHasMore = nearVisible < nearPlaces.length;
+  const nearLoadMore = () => setNearVisible(v => v + 12);
+  const nearSentinelRef = useInfiniteScroll(
+    nearLoadMore,
+    mode === "nearby" && nearHasMore && !nearLoading && !reachedHighlight
+  );
 
   // ── Styles ────────────────────────────────────────────────────────────────
   const wrap: CSSProperties = {
@@ -364,6 +555,19 @@ export default function ExplorerSection() {
     width: "100%",
   };
 
+  const loadMoreBtn: CSSProperties = {
+    display: "inline-flex", alignItems: "center", gap: 6,
+    padding: "11px 28px", borderRadius: 999, border: "1.5px solid #cbd5e1",
+    background: "white", color: "#0f766e", fontSize: 14, fontWeight: 800,
+    cursor: "pointer", fontFamily: "inherit", boxShadow: "0 2px 8px rgba(15,23,42,0.06)",
+  };
+
+  const Spinner = () => (
+    <div style={{ display: "flex", justifyContent: "center", padding: "20px 0" }}>
+      <div style={{ width: 28, height: 28, borderRadius: "50%", border: "3px solid #e2e8f0", borderTopColor: "#10b981", animation: "es-spin 0.8s linear infinite" }} />
+    </div>
+  );
+
   return (
     <div style={wrap}>
       {/* Header */}
@@ -377,6 +581,35 @@ export default function ExplorerSection() {
         </p>
       </div>
 
+      {/* Tab toggle */}
+      <div style={{ display: "inline-flex", gap: 4, padding: 4, background: "#f1f5f9", borderRadius: 14, marginBottom: 20 }}>
+        {([
+          { id: "area",   icon: "🗾", label: "เลือกพื้นที่" },
+          { id: "nearby", icon: "📍", label: "ใกล้ฉัน" },
+        ] as const).map(t => {
+          const active = mode === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => setMode(t.id)}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                padding: "9px 18px", borderRadius: 11, border: "none",
+                cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 800,
+                background: active ? "white" : "transparent",
+                color: active ? "#0f766e" : "#64748b",
+                boxShadow: active ? "0 2px 8px rgba(15,23,42,0.10)" : "none",
+                transition: "all 0.18s",
+              }}
+            >
+              <span style={{ fontSize: 16 }}>{t.icon}</span>{t.label}
+            </button>
+          );
+        })}
+      </div>
+      <style>{`@keyframes es-spin{to{transform:rotate(360deg)}}`}</style>
+
+      {mode === "area" && (<>
       {/* Filters */}
       <div style={{ display: "flex", gap: 16, marginBottom: 18, flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 200px", display: "flex", flexDirection: "column", gap: 5 }}>
@@ -522,11 +755,25 @@ export default function ExplorerSection() {
             {/* Grid */}
             <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols},1fr)`, gap: 16, maxWidth: "100%" }}>
               {places.map((place, i) => (
-                <ScrollReveal key={place.slug} delay={Math.min(i, 5) * 70}>
+                <ScrollReveal key={place.slug} delay={Math.min(i % AREA_PAGE_SIZE, 5) * 70}>
                   <PlaceCard place={place} rank={i} />
                 </ScrollReveal>
               ))}
             </div>
+
+            {/* Load more */}
+            <div ref={areaSentinelRef} style={{ height: 1 }} />
+            {areaLoadingMore && <Spinner />}
+            {areaHasMore && !areaLoadingMore && (
+              <div style={{ textAlign: "center", marginTop: 18 }}>
+                <button onClick={areaLoadMore} style={loadMoreBtn}>โหลดเพิ่ม · Load more ↓</button>
+              </div>
+            )}
+            {!areaHasMore && places.length > AREA_PAGE_SIZE && (
+              <p style={{ textAlign: "center", color: "#94a3b8", fontSize: 13, fontWeight: 600, marginTop: 18 }}>
+                แสดงครบทั้ง {total} สถานที่แล้ว
+              </p>
+            )}
 
             {/* See all */}
             <div style={{ textAlign: "center", marginTop: 28 }}>
@@ -551,6 +798,162 @@ export default function ExplorerSection() {
           </>
         )}
       </div>
+      </>)}
+
+      {mode === "nearby" && (
+        <div>
+          {/* Locate + radius */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", marginBottom: 14 }}>
+            <button
+              onClick={locateMe}
+              disabled={locating}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 7,
+                padding: "11px 20px", borderRadius: 12, border: "none",
+                background: "linear-gradient(135deg, #0f766e, #047857)",
+                color: "white", fontSize: 14, fontWeight: 800,
+                cursor: locating ? "wait" : "pointer", fontFamily: "inherit",
+                boxShadow: "0 4px 14px rgba(15,118,110,0.30)",
+                opacity: locating ? 0.7 : 1,
+              }}
+            >
+              {locating ? "⏳ กำลังหาตำแหน่ง…" : coords ? "📍 หาตำแหน่งฉันใหม่" : "📍 ค้นหาใกล้ฉัน"}
+            </button>
+
+            {coords && (
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {RADIUS_OPTIONS.map(r => {
+                  const active = radius === r.v;
+                  return (
+                    <button
+                      key={r.v}
+                      onClick={() => { setRadius(r.v); setRecenterKey(k => k + 1); }}
+                      style={{
+                        padding: "9px 16px", borderRadius: 11, fontFamily: "inherit",
+                        border: active ? "1.5px solid #10b981" : "1.5px solid #e2e8f0",
+                        background: active ? "linear-gradient(135deg,#ecfdf5,#d1fae5)" : "#f8fafc",
+                        color: active ? "#047857" : "#475569", fontSize: 13, fontWeight: 800,
+                        cursor: "pointer", transition: "all 0.18s",
+                      }}
+                    >
+                      {r.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {geoMsg && (
+            <div style={{ background: "#fffbeb", border: "1.5px solid #fde68a", color: "#92400e", fontSize: 13, fontWeight: 600, padding: "10px 14px", borderRadius: 12, marginBottom: 16 }}>
+              ⚠️ {geoMsg}
+            </div>
+          )}
+
+          {!coords ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "52px 20px", gap: 12, textAlign: "center", background: "linear-gradient(135deg,#f0fdf4,#eff6ff)", borderRadius: 18 }}>
+              <div style={{ fontSize: 52 }}>🧭</div>
+              <p style={{ fontSize: 15, color: "#0f766e", fontWeight: 800, margin: 0 }}>กดปุ่ม “ค้นหาใกล้ฉัน” เพื่อเริ่ม</p>
+              <small style={{ fontSize: 12, color: "#64748b", maxWidth: 360 }}>
+                ระบบจะขอสิทธิ์เข้าถึงตำแหน่ง แล้วปักหมุดบนแผนที่ — คุณลากหมุดเพื่อเลือกจุดที่ต้องการได้ (เฉพาะในประเทศไทย)
+              </small>
+            </div>
+          ) : (
+            <>
+              {/* Category chips */}
+              <div style={{ display: "flex", flexWrap: "nowrap", overflowX: "auto", WebkitOverflowScrolling: "touch", gap: 8, marginBottom: 16, paddingBottom: 6, scrollbarWidth: "none" }}>
+                {PLACE_CATS.map(c => {
+                  const active = nearCat === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => setNearCat(c.id)}
+                      style={{
+                        display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 1,
+                        padding: "8px 14px", borderRadius: 14,
+                        border: active ? "1.5px solid #10b981" : "1.5px solid #e2e8f0",
+                        background: active ? "linear-gradient(135deg,#ecfdf5,#d1fae5)" : "#f8fafc",
+                        cursor: "pointer", transition: "all 0.18s", fontFamily: "inherit",
+                        minWidth: 64, flexShrink: 0,
+                        boxShadow: active ? "0 2px 10px rgba(16,185,129,0.18)" : "none",
+                      }}
+                    >
+                      <span style={{ fontSize: 18, lineHeight: 1 }}>{c.icon}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: active ? "#047857" : "#334155", lineHeight: 1.2 }}>{c.label}</span>
+                      <span style={{ fontSize: 9, fontWeight: 500, color: active ? "#34d399" : "#94a3b8", lineHeight: 1 }}>{c.en}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Map */}
+              <div style={{ marginBottom: 8 }}>
+                <NearbyMap
+                  lat={coords.lat}
+                  lng={coords.lng}
+                  radius={radius}
+                  results={nearPlaces.map(p => ({ id: p.id, slug: p.slug, title: p.title, lat: p.lat, lng: p.lng, distanceM: p.distanceM }))}
+                  onMove={handlePinMove}
+                  recenterKey={recenterKey}
+                />
+              </div>
+              <p style={{ fontSize: 12, color: "#94a3b8", margin: "0 0 18px", textAlign: "center" }}>
+                ลากหมุด 📍 บนแผนที่เพื่อเปลี่ยนจุดค้นหา
+              </p>
+
+              {/* Results */}
+              {nearLoading ? (
+                <div style={{ display: "grid", gridTemplateColumns: cols >= 3 ? "1fr 1fr" : "1fr", gap: 12 }}>
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} style={{ display: "flex", gap: 12, background: "white", border: "1px solid #f1f5f9", borderRadius: 16, overflow: "hidden", height: 96 }}>
+                      <div style={{ width: 96, background: "#f1f5f9" }} />
+                      <div style={{ flex: 1, padding: "12px 12px 12px 0", display: "flex", flexDirection: "column", gap: 8 }}>
+                        <div style={{ height: 10, width: "40%", borderRadius: 6, background: "#f1f5f9" }} />
+                        <div style={{ height: 12, width: "75%", borderRadius: 6, background: "#f1f5f9" }} />
+                        <div style={{ height: 10, width: "55%", borderRadius: 6, background: "#f1f5f9" }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : nearPlaces.length === 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "44px 20px", gap: 10, textAlign: "center", background: "#f8fafc", borderRadius: 18 }}>
+                  <span style={{ fontSize: 42 }}>🔍</span>
+                  <p style={{ fontSize: 15, color: "#475569", fontWeight: 700, margin: 0 }}>ไม่พบสถานที่ในรัศมีนี้</p>
+                  <small style={{ fontSize: 12, color: "#94a3b8" }}>ลองขยายระยะทาง หรือเปลี่ยนหมวด แล้วลากหมุดดูครับ</small>
+                </div>
+              ) : (
+                <>
+                  <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 14px" }}>
+                    พบ <strong style={{ color: "#1e293b", fontWeight: 800 }}>{nearPlaces.length}</strong> สถานที่ในรัศมี {RADIUS_OPTIONS.find(r => r.v === radius)?.label}
+                    {nearCat ? ` · ${CAT_LABEL[nearCat] ?? nearCat}` : ""}
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: cols >= 3 ? "1fr 1fr" : "1fr", gap: 12 }}>
+                    {nearShown.map((p, i) => (
+                      <ScrollReveal key={p.id} delay={Math.min(i % 12, 6) * 50}>
+                        <NearbyCard place={p} />
+                      </ScrollReveal>
+                    ))}
+                  </div>
+
+                  {/* Load more */}
+                  <div ref={nearSentinelRef} style={{ height: 1 }} />
+                  {nearHasMore ? (
+                    <div style={{ textAlign: "center", marginTop: 18 }}>
+                      <button onClick={nearLoadMore} style={loadMoreBtn}>
+                        โหลดเพิ่ม · Load more ({nearPlaces.length - nearVisible} เหลือ) ↓
+                      </button>
+                    </div>
+                  ) : (
+                    <p style={{ textAlign: "center", color: "#94a3b8", fontSize: 13, fontWeight: 600, marginTop: 18 }}>
+                      แสดงครบทั้ง {nearPlaces.length} สถานที่ในรัศมีนี้แล้ว
+                    </p>
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

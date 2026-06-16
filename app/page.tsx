@@ -579,7 +579,7 @@ export default function HomePage() {
       {/* ─── Must-See ─── */}
       <div ref={exploreRef} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 48, marginBottom: 18, gap: 12, flexWrap: "wrap" }}>
         <div>
-          <h2 style={{ fontSize: 26, fontWeight: 900, color: "#0f172a", margin: "0 0 6px" }}>
+          <h2 id="explore-places-heading" style={{ fontSize: 26, fontWeight: 900, color: "#0f172a", margin: "0 0 6px", scrollMarginTop: 80 }}>
             🗺️ ไฮไลต์สถานที่ <span style={{ color: "#2563eb" }}>Explore Places</span>
           </h2>
           <p style={{ fontSize: 15, color: "#64748b", margin: 0 }}>
