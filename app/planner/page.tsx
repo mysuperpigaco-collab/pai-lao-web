@@ -93,10 +93,23 @@ function SortableStopCard({ stop, idx, total, onEdit, onRemove }: {
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { getDistricts } from "@/data/thailand";
+import { extractLatLngFromGoogleUrl, googleMapsPoint } from "@/lib/maps";
 import ProvinceSelect from "@/components/ui/ProvinceSelect";
+
+// แผนที่จุดแวะ — โหลดฝั่ง client เท่านั้น (Leaflet ใช้ window)
+const StopMap = dynamic(() => import("@/components/maps/StopMap"), {
+  ssr: false,
+  loading: () => (
+    <div style={{ height: 200, borderRadius: 12, background: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 13, fontWeight: 600 }}>
+      กำลังโหลดแผนที่…
+    </div>
+  ),
+});
+const TH_CENTER = { lat: 13.7563, lng: 100.5018 };
 import {
   DndContext, closestCenter,
   KeyboardSensor, PointerSensor, useSensor, useSensors,
@@ -108,7 +121,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import MapsButton from "@/components/common/MapsButton";
-import dynamic from "next/dynamic";
 const MapView = dynamic(() => import("@/components/maps/MapView"), { ssr: false, loading: () => <div style={{ height: "100%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 13 }}>กำลังโหลดแผนที่…</div> });
 
 interface PlanStop {
@@ -128,6 +140,7 @@ interface Plan {
 interface PlaceResult {
   id: string; slug: string; title: string; province: string;
   district?: string; category: string; coverUrl?: string; communityCover?: string | null; googleMapsUrl?: string;
+  lat?: number | null; lng?: number | null;
 }
 interface BmTrip {
   id: string; slug: string; title: string; coverUrl?: string;
@@ -837,7 +850,20 @@ export default function PlannerPage() {
                     </div>
                   </div>
                   <input value={customMaps} onChange={e => setCustomMaps(e.target.value)}
-                    placeholder="🗺️ Google Maps URL (ไม่บังคับ)" style={{ ...inp, marginBottom: 12 }} />
+                    placeholder="🗺️ Google Maps URL (ไม่บังคับ)" style={{ ...inp, marginBottom: 10 }} />
+                  {(() => {
+                    const c = extractLatLngFromGoogleUrl(customMaps);
+                    const center = c ?? TH_CENTER;
+                    return (
+                      <div style={{ marginBottom: 12 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", marginBottom: 4 }}>
+                          📍 ปักหมุดตำแหน่ง · ลากหมุดเพื่อเลือก{c ? "" : " (เริ่มที่กรุงเทพฯ)"}
+                        </div>
+                        <StopMap lat={center.lat} lng={center.lng} draggable
+                          onMove={(la, lo) => setCustomMaps(googleMapsPoint(la, lo))} height={180} />
+                      </div>
+                    );
+                  })()}
                   <div style={{ display: "flex", gap: 8 }}>
                     <button onClick={addCustomStop} disabled={!customName.trim()} style={{
                       flex: 1, padding: "10px", borderRadius: 12, border: "none",
@@ -1065,7 +1091,9 @@ export default function PlannerPage() {
                       </div>
                       <button disabled={!activePlan || addingToStop === p.id} onClick={() => addStop({
                         name: p.title, province: p.province, district: p.district,
-                        googleMapsUrl: p.googleMapsUrl, stopType: "ATTRACTION", placeId: p.id,
+                        // เก็บพิกัดสถานที่ลง googleMapsUrl เพื่อให้ Edit Stop โชว์แผนที่ได้
+                        googleMapsUrl: (p.lat != null && p.lng != null) ? googleMapsPoint(p.lat, p.lng) : p.googleMapsUrl,
+                        stopType: "ATTRACTION", placeId: p.id,
                       })} style={{
                         width: "100%", padding: "7px", borderRadius: 10, border: "none",
                         background: !activePlan ? "#e2e8f0" : addingToStop === p.id ? "#93c5fd" : "linear-gradient(135deg,#3b82f6,#6366f1)",
@@ -1185,7 +1213,7 @@ export default function PlannerPage() {
       {/* ── Edit stop modal ── */}
       {editStop && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setEditStop(null)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 24, padding: 28, width: "100%", maxWidth: 520, boxShadow: "0 40px 80px rgba(0,0,0,0.2)" }}>
+          <div onClick={e => e.stopPropagation()} data-lenis-prevent style={{ background: "#fff", borderRadius: 24, padding: 28, width: "100%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 40px 80px rgba(0,0,0,0.2)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
               <span style={{ fontSize: 24 }}>✏️</span>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -1211,6 +1239,26 @@ export default function PlannerPage() {
                 </a>
               )}
             </div>
+            {/* Map */}
+            {(() => {
+              const c = extractLatLngFromGoogleUrl(editMaps);
+              const isCustom = !editStop.placeId;
+              if (!c && !isCustom) {
+                return (
+                  <div style={{ marginBottom: 14, padding: "10px 14px", borderRadius: 12, background: "#f8fafc", border: "1px dashed #cbd5e1", fontSize: 12, color: "#94a3b8", textAlign: "center" }}>
+                    📍 ไม่มีพิกัดสำหรับสถานที่นี้ — เพิ่มลิงก์ Google Maps ด้านล่างเพื่อแสดงแผนที่
+                  </div>
+                );
+              }
+              const center = c ?? TH_CENTER;
+              return (
+                <div style={{ marginBottom: 14 }}>
+                  <label style={lbl}>📍 ตำแหน่งบนแผนที่ · Location {isCustom ? "— ลากหมุดเพื่อเลือก" : "— ดูอย่างเดียว (ลากไม่ได้)"}</label>
+                  <StopMap key={editStop.id} lat={center.lat} lng={center.lng} draggable={isCustom}
+                    onMove={isCustom ? (la, lo) => setEditMaps(googleMapsPoint(la, lo)) : undefined} height={190} />
+                </div>
+              );
+            })()}
             {/* Day selector */}
             <div style={{ marginBottom:14 }}>
               <label style={lbl}>📅 วันที่ในทริป · Trip Day</label>
