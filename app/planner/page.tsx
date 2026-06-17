@@ -496,8 +496,12 @@ export default function PlannerPage() {
           .planner-sidebar { height:auto; max-height:40vh; overflow-y:auto; border-right:none !important; border-bottom:1px solid #e2e8f0; }
           .planner-right { max-height:none; border-left:none !important; }
         }
+        @media (max-width: 900px) {
+          .planner-scroll-area { max-height: 55vh; }
+        }
         @media (max-width: 640px) {
           .planner-sidebar { max-height:50vh; }
+          .planner-scroll-area { max-height: 50vh; }
           .planner-header { padding: 8px 14px; flex-wrap: wrap; gap: 8px 10px; }
           .planner-header-actions {
             width: 100%; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px;
@@ -974,7 +978,7 @@ export default function PlannerPage() {
 
           {/* ── SEARCH tab ── */}
           {rightTab === "search" && (
-            <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+            <div style={{ flex: 1, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
               <div style={{ padding: "14px 14px 8px", borderBottom: "1px solid #f1f5f9" }}>
                 <div style={{ position: "relative", marginBottom: 8 }}>
                   <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "#94a3b8" }}>🔍</span>
@@ -1003,7 +1007,7 @@ export default function PlannerPage() {
                 </select>
               </div>
 
-              <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "10px 14px" }}>
+              <div className="planner-scroll-area" style={{ flex: 1, minHeight: 0, overflowY: "auto", WebkitOverflowScrolling: "touch", padding: "10px 14px" }}>
                 {searching && (
                   <div style={{ textAlign: "center", padding: "20px 0", color: "#94a3b8", fontSize: 13 }}>
                     <div style={{ fontSize: 24, marginBottom: 6 }}>🔍</div>
@@ -1058,7 +1062,7 @@ export default function PlannerPage() {
 
           {/* ── BOOKMARKS tab ── */}
           {rightTab === "bookmarks" && (
-            <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "12px 14px" }}>
+            <div className="planner-scroll-area" style={{ flex: 1, minHeight: 0, overflowY: "auto", WebkitOverflowScrolling: "touch", padding: "12px 14px" }}>
               {loadingBm ? (
               <div>
               <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
