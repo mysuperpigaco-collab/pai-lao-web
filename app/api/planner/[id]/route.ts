@@ -12,7 +12,7 @@ export async function GET(_req: Request, { params }: Params) {
       user: { select: { displayName: true, firstName: true, username: true, avatarUrl: true } },
       stops: {
         orderBy: { order: "asc" },
-        include: { place: { select: { id: true, slug: true, title: true, province: true, district: true, coverUrl: true, googleMapsUrl: true } } },
+        include: { place: { select: { id: true, slug: true, title: true, province: true, district: true, coverUrl: true, googleMapsUrl: true, lat: true, lng: true } } },
       },
     },
   });

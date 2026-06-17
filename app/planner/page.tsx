@@ -108,6 +108,8 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import MapsButton from "@/components/common/MapsButton";
+import dynamic from "next/dynamic";
+const MapView = dynamic(() => import("@/components/maps/MapView"), { ssr: false, loading: () => <div style={{ height: "100%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 13 }}>กำลังโหลดแผนที่…</div> });
 
 interface PlanStop {
   id: string; order: number; name: string; day: number;
@@ -115,7 +117,7 @@ interface PlanStop {
   notes?: string; googleMapsUrl?: string; stopType?: string;
   arrivalTime?: string; duration?: number;
   placeId?: string;
-  place?: { id: string; slug: string; title: string; coverUrl?: string; googleMapsUrl?: string };
+  place?: { id: string; slug: string; title: string; coverUrl?: string; googleMapsUrl?: string; lat?: number | null; lng?: number | null };
 }
 interface Plan {
   id: string; title: string; description?: string;
@@ -431,6 +433,11 @@ export default function PlannerPage() {
   const stopsForDay = activePlan ? activePlan.stops.filter(s => (s.day ?? 1) === selectedDay) : [];
   const maxEditDay = activePlan ? Math.max(activePlan.stops.reduce((m, s) => Math.max(m, s.day ?? 1), 1), editDay) : editDay;
 
+  // ── Map points: stops ที่มีพิกัด (จาก place ที่ลิงก์) ──────────
+  const mapPoints = (activePlan?.stops ?? [])
+    .filter(s => s.place?.lat && s.place?.lng)
+    .map((s, i) => ({ lat: s.place!.lat!, lng: s.place!.lng!, label: `${i + 1}. ${s.name}` }));
+
   return (
     <div style={{ minHeight: "100vh", background: "transparent" }}>
 
@@ -671,8 +678,9 @@ export default function PlannerPage() {
           </div>
         </div>
 
-        {/* ── COL 2: Itinerary ── */}
-        <div className="planner-right" data-lenis-prevent style={{ overflowY: "auto", padding: "24px 20px" }}>
+        {/* ── COL 2: Itinerary + Map ── */}
+        <div className="planner-right" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div data-lenis-prevent style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "24px 20px" }}>
           {!activePlan ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 20, textAlign: "center" }}>
               <div style={{ width: 100, height: 100, borderRadius: "50%", background: "linear-gradient(135deg,#3b82f6,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, boxShadow: "0 20px 40px rgba(59,130,246,0.2)" }}>
@@ -951,7 +959,23 @@ export default function PlannerPage() {
               )}
             </>
           )}
-        </div>
+        </div>{/* end inner scroll */}
+
+        {/* ── Map panel ── */}
+        {mapPoints.length > 0 ? (
+          <div style={{ flexShrink: 0, height: 240, borderTop: "2px solid #e2e8f0", overflow: "hidden", position: "relative" }}>
+            <div style={{ position: "absolute", top: 8, left: 12, zIndex: 1000, background: "rgba(255,255,255,0.92)", borderRadius: 10, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#1e293b", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", backdropFilter: "blur(4px)" }}>
+              🗺️ แผนที่เส้นทาง · {mapPoints.length} จุด
+            </div>
+            <MapView points={mapPoints} showRoute height={240} />
+          </div>
+        ) : activePlan ? (
+          <div style={{ flexShrink: 0, height: 80, borderTop: "2px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "#94a3b8", fontSize: 12, background: "#f8fafc" }}>
+            <span style={{ fontSize: 20 }}>🗺️</span>
+            <span>เพิ่มสถานที่จาก &ldquo;ค้นหาสถานที่&rdquo; เพื่อแสดงแผนที่</span>
+          </div>
+        ) : null}
+        </div>{/* end COL 2 */}
 
         {/* ── COL 3: Search + Bookmarks ── */}
         <div className="planner-right" style={{ borderLeft: "1px solid #e2e8f0", background: "rgba(255,255,255,0.90)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -1162,12 +1186,30 @@ export default function PlannerPage() {
       {editStop && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setEditStop(null)}>
           <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 24, padding: 28, width: "100%", maxWidth: 520, boxShadow: "0 40px 80px rgba(0,0,0,0.2)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
               <span style={{ fontSize: 24 }}>✏️</span>
-              <div>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 900, fontSize: 16, color: "#1e293b" }}>แก้ไขจุดแวะ · Edit Stop</div>
-                <div style={{ fontSize: 12, color: "#64748b" }}>{editStop.name}</div>
+                <div style={{ fontSize: 13, color: "#374151", fontWeight: 700, marginTop: 2 }}>{editStop.name}</div>
               </div>
+            </div>
+            {/* Location info row */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "10px 14px", borderRadius: 12, background: "#f8fafc", border: "1px solid #e2e8f0", marginBottom: 16 }}>
+              {editStop.stopType && (
+                <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20, background: ST(editStop.stopType).bg, color: ST(editStop.stopType).color }}>
+                  {ST(editStop.stopType).icon} {ST(editStop.stopType).label.split(" · ")[0]}
+                </span>
+              )}
+              {(editStop.province || editStop.district) && (
+                <span style={{ fontSize: 11, color: "#64748b", display: "flex", alignItems: "center", gap: 3 }}>
+                  📍 {[editStop.province, editStop.district].filter(Boolean).join(" · ")}
+                </span>
+              )}
+              {editStop.place && (
+                <a href={`/places/${editStop.place.slug}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: "#3b82f6", fontWeight: 700, display: "flex", alignItems: "center", gap: 3, textDecoration: "none", marginLeft: "auto" }}>
+                  🔗 ดูหน้าสถานที่
+                </a>
+              )}
             </div>
             {/* Day selector */}
             <div style={{ marginBottom:14 }}>
