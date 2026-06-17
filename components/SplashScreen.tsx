@@ -27,6 +27,7 @@ const CAT_FRAMES: string[][] = [
 const FRAME_MS = 130;
 const CAT_BLEND: "screen" | "normal" = "normal";
 const MIN_SHOW_MS = 2200;
+const MAX_SHOW_MS = 6000;   // กันค้าง: ถ้าหน้าโหลดช้า/มี asset ค้าง ก็เปิดม่านภายในเวลานี้เสมอ
 const OPEN_MS = 1600;
 
 type Phase = "loading" | "opening" | "done";
@@ -145,14 +146,17 @@ export default function SplashScreen() {
 
   useEffect(() => {
     const start = Date.now();
-    let timer: ReturnType<typeof setTimeout>;
+    let minTimer: ReturnType<typeof setTimeout>;
+    let fired = false;
+    const fire = () => { if (!fired) { fired = true; setPhase("opening"); } };
     const trigger = () => {
       const wait = Math.max(0, MIN_SHOW_MS - (Date.now() - start));
-      timer = setTimeout(() => setPhase("opening"), wait);
+      minTimer = setTimeout(fire, wait);
     };
     if (document.readyState === "complete") trigger();
     else window.addEventListener("load", trigger, { once: true });
-    return () => { clearTimeout(timer); window.removeEventListener("load", trigger); };
+    const maxTimer = setTimeout(fire, MAX_SHOW_MS); // กันค้างถ้า load ไม่ยอม fire
+    return () => { clearTimeout(minTimer); clearTimeout(maxTimer); window.removeEventListener("load", trigger); };
   }, []);
 
   useEffect(() => {

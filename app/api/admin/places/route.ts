@@ -3,6 +3,37 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { googleUrlToLatLng } from "@/lib/maps";
 
+// สร้าง review อัตโนมัติจาก timeline stops ที่รอสถานที่ถูกอนุมัติ
+async function autoReviewsForApprovedPlace(placeId: string) {
+  const stops = await prisma.timelineStop.findMany({
+    where: {
+      placeId,
+      shareToPlace: true,
+      description: { not: "" },
+      trip: { isDraft: false },
+    },
+    select: {
+      description: true,
+      tripId: true,
+      trip: { select: { authorId: true } },
+    },
+  });
+  for (const stop of stops) {
+    const text = stop.description.trim();
+    if (!text) continue;
+    const authorId = stop.trip.authorId;
+    const existing = await prisma.review.findFirst({
+      where: { authorId, placeId },
+      select: { id: true },
+    });
+    if (!existing) {
+      await prisma.review.create({
+        data: { authorId, placeId, tripId: stop.tripId, rating: 5, text },
+      });
+    }
+  }
+}
+
 // GET /api/admin/places?q=&category=&verified=&approval=&page=&limit=
 export async function GET(request: Request) {
   const session = await getCurrentUser();
@@ -90,6 +121,7 @@ export async function PUT(request: Request) {
       targetId: placeId, targetType: "PLACE",
       detail: `Place: ${place.title}`,
     }});
+    await autoReviewsForApprovedPlace(placeId).catch(() => {});
     return NextResponse.json({ message: "อนุมัติสถานที่สำเร็จ" });
   }
 

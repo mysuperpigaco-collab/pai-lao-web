@@ -484,9 +484,9 @@ export default function PlannerPage() {
         }
         .planner-header-actions { display:flex; gap:8px; align-items:center; }
 
-        .planner-grid { display:grid; grid-template-columns:300px 1fr 360px; height:calc(100vh - 116px); overflow:hidden; }
-        .planner-sidebar { display:flex; flex-direction:column; overflow:hidden; }
-        .planner-right { overflow-y:auto; }
+        .planner-grid { display:grid; grid-template-columns:300px 1fr 360px; grid-template-rows:1fr; height:calc(100vh - 116px); overflow:hidden; }
+        .planner-sidebar { display:flex; flex-direction:column; overflow:hidden; min-height:0; }
+        .planner-right { overflow-y:auto; min-height:0; }
 
         @media (max-width: 1100px) {
           .planner-grid { grid-template-columns:260px 1fr 320px; }
@@ -974,7 +974,7 @@ export default function PlannerPage() {
 
           {/* ── SEARCH tab ── */}
           {rightTab === "search" && (
-            <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+            <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column" }}>
               <div style={{ padding: "14px 14px 8px", borderBottom: "1px solid #f1f5f9" }}>
                 <div style={{ position: "relative", marginBottom: 8 }}>
                   <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "#94a3b8" }}>🔍</span>
@@ -1003,7 +1003,7 @@ export default function PlannerPage() {
                 </select>
               </div>
 
-              <div style={{ flex: 1, overflowY: "auto", padding: "10px 14px" }}>
+              <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "10px 14px" }}>
                 {searching && (
                   <div style={{ textAlign: "center", padding: "20px 0", color: "#94a3b8", fontSize: 13 }}>
                     <div style={{ fontSize: 24, marginBottom: 6 }}>🔍</div>
@@ -1058,7 +1058,7 @@ export default function PlannerPage() {
 
           {/* ── BOOKMARKS tab ── */}
           {rightTab === "bookmarks" && (
-            <div style={{ flex: 1, overflowY: "auto", padding: "12px 14px" }}>
+            <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "12px 14px" }}>
               {loadingBm ? (
               <div>
               <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
