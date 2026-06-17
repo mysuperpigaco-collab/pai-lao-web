@@ -6,6 +6,33 @@ import { sanitizeServerHtml } from "@/lib/sanitize-server";
 
 type Params = { params: Promise<{ slug: string }> };
 
+async function autoPlaceReviews(
+  stops: { shareToPlace: boolean; placeId: string | null; description: string; }[],
+  authorId: string,
+  tripId: string,
+) {
+  const eligible = stops.filter(
+    (s) => s.shareToPlace && s.placeId && s.description?.trim(),
+  );
+  for (const stop of eligible) {
+    const existing = await prisma.review.findFirst({
+      where: { authorId, placeId: stop.placeId! },
+      select: { id: true },
+    });
+    if (!existing) {
+      await prisma.review.create({
+        data: {
+          authorId,
+          placeId: stop.placeId!,
+          tripId,
+          rating: 5,
+          text: stop.description.trim(),
+        },
+      });
+    }
+  }
+}
+
 // ── GET /api/trips/[slug] ─────────────────────────────────
 export async function GET(_req: Request, { params }: Params) {
   try {
@@ -178,6 +205,10 @@ export async function PUT(request: Request, { params }: Params) {
           },
           include: { timeline: { orderBy: { order: "asc" } } },
         });
+        // สร้าง review อัตโนมัติจาก timeline stops ที่ shareToPlace=true
+        if (updated.timeline?.length) {
+          await autoPlaceReviews(updated.timeline, session.userId, updated.id).catch(() => {});
+        }
         return NextResponse.json({ message: "ส่งทริปเพื่อรอการอนุมัติแล้ว", trip: updated, pending: true });
       }
       // ไม่ finalize — แค่ update draft ตรง ๆ (รวม timeline)
