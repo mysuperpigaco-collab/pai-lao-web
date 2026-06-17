@@ -485,8 +485,8 @@ export default function PlannerPage() {
         .planner-header-actions { display:flex; gap:8px; align-items:center; }
 
         .planner-grid { display:grid; grid-template-columns:300px 1fr 360px; grid-template-rows:1fr; height:calc(100vh - 116px); overflow:hidden; }
-        .planner-sidebar { display:flex; flex-direction:column; overflow:hidden; min-height:0; }
-        .planner-right { overflow-y:auto; min-height:0; }
+        .planner-sidebar { display:flex; flex-direction:column; overflow:hidden; min-height:0; height:100%; }
+        .planner-right { overflow-y:auto; min-height:0; height:100%; }
 
         @media (max-width: 1100px) {
           .planner-grid { grid-template-columns:260px 1fr 320px; }
@@ -494,9 +494,7 @@ export default function PlannerPage() {
         @media (max-width: 900px) {
           .planner-grid { grid-template-columns:1fr; height:auto; overflow:visible; }
           .planner-sidebar { height:auto; max-height:40vh; overflow-y:auto; border-right:none !important; border-bottom:1px solid #e2e8f0; }
-          .planner-right { max-height:none; border-left:none !important; }
-        }
-        @media (max-width: 900px) {
+          .planner-right { height:auto; max-height:none; border-left:none !important; }
           .planner-scroll-area { max-height: 55vh; }
         }
         @media (max-width: 640px) {
