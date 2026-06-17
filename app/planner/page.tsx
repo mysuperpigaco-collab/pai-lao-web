@@ -1212,7 +1212,7 @@ export default function PlannerPage() {
 
       {/* ── Edit stop modal ── */}
       {editStop && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setEditStop(null)}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setEditStop(null)}>
           <div onClick={e => e.stopPropagation()} data-lenis-prevent style={{ background: "#fff", borderRadius: 24, padding: 28, width: "100%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 40px 80px rgba(0,0,0,0.2)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
               <span style={{ fontSize: 24 }}>✏️</span>
@@ -1296,7 +1296,12 @@ export default function PlannerPage() {
               style={{ ...inp, height: 90, resize: "vertical" as const, marginBottom: 14 }} />
             <label style={lbl}>🗺️ Google Maps URL</label>
             <input value={editMaps} onChange={e => setEditMaps(e.target.value)}
-              placeholder="https://maps.google.com/..." style={{ ...inp, marginBottom: 20 }} />
+              placeholder="https://maps.google.com/..." style={{ ...inp, marginBottom: editMaps ? 8 : 20 }} />
+            {editMaps && (
+              <a href={editMaps} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "#3b82f6", textDecoration: "none", marginBottom: 20 }}>
+                🗺️ เปิดใน Google Maps ↗
+              </a>
+            )}
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={saveStopEdit} disabled={savingEdit} style={{
                 flex: 1, padding: "12px", borderRadius: 14, border: "none",
