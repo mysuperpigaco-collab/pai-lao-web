@@ -1,8 +1,22 @@
 "use client";
 
+const STOP_PALETTE = [
+  { bg: "#fee2e2", color: "#dc2626" },
+  { bg: "#ffedd5", color: "#ea580c" },
+  { bg: "#fef9c3", color: "#ca8a04" },
+  { bg: "#dcfce7", color: "#16a34a" },
+  { bg: "#cffafe", color: "#0891b2" },
+  { bg: "#dbeafe", color: "#2563eb" },
+  { bg: "#ede9fe", color: "#7c3aed" },
+  { bg: "#fce7f3", color: "#be185d" },
+  { bg: "#ccfbf1", color: "#0f766e" },
+  { bg: "#fef3c7", color: "#b45309" },
+];
+
 // ── Sortable stop card ──────────────────────────────────────────────────────
-function SortableStopCard({ stop, idx, total, onEdit, onRemove }: {
+function SortableStopCard({ stop, idx, total, stopColor, onEdit, onRemove }: {
   stop: PlanStop; idx: number; total: number;
+  stopColor?: { bg: string; color: string };
   onEdit: () => void; onRemove: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
@@ -17,7 +31,7 @@ function SortableStopCard({ stop, idx, total, onEdit, onRemove }: {
     <div ref={setNodeRef} style={{ ...style, display: "flex", gap: 12, marginBottom: 12 }}>
       {/* Timeline dot + line */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 4 }}>
-        <div style={{ width: 38, height: 38, borderRadius: "50%", background: meta.bg, border: `2px solid ${meta.color}`, color: meta.color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, flexShrink: 0 }}>
+        <div style={{ width: 38, height: 38, borderRadius: "50%", background: stopColor?.bg ?? meta.bg, border: `2px solid ${stopColor?.color ?? meta.color}`, color: stopColor?.color ?? meta.color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 18, flexShrink: 0 }}>
           {meta.icon}
         </div>
         {idx < total - 1 && (
@@ -446,10 +460,23 @@ export default function PlannerPage() {
   const stopsForDay = activePlan ? activePlan.stops.filter(s => (s.day ?? 1) === selectedDay) : [];
   const maxEditDay = activePlan ? Math.max(activePlan.stops.reduce((m, s) => Math.max(m, s.day ?? 1), 1), editDay) : editDay;
 
-  // ── Map points: stops ที่มีพิกัด (จาก place ที่ลิงก์) ──────────
-  const mapPoints = (activePlan?.stops ?? [])
-    .filter(s => s.place?.lat && s.place?.lng)
-    .map((s, i) => ({ lat: s.place!.lat!, lng: s.place!.lng!, label: `${i + 1}. ${s.name}` }));
+  // ── Map points: stops ที่มีพิกัด — ใช้ global index ให้สีตรงกับวง ──────
+  const allStopsSorted = [...(activePlan?.stops ?? [])].sort((a, b) =>
+    a.day !== b.day ? (a.day ?? 1) - (b.day ?? 1) : a.order - b.order
+  );
+  const stopColorMap = new Map(allStopsSorted.map((s, i) => [
+    s.id, { ...STOP_PALETTE[i % STOP_PALETTE.length], num: i + 1 }
+  ]));
+  const mapPoints = allStopsSorted
+    .map(s => {
+      const coords = (s.place?.lat && s.place?.lng)
+        ? { lat: s.place.lat, lng: s.place.lng }
+        : extractLatLngFromGoogleUrl(s.googleMapsUrl ?? "");
+      if (!coords) return null;
+      const info = stopColorMap.get(s.id)!;
+      return { lat: coords.lat, lng: coords.lng, label: `${info.num}. ${s.name}`, color: info.color, num: info.num };
+    })
+    .filter((p): p is NonNullable<typeof p> => p !== null);
 
   return (
     <div style={{ minHeight: "100vh", background: "transparent" }}>
@@ -693,6 +720,21 @@ export default function PlannerPage() {
 
         {/* ── COL 2: Itinerary + Map ── */}
         <div className="planner-right" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
+
+        {/* ── แผนที่เส้นทาง (บนสุด) ── */}
+        {mapPoints.length > 0 ? (
+          <div style={{ flexShrink: 0, height: 220, borderBottom: "2px solid #e2e8f0", overflow: "hidden", position: "relative", isolation: "isolate" }}>
+            <div style={{ position: "absolute", top: 8, left: 12, zIndex: 10, background: "rgba(255,255,255,0.92)", borderRadius: 10, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#1e293b", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", backdropFilter: "blur(4px)" }}>
+              🗺️ แผนที่เส้นทาง · {mapPoints.length} จุด
+            </div>
+            <MapView points={mapPoints} showRoute height={220} />
+          </div>
+        ) : activePlan ? (
+          <div style={{ flexShrink: 0, height: 52, borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "#94a3b8", fontSize: 12, background: "#f8fafc" }}>
+            <span>🗺️</span><span>เพิ่มสถานที่เพื่อแสดงแผนที่เส้นทาง</span>
+          </div>
+        ) : null}
+
         <div data-lenis-prevent style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "24px 20px" }}>
           {!activePlan ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 20, textAlign: "center" }}>
@@ -975,6 +1017,7 @@ export default function PlannerPage() {
                           stop={stop}
                           idx={idx}
                           total={stopsForDay.length}
+                          stopColor={stopColorMap.get(stop.id)}
                           onEdit={() => { setEditStop(stop); setEditNotes(stop.notes ?? ""); setEditMaps(stop.googleMapsUrl ?? ""); setEditArrival((stop as any).arrivalTime ?? ""); setEditDuration((stop as any).duration ? String((stop as any).duration) : ""); setEditDay(stop.day ?? 1); }}
                           onRemove={() => removeStop(stop.id)}
                         />
@@ -987,20 +1030,6 @@ export default function PlannerPage() {
           )}
         </div>{/* end inner scroll */}
 
-        {/* ── Map panel ── */}
-        {mapPoints.length > 0 ? (
-          <div style={{ flexShrink: 0, height: 240, borderTop: "2px solid #e2e8f0", overflow: "hidden", position: "relative" }}>
-            <div style={{ position: "absolute", top: 8, left: 12, zIndex: 1000, background: "rgba(255,255,255,0.92)", borderRadius: 10, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#1e293b", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", backdropFilter: "blur(4px)" }}>
-              🗺️ แผนที่เส้นทาง · {mapPoints.length} จุด
-            </div>
-            <MapView points={mapPoints} showRoute height={240} />
-          </div>
-        ) : activePlan ? (
-          <div style={{ flexShrink: 0, height: 80, borderTop: "2px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "#94a3b8", fontSize: 12, background: "#f8fafc" }}>
-            <span style={{ fontSize: 20 }}>🗺️</span>
-            <span>เพิ่มสถานที่จาก &ldquo;ค้นหาสถานที่&rdquo; เพื่อแสดงแผนที่</span>
-          </div>
-        ) : null}
         </div>{/* end COL 2 */}
 
         {/* ── COL 3: Search + Bookmarks ── */}

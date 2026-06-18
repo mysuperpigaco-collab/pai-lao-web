@@ -17,6 +17,19 @@ export interface MapPoint {
   lng: number;
   label?: string;
   href?: string;
+  color?: string;
+  num?: number;
+}
+
+function makeColoredIcon(color: string, num: number): L.DivIcon {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
+    <path d="M14 1C7.925 1 3 5.925 3 12c0 6 11 23 11 23s11-17 11-23C25 5.925 20.075 1 14 1z"
+      fill="${color}" stroke="white" stroke-width="2"/>
+    <circle cx="14" cy="12" r="6.5" fill="white" opacity="0.92"/>
+    <text x="14" y="16" text-anchor="middle" fill="${color}" font-weight="900" font-size="9"
+      font-family="system-ui,sans-serif">${num}</text>
+  </svg>`;
+  return L.divIcon({ html: svg, iconSize: [28, 36], iconAnchor: [14, 36], popupAnchor: [0, -38], className: "" });
 }
 
 function FitBounds({ points }: { points: MapPoint[] }) {
@@ -62,7 +75,11 @@ export default function LeafletMap({
         <Polyline positions={line} color="#2563eb" weight={3} opacity={0.7} />
       )}
       {points.map((p, i) => (
-        <Marker key={i} position={[p.lat, p.lng]}>
+        <Marker
+          key={i}
+          position={[p.lat, p.lng]}
+          icon={p.color && p.num != null ? makeColoredIcon(p.color, p.num) : undefined}
+        >
           {p.label && (
             <Popup>
               {p.href ? <a href={p.href}>{p.label}</a> : p.label}
