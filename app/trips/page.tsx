@@ -456,7 +456,7 @@ function TripCard({ trip }: { trip: Trip }) {
   const authorName = trip.author?.displayName || trip.author?.firstName || "นักเดินทาง";
 
   return (
-    <Link href={`/trips/${trip.slug}`} style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
+    <Link href={`/trips/${trip.slug}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
       <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave} className="tc-card" style={{ position: "relative", willChange: "transform", height: "100%" }}>
         <div ref={shineRef} style={shineStyle} />
         {/* Image */}
