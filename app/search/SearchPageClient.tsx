@@ -62,7 +62,7 @@ function SearchPlaceCard({ place }: { place: PlaceResult }) {
   const showImg = !!displayImg && !imgErr;
 
   return (
-    <Link href={`/place/${place.slug}`} style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
+    <Link href={`/place/${place.slug}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
       <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
         style={{ display: "flex", flexDirection: "column", borderRadius: 20, overflow: "hidden", background: "#fff", border: "1px solid #f1f5f9", position: "relative", willChange: "transform", height: "100%" }}>
         <div ref={shineRef} style={shineStyle} />
