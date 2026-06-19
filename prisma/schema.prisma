@@ -254,6 +254,7 @@ model TimelineStop {
   placeId      String?
   place        Place?  @relation(fields: [placeId], references: [id], onDelete: SetNull)
   shareToPlace Boolean @default(false) // แชร์รูปไปยังหน้าสถานที่
+  rating       Int?                    // คะแนนรีวิวของจุดนี้ (1-5) ใช้ตอน autoPlaceReviews
 
   lat          Float?
   lng          Float?

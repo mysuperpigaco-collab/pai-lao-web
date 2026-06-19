@@ -7,7 +7,7 @@ import { sanitizeServerHtml } from "@/lib/sanitize-server";
 // สร้าง review อัตโนมัติจาก timeline stops ที่ shareToPlace=true
 // เรียกหลัง trip/timeline ถูก save เสร็จสมบูรณ์แล้วเท่านั้น
 async function autoPlaceReviews(
-  stops: { shareToPlace: boolean; placeId: string | null; description: string; }[],
+  stops: { shareToPlace: boolean; placeId: string | null; description: string; rating?: number | null; }[],
   authorId: string,
   tripId: string,
 ) {
@@ -25,7 +25,7 @@ async function autoPlaceReviews(
           authorId,
           placeId: stop.placeId!,
           tripId,
-          rating: 5,
+          rating: stop.rating ?? 5,
           text: stop.description.trim(),
         },
       });
@@ -270,6 +270,7 @@ export async function POST(request: Request) {
             googleMapsUrl: stop.googleMapsUrl ?? null,
             tips:          stop.tips          ?? null,
             shareToPlace:  stop.shareToPlace  ?? false,
+            rating:        stop.rating        ? Number(stop.rating) : null,
             placeId:       stop.placeId       ?? null,
             lat:           stop.lat           ?? null,
             lng:           stop.lng           ?? null,

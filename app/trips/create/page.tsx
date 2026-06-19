@@ -102,6 +102,7 @@ export default function CreateStoryPage() {
       imageFile: null as File | null, imagePreview: null as string | null,
       placeId: null as string | null, placeSlug: null as string | null,
       shareToPlace: false,
+      rating: 5,
       lat: null as number | null, lng: null as number | null,
       googleMapsUrl: "" }
   ]);
@@ -222,7 +223,7 @@ export default function CreateStoryPage() {
   };
 
   const addTimeline    = () => setTimeline([...timeline,
-    { date: today, time: "", place: "", province: "", district: "", description: "", imageFile: null, imagePreview: null, placeId: null, placeSlug: null, shareToPlace: false, lat: null, lng: null, googleMapsUrl: "" }]);
+    { date: today, time: "", place: "", province: "", district: "", description: "", imageFile: null, imagePreview: null, placeId: null, placeSlug: null, shareToPlace: false, rating: 5, lat: null, lng: null, googleMapsUrl: "" }]);
   const removeTimeline = (i: number) => setTimeline(timeline.filter((_, idx) => idx !== i));
 
   // ── Place search for timeline stops ──────────────────────
@@ -335,6 +336,7 @@ export default function CreateStoryPage() {
             description: stop.description,
             placeId: stop.placeId ?? undefined,
             shareToPlace: stop.shareToPlace ?? false,
+            rating: stop.rating ?? 5,
             lat: stop.lat ?? null,
             lng: stop.lng ?? null,
             googleMapsUrl: stop.googleMapsUrl || null,
@@ -424,6 +426,7 @@ export default function CreateStoryPage() {
         timeline.map(async (stop, i) => ({
           placeId:      stop.placeId ?? undefined,
           shareToPlace: stop.shareToPlace ?? false,
+          rating:       stop.rating ?? 5,
           lat:          stop.lat ?? null,
           lng:          stop.lng ?? null,
           googleMapsUrl: stop.googleMapsUrl || null,
@@ -881,20 +884,32 @@ export default function CreateStoryPage() {
                 </div>
                 {/* shareToPlace toggle — only when place is linked AND has image */}
                 {item.placeId && item.imagePreview && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
-                    <input type="checkbox" id={`stp-${idx}`} checked={item.shareToPlace}
-                      onChange={e => updateTimeline(idx, "shareToPlace", e.target.checked)}
-                      style={{ display: "none" }} />
-                    <div onClick={() => updateTimeline(idx, "shareToPlace", !item.shareToPlace)}
-                      style={{ width: 38, height: 22, borderRadius: 11, background: item.shareToPlace ? "#10b981" : "#cbd5e1",
-                        position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
-                      <div style={{ position: "absolute", top: 3, left: item.shareToPlace ? 19 : 3,
-                        width: 16, height: 16, borderRadius: "50%", background: "#fff",
-                        transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+                  <div style={{ marginTop: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <input type="checkbox" id={`stp-${idx}`} checked={item.shareToPlace}
+                        onChange={e => updateTimeline(idx, "shareToPlace", e.target.checked)}
+                        style={{ display: "none" }} />
+                      <div onClick={() => updateTimeline(idx, "shareToPlace", !item.shareToPlace)}
+                        style={{ width: 38, height: 22, borderRadius: 11, background: item.shareToPlace ? "#10b981" : "#cbd5e1",
+                          position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
+                        <div style={{ position: "absolute", top: 3, left: item.shareToPlace ? 19 : 3,
+                          width: 16, height: 16, borderRadius: "50%", background: "#fff",
+                          transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+                      </div>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: item.shareToPlace ? "#065f46" : "#64748b" }}>
+                        {item.shareToPlace ? "✅ แชร์รูปและรีวิวนี้ไปยังหน้าสถานที่" : "แชร์รูปและรีวิวนี้ไปยังหน้าสถานที่"}
+                      </span>
                     </div>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: item.shareToPlace ? "#065f46" : "#64748b" }}>
-                      {item.shareToPlace ? "✅ อนุญาตให้แสดงรูปบนหน้าสถานที่" : "อนุญาตให้แสดงรูปบนหน้าสถานที่"}
-                    </span>
+                    {item.shareToPlace && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, paddingLeft: 48 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "#475569" }}>คะแนน:</span>
+                        {[1,2,3,4,5].map(s => (
+                          <span key={s} onClick={() => updateTimeline(idx, "rating", s)}
+                            style={{ fontSize: 22, cursor: "pointer", color: s <= (item.rating ?? 5) ? "#f59e0b" : "#d1d5db", transition: "color 0.15s" }}>★</span>
+                        ))}
+                        <span style={{ fontSize: 12, color: "#94a3b8" }}>{item.rating ?? 5}/5</span>
+                      </div>
+                    )}
                   </div>
                 )}
 

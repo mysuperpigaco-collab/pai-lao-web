@@ -60,7 +60,7 @@ export default function EditTripPage({ params }: Props) {
   const [timeline, setTimeline] = useState<{
     date: string; time: string; place: string; province: string; district: string;
     description: string; imageFile: File | null; imagePreview: string | null;
-    existingImage?: string; shareToPlace: boolean; placeId: string | null; placeSlug?: string;
+    existingImage?: string; shareToPlace: boolean; rating: number; placeId: string | null; placeSlug?: string;
     lat: number | null; lng: number | null; googleMapsUrl: string;
   }[]>([]);
 
@@ -163,6 +163,7 @@ export default function EditTripPage({ params }: Props) {
           imagePreview:  stop.images?.[0]    ?? null,
           existingImage: stop.images?.[0]    ?? undefined,
           shareToPlace:  stop.shareToPlace   ?? false,
+          rating:        (stop as any).rating ?? 5,
           placeId:       stop.placeId        ?? null,
           lat:           stop.lat            ?? null,
           lng:           stop.lng            ?? null,
@@ -204,7 +205,7 @@ export default function EditTripPage({ params }: Props) {
 
   const addStop = () => setTimeline(prev => [...prev, {
     date: today, time: "", place: "", province: "", district: "", description: "",
-    imageFile: null, imagePreview: null, shareToPlace: false, placeId: null,
+    imageFile: null, imagePreview: null, shareToPlace: false, rating: 5, placeId: null,
     lat: null, lng: null, googleMapsUrl: "",
   }]);
 
@@ -255,6 +256,7 @@ export default function EditTripPage({ params }: Props) {
             description: stop.description,
             images: imageUrl ? [imageUrl] : [],
             shareToPlace: stop.shareToPlace ?? false,
+            rating: stop.rating ?? 5,
             placeId: stop.placeId ?? undefined,
             lat: stop.lat ?? null,
             lng: stop.lng ?? null,
@@ -332,6 +334,7 @@ export default function EditTripPage({ params }: Props) {
             description:  stop.description,
             images:       imageUrl ? [imageUrl] : [],
             shareToPlace: stop.shareToPlace ?? false,
+            rating: stop.rating ?? 5,
             placeId:      stop.placeId ?? undefined,
             lat:          stop.lat ?? null,
             lng:          stop.lng ?? null,
@@ -733,24 +736,36 @@ export default function EditTripPage({ params }: Props) {
                   </div>
                 </div>
 
-                {/* Share to place toggle */}
-                <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10 }}>
-                  <input type="checkbox" id={`stp-edit-${idx}`} checked={item.shareToPlace}
-                    onChange={e => updateTimeline(idx, "shareToPlace", e.target.checked)}
-                    style={{ display: "none" }} />
-                  <div onClick={() => updateTimeline(idx, "shareToPlace", !item.shareToPlace)}
-                    style={{ width: 38, height: 22, borderRadius: 11, cursor: "pointer",
-                      background: item.shareToPlace ? "#10b981" : "#cbd5e1",
-                      transition: "background 0.2s", position: "relative", flexShrink: 0 }}>
-                    <div style={{
-                      position: "absolute", top: 3, left: item.shareToPlace ? 19 : 3,
-                      width: 16, height: 16, borderRadius: "50%", background: "#fff",
-                      transition: "left 0.2s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-                    }} />
+                {/* Share to place toggle + rating */}
+                <div style={{ marginTop: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <input type="checkbox" id={`stp-edit-${idx}`} checked={item.shareToPlace}
+                      onChange={e => updateTimeline(idx, "shareToPlace", e.target.checked)}
+                      style={{ display: "none" }} />
+                    <div onClick={() => updateTimeline(idx, "shareToPlace", !item.shareToPlace)}
+                      style={{ width: 38, height: 22, borderRadius: 11, cursor: "pointer",
+                        background: item.shareToPlace ? "#10b981" : "#cbd5e1",
+                        transition: "background 0.2s", position: "relative", flexShrink: 0 }}>
+                      <div style={{
+                        position: "absolute", top: 3, left: item.shareToPlace ? 19 : 3,
+                        width: 16, height: 16, borderRadius: "50%", background: "#fff",
+                        transition: "left 0.2s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+                      }} />
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: item.shareToPlace ? "#065f46" : "#64748b" }}>
+                      {item.shareToPlace ? "✅ แชร์รูปและรีวิวนี้ไปยังหน้าสถานที่" : "แชร์รูปและรีวิวนี้ไปยังหน้าสถานที่"}
+                    </span>
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: item.shareToPlace ? "#065f46" : "#64748b" }}>
-                    {item.shareToPlace ? "✅ อนุญาตให้แสดงรูปบนหน้าสถานที่" : "อนุญาตให้แสดงรูปบนหน้าสถานที่"}
-                  </span>
+                  {item.shareToPlace && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, paddingLeft: 48 }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "#475569" }}>คะแนน:</span>
+                      {[1,2,3,4,5].map(s => (
+                        <span key={s} onClick={() => updateTimeline(idx, "rating", s)}
+                          style={{ fontSize: 22, cursor: "pointer", color: s <= (item.rating ?? 5) ? "#f59e0b" : "#d1d5db", transition: "color 0.15s" }}>★</span>
+                      ))}
+                      <span style={{ fontSize: 12, color: "#94a3b8" }}>{item.rating ?? 5}/5</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* PlacePicker — ปักหมุดพิกัดของจุดแวะ */}

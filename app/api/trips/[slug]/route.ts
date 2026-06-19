@@ -7,7 +7,7 @@ import { sanitizeServerHtml } from "@/lib/sanitize-server";
 type Params = { params: Promise<{ slug: string }> };
 
 async function autoPlaceReviews(
-  stops: { shareToPlace: boolean; placeId: string | null; description: string; }[],
+  stops: { shareToPlace: boolean; placeId: string | null; description: string; rating?: number | null; }[],
   authorId: string,
   tripId: string,
 ) {
@@ -25,7 +25,7 @@ async function autoPlaceReviews(
           authorId,
           placeId: stop.placeId!,
           tripId,
-          rating: 5,
+          rating: stop.rating ?? 5,
           text: stop.description.trim(),
         },
       });
@@ -143,6 +143,7 @@ export async function PUT(request: Request, { params }: Params) {
                 googleMapsUrl: stop.googleMapsUrl ?? null,
                 tips:          stop.tips          ?? null,
                 shareToPlace:  stop.shareToPlace  ?? false,
+                rating:        stop.rating        ? Number(stop.rating) : null,
                 placeId:       stop.placeId       ?? null,
                 lat:           stop.lat           ?? null,
                 lng:           stop.lng           ?? null,
@@ -196,6 +197,7 @@ export async function PUT(request: Request, { params }: Params) {
                   stopType: stop.stopType ?? null,
                   googleMapsUrl: stop.googleMapsUrl ?? null,
                   shareToPlace: stop.shareToPlace ?? false,
+                  rating: stop.rating ? Number(stop.rating) : null,
                   placeId: stop.placeId ?? null,
                   lat: stop.lat ?? null,
                   lng: stop.lng ?? null,
@@ -240,6 +242,7 @@ export async function PUT(request: Request, { params }: Params) {
                 stopType: stop.stopType ?? null,
                 googleMapsUrl: stop.googleMapsUrl ?? null,
                 shareToPlace: stop.shareToPlace ?? false,
+                rating: stop.rating ? Number(stop.rating) : null,
                 placeId: stop.placeId ?? null,
                 lat: stop.lat ?? null,
                 lng: stop.lng ?? null,
@@ -285,6 +288,7 @@ export async function PUT(request: Request, { params }: Params) {
                 googleMapsUrl: stop.googleMapsUrl ?? null,
                 tips: stop.tips ?? null,
                 shareToPlace: stop.shareToPlace ?? false,
+                rating: stop.rating ? Number(stop.rating) : null,
                 placeId: stop.placeId ?? null,
                 lat: stop.lat ?? null,
                 lng: stop.lng ?? null,
