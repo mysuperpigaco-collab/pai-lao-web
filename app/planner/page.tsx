@@ -750,12 +750,12 @@ export default function PlannerPage() {
               <button
                 onClick={() => setMapFullscreen(true)}
                 title="ขยายเต็มจอ"
-                style={{ position: "absolute", top: 8, right: 10, zIndex: 10, width: 32, height: 32, borderRadius: 8, border: "none", background: "rgba(255,255,255,0.92)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.12)", backdropFilter: "blur(4px)", transition: "background 0.15s" }}
-                onMouseEnter={e => (e.currentTarget.style.background = "#eff6ff")}
-                onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.92)")}
+                style={{ position: "absolute", top: 8, right: 10, zIndex: 10, width: 34, height: 34, borderRadius: 8, border: "none", background: "rgba(15,23,42,0.72)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.3)", backdropFilter: "blur(4px)", transition: "background 0.15s" }}
+                onMouseEnter={e => (e.currentTarget.style.background = "rgba(59,130,246,0.85)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "rgba(15,23,42,0.72)")}
               >
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9" stroke="#1e293b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
               <MapView points={mapPoints} showRoute height={220} />
