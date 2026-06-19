@@ -236,6 +236,7 @@ export default function PlannerPage() {
   const [customArrival, setCustomArrival] = useState("");
   const [customDuration, setCustomDuration] = useState("");
   const [addingToStop, setAddingToStop] = useState<string | null>(null);
+  const [mapFullscreen, setMapFullscreen] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -746,6 +747,17 @@ export default function PlannerPage() {
               <div style={{ position: "absolute", top: 8, left: 12, zIndex: 10, background: "rgba(255,255,255,0.92)", borderRadius: 10, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#1e293b", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", backdropFilter: "blur(4px)" }}>
                 🗺️ แผนที่เส้นทาง · {mapPoints.length} จุด
               </div>
+              <button
+                onClick={() => setMapFullscreen(true)}
+                title="ขยายเต็มจอ"
+                style={{ position: "absolute", top: 8, right: 10, zIndex: 10, width: 32, height: 32, borderRadius: 8, border: "none", background: "rgba(255,255,255,0.92)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.12)", backdropFilter: "blur(4px)", transition: "background 0.15s" }}
+                onMouseEnter={e => (e.currentTarget.style.background = "#eff6ff")}
+                onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.92)")}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9" stroke="#1e293b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
               <MapView points={mapPoints} showRoute height={220} />
             </div>
           ) : activePlan ? (
@@ -1363,6 +1375,34 @@ export default function PlannerPage() {
                 cursor: "pointer", fontFamily: "inherit"
               }}>ยกเลิก · Cancel</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Fullscreen map modal ── */}
+      {mapFullscreen && mapPoints.length > 0 && (
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 3000, background: "rgba(15,23,42,0.85)", display: "flex", flexDirection: "column" }}
+          onClick={() => setMapFullscreen(false)}
+        >
+          {/* Header bar */}
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ flexShrink: 0, height: 52, background: "rgba(15,23,42,0.95)", display: "flex", alignItems: "center", paddingInline: 16, gap: 12, borderBottom: "1px solid rgba(255,255,255,0.1)" }}
+          >
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9", flex: 1 }}>
+              🗺️ แผนที่เส้นทาง · {mapPoints.length} จุด
+            </span>
+            <button
+              onClick={() => setMapFullscreen(false)}
+              style={{ width: 34, height: 34, borderRadius: 8, border: "none", background: "rgba(255,255,255,0.12)", color: "#f1f5f9", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700 }}
+            >
+              ✕
+            </button>
+          </div>
+          {/* Full map */}
+          <div onClick={e => e.stopPropagation()} style={{ flex: 1, minHeight: 0 }}>
+            <MapView points={mapPoints} showRoute height={typeof window !== "undefined" ? window.innerHeight - 52 : 600} />
           </div>
         </div>
       )}
