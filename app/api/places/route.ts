@@ -50,6 +50,12 @@ export async function GET(request: Request) {
         return b.id > a.id ? 1 : b.id < a.id ? -1 : 0; // tie-break: id desc
       });
       places = all.slice(skip, skip + limit);
+    } else if (sort === "alpha") {
+      places = await prisma.place.findMany({
+        where, skip, take: limit,
+        orderBy: { title: "asc" },
+        select,
+      });
     } else {
       places = await prisma.place.findMany({
         where, skip, take: limit,

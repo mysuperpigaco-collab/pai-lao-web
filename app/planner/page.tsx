@@ -11,6 +11,20 @@ const STOP_PALETTE = [
   { bg: "#fce7f3", color: "#be185d" },
   { bg: "#ccfbf1", color: "#0f766e" },
   { bg: "#fef3c7", color: "#b45309" },
+  { bg: "#bae6fd", color: "#0369a1" },
+  { bg: "#bbf7d0", color: "#15803d" },
+  { bg: "#fed7aa", color: "#c2410c" },
+  { bg: "#ddd6fe", color: "#5b21b6" },
+  { bg: "#f3e8ff", color: "#9333ea" }, // Purple
+  { bg: "#ecfccb", color: "#65a30d" }, // Lime
+  { bg: "#e0f2fe", color: "#0284c7" }, // Sky
+  { bg: "#fae8ff", color: "#c026d3" }, // Fuchsia
+  { bg: "#ecfeff", color: "#0e7490" }, // Cyan
+  { bg: "#f0fdf4", color: "#15803d" }, // Emerald
+  { bg: "#fff7ed", color: "#c2410c" }, // Orange
+  { bg: "#eef2ff", color: "#4f46e5" }, // Indigo
+  { bg: "#fdf2f8", color: "#db2777" }, // Pink
+  { bg: "#f5f5f4", color: "#57534e" }, // Stone
 ];
 
 // ── Sortable stop card ──────────────────────────────────────────────────────
@@ -412,7 +426,8 @@ export default function PlannerPage() {
       if (provClean) p.set("province", provClean);
       if (sDist) p.set("district", sDist);
       if (sCat)  p.set("category", sCat);
-      p.set("limit", "20");
+      p.set("sort", "alpha");
+      p.set("limit", "200");
       const res = await fetch(`/api/places?${p}`);
       if (res.ok) { const d = await res.json(); setPlaceResults(d.places ?? []); }
     } catch {}
