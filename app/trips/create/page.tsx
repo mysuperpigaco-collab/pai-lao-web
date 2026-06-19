@@ -882,8 +882,8 @@ export default function CreateStoryPage() {
                     )}
                   </div>
                 </div>
-                {/* shareToPlace toggle — only when place is linked AND has image */}
-                {item.placeId && item.imagePreview && (
+                {/* shareToPlace toggle — only when place is linked */}
+                {item.placeId && (
                   <div style={{ marginTop: 10 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <input type="checkbox" id={`stp-${idx}`} checked={item.shareToPlace}
