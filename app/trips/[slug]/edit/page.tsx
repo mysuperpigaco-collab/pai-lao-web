@@ -834,11 +834,27 @@ export default function EditTripPage({ params }: Props) {
         .btn-add-checkpoint-premium { width: 100%; padding: 20px; border-radius: 25px; border: 2px dashed #3b82f6; color: #3b82f6; background: #f0f7ff; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-add-checkpoint-premium:hover { background: #dbeafe; }
         @media (max-width: 768px) {
-          .create-card { padding: 30px 20px; border-radius: 30px; }
+          .create-container { padding: 16px 10px; }
+          .create-card { padding: 24px; border-radius: 32px; }
+          .cover-upload-area { height: 240px; border-radius: 24px; }
           .info-grid { grid-template-columns: 1fr; }
           .full-width { grid-column: 1; }
-          .timeline-top-row, .timeline-location-row { flex-direction: column; }
           .timeline-detail-row { grid-template-columns: 1fr; }
+          .section-box { padding: 20px; border-radius: 28px; }
+          .section-label { font-size: 17px; }
+          .header-text h2 { font-size: 24px; }
+        }
+        @media (max-width: 600px) {
+          .timeline-top-row, .timeline-location-row { flex-direction: column; gap: 10px; }
+          .cp-upload-container { height: auto; min-height: 80px; }
+          .cp-label { height: 80px; }
+        }
+        @media (max-width: 480px) {
+          .create-container { padding: 10px 6px; }
+          .create-card { padding: 16px; border-radius: 20px; }
+          .timeline-card { padding: 14px; border-radius: 16px; }
+          .btn-add-checkpoint-premium { padding: 14px 12px; font-size: 13px; border-radius: 18px; }
+          .section-box { padding: 14px; border-radius: 20px; }
         }
       `}</style>
     </div>
