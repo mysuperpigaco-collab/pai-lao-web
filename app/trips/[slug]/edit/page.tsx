@@ -379,10 +379,11 @@ export default function EditTripPage({ params }: Props) {
 
   // ── Loading / Not Found ────────────────────────────────
   if (isLoadingTrip) return (
-    <div className="create-container" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "#f8fafc", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ textAlign: "center", color: "#64748b" }}>
-        <div style={{ fontSize: 32, marginBottom: 12 }}>✈️</div>
-        <div style={{ fontSize: 14, fontWeight: 600 }}>กำลังโหลดข้อมูลทริป…</div>
+        <div style={{ fontSize: 36, marginBottom: 12, animation: "spin 1.2s linear infinite", display: "inline-block" }}>✈️</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: "#475569" }}>กำลังโหลดข้อมูลทริป…</div>
+        <style>{`@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}`}</style>
       </div>
     </div>
   );
