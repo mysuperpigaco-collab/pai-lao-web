@@ -90,16 +90,21 @@ export async function PUT(req: NextRequest) {
     if (!participant) return NextResponse.json({ error: "ไม่พบข้อมูล" }, { status: 404 });
 
     if (action === "APPROVE") {
-      await prisma.missionParticipant.update({
-        where: { id: participantId },
-        data: { status: "APPROVED", adminNote: adminNote || null, approvedAt: new Date() },
-      });
-      if (participant.mission.rewardPoints > 0) {
-        await prisma.user.update({
-          where: { id: participant.userId },
-          data: { points: { increment: participant.mission.rewardPoints } },
-        });
+      if (participant.status === "APPROVED") {
+        return NextResponse.json({ ok: true, action: "ALREADY_APPROVED" });
       }
+      await prisma.$transaction([
+        prisma.missionParticipant.update({
+          where: { id: participantId },
+          data: { status: "APPROVED", adminNote: adminNote || null, approvedAt: new Date() },
+        }),
+        ...(participant.mission.rewardPoints > 0 ? [
+          prisma.user.update({
+            where: { id: participant.userId },
+            data: { points: { increment: participant.mission.rewardPoints } },
+          }),
+        ] : []),
+      ]);
       return NextResponse.json({ ok: true, action: "APPROVED" });
     } else if (action === "REJECT") {
       await prisma.missionParticipant.update({

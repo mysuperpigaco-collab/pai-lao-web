@@ -239,7 +239,7 @@ export default async function PlaceDetailPage({ params }: Props) {
   return (
     <>
     <BackToTop />
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     <ViewTracker type="places" slug={slug} />
     <div className="pd-page">
       <div className="pd-hero-wrap">

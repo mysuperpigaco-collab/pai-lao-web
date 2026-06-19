@@ -32,6 +32,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: "คุณส่งผลงานไปแล้ว" }, { status: 409 });
     }
 
+    // Check maxSlots — reject if mission is full
+    if (mission.maxSlots != null) {
+      const filled = await prisma.missionParticipant.count({
+        where: { missionId: id, status: { in: ["SUBMITTED", "APPROVED"] } },
+      });
+      if (filled >= mission.maxSlots) {
+        return NextResponse.json({ error: "ภารกิจนี้เต็มแล้ว" }, { status: 409 });
+      }
+    }
+
     // Upsert: create or update to SUBMITTED
     const participant = await prisma.missionParticipant.upsert({
       where: { missionId_userId: { missionId: id, userId: session.userId } },

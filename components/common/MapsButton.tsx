@@ -28,7 +28,9 @@ export default function MapsButton({
   if (!url) return null;
 
   const handleOpen = () => {
-    window.open(url, "_blank", "noopener,noreferrer");
+    if (/^https?:\/\//i.test(url)) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
     setOpen(false);
   };
 

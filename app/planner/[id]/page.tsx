@@ -16,7 +16,7 @@ export default async function PlanViewPage({ params }: Props) {
       stops: {
         orderBy: [{ day: "asc" }, { order: "asc" }],
         include: {
-          place: { select: { id: true, slug: true, title: true, coverUrl: true } },
+          place: { select: { id: true, slug: true, title: true, coverUrl: true, googleMapsUrl: true, lat: true, lng: true } },
         },
       },
     },

@@ -207,7 +207,7 @@ export default async function TripDetailPage({ params }: Props) {
     <>
     <ReadingProgress />
     <BackToTop />
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     <ViewTracker type="trips" slug={slug} />
     <div className="place-page">
 

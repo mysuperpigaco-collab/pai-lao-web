@@ -292,6 +292,12 @@ export default function SplashScreen() {
         @keyframes sp-scan{0%{transform:translateX(-110%)}100%{transform:translateX(340%)}}
         @keyframes sp-fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
         @keyframes sp-dot{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+        @media (max-width:380px){
+          .sp-card{padding:24px 22px 20px}
+          .sp-name{font-size:28px;letter-spacing:3px}
+          .sp-mark{width:64px;height:64px;font-size:28px}
+          .sp-bar{width:160px}
+        }
         @media (prefers-reduced-motion:reduce){
           .sp-kit-A,.sp-kit-B,.sp-hop,.legA,.legB,.cat-tail,.sp-paw,.sp-dots span{animation:none!important}
         }

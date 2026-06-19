@@ -1317,6 +1317,9 @@ export default function PlannerPage() {
                   <label style={lbl}>📍 ตำแหน่งบนแผนที่ · Location {isCustom ? "— ลากหมุดเพื่อเลือก" : "— ดูอย่างเดียว (ลากไม่ได้)"}</label>
                   <StopMap key={editStop.id} lat={center.lat} lng={center.lng} draggable={isCustom}
                     onMove={isCustom ? (la, lo) => setEditMaps(googleMapsPoint(la, lo)) : undefined} height={190} />
+                  <div style={{ marginTop: 8 }}>
+                    <MapsButton url={editMaps || googleMapsPoint(center.lat, center.lng)} placeName={editStop.name} variant="text" />
+                  </div>
                 </div>
               );
             })()}

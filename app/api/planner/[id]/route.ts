@@ -4,6 +4,13 @@ import { getCurrentUser } from "@/lib/auth";
 
 type Params = { params: Promise<{ id: string }> };
 
+function safeMapUrl(u: unknown): string | null {
+  if (typeof u !== "string") return null;
+  const s = u.trim();
+  if (!s) return null;
+  return /^https?:\/\//i.test(s) ? s : null;
+}
+
 export async function GET(_req: Request, { params }: Params) {
   const { id } = await params;
   const plan = await (prisma as any).tripPlan.findUnique({
@@ -49,7 +56,7 @@ export async function PUT(request: Request, { params }: Params) {
         province: province || null,
         district: district || null,
         notes: notes?.trim() || null,
-        googleMapsUrl: googleMapsUrl?.trim() || null,
+        googleMapsUrl: safeMapUrl(googleMapsUrl),
         stopType: stopType || "ATTRACTION",
         day: day ? Number(day) : 1,
         arrivalTime: arrivalTime?.trim() || null,
@@ -111,7 +118,7 @@ export async function PUT(request: Request, { params }: Params) {
     if (!owned) return NextResponse.json({ message: "Not found" }, { status: 404 });
     const stop = await (prisma as any).tripPlanStop.update({
       where: { id: stopId },
-      data: { notes: notes?.trim() || null, googleMapsUrl: googleMapsUrl?.trim() || null, arrivalTime: arrivalTime?.trim() || null, duration: duration !== undefined ? (duration ? Number(duration) : null) : undefined, ...(day !== undefined ? { day: Number(day) } : {}) },
+      data: { notes: notes?.trim() || null, googleMapsUrl: safeMapUrl(googleMapsUrl), arrivalTime: arrivalTime?.trim() || null, duration: duration !== undefined ? (duration ? Number(duration) : null) : undefined, ...(day !== undefined ? { day: Number(day) } : {}) },
     });
     return NextResponse.json({ stop });
   }

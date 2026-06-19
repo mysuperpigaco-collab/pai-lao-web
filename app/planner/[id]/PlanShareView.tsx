@@ -1,8 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import MapsButton from "@/components/common/MapsButton";
 import QRModal from "@/components/common/QRModal";
+import { extractLatLngFromGoogleUrl } from "@/lib/maps";
+
+const StopMap = dynamic(() => import("@/components/maps/StopMap"), { ssr: false });
 
 const STOP_LABELS: Record<string, { icon: string; label: string; color: string; bg: string }> = {
   ATTRACTION: { icon: "🏞️", label: "ที่เที่ยว",  color: "#3b82f6", bg: "#eff6ff" },
@@ -25,7 +29,7 @@ interface Stop {
   stopType?: string;
   arrivalTime?: string;
   duration?: number;
-  place?: { slug: string; title: string; coverUrl?: string };
+  place?: { slug: string; title: string; coverUrl?: string; googleMapsUrl?: string; lat?: number | null; lng?: number | null };
 }
 
 interface Plan {
@@ -234,6 +238,15 @@ export default function PlanShareView({ plan, shareUrl }: { plan: Plan; shareUrl
                             </div>
                           )}
                           {stop.notes && <p className="pv-stop-notes">{stop.notes}</p>}
+                          {(() => {
+                            const c = extractLatLngFromGoogleUrl(stop.googleMapsUrl ?? "")
+                              ?? (stop.place?.lat != null && stop.place?.lng != null ? { lat: stop.place.lat, lng: stop.place.lng } : null);
+                            return c ? (
+                              <div className="no-print" style={{ marginTop: 8, borderRadius: 10, overflow: "hidden" }}>
+                                <StopMap lat={c.lat} lng={c.lng} draggable={false} height={160} />
+                              </div>
+                            ) : null;
+                          })()}
                           {stop.googleMapsUrl && (
                             <MapsButton url={stop.googleMapsUrl} placeName={stop.name} className="pv-maps-link no-print" variant="text" />
                           )}
