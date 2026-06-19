@@ -28,7 +28,7 @@ export default async function PlanViewPage({ params }: Props) {
   const isOwner = session?.userId === plan.userId;
   if (!plan.isPublic && !isOwner) return notFound();
 
-  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "https://pai-lao.vercel.app";
+  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "https://pai-lao.com";
   const shareUrl = `${origin}/planner/${id}`;
 
   return <PlanShareView plan={plan} shareUrl={shareUrl} />;

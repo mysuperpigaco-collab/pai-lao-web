@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "th_TH",
-    url: process.env.NEXT_PUBLIC_SITE_URL || "https://pai-lao-web.vercel.app",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "https://pai-lao.com",
     siteName: "ไปเล่า PAI-LAO EXPERIENCE",
     title: "ไปเล่า | PAI-LAO EXPERIENCE",
     description: "ชุมชนนักท่องเที่ยวไทย แบ่งปันเรื่องเล่าการเดินทาง",

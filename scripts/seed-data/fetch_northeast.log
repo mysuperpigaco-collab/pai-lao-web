@@ -1,0 +1,140 @@
+
+=======================================================
+ภาคอีสาน (northeast) — 20 จังหวัด
+=======================================================
+
+  -- นครราชสีมา --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ขอนแก่น --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- อุดรธานี --
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- หนองคาย --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  504 — รอ 15s แล้วลองใหม่
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- หนองบัวลำภู --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- บึงกาฬ --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- สกลนคร --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- นครพนม --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- มุกดาหาร --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- อุบลราชธานี --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ยโสธร --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ศรีสะเกษ --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- สุรินทร์ --
+    ⚠️  The read operation timed out
+    ⚠️  504 — รอ 15s แล้วลองใหม่
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- บุรีรัมย์ --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ชัยภูมิ --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  504 — รอ 15s แล้วลองใหม่
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ร้อยเอ็ด --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  504 — รอ 15s แล้วลองใหม่
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- มหาสารคาม --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- กาฬสินธุ์ --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- อำนาจเจริญ --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  504 — รอ 15s แล้วลองใหม่
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- เลย --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  รวม ภาคอีสาน: 0 สถานที่
+  บันทึก: G:\Project\pai-lao-web\scripts\seed-data\northeast.json
+
+เสร็จแล้ว! รัน import: npm run seed:import all --dry-run

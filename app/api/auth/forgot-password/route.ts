@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://pai-lao-web.vercel.app";
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://pai-lao.com";
   const ip        = getClientIp(req);
   const userAgent = req.headers.get("user-agent") ?? null;
 

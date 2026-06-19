@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit -m ' *)",
+      "Bash(git checkout *)",
+      "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\('react:', p.dependencies.react, 'next:', p.dependencies.next\\)\")",
+      "Bash(npm i *)",
+      "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\('react-leaflet:', p.dependencies['react-leaflet'], 'leaflet:', p.dependencies.leaflet\\)\")",
+      "Bash(npm run *)",
+      "PowerShell(cd \"g:\\\\Project\\\\pai-lao-web\"; $env:PYTHONIOENCODING=\"utf-8\"; python scripts/fetch_places_osm_v2.py north 2>&1)",
+      "Bash(pkill -f \"fetch_places_osm_v2.py\")",
+      "Bash(ls scripts/seed-data/*.json)",
+      "Bash(node -e ' *)",
+      "Bash(python -c ' *)",
+      "Bash(python -u scripts/fetch_places_osm_v2.py east)",
+      "Bash(python -u scripts/fetch_places_osm_v2.py central)",
+      "Bash(python -u scripts/fetch_places_osm_v2.py west)",
+      "Bash(python -u scripts/fetch_places_osm_v2.py northeast)",
+      "Bash(python -u scripts/fetch_places_osm_v2.py south)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(python -u -c ' *)",
+      "Bash(npx tsc *)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(echo \"PID=$!\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(node -e \"require\\('@playwright/test'\\)\")",
+      "Bash(npx playwright *)",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"g:\\\\Project\\\\pai-lao-web\\\\public\\\\images\\\\splash\")",
+      "PowerShell(Move-Item \"g:\\\\Project\\\\pai-lao-web\\\\scripts\\\\kitty_1.jpg\" \"g:\\\\Project\\\\pai-lao-web\\\\public\\\\images\\\\splash\\\\kitty_1.jpg\" -Force)",
+      "PowerShell(Move-Item \"g:\\\\Project\\\\pai-lao-web\\\\scripts\\\\kitty_2.jpg\" \"g:\\\\Project\\\\pai-lao-web\\\\public\\\\images\\\\splash\\\\kitty_2.jpg\" -Force)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost:3000/images/splash/kitty_1.jpg\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost:3000/images/splash/kitty_2.jpg\")",
+      "Bash(node check-splash.mjs)",
+      "Bash(pip show *)",
+      "Bash(pip install *)"
+    ]
+  }
+}

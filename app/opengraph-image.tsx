@@ -95,7 +95,7 @@ export default function Image() {
           color: "rgba(255,255,255,0.3)",
           display: "flex",
         }}>
-          {(process.env.NEXT_PUBLIC_SITE_URL || "pai-lao-web.vercel.app").replace("https://", "")}
+          {(process.env.NEXT_PUBLIC_SITE_URL || "pai-lao.com").replace("https://", "")}
         </div>
       </div>
     ),

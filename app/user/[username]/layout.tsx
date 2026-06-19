@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 
 type Props = { params: Promise<{ username: string }>; children: React.ReactNode };
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pai-lao-web.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pai-lao.com";
 
 export async function generateMetadata({ params }: Props) {
   const { username } = await params;

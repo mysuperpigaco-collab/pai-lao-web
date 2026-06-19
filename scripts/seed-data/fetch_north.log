@@ -1,0 +1,106 @@
+
+=======================================================
+ภาคเหนือ (north) — 15 จังหวัด
+=======================================================
+
+  -- เชียงใหม่ --
+    ⚠️  429 — รอ 15s แล้วลองใหม่
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- เชียงราย --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- แม่ฮ่องสอน --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- น่าน --
+    ⚠️  429 — รอ 15s แล้วลองใหม่
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- พะเยา --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ลำปาง --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ลำพูน --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- แพร่ --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- อุตรดิตถ์ --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ตาก --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- สุโขทัย --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- พิษณุโลก --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- กำแพงเพชร --
+     รวม: 0 → dedup → 0
+
+  -- พิจิตร --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  504 — รอ 15s แล้วลองใหม่
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- เพชรบูรณ์ --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  504 — รอ 15s แล้วลองใหม่
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  รวม ภาคเหนือ: 0 สถานที่
+  บันทึก: G:\Project\pai-lao-web\scripts\seed-data\north.json
+
+เสร็จแล้ว! รัน import: npm run seed:import all --dry-run

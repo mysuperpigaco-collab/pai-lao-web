@@ -22,7 +22,7 @@ import "./place-detail.css";
 
 type Props = { params: Promise<{ slug: string }> };
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pai-lao-web.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pai-lao.com";
 
 export async function generateMetadata({ params }: Props) {
   const raw = await params;

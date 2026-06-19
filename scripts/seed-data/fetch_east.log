@@ -1,0 +1,59 @@
+
+=======================================================
+ภาคตะวันออก (east) — 8 จังหวัด
+=======================================================
+
+  -- ชลบุรี --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ระยอง --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  429 — รอ 15s แล้วลองใหม่
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- จันทบุรี --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ตราด --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ฉะเชิงเทรา --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ปราจีนบุรี --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- สระแก้ว --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- นครนายก --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  รวม ภาคตะวันออก: 0 สถานที่
+  บันทึก: G:\Project\pai-lao-web\scripts\seed-data\east.json
+
+เสร็จแล้ว! รัน import: npm run seed:import all --dry-run

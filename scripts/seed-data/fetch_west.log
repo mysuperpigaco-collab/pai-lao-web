@@ -1,0 +1,35 @@
+
+=======================================================
+ภาคตะวันตก (west) — 5 จังหวัด
+=======================================================
+
+  -- กาญจนบุรี --
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ราชบุรี --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- เพชรบุรี --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ประจวบคีรีขันธ์ --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- สุพรรณบุรี --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  รวม ภาคตะวันตก: 0 สถานที่
+  บันทึก: G:\Project\pai-lao-web\scripts\seed-data\west.json
+
+เสร็จแล้ว! รัน import: npm run seed:import all --dry-run

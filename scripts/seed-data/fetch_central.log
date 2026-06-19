@@ -1,0 +1,114 @@
+
+=======================================================
+ภาคกลาง (central) — 15 จังหวัด
+=======================================================
+
+  -- กรุงเทพมหานคร --
+     TEMPLE: 111
+     NATURE: 13
+    ⚠️  The read operation timed out
+     BEACH: 1
+     MUSEUM: 97
+    ⚠️  The read operation timed out
+     MARKET: 79
+     ADVENTURE: 2
+    ⚠️  The read operation timed out
+     CAMPING: 6
+     รวม: 309 → dedup → 303
+
+  -- นนทบุรี --
+    ⚠️  The read operation timed out
+    ⚠️  504 — รอ 15s แล้วลองใหม่
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ปทุมธานี --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- นครปฐม --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- สมุทรสาคร --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- สมุทรสงคราม --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- สมุทรปราการ --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- อ่างทอง --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- สิงห์บุรี --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ชัยนาท --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  504 — รอ 15s แล้วลองใหม่
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- สระบุรี --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  504 — รอ 15s แล้วลองใหม่
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- นครสวรรค์ --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- ลพบุรี --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- พระนครศรีอยุธยา --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  -- อุทัยธานี --
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+    ⚠️  The read operation timed out
+     รวม: 0 → dedup → 0
+
+  รวม ภาคกลาง: 303 สถานที่
+  บันทึก: G:\Project\pai-lao-web\scripts\seed-data\central.json
+
+เสร็จแล้ว! รัน import: npm run seed:import all --dry-run
