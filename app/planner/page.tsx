@@ -549,6 +549,7 @@ export default function PlannerPage() {
         .planner-grid { display:grid; grid-template-columns:300px 1fr 360px; grid-template-rows:1fr; height:calc(100vh - 116px); overflow:hidden; }
         .planner-sidebar { display:flex; flex-direction:column; overflow:hidden; min-height:0; height:100%; }
         .planner-right { overflow-y:auto; min-height:0; height:100%; }
+        .route-map-sticky { position:sticky; top:0; z-index:20; height:220px; }
 
         @media (max-width: 1100px) {
           .planner-grid { grid-template-columns:260px 1fr 320px; }
@@ -558,6 +559,7 @@ export default function PlannerPage() {
           .planner-sidebar { height:auto; max-height:40vh; overflow-y:auto; border-right:none !important; border-bottom:1px solid #e2e8f0; }
           .planner-right { height:auto; max-height:none; border-left:none !important; }
           .planner-scroll-area { max-height: 55vh; }
+          .route-map-sticky { position:sticky; top:116px; }
         }
         @media (max-width: 640px) {
           .planner-sidebar { max-height:50vh; }
@@ -736,21 +738,23 @@ export default function PlannerPage() {
         {/* ── COL 2: Itinerary + Map ── */}
         <div className="planner-right" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
-        {/* ── แผนที่เส้นทาง (บนสุด) ── */}
-        {mapPoints.length > 0 ? (
-          <div style={{ flexShrink: 0, height: 220, borderBottom: "2px solid #e2e8f0", overflow: "hidden", position: "relative", isolation: "isolate" }}>
-            <div style={{ position: "absolute", top: 8, left: 12, zIndex: 10, background: "rgba(255,255,255,0.92)", borderRadius: 10, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#1e293b", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", backdropFilter: "blur(4px)" }}>
-              🗺️ แผนที่เส้นทาง · {mapPoints.length} จุด
-            </div>
-            <MapView points={mapPoints} showRoute height={220} />
-          </div>
-        ) : activePlan ? (
-          <div style={{ flexShrink: 0, height: 52, borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "#94a3b8", fontSize: 12, background: "#f8fafc" }}>
-            <span>🗺️</span><span>เพิ่มสถานที่เพื่อแสดงแผนที่เส้นทาง</span>
-          </div>
-        ) : null}
+        <div data-lenis-prevent style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
 
-        <div data-lenis-prevent style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "24px 20px" }}>
+          {/* ── แผนที่เส้นทาง (sticky บนสุดของ scroll area) ── */}
+          {mapPoints.length > 0 ? (
+            <div className="route-map-sticky" style={{ position: "relative", overflow: "hidden", isolation: "isolate", background: "#fff", borderBottom: "2px solid #e2e8f0" }}>
+              <div style={{ position: "absolute", top: 8, left: 12, zIndex: 10, background: "rgba(255,255,255,0.92)", borderRadius: 10, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#1e293b", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", backdropFilter: "blur(4px)" }}>
+                🗺️ แผนที่เส้นทาง · {mapPoints.length} จุด
+              </div>
+              <MapView points={mapPoints} showRoute height={220} />
+            </div>
+          ) : activePlan ? (
+            <div style={{ height: 52, borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "#94a3b8", fontSize: 12, background: "#f8fafc" }}>
+              <span>🗺️</span><span>เพิ่มสถานที่เพื่อแสดงแผนที่เส้นทาง</span>
+            </div>
+          ) : null}
+
+          <div style={{ padding: "24px 20px", minHeight: "100%" }}>
           {!activePlan ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 20, textAlign: "center" }}>
               <div style={{ width: 100, height: 100, borderRadius: "50%", background: "linear-gradient(135deg,#3b82f6,#6366f1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 44, boxShadow: "0 20px 40px rgba(59,130,246,0.2)" }}>
@@ -1043,6 +1047,7 @@ export default function PlannerPage() {
               )}
             </>
           )}
+          </div>{/* end content wrapper */}
         </div>{/* end inner scroll */}
 
         </div>{/* end COL 2 */}
