@@ -78,7 +78,7 @@ export default function LeafletMap({
         <Marker
           key={i}
           position={[p.lat, p.lng]}
-          icon={p.color && p.num != null ? makeColoredIcon(p.color, p.num) : undefined}
+          {...(p.color != null && p.num != null ? { icon: makeColoredIcon(p.color, p.num) } : {})}
         >
           {p.label && (
             <Popup>
