@@ -3,6 +3,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
 import EditTripForm from "./EditTripForm";
 
+export const dynamic = "force-dynamic";
+
 type Props = { params: Promise<{ slug: string }> };
 
 export default async function EditTripPage({ params }: Props) {
