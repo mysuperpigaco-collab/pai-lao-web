@@ -744,13 +744,13 @@ export default function PlannerPage() {
           {/* ── แผนที่เส้นทาง (sticky บนสุดของ scroll area) ── */}
           {mapPoints.length > 0 ? (
             <div className="route-map-sticky" style={{ position: "relative", overflow: "hidden", isolation: "isolate", background: "#fff", borderBottom: "2px solid #e2e8f0" }}>
-              <div style={{ position: "absolute", top: 8, left: 12, zIndex: 10, background: "rgba(255,255,255,0.92)", borderRadius: 10, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#1e293b", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", backdropFilter: "blur(4px)" }}>
+              <div style={{ position: "absolute", top: 8, left: 12, zIndex: 1000, background: "rgba(255,255,255,0.92)", borderRadius: 10, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#1e293b", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", backdropFilter: "blur(4px)" }}>
                 🗺️ แผนที่เส้นทาง · {mapPoints.length} จุด
               </div>
               <button
                 onClick={() => setMapFullscreen(true)}
                 title="ขยายเต็มจอ"
-                style={{ position: "absolute", top: 8, right: 10, zIndex: 10, width: 34, height: 34, borderRadius: 8, border: "none", background: "rgba(15,23,42,0.72)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.3)", backdropFilter: "blur(4px)", transition: "background 0.15s" }}
+                style={{ position: "absolute", top: 8, right: 10, zIndex: 1000, width: 34, height: 34, borderRadius: 8, border: "none", background: "rgba(15,23,42,0.72)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.3)", backdropFilter: "blur(4px)", transition: "background 0.15s" }}
                 onMouseEnter={e => (e.currentTarget.style.background = "rgba(59,130,246,0.85)")}
                 onMouseLeave={e => (e.currentTarget.style.background = "rgba(15,23,42,0.72)")}
               >
