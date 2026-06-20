@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/ActionButtons";
 import "@/components/ui/action-buttons.css";
 import RichTextEditor from "@/components/common/RichTextEditor";
+import AIPolish from "@/components/common/AIPolish";
 import dynamic from "next/dynamic";
 
 const DynamicPlacePicker = dynamic(() => import("@/components/maps/PlacePicker"), { ssr: false });
@@ -557,6 +558,7 @@ export default function EditTripPage({ params }: Props) {
                 onChange={setContent}
                 placeholder="เล่าเรื่องราวการเดินทางของคุณ... แทรกรูปภาพได้เลย 🖼️"
               />
+              <AIPolish value={content} onApply={setContent} mode="overall" />
             </div>
           </div>
 
