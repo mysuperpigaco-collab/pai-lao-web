@@ -158,7 +158,8 @@ export default async function PlaceDetailPage({ params }: Props) {
       where: {
         OR: [
           { placeId: place.id },
-          ...(place.title ? [{ placeId: null, placeName: { equals: place.title, mode: "insensitive" as const } }] : []),
+          // exact match (case has no meaning for Thai names) so the placeName index is used
+          ...(place.title ? [{ placeId: null, placeName: place.title }] : []),
         ],
       },
       include: {
