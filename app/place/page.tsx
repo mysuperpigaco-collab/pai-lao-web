@@ -4,8 +4,10 @@ import React, { useState, useEffect, useCallback, useRef, Suspense } from "react
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { useSearchParams } from "next/navigation";
+import { useLenis } from "lenis/react";
 import { PROVINCES, getDistricts } from "@/data/thailand";
 import SharedPlaceCard from "@/components/places/PlaceCard";
+import { readPlaceSearch, savePlaceSearch, patchPlaceSearchScroll, type PlaceSearchSnapshot } from "@/lib/placeSearchCache";
 
 /* ─── Types ──────────────────────────────────────────────── */
 interface Place {
@@ -63,23 +65,31 @@ export default function PlacesPage() {
 
 function PlacesInner() {
   const searchParams = useSearchParams();
+  const lenis = useLenis();
 
-  const [places,   setPlaces  ] = useState<Place[]>([]);
-  const [total,    setTotal   ] = useState(0);
-  const [page,     setPage    ] = useState(1);
-  const [loading,  setLoading ] = useState(true);
+  // Restore the previous search state (filters + loaded cards + scroll) when
+  // returning to this page (e.g. Back from a place detail). Read once.
+  const snapRef = useRef<PlaceSearchSnapshot<Place> | null | undefined>(undefined);
+  if (snapRef.current === undefined) snapRef.current = readPlaceSearch<Place>();
+  const snap = snapRef.current;
+
+  const [places,   setPlaces  ] = useState<Place[]>(() => snap?.places ?? []);
+  const [total,    setTotal   ] = useState(() => snap?.total ?? 0);
+  const [page,     setPage    ] = useState(() => snap?.page ?? 1);
+  const [loading,  setLoading ] = useState(() => !snap);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  // Initialize from URL query params (e.g. /place?category=NATURE&province=เชียงใหม่&sort=popular)
-  const [cat,      setCat     ] = useState(() => searchParams.get("category") ?? "");
-  const [province, setProvince] = useState(() => searchParams.get("province") ?? "");
-  const [district, setDistrict] = useState(() => searchParams.get("district") ?? "");
-  const [sort,     setSort    ] = useState(() => searchParams.get("sort") ?? "popular");
+  // Initialize from snapshot, else from URL query params
+  const [cat,      setCat     ] = useState(() => snap?.cat ?? (searchParams.get("category") ?? ""));
+  const [province, setProvince] = useState(() => snap?.province ?? (searchParams.get("province") ?? ""));
+  const [district, setDistrict] = useState(() => snap?.district ?? (searchParams.get("district") ?? ""));
+  const [sort,     setSort    ] = useState(() => snap?.sort ?? (searchParams.get("sort") ?? "popular"));
   const initQ = searchParams.get("q") ?? "";
-  const [q,        setQ       ] = useState(initQ);
-  const [inputQ,   setInputQ  ] = useState(initQ);
+  const [q,        setQ       ] = useState(() => snap?.q ?? initQ);
+  const [inputQ,   setInputQ  ] = useState(() => snap?.inputQ ?? initQ);
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const skipInitialFetch = useRef(!!snap);
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   /* fetch ─────────────────────────────────────────────────── */
@@ -103,11 +113,46 @@ function PlacesInner() {
     append ? setLoadingMore(false) : setLoading(false);
   }, [cat, province, district, sort, q]);
 
-  /* reset page + fetch when filters change */
+  /* reset page + fetch when filters change (skip once if a snapshot was restored) */
   useEffect(() => {
+    if (skipInitialFetch.current) { skipInitialFetch.current = false; return; }
     setPage(1);
     fetch_(1, false);
   }, [fetch_]);
+
+  /* Persist search state so returning here restores filters + loaded cards + scroll */
+  useEffect(() => {
+    savePlaceSearch<Place>({
+      cat, province, district, sort, q, inputQ,
+      places, total, page,
+      scrollY: typeof window !== "undefined" ? window.scrollY : 0,
+    });
+  }, [cat, province, district, sort, q, inputQ, places, total, page]);
+
+  /* Keep scroll position fresh (one write per frame) */
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = 0; patchPlaceSearchScroll(window.scrollY); });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { window.removeEventListener("scroll", onScroll); if (raf) cancelAnimationFrame(raf); };
+  }, []);
+
+  /* Restore scroll on mount, AFTER SmoothScrollProvider resets to 0 on route change */
+  useEffect(() => {
+    const y = snap?.scrollY;
+    if (!y) return;
+    const r1 = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (lenis) lenis.scrollTo(y, { immediate: true });
+        else window.scrollTo(0, y);
+      });
+    });
+    return () => cancelAnimationFrame(r1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* debounced search */
   const handleSearchInput = (v: string) => {
