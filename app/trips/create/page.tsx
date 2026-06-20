@@ -11,6 +11,7 @@ import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
 import { getDistricts, normalizeProvince, PROVINCES } from "@/data/thailand";
 import { extractLatLngFromGoogleUrl } from "@/lib/maps";
 import RichTextEditor from "@/components/common/RichTextEditor";
+import AIPolish from "@/components/common/AIPolish";
 import dynamic from "next/dynamic";
 
 const DynamicPlacePicker = dynamic(() => import("@/components/maps/PlacePicker"), { ssr: false });
@@ -649,6 +650,7 @@ export default function CreateStoryPage() {
                 onChange={setContent}
                 placeholder="เล่าความประทับใจในภาพรวมของทริปนี้... แทรกรูปภาพได้เลย 🖼️"
               />
+              <AIPolish value={content} onApply={setContent} mode="overall" />
             </div>
             <div className="form-group">
               <label>งบประมาณ | <small>BUDGET (บาท)</small><HintTooltip text="ประมาณการงบรวมทั้งทริป รวมค่าเดินทาง ที่พัก และอาหาร ไม่จำเป็นต้องแม่นยำ" /></label>
