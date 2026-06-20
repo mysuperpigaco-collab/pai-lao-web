@@ -6,9 +6,11 @@ interface Props {
   realCoverUrl: string | null;
   communityImages: string[];
   isAdmin: boolean;
+  /** Shared-element name for View Transitions; must match the place card cover. */
+  vtName?: string;
 }
 
-export default function PlaceHero({ placeId, realCoverUrl, communityImages, isAdmin }: Props) {
+export default function PlaceHero({ placeId, realCoverUrl, communityImages, isAdmin, vtName }: Props) {
   // All photos: real cover first, then community
   const allPhotos: string[] = [];
   if (realCoverUrl) allPhotos.push(realCoverUrl);
@@ -43,7 +45,11 @@ export default function PlaceHero({ placeId, realCoverUrl, communityImages, isAd
   if (!current) {
     // No photos at all — show gradient
     return (
-      <div className="pd-hero-img" style={{ background: "linear-gradient(135deg,#10b981,#06b6d4)" }} />
+      <div
+        className="pd-hero-img"
+        data-vt={vtName}
+        style={{ background: "linear-gradient(135deg,#10b981,#06b6d4)", ...(vtName ? { viewTransitionName: vtName } : null) }}
+      />
     );
   }
 
@@ -55,7 +61,8 @@ export default function PlaceHero({ placeId, realCoverUrl, communityImages, isAd
           src={current}
           alt="Place cover"
           className="pd-hero-img"
-          style={{ cursor: total > 1 ? "zoom-in" : undefined }}
+          data-vt={vtName}
+          style={{ cursor: total > 1 ? "zoom-in" : undefined, ...(vtName ? { viewTransitionName: vtName } : null) }}
           onClick={() => total > 1 && setLightbox(current)}
         />
 

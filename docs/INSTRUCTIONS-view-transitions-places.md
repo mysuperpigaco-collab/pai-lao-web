@@ -1,35 +1,42 @@
-# View Transitions (หน้าสถานที่) — REVERTED + บันทึกบทเรียน
+# View Transitions (หน้าค้นหาสถานที่ → รายละเอียด) — ACTIVE
 
-อัปเดต: 2026-06-20 · สถานะ: **ย้อนกลับแล้ว (ปิดฟีเจอร์)**
+อัปเดต: 2026-06-20 · สถานะ: **เปิดใช้แล้ว** (หลังเร่งหน้ารายละเอียดเหลือ ~275ms)
 
-## เกิดอะไรขึ้น
-ลองทำ shared-element morph (การ์ด `/place` → รูป hero `/place/[slug]`) ด้วย native View Transitions API
-แต่ **หน้ารายละเอียดโหลดช้า** (server component query หนักหลายตัวต่อกัน) ทำให้:
-- ต้องเอาม่านโหลด (`loading.tsx`) ออกเพื่อไม่ให้บังมอร์ฟ → ช่วงรอกลายเป็น **จอว่าง** (navbar+footer แต่กลางว่าง)
-- โหลดช้าเกิน timeout ของมอร์ฟ (700ms) → จับภาพ "จอว่าง" แทนรูป → ไม่เหมือนตัวอย่าง
+## ทำอะไร
+คลิกการ์ดในหน้า `/place` → รูปปกการ์ด **ไหลขยายเป็นรูป hero** ในหน้า `/place/[slug]` (shared-element morph)
+ใช้ **native View Transitions API ของเบราว์เซอร์** (ไม่พึ่ง React experimental → build ผ่านบน React 19.2.4 stable)
 
-**สรุป: มอร์ฟข้ามหน้าจะสวยได้ก็ต่อเมื่อหน้าปลายทางขึ้นเร็ว** หน้านี้ยังช้าเกินไป
+> รอบแรกที่ทำเคยเจอ "จอว่าง" เพราะหน้ารายละเอียดช้า 4 วิ ตอนนี้แก้ให้เหลือ ~275ms แล้ว มอร์ฟเลยลื่น
 
-## ย้อนกลับแล้ว (ทุกไฟล์กลับสถานะเดิม)
-- `app/place/page.tsx` — การ์ดกลับไปเปิดแท็บใหม่ (`newTab`) เหมือนเดิม
-- `app/place/[slug]/page.tsx`, `PlaceHero.tsx`, `PlaceCard.tsx`, `globals.css` — ลบโค้ด VT ออกหมด
-- `app/place/[slug]/loading.tsx` — re-export ม่านโหลดเดิม (`export { default } from "../../loading"`) → ม่านกลับมาปกติ
-- `lib/viewTransition.ts` — ยัง "พัก" ไว้ (ไม่มีใครเรียกใช้ = ไม่ถูก bundle) เผื่อรื้อมาทำใหม่
+## ไฟล์ที่เกี่ยวข้อง
+- `lib/viewTransition.ts` — helper ครอบ `document.startViewTransition()` เอง (ตั้งชื่อรูปที่คลิก → นำทาง → รอ hero ขึ้น → ลบชื่อ) มี fallback ครบ
+- `components/places/PlaceCard.tsx` — prop `vtName`, ref รูปปก, `onClick` เรียก helper (ทำงานเฉพาะเมื่อมี `vtName`)
+- `components/places/PlaceHero.tsx` — prop `vtName` → ใส่ `view-transition-name` + `data-vt` ที่รูป hero/gradient
+- `app/place/page.tsx` — การ์ดส่ง `vtName` และ **เปิดแท็บเดิม** (เอา `newTab` ออก — จำเป็นต่อ VT)
+- `app/place/[slug]/page.tsx` — ส่ง `vtName` ให้ `<PlaceHero>`
+- `app/place/[slug]/loading.tsx` — คืน `null` (ไม่ให้ม่านบังมอร์ฟ; หน้าเร็วแล้ว ช่วงว่าง ~300ms เล็กน้อย และตอนคลิกการ์ดมอร์ฟทับอยู่ ไม่เห็นจอว่าง)
+- `app/globals.css` — ปิด crossfade ทั้งหน้า (ให้เฉพาะรูปปกไหล) + duration 0.42s + เคารพ reduced-motion
 
-> ต้อง **push** เพื่อให้ production กลับมาปกติ (ตอนนี้ pai-lao.com ยังเป็นเวอร์ชันจอว่างถ้า deploy ไปแล้ว)
-
+## Deploy
 ```bash
+npx tsc --noEmit     # เช็ก type ก่อน
 git add -A
-git commit -m "revert: View Transitions on place page (slow detail render caused blank flash)"
+git commit -m "feat(place): shared-element View Transitions (search → detail)"
 git push
 ```
 
-## ทางที่ถูกต้องถ้าจะทำ VT ใหม่ (ต้องทำตามลำดับ)
-1. **เร่งหน้ารายละเอียดก่อน** — `app/place/[slug]/page.tsx` มี `await` หลายตัวเรียงกัน (findUnique include ลึก + placeLike.count + timelineStop.findMany take 100 + mission.findMany)
-   → รวมเป็น `Promise.all` / ตัด include ที่ไม่ต้องโชว์ทันที / ใช้ `loading.tsx` เป็น skeleton เฉพาะส่วน
-2. พอหน้าขึ้นเร็ว (<300–400ms) ค่อยกลับมาทำมอร์ฟ — มี `lib/viewTransition.ts` รออยู่
-3. หรือทำ VT ในจุดที่หน้าปลายทาง **เบา/เร็ว** อยู่แล้วแทน (เช่นภายในหน้าเดียว)
+## เช็กลิสต์เทส (หลัง deploy)
+- [ ] เดสก์ท็อป Chrome/Edge: คลิกการ์ด → รูปไหลขยายเป็น hero (ไม่กระโดด)
+- [ ] มือถือ Chrome/Safari 18+: คลิก → รูปไหลเต็มจอ
+- [ ] ปุ่ม Back: ย้อนกลับ `/place` ได้ปกติ
+- [ ] การ์ดเปิดแท็บเดิม (เมื่อก่อนเปิดแท็บใหม่ — ตั้งใจ)
+- [ ] Firefox: คลิกแล้วเปลี่ยนหน้าปกติ ไม่พัง
+- [ ] Reduced motion เปิด: เปลี่ยนหน้าทันที ไม่มีมอร์ฟ
+- [ ] โหลดหน้ารายละเอียดตรง ๆ (refresh): ไม่มีม่าน เห็นเนื้อหาเร็ว (ช่วงว่างสั้น ~300ms)
 
-## บทเรียน (กันพลาดซ้ำ)
-- อย่าเอา `loading.tsx` ออกเพื่อทำ VT ถ้าหน้าปลายทางช้า → จอว่าง
-- มอร์ฟข้ามหน้า = สัญญาว่าหน้าปลายทางเร็ว ต้องวัด TTFB/เวลา query ก่อน
+## ปรับได้
+- ความเร็วมอร์ฟ: `animation-duration` ใน `globals.css` (ส่วน `::view-transition-group(*)`)
+- timeout รอ hero: 700ms ใน `lib/viewTransition.ts` (หน้าเร็ว ~275ms อยู่ใต้ค่านี้สบาย)
+
+## ถ้าอยากปิด
+ใน `app/place/page.tsx` ให้การ์ดกลับไป `newTab` และไม่ส่ง `vtName` → VT หยุดทำงานทันที
