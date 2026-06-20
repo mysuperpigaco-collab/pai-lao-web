@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { startCoverTransition } from "@/lib/viewTransition";
 
 export interface PlaceCardData {
   id: string;
@@ -24,6 +26,10 @@ interface Props {
   place: PlaceCardData;
   distanceM?: number;
   newTab?: boolean;
+  /** When set, wraps the cover image as a shared element for View Transitions
+   *  (must match the same name on the place detail hero). Only passed on the
+   *  place search page so other usages (home/nearby) are unaffected. */
+  vtName?: string;
 }
 
 const CAT_ICON: Record<string, string> = {
@@ -43,11 +49,14 @@ function fmtDist(m: number) {
   return m < 1000 ? `${m} ม.` : `${(m / 1000).toFixed(m < 10000 ? 1 : 0)} กม.`;
 }
 
-export default function PlaceCard({ place, distanceM, newTab = false }: Props) {
+export default function PlaceCard({ place, distanceM, newTab = false, vtName }: Props) {
   const [imgError,  setImgError ] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
   const cardRef  = useRef<HTMLDivElement>(null);
   const shineRef = useRef<HTMLDivElement>(null);
+  const coverRef = useRef<HTMLDivElement>(null);
+  const router   = useRouter();
+  const href     = `/place/${place.slug}`;
 
   const icon  = CAT_ICON[place.category]  ?? "📍";
   const label = CAT_LABEL[place.category] ?? place.category;
@@ -89,9 +98,10 @@ export default function PlaceCard({ place, distanceM, newTab = false }: Props) {
 
   return (
     <Link
-      href={`/place/${place.slug}`}
+      href={href}
       target={newTab ? "_blank" : undefined}
       rel={newTab ? "noopener noreferrer" : undefined}
+      onClick={(e) => { if (vtName) startCoverTransition(e, () => router.push(href), vtName, coverRef.current); }}
       style={{ textDecoration: "none", color: "inherit", display: "block", minWidth: 0, height: "100%" }}
     >
       <div
@@ -112,8 +122,8 @@ export default function PlaceCard({ place, distanceM, newTab = false }: Props) {
         {/* Shine */}
         <div ref={shineRef} style={{ position: "absolute", inset: 0, zIndex: 5, borderRadius: 20, pointerEvents: "none" }} />
 
-        {/* Image */}
-        <div style={{ position: "relative", height: 164, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
+        {/* Image — morphs into the place detail hero via View Transitions (search page only) */}
+        <div ref={coverRef} style={{ position: "relative", height: 164, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
           {showImg
             ? <img
                 src={displayImg!}
