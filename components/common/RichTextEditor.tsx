@@ -11,7 +11,7 @@ import Image from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
 import Underline from "@tiptap/extension-underline";
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 
 interface Props {
   value: string;
@@ -66,6 +66,8 @@ async function compressImage(file: File): Promise<File> {
 export default function RichTextEditor({ value, onChange, placeholder = "เล่าความประทับใจในภาพรวมของทริปนี้..." }: Props) {
   const fileRef   = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  // flag: prevent syncing back content that originated from the editor itself
+  const skipSync  = useRef(false);
 
   const editor = useEditor({
     extensions: [
@@ -76,11 +78,18 @@ export default function RichTextEditor({ value, onChange, placeholder = "เล�
       Placeholder.configure({ placeholder }),
     ],
     content: value || "",
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    onUpdate: ({ editor }) => { skipSync.current = true; onChange(editor.getHTML()); },
     editorProps: {
       attributes: { class: "rte-content", spellcheck: "false" },
     },
   });
+
+  // sync external value changes (initial data load on edit page, AIPolish apply)
+  useEffect(() => {
+    if (!editor) return;
+    if (skipSync.current) { skipSync.current = false; return; }
+    editor.commands.setContent(value || "");
+  }, [editor, value]);
 
   // ── Upload image ────────────────────────────────────────────
   const handleImageUpload = useCallback(async (file: File) => {
