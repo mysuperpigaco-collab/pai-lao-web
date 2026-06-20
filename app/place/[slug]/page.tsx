@@ -139,17 +139,47 @@ export default async function PlaceDetailPage({ params }: Props) {
   const isOwner    = !!session && !!place.business?.userId && session.userId === place.business.userId;
   const isBusiness = session?.role === "BUSINESS";
 
-  let initialLiked = false;
-  let initialSaved = false;
-  const likeCount = await prisma.placeLike.count({ where: { placeId: place.id } }).catch(() => 0);
-  if (session) {
-    const [pl, bm] = await Promise.all([
-      prisma.placeLike.findUnique({ where: { userId_placeId: { userId: session.userId, placeId: place.id } } }).catch(() => null),
-      prisma.bookmark.findUnique({ where: { userId_placeId: { userId: session.userId, placeId: place.id } } }).catch(() => null),
-    ]);
-    initialLiked = !!pl;
-    initialSaved = !!bm;
-  }
+  const now = new Date();
+  // Fire all place-scoped reads in parallel — they each only depend on place.id,
+  // not on one another, so this collapses ~4 sequential DB round-trips into one.
+  const [likeCount, userLike, userBookmark, communityStops, activeMissions] = await Promise.all([
+    prisma.placeLike.count({ where: { placeId: place.id } }).catch(() => 0),
+    session
+      ? prisma.placeLike.findUnique({ where: { userId_placeId: { userId: session.userId, placeId: place.id } } }).catch(() => null)
+      : Promise.resolve(null),
+    session
+      ? prisma.bookmark.findUnique({ where: { userId_placeId: { userId: session.userId, placeId: place.id } } }).catch(() => null)
+      : Promise.resolve(null),
+    // Community photos from all trips that visited this place (by placeId OR placeName)
+    prisma.timelineStop.findMany({
+      where: {
+        OR: [
+          { placeId: place.id },
+          ...(place.title ? [{ placeId: null, placeName: { equals: place.title, mode: "insensitive" as const } }] : []),
+        ],
+      },
+      include: {
+        trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true } } } },
+      },
+      take: 100,
+    }).catch(() => []),
+    // Active missions for this place
+    prisma.mission.findMany({
+      where: {
+        placeId: place.id,
+        status: "ACTIVE",
+        endDate: { gte: now },
+      },
+      include: {
+        participants: session
+          ? { where: { userId: session.userId }, select: { status: true } }
+          : false,
+      },
+      orderBy: { endDate: "asc" },
+    }).catch(() => []),
+  ]);
+  const initialLiked = !!userLike;
+  const initialSaved = !!userBookmark;
 
   const serializedReviews = place.reviews.map(r => ({
     ...r,
@@ -162,40 +192,11 @@ export default async function PlaceDetailPage({ params }: Props) {
     })),
   }));
 
-  // Community photos from all trips that visited this place (by placeId OR placeName)
-  const communityStops = await prisma.timelineStop.findMany({
-    where: {
-      OR: [
-        { placeId: place.id },
-        ...(place.title ? [{ placeId: null, placeName: { equals: place.title, mode: "insensitive" as const } }] : []),
-      ],
-    },
-    include: {
-      trip: { select: { id: true, slug: true, title: true, _count: { select: { likes: true } } } },
-    },
-    take: 100,
-  }).catch(() => []);
-
   const communityStopsSorted = communityStops
     .filter(s => s.images.length > 0)
     .sort((a, b) => (b.trip?._count.likes ?? 0) - (a.trip?._count.likes ?? 0));
 
   const communityImages = communityStopsSorted.flatMap(s => s.images).filter(img => img && !img.includes("default-place.svg"));
-  // Active missions for this place
-  const now = new Date();
-  const activeMissions = await prisma.mission.findMany({
-    where: {
-      placeId: place.id,
-      status: "ACTIVE",
-      endDate: { gte: now },
-    },
-    include: {
-      participants: session
-        ? { where: { userId: session.userId }, select: { status: true } }
-        : false,
-    },
-    orderBy: { endDate: "asc" },
-  }).catch(() => []);
   const missionsForComponent = activeMissions.map(m => ({
     id: m.id,
     title: m.title,
