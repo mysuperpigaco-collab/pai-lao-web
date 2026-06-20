@@ -65,7 +65,16 @@ export default function AIPolish({
         {loading ? "⏳ กำลังเกลา..." : "✨ เกลาคำด้วย AI"}
       </button>
 
-      {err && <div style={{ marginTop: 8, fontSize: 12, color: "#dc2626" }}>{err}</div>}
+      {err && (
+        <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 12, color: "#dc2626" }}>{err}</span>
+          <button type="button" onClick={run} disabled={loading} style={{
+            padding: "3px 10px", borderRadius: 8, border: "1px solid #fca5a5",
+            background: "#fff", color: "#dc2626", fontSize: 11, fontWeight: 700,
+            cursor: "pointer", fontFamily: "inherit",
+          }}>🔄 ลองใหม่</button>
+        </div>
+      )}
 
       {opts && opts.length > 0 && (
         <div style={{ marginTop: 12, border: "1.5px solid #ede9fe", borderRadius: 16, padding: 14, background: "#faf9ff" }}>

@@ -68,14 +68,18 @@ export async function POST(req: NextRequest) {
 
     if (!res.ok) {
       const errText = await res.text();
-      console.error("Gemini error:", errText);
-      let msg = "Gemini API error";
-      try {
-        const j = JSON.parse(errText);
-        const m = j?.error?.message;
-        if (m) msg = m.length > 120 ? m.slice(0, 120) + "…" : m;
-      } catch {}
-      return NextResponse.json({ error: msg }, { status: 502 });
+      console.error("Gemini error:", res.status, errText.slice(0, 300));
+      let geminiMsg = "";
+      try { geminiMsg = JSON.parse(errText)?.error?.message ?? ""; } catch {}
+      const thaiMsg =
+        res.status === 503 || /high demand|overload|unavailable/i.test(geminiMsg)
+          ? "AI ยุ่งมากอยู่ครับ กรุณาลองใหม่สักครู่"
+          : res.status === 429 || /quota|rate.?limit/i.test(geminiMsg)
+          ? "เกินโควต้า API กรุณารอสักครู่แล้วลองใหม่"
+          : res.status === 400 || /api.?key|invalid/i.test(geminiMsg)
+          ? "API Key ไม่ถูกต้อง"
+          : "Gemini ตอบสนองผิดพลาด กรุณาลองใหม่";
+      return NextResponse.json({ error: thaiMsg }, { status: 502 });
     }
 
     const data = await res.json();
