@@ -97,7 +97,9 @@ export default async function PlaceDetailPage({ params }: Props) {
   const raw = await params;
   const slug = decodeURIComponent(raw.slug);
 
+  const _t0 = Date.now();
   const session = await getCurrentUser();
+  const _tSession = Date.now();
   const isAdmin = session?.role === "ADMIN" || session?.role === "SUPERADMIN";
 
   const place = await prisma.place.findUnique({
@@ -129,6 +131,7 @@ export default async function PlaceDetailPage({ params }: Props) {
     if (isAdmin) throw err;
     return null;
   });
+  const _tPlace = Date.now();
 
   if (!place) return notFound();
   const avgRating = place.reviews.length
@@ -178,6 +181,14 @@ export default async function PlaceDetailPage({ params }: Props) {
       orderBy: { endDate: "asc" },
     }).catch(() => []),
   ]);
+  const _tBatch = Date.now();
+  const _timing = {
+    session: _tSession - _t0,
+    place:   _tPlace - _tSession,
+    batch:   _tBatch - _tPlace,
+    total:   _tBatch - _t0,
+  };
+  console.log("[place timing]", slug, _timing);
   const initialLiked = !!userLike;
   const initialSaved = !!userBookmark;
 
@@ -240,6 +251,11 @@ export default async function PlaceDetailPage({ params }: Props) {
   return (
     <>
     <BackToTop />
+    {isAdmin && (
+      <div style={{ position: "fixed", bottom: 8, left: 8, zIndex: 99999, background: "rgba(0,0,0,0.85)", color: "#34d399", font: "11px/1.4 monospace", padding: "5px 9px", borderRadius: 6, pointerEvents: "none" }}>
+        ⏱ DB: session {_timing.session} · place {_timing.place} · batch {_timing.batch} · <b>total {_timing.total}ms</b>
+      </div>
+    )}
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     <ViewTracker type="places" slug={slug} />
     <div className="pd-page">
