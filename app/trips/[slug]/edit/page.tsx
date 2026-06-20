@@ -696,7 +696,7 @@ export default function EditTripPage({ params }: Props) {
                   <div style={{ display:"flex", flexDirection:"column", flex:1, gap:6 }}>
                     <textarea className="form-control desc-area" value={item.description}
                       onChange={e => updateTimeline(idx, "description", e.target.value)}
-                      placeholder="อธิบายสถานที่นี้..." />
+                      placeholder="อธิบายสถานที่นี้..." data-lenis-prevent />
                   </div>
                   <div className="cp-upload-container">
                     {item.imagePreview ? (

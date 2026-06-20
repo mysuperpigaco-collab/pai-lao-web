@@ -864,7 +864,7 @@ export default function CreateStoryPage() {
                 <div className="timeline-detail-row">
                   <div style={{ display:"flex", flexDirection:"column", flex:1, gap:6 }}>
                     <textarea className="form-control desc-area" placeholder="เล่าบรรยากาศที่จุดนี้..."
-                      value={item.description} onChange={(e) => updateTimeline(idx, "description", e.target.value)} />
+                      value={item.description} onChange={(e) => updateTimeline(idx, "description", e.target.value)} data-lenis-prevent />
                   </div>
                   <div className="cp-upload-container">
                     {item.imagePreview ? (

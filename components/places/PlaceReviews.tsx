@@ -85,7 +85,7 @@ function ReportModal({ targetId, targetType, onClose }: { targetId: string; targ
                 </label>
               ))}
             </div>
-            <textarea value={detail} onChange={e => setDetail(e.target.value)} placeholder="รายละเอียดเพิ่มเติม..." rows={3} style={{ width: "100%", borderRadius: 10, border: "1.5px solid #e2e8f0", padding: "10px 12px", fontSize: 13, resize: "none", fontFamily: "inherit", boxSizing: "border-box", marginBottom: 16 }} />
+            <textarea value={detail} onChange={e => setDetail(e.target.value)} placeholder="รายละเอียดเพิ่มเติม..." rows={3} data-lenis-prevent style={{ width: "100%", borderRadius: 10, border: "1.5px solid #e2e8f0", padding: "10px 12px", fontSize: 13, resize: "none", fontFamily: "inherit", boxSizing: "border-box", marginBottom: 16 }} />
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={onClose} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "white", color: "#475569", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>ยกเลิก</button>
               <button onClick={handleSubmit} disabled={submitting} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", background: "#e11d48", color: "white", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
@@ -289,7 +289,7 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
           </div>
           <textarea value={newText} onChange={e => setNewText(e.target.value)}
             placeholder="แบ่งปันประสบการณ์ของคุณ... Share your experience..."
-            className="pr-textarea" required />
+            className="pr-textarea" data-lenis-prevent required />
           <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13, color: "#475569", userSelect: "none", margin: "8px 0 4px" }}>
             <input type="checkbox" checked={isAnonymous} onChange={e => setIsAnonymous(e.target.checked)}
               style={{ accentColor: "#64748b", width: 15, height: 15 }} />
@@ -310,7 +310,7 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
           </div>
           <form onSubmit={handleComment} style={{ background: "#f8fafc", borderRadius: 12, padding: 14, border: "1.5px solid #e2e8f0", display: "flex", gap: 10 }}>
             <textarea value={newText} onChange={e => setNewText(e.target.value)}
-              placeholder="เพิ่มความคิดเห็น..." rows={2}
+              placeholder="เพิ่มความคิดเห็น..." rows={2} data-lenis-prevent
               style={{ flex: 1, borderRadius: 8, border: "1px solid #e2e8f0", padding: "8px 12px", fontSize: 13, resize: "none", fontFamily: "inherit" }} />
             <button type="submit" disabled={submitting || !newText.trim()}
               style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "#3b82f6", color: "white", fontWeight: 700, cursor: "pointer", flexShrink: 0, fontFamily: "inherit", opacity: !newText.trim() ? 0.5 : 1 }}>
@@ -418,7 +418,7 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
                     {replyOpen[review.id] ? (
                       <div className="pr-reply-form">
                         <textarea value={replyText[review.id] ?? ""} onChange={e => setReplyText(t => ({ ...t, [review.id]: e.target.value }))}
-                          placeholder={isOwner ? "ตอบกลับในฐานะเจ้าของสถานที่..." : "ตอบกลับความคิดเห็น..."} className="pr-reply-textarea" />
+                          placeholder={isOwner ? "ตอบกลับในฐานะเจ้าของสถานที่..." : "ตอบกลับความคิดเห็น..."} className="pr-reply-textarea" data-lenis-prevent />
                         <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                           <button onClick={() => handleReply(review.id)} disabled={replySubmitting[review.id] || !replyText[review.id]?.trim()} className="pr-reply-submit">
                             {replySubmitting[review.id] ? "⏳" : isOwner ? "🏢 ตอบกลับ" : "💬 ตอบกลับ"}
