@@ -159,6 +159,7 @@ export default function RichTextEditor({ value, onChange, placeholder = "เล�
   return (
     <div
       style={{ border: "1.5px solid #e2e8f0", borderRadius: 14, overflow: "hidden", background: "white" }}
+      data-lenis-prevent
       onDrop={onDrop}
       onDragOver={e => e.preventDefault()}
     >
