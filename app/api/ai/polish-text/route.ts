@@ -56,7 +56,13 @@ export async function POST(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: buildPrompt(text.trim(), mode ?? "overall") }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 1500, responseMimeType: "application/json" },
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 4096,
+          responseMimeType: "application/json",
+          // ปิด "thinking" ของ gemini-2.5-flash ไม่งั้น thinking กิน token จนข้อความจริงถูกตัด → JSON ขาด
+          thinkingConfig: { thinkingBudget: 0 },
+        },
       }),
     });
 
@@ -73,8 +79,13 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await res.json();
-    const raw: string = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-    if (!raw) return NextResponse.json({ error: "AI ไม่ตอบกลับ" }, { status: 502 });
+    const cand = data.candidates?.[0];
+    const finish = cand?.finishReason;
+    const raw: string = cand?.content?.parts?.[0]?.text ?? "";
+    if (!raw) {
+      console.error("polish-text empty output. finishReason:", finish, JSON.stringify(data).slice(0, 400));
+      return NextResponse.json({ error: finish === "SAFETY" ? "เนื้อหาถูกบล็อกโดยตัวกรอง ลองปรับข้อความ" : "AI ไม่ตอบกลับ" }, { status: 502 });
+    }
 
     // parse JSON (เผื่อมี text ห่อ ก็ดึงเฉพาะ {...})
     let parsed: Record<string, string> | null = null;
@@ -83,7 +94,11 @@ export async function POST(req: NextRequest) {
       const m = raw.match(/\{[\s\S]*\}/);
       if (m) { try { parsed = JSON.parse(m[0]); } catch {} }
     }
-    if (!parsed) return NextResponse.json({ error: "AI ตอบกลับไม่ถูกรูปแบบ ลองใหม่อีกครั้ง" }, { status: 502 });
+    if (!parsed) {
+      console.error("polish-text parse fail. finishReason:", finish, "raw:", raw.slice(0, 300));
+      const msg = finish === "MAX_TOKENS" ? "ข้อความยาวเกินไป ลองย่อแล้วลองใหม่ (v2)" : "AI ตอบกลับไม่ถูกรูปแบบ ลองใหม่อีกครั้ง (v2)";
+      return NextResponse.json({ error: msg, _debug: { finishReason: finish, rawHead: raw.slice(0, 200) } }, { status: 502 });
+    }
 
     const options = TONES
       .map(t => ({ key: t.key, label: t.label, text: (parsed![t.key] ?? "").trim() }))
