@@ -40,6 +40,14 @@ const CATEGORIES = [
   { value:"CAMPING",       label:"⛺ แคมปิ้ง" },
 ];
 
+const PLACEHOLDERS = [
+  "ลองค้นหา คาเฟ่เชียงใหม่",
+  "ลองค้นหา ทะเลกระบี่",
+  "ลองค้นหา วัดอยุธยา",
+  "ลองค้นหา น้ำตกเขาใหญ่",
+  "ชื่อทริป สถานที่ หรือจังหวัด...",
+];
+
 function formatDate(iso?: string) {
   if (!iso) return "";
   return new Date(iso).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" });
@@ -165,6 +173,11 @@ export default function SearchPageClient() {
   const [searchError, setSearchError] = useState("");
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const [phi, setPhi] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setPhi(i => (i + 1) % PLACEHOLDERS.length), 2400);
+    return () => clearInterval(t);
+  }, []);
 
   const doSearch = async (overrides?: Partial<{ q: string; type: string; province: string; district: string; category: string; sort: string }>) => {
     const fq       = overrides?.q        ?? q;
@@ -238,114 +251,92 @@ export default function SearchPageClient() {
     <div className="srch-page" style={{ maxWidth: 1100, margin: "0 auto", padding: "36px 20px 80px" }}>
 
       {/* ── Header ── */}
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ marginBottom: 22 }}>
         <h1 style={{ fontSize: 26, fontWeight: 900, color: "#0f172a", margin: "0 0 6px" }}>
-          🔍 ค้นหา · Search
+          🔍 ค้นหา <span style={{ color: "#0891b2" }}>Search</span>
         </h1>
         <p style={{ fontSize: 14, color: "#64748b", margin: 0 }}>
           ค้นหาทริปและสถานที่ท่องเที่ยวทั่วไทย · Find trips and places across Thailand
         </p>
       </div>
 
-      {/* ── Search form ── */}
-      <form onSubmit={handleSubmit} className="srch-form" style={{ background: "white", borderRadius: 20, padding: 22, border: "1.5px solid #e2e8f0", boxShadow: "0 4px 20px rgba(15,23,42,0.06)", marginBottom: 28 }}>
-        {/* Main search row */}
-        <div className="srch-row" style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-          <div style={{ flex: 1, display: "flex", alignItems: "center", background: "#f8fafc", borderRadius: 14, border: "1.5px solid #e2e8f0", padding: "0 14px", height: 48, gap: 10 }}>
-            <span style={{ color: "#94a3b8", display: "flex", flexShrink: 0 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </span>
-            <input
-              ref={inputRef}
-              value={q}
-              onChange={e => setQ(e.target.value)}
-              placeholder="ชื่อทริป สถานที่ หรือจังหวัด..."
-              style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 15, color: "#1e293b" }}
-              autoFocus
-            />
-            {q && (
-              <button type="button" onClick={() => setQ("")} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 18, lineHeight: 1 }}>×</button>
-            )}
-          </div>
-          <button type="submit" style={{ padding: "0 28px", height: 48, borderRadius: 14, border: "none", background: "linear-gradient(135deg, #10b981, #06b6d4)", color: "white", fontWeight: 800, fontSize: 15, cursor: "pointer", flexShrink: 0, fontFamily: "inherit", boxShadow: "0 4px 14px rgba(16,185,129,0.3)" }}>
-            ค้นหา
-          </button>
-        </div>
+      {/* ── Search panel ── */}
+      <form onSubmit={handleSubmit} className="srch-panel">
 
-        {/* Validation error */}
-        {searchError && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff7ed", border: "1.5px solid #fed7aa", borderRadius: 10, padding: "10px 14px", marginBottom: 8, color: "#c2410c", fontSize: 13, fontWeight: 700 }}>
-            ⚠️ {searchError}
-          </div>
-        )}
-
-        {/* Filter row 1 — Type toggle */}
-        <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 12, padding: 4, gap: 2, marginBottom: 12, alignSelf: "flex-start" }}>
+        {/* Type segmented toggle */}
+        <div className="srch-seg">
           {[{ v:"all", l:"ทั้งหมด" }, { v:"trip", l:"✈️ ทริป" }, { v:"place", l:"🗺️ สถานที่" }].map(opt => (
-            <button key={opt.v} type="button" onClick={() => setType(opt.v)}
-              style={{ padding: "7px 18px", borderRadius: 9, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: type === opt.v ? 800 : 500,
-                background: type === opt.v ? "white" : "transparent",
-                color: type === opt.v ? "#0f172a" : "#64748b",
-                boxShadow: type === opt.v ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
-                transition: "all 0.15s" }}>
+            <button key={opt.v} type="button"
+              className={`srch-seg-btn${type === opt.v ? " on" : ""}`}
+              onClick={() => { setType(opt.v); if (searched) doSearch({ type: opt.v }); }}>
               {opt.l}
             </button>
           ))}
         </div>
 
-        {/* Filter row 2 — Location + Category + Sort */}
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        {/* Search bar */}
+        <div className="srch-bar">
+          <span className="srch-mag" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <input
+            ref={inputRef}
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            placeholder={PLACEHOLDERS[phi]}
+            className="srch-input"
+            autoFocus
+          />
+          {q && (
+            <button type="button" onClick={() => setQ("")} className="srch-clear" aria-label="ล้างคำค้น">×</button>
+          )}
+          <button type="submit" className="srch-go">ค้นหา</button>
+        </div>
 
-          {/* Province */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "0 14px", height: 44, flex: "1 1 180px", minWidth: 160, boxSizing: "border-box" }}>
-            <span style={{ fontSize: 15, flexShrink: 0 }}>🗾</span>
+        {/* Validation error */}
+        {searchError && (
+          <div className="srch-err">⚠️ {searchError}</div>
+        )}
+
+        {/* Filters — shown, weighted widths filling the row */}
+        <div className="srch-filters">
+          <div className="srch-fwrap" style={{ flex: "1.5 1 0" }}>
+            <span className="srch-ficon">🗾</span>
             <ProvinceSelect
               value={province}
-              onChange={v => { setProv(v); setDistrict(""); }}
+              onChange={v => { setProv(v); setDistrict(""); if (searched) doSearch({ province: v, district: "" }); }}
               placeholder="ทุกจังหวัด"
-              style={{ border: "none", background: "transparent", fontSize: 13, height: 44, padding: "0", boxShadow: "none", display: "flex", alignItems: "center" }}
+              style={{ border: "none", background: "transparent", fontSize: 13, padding: 0, boxShadow: "none", display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}
             />
           </div>
 
-          {/* District */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "0 14px", height: 44, flex: "1 1 160px", minWidth: 140, boxSizing: "border-box" }}>
-            <span style={{ fontSize: 15, flexShrink: 0 }}>🏘️</span>
+          <div className="srch-fwrap" style={{ flex: "1.4 1 0" }}>
+            <span className="srch-ficon">🏘️</span>
             <DistrictSelect
               province={province.split(" (")[0]}
               value={district}
-              onChange={v => setDistrict(v)}
+              onChange={v => { setDistrict(v); if (searched) doSearch({ district: v }); }}
               placeholder="ทุกอำเภอ"
-              style={{ border: "none", background: "transparent", fontSize: 13, height: 44, padding: "0", boxShadow: "none", display: "flex", alignItems: "center" }}
+              style={{ border: "none", background: "transparent", fontSize: 13, padding: 0, boxShadow: "none", display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}
             />
           </div>
 
-          {/* Category */}
           {type !== "trip" && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "6px 14px", flex: "1 1 140px" }}>
-              <span style={{ fontSize: 15, flexShrink: 0 }}>🏷️</span>
-              <select value={category} onChange={e => setCat(e.target.value)}
-                style={{ border: "none", background: "transparent", fontSize: 13, color: "#374151", fontFamily: "inherit", cursor: "pointer", flex: 1, outline: "none", minHeight: 32 }}>
+            <div className="srch-fwrap" style={{ flex: "1.05 1 0" }}>
+              <span className="srch-ficon">🏷️</span>
+              <select value={category} onChange={e => { setCat(e.target.value); if (searched) doSearch({ category: e.target.value }); }} className="srch-nativesel">
                 {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
             </div>
           )}
 
-          {/* Sort */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "6px 14px" }}>
-            <span style={{ fontSize: 15, flexShrink: 0 }}>📊</span>
-            <select value={sort} onChange={e => setSort(e.target.value)}
-              style={{ border: "none", background: "transparent", fontSize: 13, color: "#374151", fontFamily: "inherit", cursor: "pointer", outline: "none", minHeight: 32 }}>
+          <div className="srch-fwrap" style={{ flex: "0.85 1 0" }}>
+            <span className="srch-ficon">📊</span>
+            <select value={sort} onChange={e => { setSort(e.target.value); if (searched) doSearch({ sort: e.target.value }); }} className="srch-nativesel">
               <option value="recent">🕐 ล่าสุด</option>
               <option value="popular">🔥 ยอดนิยม</option>
             </select>
           </div>
-
-          {/* Apply */}
-          {searched && (
-            <button type="submit" style={{ padding: "8px 20px", height: 44, borderRadius: 12, border: "none", background: "linear-gradient(135deg,#10b981,#06b6d4)", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", flexShrink: 0 }}>
-              ✓ กรอง
-            </button>
-          )}
         </div>
       </form>
 
@@ -516,9 +507,44 @@ export default function SearchPageClient() {
         </div>
       )}
 
-      {/* Responsive */}
+      {/* Responsive + panel styles */}
       <style jsx>{`
         :global(.srch-page) { overflow-x: hidden; box-sizing: border-box; }
+
+        :global(.srch-panel) {
+          background: linear-gradient(180deg,#f0fdfa,#ecfeff 60%,#fff);
+          border: 1px solid #cffafe; border-radius: 24px; padding: 22px;
+          box-shadow: 0 10px 40px rgba(8,145,178,0.10); margin-bottom: 28px;
+        }
+        :global(.srch-seg) {
+          display: inline-flex; background: #e6f6f4; border-radius: 999px;
+          padding: 4px; margin-bottom: 14px; max-width: 100%;
+          overflow-x: auto; scrollbar-width: none;
+        }
+        :global(.srch-seg)::-webkit-scrollbar { display: none; }
+        :global(.srch-seg-btn) {
+          border: none; background: none; cursor: pointer; font-family: inherit;
+          font-size: 13.5px; font-weight: 700; padding: 8px 22px; border-radius: 999px;
+          color: #5b7c78; white-space: nowrap; transition: color .2s, background .25s, box-shadow .25s;
+        }
+        :global(.srch-seg-btn.on) { color: #0f766e; background: #fff; box-shadow: 0 2px 8px rgba(15,23,42,0.12); }
+        :global(.srch-bar) {
+          display: flex; align-items: center; gap: 10px; background: #fff;
+          border: 1.5px solid #99f6e4; border-radius: 16px; padding: 8px 8px 8px 18px;
+          box-shadow: 0 6px 22px rgba(8,145,178,0.10);
+        }
+        :global(.srch-mag) { color: #10b981; display: flex; flex-shrink: 0; }
+        :global(.srch-input) { flex: 1; border: none; outline: none; font-size: 16px; color: #0f172a; font-family: inherit; background: none; min-width: 0; }
+        :global(.srch-input)::placeholder { color: #94a3b8; }
+        :global(.srch-clear) { background: #f1f5f9; border: none; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; color: #64748b; font-size: 18px; line-height: 1; flex-shrink: 0; }
+        :global(.srch-go) { border: none; cursor: pointer; font-family: inherit; background: linear-gradient(135deg,#10b981,#06b6d4); color: #fff; font-weight: 800; font-size: 15px; padding: 12px 26px; border-radius: 12px; box-shadow: 0 4px 14px rgba(16,185,129,0.34); white-space: nowrap; transition: transform .15s, box-shadow .15s; }
+        :global(.srch-go):hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(16,185,129,0.42); }
+        :global(.srch-err) { display: flex; align-items: center; gap: 8px; background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 10px; padding: 10px 14px; margin-top: 12px; color: #c2410c; font-size: 13px; font-weight: 700; }
+        :global(.srch-filters) { display: flex; gap: 10px; margin-top: 14px; }
+        :global(.srch-fwrap) { min-width: 0; display: flex; align-items: center; gap: 8px; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 13px; padding: 9px 14px; transition: border-color .15s, box-shadow .15s; }
+        :global(.srch-fwrap):hover { border-color: #6ee7b7; box-shadow: 0 2px 10px rgba(16,185,129,0.12); }
+        :global(.srch-ficon) { font-size: 15px; flex-shrink: 0; }
+        :global(.srch-nativesel) { flex: 1; min-width: 0; border: none; background: transparent; font-size: 13px; color: #374151; font-family: inherit; cursor: pointer; outline: none; }
 
         @media (max-width: 900px) {
           :global(.search-result-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
@@ -526,26 +552,16 @@ export default function SearchPageClient() {
 
         @media (max-width: 640px) {
           :global(.srch-page) { padding: 20px 12px 60px !important; }
-          :global(.srch-form) { padding: 14px !important; border-radius: 16px !important; margin-bottom: 18px !important; }
-          :global(.srch-row) { gap: 8px !important; margin-bottom: 12px !important; }
-          :global(.srch-filters) { gap: 8px !important; }
-          :global(.srch-filters select) {
-            flex: 1 1 calc(50% - 4px);
-            padding: 7px 8px !important;
-            font-size: 12px !important;
-            border-radius: 8px !important;
-            min-width: 0;
-          }
-          :global(.srch-type-toggle button) {
-            padding: 5px 10px !important;
-            font-size: 12px !important;
-          }
+          :global(.srch-panel) { padding: 16px; border-radius: 18px; }
+          :global(.srch-go) { padding: 12px 18px; }
+          :global(.srch-seg-btn) { padding: 8px 14px; font-size: 12.5px; }
+          :global(.srch-filters) { flex-wrap: wrap; gap: 8px; }
+          :global(.srch-fwrap) { flex: 1 1 100% !important; }
           :global(.search-result-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; }
         }
 
         @media (max-width: 400px) {
           :global(.search-result-grid) { grid-template-columns: 1fr !important; }
-          :global(.srch-filters select) { flex: 1 1 100%; }
         }
       `}</style>
     </div>

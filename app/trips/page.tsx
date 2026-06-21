@@ -405,7 +405,7 @@ function TripsInner() {
         .tp-select-wrap {
           display: flex; align-items: center; gap: 8px;
           background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px;
-          padding: 8px 14px; flex: 1; max-width: 340px;
+          padding: 8px 14px; flex: 1; max-width: none;
         }
         .tp-select-sm { max-width: 220px; }
         .tp-select-icon { font-size: 15px; flex-shrink: 0; }
@@ -483,6 +483,12 @@ function TripsInner() {
         .tp-loading-dot span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes tp-dot-bounce { 0%,80%,100% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
 
+        /* Desktop: mood chips share the row evenly (equal width, no empty gap) */
+        @media (min-width: 900px) {
+          .tp-moods { overflow-x: visible; }
+          .tp-mood { flex: 1 1 0; min-width: 0; padding-left: 6px; padding-right: 6px; }
+          .tp-mood-en { white-space: nowrap; }
+        }
         @media (max-width: 1200px) { .tp-grid, .tp-skeleton-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
         @media (max-width: 900px)  { .tp-grid, .tp-skeleton-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media (max-width: 640px) {
