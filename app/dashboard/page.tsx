@@ -63,6 +63,13 @@ type BookmarkItem = {
 
 type Notice = { id: string; type: "info" | "tip" | "success" | "warning"; icon: string; title: string; body: string; action?: { label: string; href?: string; onClick?: () => void } };
 
+type RejectedTrip = {
+  slug:   string;
+  title:  string;
+  count:  number;
+  places: { name: string; reason: string | null }[];
+};
+
 type ReplyNotif = {
   id: string;
   text: string;
@@ -118,6 +125,7 @@ export default function DashboardPage() {
   const [dismissed, setDismissed]   = useState<Set<string>>(new Set());
   const [replyNotifs, setReplyNotifs]   = useState<ReplyNotif[]>([]);
   const [tripReviews, setTripReviews]   = useState<TripOwnerNotif[]>([]);
+  const [rejectedTrips, setRejectedTrips] = useState<RejectedTrip[]>([]);
   const [loadingNotifs, setLoadingNotifs] = useState(true);
   const [visibleNotifCount, setVisibleNotifCount] = useState(5);
   const [announcements, setAnnouncements] = useState<{ id: string; title: string; body: string; icon: string; type: string; createdAt: string }[]>([]);
@@ -163,6 +171,7 @@ export default function DashboardPage() {
     ]).then(([notifData, annData]) => {
       setReplyNotifs(notifData.reviews ?? []);
       setTripReviews(notifData.tripReviews ?? []);
+      setRejectedTrips(notifData.rejectedPlaceTrips ?? []);
       setAnnouncements(annData.announcements ?? []);
       setLoadingNotifs(false);
     }).catch(() => setLoadingNotifs(false));
@@ -250,6 +259,7 @@ export default function DashboardPage() {
 
   const visibleNotices = notices.filter(n => !dismissed.has(n.id));
 
+  const rejectedMap  = new Map(rejectedTrips.map(t => [t.slug, t.count]));
   const savedTrips   = bookmarks.filter(b => b.trip).map(b => b.trip!);
   const savedPlaces  = bookmarks.filter(b => b.place).map(b => b.place!);
   const isLoading    = activeTab === "my-stories" ? loadingTrips : loadingBm;
@@ -405,16 +415,17 @@ export default function DashboardPage() {
                 const pagedItems = visibleItems.slice(0, visibleNotifCount);
                 const hasMoreNotifs = visibleItems.length > visibleNotifCount;
                 const visibleAnnouncements = announcements.filter(a => !seenIds.has(`del:an:${a.id}`));
-                if (visibleItems.length === 0 && visibleAnnouncements.length === 0) return null;
+                if (visibleItems.length === 0 && visibleAnnouncements.length === 0 && rejectedTrips.length === 0) return null;
 
                 const unreadCount = visibleItems.filter(({ kind, n }) =>
                   !seenIds.has(kind === "trip" ? `tr:${n.id}` : `rp:${n.id}`)
-                ).length + visibleAnnouncements.filter(a => !seenIds.has(`an:${a.id}`)).length;
+                ).length + visibleAnnouncements.filter(a => !seenIds.has(`an:${a.id}`)).length + rejectedTrips.length;
 
                 const dismissNotif = (key: string) => markSeen([`del:${key}`]);
 
                 return (
                   <div style={{ marginBottom: 24 }}>
+                    <style>{`@keyframes plExcl{0%,100%{background:#f59e0b;box-shadow:0 0 0 0 rgba(239,68,68,0.55)}50%{background:#ef4444;box-shadow:0 0 0 5px rgba(239,68,68,0)}}`}</style>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
                       <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0f172a", margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
                         🔔 การแจ้งเตือน · Notifications
@@ -442,6 +453,28 @@ export default function DashboardPage() {
                       gridTemplateColumns: "repeat(2, 1fr)",
                       gap: 10,
                     }}>
+                      {/* ── สถานที่ในทริปถูกปฏิเสธ — ต้องแก้ไข ── */}
+                      {rejectedTrips.map(rt => (
+                        <Link key={`rej-${rt.slug}`} href={`/trips/${rt.slug}/edit`} style={{ gridColumn: "1 / -1", textDecoration: "none" }}>
+                          <div style={{ background: "#fffbeb", border: "1.5px solid #fcd34d", borderLeft: "4px solid #f59e0b", borderRadius: 16, padding: "13px 14px", display: "flex", gap: 12, alignItems: "flex-start", boxShadow: "0 2px 12px rgba(245,158,11,0.12)", position: "relative" }}>
+                            <div style={{ position: "relative", flexShrink: 0 }}>
+                              <div style={{ width: 38, height: 38, borderRadius: 11, background: "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>📍</div>
+                              <span style={{ position: "absolute", top: -5, right: -5, width: 18, height: 18, borderRadius: "50%", color: "#fff", fontSize: 12, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", animation: "plExcl 1s ease-in-out infinite", border: "2px solid #fff" }}>!</span>
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2, flexWrap: "wrap" }}>
+                                <span style={{ fontSize: 13, fontWeight: 800, color: "#92400e" }}>มีสถานที่ในทริปไม่ผ่านการตรวจสอบ</span>
+                                <span style={{ fontSize: 9, fontWeight: 800, background: "#fde68a", color: "#92400e", padding: "1px 7px", borderRadius: 999 }}>ต้องแก้ไข</span>
+                              </div>
+                              <p style={{ fontSize: 11.5, color: "#78350f", margin: "0 0 3px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                ทริป &ldquo;{rt.title}&rdquo; · {rt.count} สถานที่
+                              </p>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: "#b45309" }}>✏️ กดเพื่อไปแก้ไขทริป →</span>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+
                       {pagedItems.filter(i => i.kind === "trip").map(({ n: notif }) => {
                           const nid = `tr:${notif.id}`;
                           const isRead = seenIds.has(nid);
@@ -637,7 +670,7 @@ export default function DashboardPage() {
                   <div className="story-grid">
                     {stories.map(story => (
                       <div key={story.slug}>
-                        <StoryCard story={story} isOwner={activeTab === "my-stories"} onDeleted={activeTab === "my-stories" ? handleTripDeleted : undefined} />
+                        <StoryCard story={story} isOwner={activeTab === "my-stories"} onDeleted={activeTab === "my-stories" ? handleTripDeleted : undefined} rejectedCount={activeTab === "my-stories" ? (rejectedMap.get(story.slug) ?? 0) : 0} />
                         {activeTab === "my-stories" && (story as TripItem)._count && (
                           <div style={{ display: "flex", gap: 8, padding: "6px 4px 2px", flexWrap: "wrap" }}>
                             {((story as TripItem)._count?.likes ?? 0) > 0 && (

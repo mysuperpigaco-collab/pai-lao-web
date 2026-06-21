@@ -11,7 +11,7 @@ export async function GET() {
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 
-    const [myReviews, tripReviews] = await Promise.all([
+    const [myReviews, tripReviews, rejectedStops] = await Promise.all([
       // รีวิวของ user ที่มีคนตอบกลับ
       prisma.review.findMany({
         where: { authorId: session.userId, replies: { some: {} } },
@@ -46,9 +46,35 @@ export async function GET() {
           replies: { where: { authorId: session.userId }, take: 1, select: { id: true } },
         },
       }),
+
+      // สถานที่ในทริปของ user ที่ถูกแอดมินปฏิเสธ (รอเจ้าของแก้ไข)
+      prisma.timelineStop.findMany({
+        where: {
+          trip: { authorId: session.userId },
+          place: { approvalStatus: "REJECTED" },
+        },
+        orderBy: { order: "asc" },
+        select: {
+          placeName: true,
+          place: { select: { title: true, rejectionReason: true } },
+          trip:  { select: { slug: true, title: true } },
+        },
+      }),
     ]);
 
-    return NextResponse.json({ reviews: myReviews, tripReviews });
+    // จัดกลุ่มสถานที่ถูกปฏิเสธตามทริป
+    const rejMap = new Map<string, { slug: string; title: string; count: number; places: { name: string; reason: string | null }[] }>();
+    for (const s of rejectedStops as any[]) {
+      if (!s.trip) continue;
+      const key = s.trip.slug;
+      if (!rejMap.has(key)) rejMap.set(key, { slug: s.trip.slug, title: s.trip.title, count: 0, places: [] });
+      const entry = rejMap.get(key)!;
+      entry.count += 1;
+      entry.places.push({ name: s.place?.title || s.placeName || "สถานที่", reason: s.place?.rejectionReason ?? null });
+    }
+    const rejectedPlaceTrips = Array.from(rejMap.values());
+
+    return NextResponse.json({ reviews: myReviews, tripReviews, rejectedPlaceTrips });
   } catch (err) {
     console.error("GET /api/reviews/notifications:", err);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });

@@ -14,6 +14,8 @@ interface TripItem {
   hasPendingEdit?: boolean;
 }
 
+const REJ_TIP = "มีบางสถานที่ในทริปนี้ไม่ผ่านการตรวจสอบ · กดเพื่อแก้ไข";
+
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" });
 }
@@ -40,14 +42,19 @@ export default function StoryCard({
   story,
   isOwner,
   onDeleted,
+  rejectedCount = 0,
 }: {
-  story:      TripItem;
-  isOwner:    boolean;
-  onDeleted?: (slug: string) => void;
+  story:         TripItem;
+  isOwner:       boolean;
+  onDeleted?:    (slug: string) => void;
+  rejectedCount?: number;
 }) {
   const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const [deleting, setDeleting] = useState(false);
   const [confirm,  setConfirm ] = useState(false);
+  const [rejTip,   setRejTip  ] = useState(false);
+
+  const hasRejected = isOwner && rejectedCount > 0;
 
   const published   = story.isPublished === true;
   const pendingEdit = story.hasPendingEdit === true;
@@ -82,6 +89,21 @@ export default function StoryCard({
           <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: pendingEdit ? "#f59e0b" : published || story.approvalStatus === "APPROVED" ? "#22c55e" : story.approvalStatus === "PENDING" ? "#3b82f6" : story.approvalStatus === "REJECTED" ? "#ef4444" : "#94a3b8", flexShrink: 0 }} />
           {pendingEdit ? "รออนุมัติการแก้ไข · Pending" : published || story.approvalStatus === "APPROVED" ? "เผยแพร่แล้ว · Published" : story.approvalStatus === "PENDING" ? "รออนุมัติ · Pending" : story.approvalStatus === "REJECTED" ? "ถูกปฏิเสธ · Rejected" : "ฉบับร่าง · Draft"}
         </span>
+
+        {/* Rejected-place badge (มุมซ้ายบน — เลี่ยงป้ายสถานะมุมขวาบน) */}
+        {hasRejected && (
+          <Link href={`/trips/${story.slug}/edit`}
+            onMouseEnter={() => setRejTip(true)} onMouseLeave={() => setRejTip(false)}
+            style={{ position: "absolute", top: "10px", left: "10px", zIndex: 3, textDecoration: "none" }}>
+            <style>{`@keyframes scExcl{0%,100%{background:#f59e0b;box-shadow:0 0 0 0 rgba(239,68,68,0.55)}50%{background:#ef4444;box-shadow:0 0 0 5px rgba(239,68,68,0)}}`}</style>
+            <span style={{ width: "26px", height: "26px", borderRadius: "50%", color: "#fff", fontSize: "16px", fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", animation: "scExcl 1s ease-in-out infinite", border: "2px solid #fff", cursor: "pointer" }}>!</span>
+            {rejTip && (
+              <span style={{ position: "absolute", top: "32px", left: 0, width: "max-content", maxWidth: "200px", background: "rgba(15,23,42,0.92)", color: "#fff", fontSize: "11px", fontWeight: 600, lineHeight: 1.4, padding: "7px 10px", borderRadius: "10px", boxShadow: "0 6px 18px rgba(0,0,0,0.25)", zIndex: 5 }}>
+                ⚠️ {REJ_TIP}
+              </span>
+            )}
+          </Link>
+        )}
       </div>
 
       {/* Body */}

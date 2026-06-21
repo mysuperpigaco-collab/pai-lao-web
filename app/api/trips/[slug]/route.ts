@@ -42,7 +42,10 @@ export async function GET(_req: Request, { params }: Params) {
       include: {
         author: { select: { id: true, username: true, displayName: true, firstName: true, lastName: true, avatarUrl: true, bio: true,
           _count: { select: { trips: true, bookmarks: true } } } },
-        timeline: { orderBy: { order: "asc" } },
+        timeline: {
+          orderBy: { order: "asc" },
+          include: { place: { select: { approvalStatus: true, rejectionReason: true } } },
+        },
         reviews: {
           orderBy: { createdAt: "desc" },
           include: {

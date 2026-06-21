@@ -63,7 +63,11 @@ export default function EditTripPage({ params }: Props) {
     description: string; imageFile: File | null; imagePreview: string | null;
     existingImage?: string; shareToPlace: boolean; rating: number; placeId: string | null; placeSlug?: string;
     lat: number | null; lng: number | null; googleMapsUrl: string;
+    placeApprovalStatus?: string | null; placeRejectionReason?: string | null;
   }[]>([]);
+
+  // จุดที่กางเหตุผลไม่อนุมัติอยู่ (index)
+  const [rejReasonOpen, setRejReasonOpen] = useState<Record<number, boolean>>({});
 
   // ── Place search state ─────────────────────────────────
   const [placeSuggestions, setPlaceSuggestions] = useState<Record<number, any[]>>({});
@@ -169,6 +173,8 @@ export default function EditTripPage({ params }: Props) {
           lat:           stop.lat            ?? null,
           lng:           stop.lng            ?? null,
           googleMapsUrl: stop.googleMapsUrl  ?? "",
+          placeApprovalStatus:  stop.place?.approvalStatus  ?? null,
+          placeRejectionReason: stop.place?.rejectionReason ?? null,
         })));
       })
       .catch(() => setNotFound(true))
@@ -597,14 +603,49 @@ export default function EditTripPage({ params }: Props) {
           <div className="section-box">
             <p className="section-label">🗺️ เส้นทางการเดินทาง | TIMELINE</p>
 
-            {timeline.map((item, idx) => (
-              <div key={idx} className="timeline-card">
+            {timeline.map((item, idx) => {
+              const rejected = item.placeApprovalStatus === "REJECTED";
+              return (
+              <div key={idx} className="timeline-card"
+                style={rejected ? { background: "#fffbeb", border: "2px solid #fcd34d", position: "relative" } : { position: "relative" }}>
+                {rejected && (
+                  <style>{`@keyframes etExcl{0%,100%{background:#f59e0b;box-shadow:0 0 0 0 rgba(239,68,68,0.55)}50%{background:#ef4444;box-shadow:0 0 0 5px rgba(239,68,68,0)}}`}</style>
+                )}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                  <span style={{ fontWeight: 800, color: "#1e293b" }}>จุดที่ {idx + 1}</span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontWeight: 800, color: rejected ? "#92400e" : "#1e293b" }}>
+                    {rejected && (
+                      <button type="button" onClick={() => setRejReasonOpen(o => ({ ...o, [idx]: !o[idx] }))}
+                        title="ดูเหตุผลที่ไม่อนุมัติ"
+                        style={{ width: 24, height: 24, borderRadius: "50%", color: "#fff", fontSize: 15, fontWeight: 900, border: "2px solid #fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", animation: "etExcl 1s ease-in-out infinite", fontFamily: "inherit", flexShrink: 0 }}>!</button>
+                    )}
+                    จุดที่ {idx + 1}
+                  </span>
                   {timeline.length > 1 && (
                     <button type="button" className="btn-remove-circle" onClick={() => removeStop(idx)}>×</button>
                   )}
                 </div>
+
+                {/* แถบไม่ผ่านการตรวจสอบ + เหตุผล */}
+                {rejected && (
+                  <div style={{ marginBottom: 12, borderRadius: 12, overflow: "hidden", border: "1.5px solid #fecaca" }}>
+                    <button type="button" onClick={() => setRejReasonOpen(o => ({ ...o, [idx]: !o[idx] }))}
+                      style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", background: "#fef2f2", border: "none", cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: "#b91c1c" }}>⚠️ สถานที่นี้ไม่ผ่านการตรวจสอบ</span>
+                      <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "#dc2626" }}>{rejReasonOpen[idx] ? "ซ่อน ▲" : "ดูเหตุผล ▼"}</span>
+                    </button>
+                    {rejReasonOpen[idx] && (
+                      <div style={{ padding: "11px 13px", background: "#fff", borderTop: "1px solid #fecaca" }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: "#92400e", margin: "0 0 4px" }}>เหตุผลที่ไม่อนุมัติ</p>
+                        <p style={{ fontSize: 13, color: "#374151", margin: "0 0 8px", lineHeight: 1.5 }}>
+                          {item.placeRejectionReason || "ไม่ผ่านเกณฑ์การตรวจสอบ"}
+                        </p>
+                        <p style={{ fontSize: 11.5, color: "#64748b", margin: 0, lineHeight: 1.5 }}>
+                          แก้ไขข้อมูลจุดนี้ให้ครบถ้วนแล้วกดบันทึก/ส่งตรวจอีกครั้ง หรือลบจุดนี้ออกจากทริปได้
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="timeline-top-row">
                   <div className="form-group" style={{ flex: 1 }}>
@@ -802,7 +843,8 @@ export default function EditTripPage({ params }: Props) {
                   />
                 </div>
               </div>
-            ))}
+              );
+            })}
 
             <button type="button" className="btn-add-checkpoint-premium" onClick={addStop}>
               ＋ เพิ่มจุดแวะ | Add Stop
