@@ -393,9 +393,15 @@ body {
 @media (min-width: 900px) {
   .cat-row {
     overflow-x: visible;
-    flex-wrap: wrap;
-    justify-content: space-between;
     gap: 8px;
   }
+  /* every chip the same width, filling the row evenly */
+  .cat-row > * {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+  }
+  .cat-row > * > span { white-space: nowrap; }
 }
 
