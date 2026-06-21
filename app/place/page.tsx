@@ -8,7 +8,6 @@ import { useLenis } from "lenis/react";
 import { PROVINCES, getDistricts } from "@/data/thailand";
 import SharedPlaceCard from "@/components/places/PlaceCard";
 import { readPlaceSearch, savePlaceSearch, patchPlaceSearchScroll, type PlaceSearchSnapshot } from "@/lib/placeSearchCache";
-import { useAuth } from "@/context/AuthContext";
 
 /* ─── Types ──────────────────────────────────────────────── */
 interface Place {
@@ -77,7 +76,6 @@ export default function PlacesPage() {
 
 function PlacesInner() {
   const searchParams = useSearchParams();
-  const { user } = useAuth();
   const lenis = useLenis();
   // Persist the live Lenis scroll offset (the real position with smooth scroll;
   // window.scrollY can lag/mismatch under Lenis).
@@ -202,12 +200,6 @@ function PlacesInner() {
 
   return (
     <div className="pl-page">
-
-      {(user?.role === "ADMIN" || user?.role === "SUPERADMIN") && (
-        <div style={{ position: "fixed", bottom: 8, left: 8, zIndex: 99999, background: "rgba(0,0,0,0.85)", color: "#34d399", font: "11px/1.4 monospace", padding: "5px 9px", borderRadius: 6, pointerEvents: "none" }}>
-          restore {snap ? "Y" : "N"} · cards {places.length} · savedY {Math.round(snap?.scrollY ?? -1)} · arm {String(armInfinite)}
-        </div>
-      )}
 
       {/* ── Hero ── */}
       <div style={{overflowX:"hidden"}}>
