@@ -44,6 +44,11 @@ git push
 พฤติกรรม: กลับมาหน้านี้ (Back หรือเมนู) จะจำการค้นหาล่าสุด — กดปุ่ม "ล้างตัวกรอง" หรือเปิดแท็บใหม่ = เริ่มใหม่
 (ถ้าอยากให้กดเมนู "สถานที่" รีเซ็ตเสมอ บอกได้ จะ `clearPlaceSearch()` ตอนคลิกเมนู)
 
+แก้บั๊ก "การ์ดยาว ๆ แล้วโหลดใหม่":
+- สาเหตุ: คืน scroll ลงลึก → infinite-scroll sentinel เข้า viewport → ยิง loadMore ทันที → หน้าโตต่อ
+- แก้: ปิด infinite-scroll ไว้หลัง restore จนกว่าผู้ใช้จะ **เลื่อนเอง** (wheel/touch/key) — scroll ที่คืนแบบ programmatic ไม่ติดทริกเกอร์ (`armInfinite` state)
+- กัน quota เผื่อไว้: เก็บเฉพาะ field ที่การ์ดเรนเดอร์ (`trimPlaceForCache`) เล็กลง 2-3 เท่า
+
 ## ปรับได้
 - ความเร็วมอร์ฟ: `animation-duration` ใน `globals.css` (ส่วน `::view-transition-group(*)`)
 - timeout รอ hero: 700ms ใน `lib/viewTransition.ts` (หน้าเร็ว ~275ms อยู่ใต้ค่านี้สบาย)

@@ -28,6 +28,17 @@ interface Place {
   communityCover?: string | null;
 }
 
+// Keep only the fields PlaceCard actually renders, so the search snapshot
+// stays small in sessionStorage even with hundreds of loaded cards.
+function trimPlaceForCache(p: Place): Place {
+  return {
+    id: p.id, slug: p.slug, title: p.title, titleEn: p.titleEn,
+    coverUrl: p.coverUrl, province: p.province, district: p.district,
+    category: p.category, isVerified: p.isVerified, avgRating: p.avgRating,
+    communityCover: p.communityCover, business: p.business, _count: p._count,
+  };
+}
+
 /* ─── Constants ──────────────────────────────────────────── */
 const CATS = [
   { id: "",             icon: "🌐", label: "ทั้งหมด",     en: "All" },
@@ -90,6 +101,10 @@ function PlacesInner() {
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipInitialFetch = useRef(!!snap);
+  // When restoring a snapshot, keep infinite-scroll disarmed until the user
+  // actually scrolls — otherwise restoring a deep scroll position immediately
+  // triggers loadMore and the list keeps growing ("page changes").
+  const [armInfinite, setArmInfinite] = useState(() => !snap);
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   /* fetch ─────────────────────────────────────────────────── */
@@ -124,7 +139,7 @@ function PlacesInner() {
   useEffect(() => {
     savePlaceSearch<Place>({
       cat, province, district, sort, q, inputQ,
-      places, total, page,
+      places: places.map(trimPlaceForCache), total, page,
       scrollY: typeof window !== "undefined" ? window.scrollY : 0,
     });
   }, [cat, province, district, sort, q, inputQ, places, total, page]);
@@ -166,7 +181,22 @@ function PlacesInner() {
     setPage(next);
     fetch_(next, true);
   };
-  const sentinelRef = useInfiniteScroll(loadMore, !loadingMore && !loading && page < totalPages);
+  const sentinelRef = useInfiniteScroll(loadMore, armInfinite && !loadingMore && !loading && page < totalPages);
+
+  /* After a restore, arm infinite-scroll only once the user genuinely scrolls
+     (wheel / touch / keys) — programmatic scroll restore won't trigger these. */
+  useEffect(() => {
+    if (armInfinite) return;
+    const arm = () => setArmInfinite(true);
+    window.addEventListener("wheel", arm, { passive: true, once: true });
+    window.addEventListener("touchmove", arm, { passive: true, once: true });
+    window.addEventListener("keydown", arm, { once: true });
+    return () => {
+      window.removeEventListener("wheel", arm);
+      window.removeEventListener("touchmove", arm);
+      window.removeEventListener("keydown", arm);
+    };
+  }, [armInfinite]);
 
   /* reset when cat/province/sort changes */
   const changeFilter = (setter: (v: string) => void, val: string) => {
