@@ -4,10 +4,12 @@ import { useRouter } from "next/navigation";
 
 type Props = {
   fallback?: string;
+  label?: string;
 };
 
 export default function BackButton({
   fallback = "/",
+  label = "กลับ",
 }: Props) {
 
   const router = useRouter();
@@ -33,7 +35,7 @@ export default function BackButton({
       </span>
 
       <span>
-        กลับ
+        {label}
       </span>
 
     </button>

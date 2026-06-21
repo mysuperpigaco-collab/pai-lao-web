@@ -16,6 +16,7 @@ import MapsButton from "@/components/common/MapsButton";
 import CommunityPhotosGallery from "@/components/places/CommunityPhotosGallery";
 import PlaceGalleryGrid from "@/components/places/PlaceGalleryGrid";
 import BackToTop from "@/components/common/BackToTop";
+import BackButton from "@/components/common/BackButton";
 import MapView from "@/components/maps/MapView";
 import { googleMapsPoint, MAPS_ENABLED } from "@/lib/maps";
 import "./place-detail.css";
@@ -247,10 +248,7 @@ export default async function PlaceDetailPage({ params }: Props) {
       <div className="pd-hero-wrap">
         <div className="pd-hero">
           <div className="pd-hero-actions">
-            <Link href="/place" className="floating-back-btn">
-              <span className="icon-circle">&#8592;</span>
-              <span>สถานที่ทั้งหมด · All Places</span>
-            </Link>
+            <BackButton fallback="/place" label="กลับ · Back" />
           </div>
           <PlaceHero
             placeId={place.id}

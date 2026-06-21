@@ -107,7 +107,7 @@ export default function ProvinceSelect({
       )}
 
       {open && (
-        <div style={{
+        <div data-lenis-prevent style={{
           position: "absolute",
           top: "calc(100% + 4px)",
           left: 0,
