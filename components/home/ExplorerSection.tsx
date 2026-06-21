@@ -93,6 +93,36 @@ function useColumns() {
 }
 
 // ── Main Section ─────────────────────────────────────────────────────────────
+// Modern gradient "load more" pill with hover lift + bouncing arrow.
+function LoadMoreButton({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  const [hover, setHover] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 9,
+        padding: "13px 30px 13px 16px", borderRadius: 999, border: "none",
+        background: "linear-gradient(135deg,#10b981,#06b6d4)",
+        color: "#fff", fontSize: 14.5, fontWeight: 800,
+        cursor: "pointer", fontFamily: "inherit",
+        boxShadow: hover ? "0 12px 30px rgba(16,185,129,0.42)" : "0 5px 18px rgba(16,185,129,0.30)",
+        transform: hover ? "translateY(-2px)" : "translateY(0)",
+        transition: "transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s ease",
+      }}
+    >
+      <span style={{
+        display: "inline-flex", width: 26, height: 26, borderRadius: "50%",
+        background: "rgba(255,255,255,0.22)", alignItems: "center", justifyContent: "center",
+        fontSize: 15, transform: hover ? "translateY(2px)" : "translateY(0)",
+        transition: "transform .22s ease",
+      }}>↓</span>
+      {children}
+    </button>
+  );
+}
+
 export default function ExplorerSection() {
   const [province, setProvince] = useState("");
   const [district, setDistrict] = useState("");
@@ -116,19 +146,6 @@ export default function ExplorerSection() {
   const [locating, setLocating] = useState(false);
   const [geoMsg, setGeoMsg] = useState<string | null>(null);
   const [recenterKey, setRecenterKey] = useState(0);
-
-  // หยุด auto-load เมื่อหัวข้อ "ไฮไลต์สถานที่" (section ถัดไป) โผล่เข้าจอ
-  const [reachedHighlight, setReachedHighlight] = useState(false);
-  useEffect(() => {
-    const el = typeof document !== "undefined" ? document.getElementById("explore-places-heading") : null;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      (entries) => setReachedHighlight(entries[0]?.isIntersecting ?? false),
-      { rootMargin: "0px" }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
 
   const districts = province ? getDistricts(province) : [];
 
@@ -154,10 +171,9 @@ export default function ExplorerSection() {
 
   const areaLoadMore = () => { const n = areaPage + 1; setAreaPage(n); fetchArea(n, true); };
   const areaHasMore = !!province && areaPage < areaTotalPages;
-  const areaSentinelRef = useInfiniteScroll(
-    areaLoadMore,
-    mode === "area" && areaHasMore && !areaLoadingMore && !loading && !reachedHighlight
-  );
+  // Auto-load disabled on the home preview so the list can't trap the
+  // highlight section below it — use the manual "Load more" button instead.
+  const areaSentinelRef = useInfiniteScroll(areaLoadMore, false);
 
   const handleProvinceChange = (v: string) => { setProvince(v); setDistrict(""); setCategory(""); };
 
@@ -211,10 +227,7 @@ export default function ExplorerSection() {
   const nearShown = nearPlaces.slice(0, nearVisible);
   const nearHasMore = nearVisible < nearPlaces.length;
   const nearLoadMore = () => setNearVisible(v => v + 12);
-  const nearSentinelRef = useInfiniteScroll(
-    nearLoadMore,
-    mode === "nearby" && nearHasMore && !nearLoading && !reachedHighlight
-  );
+  const nearSentinelRef = useInfiniteScroll(nearLoadMore, false);
 
   // ── Styles ────────────────────────────────────────────────────────────────
   const wrap: CSSProperties = {
@@ -239,13 +252,6 @@ export default function ExplorerSection() {
     fontFamily: "inherit",
     cursor: "pointer",
     width: "100%",
-  };
-
-  const loadMoreBtn: CSSProperties = {
-    display: "inline-flex", alignItems: "center", gap: 6,
-    padding: "11px 28px", borderRadius: 999, border: "1.5px solid #cbd5e1",
-    background: "white", color: "#0f766e", fontSize: 14, fontWeight: 800,
-    cursor: "pointer", fontFamily: "inherit", boxShadow: "0 2px 8px rgba(15,23,42,0.06)",
   };
 
   const Spinner = () => (
@@ -452,7 +458,7 @@ export default function ExplorerSection() {
             {areaLoadingMore && <Spinner />}
             {areaHasMore && !areaLoadingMore && (
               <div style={{ textAlign: "center", marginTop: 18 }}>
-                <button onClick={areaLoadMore} style={loadMoreBtn}>โหลดเพิ่ม · Load more ↓</button>
+                <LoadMoreButton onClick={areaLoadMore}>โหลดเพิ่ม · Load more</LoadMoreButton>
               </div>
             )}
             {!areaHasMore && places.length > AREA_PAGE_SIZE && (
@@ -625,9 +631,9 @@ export default function ExplorerSection() {
                   <div ref={nearSentinelRef} style={{ height: 1 }} />
                   {nearHasMore ? (
                     <div style={{ textAlign: "center", marginTop: 18 }}>
-                      <button onClick={nearLoadMore} style={loadMoreBtn}>
-                        โหลดเพิ่ม · Load more ({nearPlaces.length - nearVisible} เหลือ) ↓
-                      </button>
+                      <LoadMoreButton onClick={nearLoadMore}>
+                        โหลดเพิ่ม · Load more ({nearPlaces.length - nearVisible} เหลือ)
+                      </LoadMoreButton>
                     </div>
                   ) : (
                     <p style={{ textAlign: "center", color: "#94a3b8", fontSize: 13, fontWeight: 600, marginTop: 18 }}>
