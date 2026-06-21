@@ -1,11 +1,9 @@
 "use client";
-import { useState, useEffect, useCallback, useRef, CSSProperties } from "react";
+import { useState, useEffect, useCallback, CSSProperties } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useTiltCard } from "@/hooks/useTiltCard";
 import ScrollReveal from "@/components/ui/ScrollReveal";
-import { startCoverTransition } from "@/lib/viewTransition";
 
 interface Trip {
   slug: string; title: string; coverUrl?: string | null;
@@ -92,10 +90,6 @@ function useColumns(cols5: number, cols4: number) {
 function TripCard({ trip }: { trip: Trip }) {
   const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const [imgLoaded, setImgLoaded] = useState(false);
-  const router = useRouter();
-  const coverRef = useRef<HTMLDivElement>(null);
-  const href = `/trips/${trip.slug}`;
-  const vtName = `trip-cover-${trip.slug}`;
   const province = trip.province?.split(" (")[0] ?? "";
   const author   = trip.author?.displayName || trip.author?.firstName || "";
   const avatar   = trip.author?.avatarUrl;
@@ -104,8 +98,8 @@ function TripCard({ trip }: { trip: Trip }) {
     <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
       style={{ position: "relative", willChange: "transform", borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,.06)", height: "100%" }}>
       <div ref={shineRef} style={shineStyle} />
-      <Link href={href} onClick={(e) => startCoverTransition(e, () => router.push(href), vtName, coverRef.current)} style={{ ...S.card, boxShadow: "none", height: "100%" }}>
-        <div style={S.imgWrap} ref={coverRef}>
+      <Link href={`/trips/${trip.slug}`} target="_blank" rel="noopener noreferrer" style={{ ...S.card, boxShadow: "none", height: "100%" }}>
+        <div style={S.imgWrap}>
           {trip.coverUrl
             ? <img src={trip.coverUrl} alt={trip.title} loading="lazy"
                 onLoad={() => setImgLoaded(true)}
@@ -143,10 +137,6 @@ function PlaceCard({ place }: { place: Place }) {
   const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const [imgError,  setImgError ] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
-  const router = useRouter();
-  const coverRef = useRef<HTMLDivElement>(null);
-  const href = `/place/${place.slug}`;
-  const vtName = `place-cover-${place.slug}`;
   const prov = place.province?.split(" (")[0] ?? place.province;
   const displayImg = (!place.business && place.communityCover)
     ? place.communityCover
@@ -166,8 +156,8 @@ function PlaceCard({ place }: { place: Place }) {
     <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
       style={{ position: "relative", willChange: "transform", borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,.06)", height: "100%" }}>
       <div ref={shineRef} style={shineStyle} />
-      <Link href={href} onClick={(e) => startCoverTransition(e, () => router.push(href), vtName, coverRef.current)} style={{ ...S.card, boxShadow: "none", height: "100%" }}>
-        <div style={S.imgWrap} ref={coverRef}>
+      <Link href={`/place/${place.slug}`} target="_blank" rel="noopener noreferrer" style={{ ...S.card, boxShadow: "none", height: "100%" }}>
+        <div style={S.imgWrap}>
           {showImg
             ? <img src={displayImg!} alt={place.title} loading="lazy"
                 onLoad={() => setImgLoaded(true)}

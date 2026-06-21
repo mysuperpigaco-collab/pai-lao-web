@@ -3,12 +3,11 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import ScrollReveal from "@/components/ui/ScrollReveal";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useLenis } from "lenis/react";
 import Link from "next/link";
 import { PROVINCES, getDistricts } from "@/data/thailand";
 import { useTiltCard } from "@/hooks/useTiltCard";
-import { startCoverTransition } from "@/lib/viewTransition";
 import { readSearchState, saveSearchState, patchSearchScroll, type SearchState } from "@/lib/searchStateCache";
 
 /* ─── Types ──────────────────────────────────────────────── */
@@ -504,10 +503,6 @@ function TripsInner() {
 function TripCard({ trip }: { trip: Trip }) {
   const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const [imgLoaded, setImgLoaded] = useState(false);
-  const router = useRouter();
-  const coverRef = useRef<HTMLDivElement>(null);
-  const href = `/trips/${trip.slug}`;
-  const vtName = `trip-cover-${trip.slug}`;
   const moodIcon: Record<string, string> = {
     "Cafe Hopping": "☕",
     "สายลุย": "🧗",
@@ -525,11 +520,11 @@ function TripCard({ trip }: { trip: Trip }) {
   const authorName = trip.author?.displayName || trip.author?.firstName || "นักเดินทาง";
 
   return (
-    <Link href={href} onClick={(e) => startCoverTransition(e, () => router.push(href), vtName, coverRef.current)} style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
+    <Link href={`/trips/${trip.slug}`} style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
       <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave} className="tc-card" style={{ position: "relative", willChange: "transform", height: "100%" }}>
         <div ref={shineRef} style={shineStyle} />
         {/* Image */}
-        <div className="tc-img" ref={coverRef}>
+        <div className="tc-img">
           {trip.coverUrl
             ? <img src={trip.coverUrl} alt={trip.title} loading="lazy"
                 onLoad={() => setImgLoaded(true)}

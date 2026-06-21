@@ -255,7 +255,6 @@ export default async function PlaceDetailPage({ params }: Props) {
             realCoverUrl={realCoverUrl}
             communityImages={communityImages}
             isAdmin={session?.role === "ADMIN" || session?.role === "SUPERADMIN"}
-            vtName={`place-cover-${slug}`}
           />
           <div className="pd-hero-overlay">
             <div className="pd-hero-content">

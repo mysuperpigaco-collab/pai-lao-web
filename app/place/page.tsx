@@ -332,7 +332,7 @@ function PlacesInner() {
           <div className="pl-grid">
             {places.map((place, i) => (
               <ScrollReveal key={place.slug} delay={Math.min(i, 5) * 70}>
-                <SharedPlaceCard place={place} vtName={`place-cover-${place.slug}`} />
+                <SharedPlaceCard place={place} />
               </ScrollReveal>
             ))}
           </div>

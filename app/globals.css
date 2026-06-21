@@ -380,26 +380,3 @@ body {
   .section-divider { grid-column: span 1; }
 }
 
-/* ── View Transitions (place search → place detail only) ───────────────
- * Only the cover image named `place-cover-*` morphs. Disable the default
- * full-page crossfade so every OTHER navigation looks exactly as before. */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
-}
-
-/* Smooth, snappy morph for the shared cover image */
-::view-transition-group(*) {
-  animation-duration: 0.42s;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Accessibility: honor reduced-motion — no morph at all */
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
-  }
-}
-

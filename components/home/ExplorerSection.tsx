@@ -442,7 +442,7 @@ export default function ExplorerSection() {
             <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols},1fr)`, gap: 16, maxWidth: "100%" }}>
               {places.map((place, i) => (
                 <ScrollReveal key={place.slug} delay={Math.min(i % AREA_PAGE_SIZE, 5) * 70}>
-                  <SharedPlaceCard place={place} vtName={`place-cover-${place.slug}`} />
+                  <SharedPlaceCard place={place} newTab={true} />
                 </ScrollReveal>
               ))}
             </div>
@@ -616,7 +616,7 @@ export default function ExplorerSection() {
                   <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 16 }}>
                     {nearShown.map((p, i) => (
                       <ScrollReveal key={p.id} delay={Math.min(i % 12, 6) * 50}>
-                        <SharedPlaceCard place={p} distanceM={p.distanceM} vtName={`place-cover-${p.slug}`} />
+                        <SharedPlaceCard place={p} distanceM={p.distanceM} newTab={true} />
                       </ScrollReveal>
                     ))}
                   </div>
