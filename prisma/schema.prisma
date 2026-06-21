@@ -196,7 +196,8 @@ model Trip {
   coverUrl    String
   gallery     String[]
 
-  mood        String
+  mood        String        // ตัวหลัก (= moods[0]) เก็บไว้เพื่อ backward-compat
+  moods       String[]      @default([])  // หลายสไตล์ของทริป (multi-select)
   budget      Int?
   location    String?
   tags        String[]

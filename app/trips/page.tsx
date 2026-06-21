@@ -26,14 +26,15 @@ interface Trip {
 }
 
 /* ─── Constants ──────────────────────────────────────────── */
+// id = ค่าที่เก็บจริงใน DB (Trip.mood / moods) ให้ตัวกรอง match ถูก, label = ป้ายสั้น
 const MOODS = [
-  { id: "",              icon: "🌐", label: "ทั้งหมด",       en: "All" },
-  { id: "Cafe Hopping",  icon: "☕", label: "Cafe Hopping",  en: "Café" },
-  { id: "สายลุย",        icon: "🧗", label: "สายลุย",        en: "Adventure" },
-  { id: "กินแหลก",       icon: "🍲", label: "กินแหลก",       en: "Foodie" },
-  { id: "พักผ่อน",       icon: "🏖️", label: "พักผ่อน",       en: "Relaxing" },
-  { id: "ธรรมชาติ",      icon: "🌿", label: "ธรรมชาติ",      en: "Nature" },
-  { id: "วัฒนธรรม",     icon: "🛕", label: "วัฒนธรรม",     en: "Culture" },
+  { id: "",                   icon: "🌐", label: "ทั้งหมด",   en: "All" },
+  { id: "Cafe Hopping",       icon: "☕", label: "คาเฟ่",     en: "Café" },
+  { id: "สายลุย Adventurous",  icon: "🧗", label: "สายลุย",    en: "Adventure" },
+  { id: "กินแหลก Foodie",      icon: "🍲", label: "กินแหลก",   en: "Foodie" },
+  { id: "พักผ่อน Relaxing",    icon: "🏖️", label: "พักผ่อน",   en: "Relaxing" },
+  { id: "ธรรมชาติ Nature",     icon: "🌿", label: "ธรรมชาติ",  en: "Nature" },
+  { id: "วัฒนธรรม Culture",   icon: "🛕", label: "วัฒนธรรม", en: "Culture" },
 ];
 
 const SORTS = [
@@ -266,7 +267,7 @@ function TripsInner() {
         <div className="tp-result-bar">
           <p className="tp-result-count">
             {loading ? "กำลังโหลด..." : (
-              <>พบ <strong>{total.toLocaleString()}</strong> ทริป{mood ? ` · ${mood}` : ""}{province ? ` · ${province.split(" (")[0]}` : ""}{district ? ` · ${district}` : ""}{q ? ` · "${q}"` : ""}</>
+              <>พบ <strong>{total.toLocaleString()}</strong> ทริป{mood ? ` · ${MOODS.find(m => m.id === mood)?.label ?? mood}` : ""}{province ? ` · ${province.split(" (")[0]}` : ""}{district ? ` · ${district}` : ""}{q ? ` · "${q}"` : ""}</>
             )}
           </p>
           {!loading && (mood || province || district || q) && (

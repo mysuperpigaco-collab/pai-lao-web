@@ -499,6 +499,7 @@ export default function PlannerPage() {
 
       {/* ════ HEADER ════ */}
       <div className="planner-header">
+      <div className="planner-header-inner">
         <Link href="/dashboard" style={{ color: "#64748b", textDecoration: "none", fontSize: 20, lineHeight: 1, padding: "4px 8px", borderRadius: 8, background: "#f8fafc", border: "1px solid #e2e8f0", flexShrink: 0 }}>←</Link>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontWeight: 900, fontSize: 18, color: "#1e293b", whiteSpace: "nowrap" }}>📅 วางแผนเที่ยว</div>
@@ -536,14 +537,18 @@ export default function PlannerPage() {
           </div>
         )}
       </div>
+      </div>
 
       {/* ════ 3-COLUMN LAYOUT ════ */}
       <style>{`
         .planner-header {
           background: rgba(255,255,255,0.90); border-bottom: 1px solid #e2e8f0;
-          padding: 0 24px; display: flex; align-items: center; gap: 16px;
           min-height: 56px; position: sticky; top: 60px; z-index: 100;
           box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .planner-header-inner {
+          max-width: 1400px; margin: 0 auto; width: 100%; box-sizing: border-box;
+          padding: 0 24px; display: flex; align-items: center; gap: 16px; min-height: 56px;
         }
         .planner-header-actions { display:flex; gap:8px; align-items:center; }
 
@@ -565,7 +570,7 @@ export default function PlannerPage() {
         @media (max-width: 640px) {
           .planner-sidebar { max-height:50vh; }
           .planner-scroll-area { max-height: 50vh; }
-          .planner-header { padding: 8px 14px; flex-wrap: wrap; gap: 8px 10px; }
+          .planner-header-inner { padding: 8px 14px; flex-wrap: wrap; gap: 8px 10px; min-height: 0; }
           .planner-header-actions {
             width: 100%; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px;
           }

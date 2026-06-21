@@ -9,6 +9,7 @@ import { ArrowRight, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
 import { getDistricts, normalizeProvince, PROVINCES } from "@/data/thailand";
+import { TRIP_MOODS, TRIP_MOOD_VALUES } from "@/data/tripMoods";
 import { extractLatLngFromGoogleUrl } from "@/lib/maps";
 import RichTextEditor from "@/components/common/RichTextEditor";
 import AIPolish from "@/components/common/AIPolish";
@@ -93,7 +94,10 @@ export default function CreateStoryPage() {
   const [title,      setTitle     ] = useState("");
   const [content,    setContent   ] = useState("");
   const [budget,     setBudget    ] = useState("");
-  const [mood,       setMood      ] = useState("Cafe Hopping");
+  const [moods,      setMoods     ] = useState<string[]>([]);
+  const toggleMood = (v: string) => setMoods(ms => ms.includes(v) ? ms.filter(x => x !== v) : [...ms, v]);
+  // ถ้าไม่เลือกเลย → ดีฟอลต์ทุก mood
+  const finalMoods = moods.length ? moods : TRIP_MOOD_VALUES;
   const [tags,       setTags      ] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [tiktokUrl,  setTiktokUrl ] = useState("");
@@ -352,7 +356,8 @@ export default function CreateStoryPage() {
         description: content,
         coverUrl: draftCoverUrl || "",
         gallery: existingGallery,
-        mood,
+        mood: finalMoods[0],
+        moods: finalMoods,
         budget: budget || null,
         location: timeline[0]?.province || "",
         tags: tags.split(",").map((t: string) => t.trim()).filter(Boolean),
@@ -450,7 +455,8 @@ export default function CreateStoryPage() {
         description: content,
         coverUrl,
         gallery:  galleryUrls,
-        mood,
+        mood: finalMoods[0],
+        moods: finalMoods,
         budget:   budget || null,
         location: timeline[0]?.province || "",
         tags:       tags.split(",").map(t => t.trim()).filter(Boolean),
@@ -659,14 +665,28 @@ export default function CreateStoryPage() {
             </div>
             <div className="form-group">
               <label>สไตล์ทริป | <small>MOOD</small><HintTooltip text="เลือกสไตล์ที่ตรงทริปนี้มากที่สุด ช่วยให้คนที่ชอบท่องเที่ยวสไตล์เดียวกันค้นหาพบ" /></label>
-              <select className="form-control" value={mood} onChange={(e) => setMood(e.target.value)}>
-                <option>Cafe Hopping</option>
-                <option>สายลุย Adventurous</option>
-                <option>กินแหลก Foodie</option>
-                <option>พักผ่อน Relaxing</option>
-                <option>ธรรมชาติ Nature</option>
-                <option>วัฒนธรรม Culture</option>
-              </select>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {TRIP_MOODS.map(m => {
+                  const on = moods.includes(m.value);
+                  return (
+                    <button key={m.value} type="button" onClick={() => toggleMood(m.value)}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        padding: "8px 14px", borderRadius: 999,
+                        border: on ? "1.5px solid #7c3aed" : "1.5px solid #e2e8f0",
+                        background: on ? "linear-gradient(135deg,#f5f3ff,#ede9fe)" : "#fff",
+                        color: on ? "#6d28d9" : "#64748b", fontWeight: 700, fontSize: 13,
+                        cursor: "pointer", fontFamily: "inherit", transition: "all .15s",
+                        boxShadow: on ? "0 2px 8px rgba(124,58,237,0.18)" : "none",
+                      }}>
+                      <span style={{ fontSize: 15 }}>{m.icon}</span>{m.th}{on && <span style={{ fontSize: 11 }}>✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+              <small style={{ color: "#94a3b8", fontSize: 11, marginTop: 6, display: "block" }}>
+                เลือกได้หลายสไตล์ · ถ้าไม่เลือก จะถือว่าครบทุกสไตล์
+              </small>
             </div>
             <div className="form-group full-width">
               <label>แท็ก | <small>TAGS (คั่นด้วยจุลภาค)</small><HintTooltip text="คีย์เวิร์ดที่ช่วยให้คนค้นหาทริปนี้เจอ เช่น กาญจนบุรี, น้ำตก, วันเดียว — คั่นด้วย , (จุลภาค)" /></label>
@@ -983,7 +1003,14 @@ export default function CreateStoryPage() {
             <div className="pv-header">
               {coverPreview && <img src={coverPreview} alt="Cover" />}
               <div className="pv-title-box">
-                <span className="pv-tag">{mood}</span>
+                <span style={{ display: "inline-flex", flexWrap: "wrap", gap: 6 }}>
+                  {moods.length === 0
+                    ? <span className="pv-tag">ทุกสไตล์</span>
+                    : moods.map(v => {
+                        const m = TRIP_MOODS.find(x => x.value === v);
+                        return <span key={v} className="pv-tag">{m ? `${m.icon} ${m.th}` : v}</span>;
+                      })}
+                </span>
                 <h1>{title || "หัวข้อเรื่องเล่า"}</h1>
                 <p>โดย: {user?.displayName || user?.firstName || "คุณนักเล่าเรื่อง"} | งบ: {budget || 0} ฿</p>
               </div>

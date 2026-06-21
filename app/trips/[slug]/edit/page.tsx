@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
 import { getDistricts, normalizeProvince, PROVINCES } from "@/data/thailand";
+import { TRIP_MOODS, TRIP_MOOD_VALUES } from "@/data/tripMoods";
 import { extractLatLngFromGoogleUrl } from "@/lib/maps";
 import {
   BackButton,
@@ -49,7 +50,10 @@ export default function EditTripPage({ params }: Props) {
   const [title,      setTitle     ] = useState("");
   const [content,    setContent   ] = useState("");
   const [budget,     setBudget    ] = useState("");
-  const [mood,       setMood      ] = useState("Cafe Hopping");
+  const [moods,      setMoods     ] = useState<string[]>([]);
+  const toggleMood = (v: string) => setMoods(ms => ms.includes(v) ? ms.filter(x => x !== v) : [...ms, v]);
+  const finalMoods = moods.length ? moods : TRIP_MOOD_VALUES;
+  const [loaded,     setLoaded    ] = useState(false);
   const [tags,       setTags      ] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [tiktokUrl,  setTiktokUrl ] = useState("");
@@ -140,7 +144,7 @@ export default function EditTripPage({ params }: Props) {
         setTitle(t.title         ?? "");
         setContent(t.description ?? "");
         setBudget(t.budget ? String(t.budget) : "");
-        setMood(t.mood           ?? "Cafe Hopping");
+        setMoods(Array.isArray(t.moods) && t.moods.length ? t.moods : (t.mood ? [t.mood] : []));
         setTags(Array.isArray(t.tags) ? t.tags.join(", ") : "");
         setYoutubeUrl(t.youtubeUrl ?? "");
         setTiktokUrl(t.tiktokUrl   ?? "");
@@ -167,7 +171,8 @@ export default function EditTripPage({ params }: Props) {
           googleMapsUrl: stop.googleMapsUrl  ?? "",
         })));
       })
-      .catch(() => setNotFound(true));
+      .catch(() => setNotFound(true))
+      .finally(() => setLoaded(true));
   }, [slug]);
 
   // ── Timeline helpers ───────────────────────────────────
@@ -264,7 +269,8 @@ export default function EditTripPage({ params }: Props) {
           description: content,
           coverUrl: finalCoverUrl,
           gallery: finalGallery,
-          mood,
+          mood: finalMoods[0],
+          moods: finalMoods,
           budget: budget || null,
           tags: tags.split(",").map(t => t.trim()).filter(Boolean),
           youtubeUrl: youtubeUrl.trim() || null,
@@ -340,7 +346,8 @@ export default function EditTripPage({ params }: Props) {
           description: content,
           coverUrl:    finalCoverUrl,
           gallery:     finalGallery,
-          mood,
+          mood: finalMoods[0],
+          moods: finalMoods,
           budget:      budget || null,
           tags:        tags.split(",").map(t => t.trim()).filter(Boolean),
           youtubeUrl:  youtubeUrl.trim() || null,
@@ -368,6 +375,16 @@ export default function EditTripPage({ params }: Props) {
   };
 
   // ── Early returns ──────────────────────────────────────
+  if (!loaded && !notFound) {
+    return (
+      <div className="create-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, minHeight: "60vh" }}>
+        <div style={{ width: 44, height: 44, borderRadius: "50%", border: "4px solid #e2e8f0", borderTopColor: "#7c3aed", animation: "et-spin 0.8s linear infinite" }} />
+        <p style={{ color: "#94a3b8", fontSize: 14, margin: 0 }}>กำลังโหลดทริป...</p>
+        <style>{`@keyframes et-spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
   if (notFound) {
     return (
       <div className="create-container">
@@ -520,15 +537,29 @@ export default function EditTripPage({ params }: Props) {
             </div>
 
             <div className="form-group">
-              <label>สไตล์ทริป | <small>MOOD</small></label>
-              <select className="form-control" value={mood} onChange={e => setMood(e.target.value)}>
-                <option>Cafe Hopping</option>
-                <option>สายลุย Adventurous</option>
-                <option>กินแหลก Foodie</option>
-                <option>พักผ่อน Relaxing</option>
-                <option>ธรรมชาติ Nature</option>
-                <option>วัฒนธรรม Culture</option>
-              </select>
+              <label>สไตล์ทริป | <small>MOOD (เลือกได้หลายอย่าง)</small></label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {TRIP_MOODS.map(m => {
+                  const on = moods.includes(m.value);
+                  return (
+                    <button key={m.value} type="button" onClick={() => toggleMood(m.value)}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        padding: "8px 14px", borderRadius: 999,
+                        border: on ? "1.5px solid #7c3aed" : "1.5px solid #e2e8f0",
+                        background: on ? "linear-gradient(135deg,#f5f3ff,#ede9fe)" : "#fff",
+                        color: on ? "#6d28d9" : "#64748b", fontWeight: 700, fontSize: 13,
+                        cursor: "pointer", fontFamily: "inherit", transition: "all .15s",
+                        boxShadow: on ? "0 2px 8px rgba(124,58,237,0.18)" : "none",
+                      }}>
+                      <span style={{ fontSize: 15 }}>{m.icon}</span>{m.th}{on && <span style={{ fontSize: 11 }}>✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+              <small style={{ color: "#94a3b8", fontSize: 11, marginTop: 6, display: "block" }}>
+                เลือกได้หลายสไตล์ · ถ้าไม่เลือก จะถือว่าครบทุกสไตล์
+              </small>
             </div>
 
             <div className="form-group full-width">

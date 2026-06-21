@@ -88,7 +88,7 @@ export async function PUT(request: Request, { params }: Params) {
       where: { slug },
       select: {
         id: true, authorId: true, title: true, subtitle: true,
-        description: true, coverUrl: true, gallery: true, mood: true,
+        description: true, coverUrl: true, gallery: true, mood: true, moods: true,
         budget: true, location: true, tags: true, youtubeUrl: true,
         tiktokUrl: true, isPublished: true, approvalStatus: true, isDraft: true,
       },
@@ -102,7 +102,7 @@ export async function PUT(request: Request, { params }: Params) {
     }
 
     const body = await request.json();
-    const { title, subtitle, description, coverUrl, gallery, mood, budget,
+    const { title, subtitle, description, coverUrl, gallery, mood, moods, budget,
             location, tags, isPublished, timeline, youtubeUrl, tiktokUrl } = body;
 
     // ── แอดมินแก้ไขตรง ──────────────────────────────────────
@@ -119,6 +119,7 @@ export async function PUT(request: Request, { params }: Params) {
           ...(coverUrl    !== undefined && { coverUrl }),
           ...(gallery     !== undefined && { gallery }),
           ...(mood        !== undefined && { mood }),
+          ...(moods       !== undefined && { moods }),
           ...(budget      !== undefined && { budget: budget ? Math.round(Number(budget)) : null }),
           ...(location    !== undefined && { location }),
           ...(tags        !== undefined && { tags }),
@@ -181,6 +182,7 @@ export async function PUT(request: Request, { params }: Params) {
             ...(subtitle    !== undefined && { subtitle }),
             ...(gallery     !== undefined && { gallery }),
             ...(mood        !== undefined && { mood }),
+            ...(moods       !== undefined && { moods }),
             ...(budget      !== undefined && { budget: budget ? Math.round(Number(budget)) : null }),
             ...(location    !== undefined && { location }),
             ...(tags        !== undefined && { tags }),
@@ -226,6 +228,7 @@ export async function PUT(request: Request, { params }: Params) {
           ...(coverUrl    !== undefined && { coverUrl }),
           ...(gallery     !== undefined && { gallery }),
           ...(mood        !== undefined && { mood }),
+          ...(moods       !== undefined && { moods }),
           ...(budget      !== undefined && { budget: budget ? Math.round(Number(budget)) : null }),
           ...(location    !== undefined && { location }),
           ...(tags        !== undefined && { tags }),
@@ -269,6 +272,7 @@ export async function PUT(request: Request, { params }: Params) {
           ...(coverUrl    !== undefined && { coverUrl }),
           ...(gallery     !== undefined && { gallery }),
           ...(mood        !== undefined && { mood }),
+          ...(moods       !== undefined && { moods }),
           ...(budget      !== undefined && { budget: budget ? Math.round(Number(budget)) : null }),
           ...(location    !== undefined && { location }),
           ...(tags        !== undefined && { tags }),
