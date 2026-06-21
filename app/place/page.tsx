@@ -8,6 +8,7 @@ import { useLenis } from "lenis/react";
 import { PROVINCES, getDistricts } from "@/data/thailand";
 import SharedPlaceCard from "@/components/places/PlaceCard";
 import { readPlaceSearch, savePlaceSearch, patchPlaceSearchScroll, type PlaceSearchSnapshot } from "@/lib/placeSearchCache";
+import { useAuth } from "@/context/AuthContext";
 
 /* ─── Types ──────────────────────────────────────────────── */
 interface Place {
@@ -76,7 +77,11 @@ export default function PlacesPage() {
 
 function PlacesInner() {
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const lenis = useLenis();
+  // Persist the live Lenis scroll offset (the real position with smooth scroll;
+  // window.scrollY can lag/mismatch under Lenis).
+  useLenis((l) => { if (l) patchPlaceSearchScroll(l.scroll); });
 
   // Restore the previous search state (filters + loaded cards + scroll) when
   // returning to this page (e.g. Back from a place detail). Read once.
@@ -101,6 +106,7 @@ function PlacesInner() {
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipInitialFetch = useRef(!!snap);
+  const didRestoreScroll = useRef(false);
   // When restoring a snapshot, keep infinite-scroll disarmed until the user
   // actually scrolls — otherwise restoring a deep scroll position immediately
   // triggers loadMore and the list keeps growing ("page changes").
@@ -140,34 +146,25 @@ function PlacesInner() {
     savePlaceSearch<Place>({
       cat, province, district, sort, q, inputQ,
       places: places.map(trimPlaceForCache), total, page,
-      scrollY: typeof window !== "undefined" ? window.scrollY : 0,
+      scrollY: lenis?.scroll ?? (typeof window !== "undefined" ? window.scrollY : 0),
     });
-  }, [cat, province, district, sort, q, inputQ, places, total, page]);
+  }, [cat, province, district, sort, q, inputQ, places, total, page, lenis]);
 
-  /* Keep scroll position fresh (one write per frame) */
+  /* Restore scroll once, after Lenis is ready AND after SmoothScrollProvider
+     resets to 0 on the route change. Re-apply shortly after to beat any late reset. */
   useEffect(() => {
-    let raf = 0;
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => { raf = 0; patchPlaceSearchScroll(window.scrollY); });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => { window.removeEventListener("scroll", onScroll); if (raf) cancelAnimationFrame(raf); };
-  }, []);
-
-  /* Restore scroll on mount, AFTER SmoothScrollProvider resets to 0 on route change */
-  useEffect(() => {
+    if (didRestoreScroll.current) return;
     const y = snap?.scrollY;
-    if (!y) return;
-    const r1 = requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (lenis) lenis.scrollTo(y, { immediate: true });
-        else window.scrollTo(0, y);
-      });
-    });
-    return () => cancelAnimationFrame(r1);
+    if (!y) { didRestoreScroll.current = true; return; }
+    if (!lenis) return; // wait until the Lenis instance exists
+    didRestoreScroll.current = true;
+    const apply = () => lenis.scrollTo(y, { immediate: true, force: true });
+    const r = requestAnimationFrame(() => requestAnimationFrame(apply));
+    const t1 = setTimeout(apply, 120);
+    const t2 = setTimeout(apply, 350);
+    return () => { cancelAnimationFrame(r); clearTimeout(t1); clearTimeout(t2); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [lenis]);
 
   /* debounced search */
   const handleSearchInput = (v: string) => {
@@ -205,6 +202,12 @@ function PlacesInner() {
 
   return (
     <div className="pl-page">
+
+      {(user?.role === "ADMIN" || user?.role === "SUPERADMIN") && (
+        <div style={{ position: "fixed", bottom: 8, left: 8, zIndex: 99999, background: "rgba(0,0,0,0.85)", color: "#34d399", font: "11px/1.4 monospace", padding: "5px 9px", borderRadius: 6, pointerEvents: "none" }}>
+          restore {snap ? "Y" : "N"} · cards {places.length} · savedY {Math.round(snap?.scrollY ?? -1)} · arm {String(armInfinite)}
+        </div>
+      )}
 
       {/* ── Hero ── */}
       <div style={{overflowX:"hidden"}}>
