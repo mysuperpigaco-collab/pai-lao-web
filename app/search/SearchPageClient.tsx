@@ -6,6 +6,7 @@ import ScrollReveal from "@/components/ui/ScrollReveal";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTiltCard } from "@/hooks/useTiltCard";
+import { startCoverTransition } from "@/lib/viewTransition";
 
 // ── Types ───────────────────────────────────────────────
 interface TripResult {
@@ -51,6 +52,10 @@ const CAT_COLOR: Record<string,string> = { NATURE:"#16a34a",CAFE:"#92400e",ACCOM
 
 function SearchPlaceCard({ place }: { place: PlaceResult }) {
   const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
+  const router = useRouter();
+  const coverRef = useRef<HTMLDivElement>(null);
+  const href = `/place/${place.slug}`;
+  const vtName = `place-cover-${place.slug}`;
   const [imgErr,    setImgErr   ] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
   const icon  = CAT_ICON[place.category]  ?? "📍";
@@ -62,13 +67,13 @@ function SearchPlaceCard({ place }: { place: PlaceResult }) {
   const showImg = !!displayImg && !imgErr;
 
   return (
-    <Link href={`/place/${place.slug}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
+    <Link href={href} onClick={(e) => startCoverTransition(e, () => router.push(href), vtName, coverRef.current)} style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
       <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
         style={{ display: "flex", flexDirection: "column", borderRadius: 20, overflow: "hidden", background: "#fff", border: "1px solid #f1f5f9", position: "relative", willChange: "transform", height: "100%" }}>
         <div ref={shineRef} style={shineStyle} />
 
       {/* Image */}
-      <div style={{ position: "relative", height: 164, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
+      <div ref={coverRef} style={{ position: "relative", height: 164, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
         {showImg
           ? <img src={displayImg!} alt={place.title} loading="lazy"
               onLoad={() => setImgLoaded(true)}
@@ -111,13 +116,17 @@ function SearchPlaceCard({ place }: { place: PlaceResult }) {
 
 function SearchTripCard({ trip }: { trip: TripResult }) {
   const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
+  const router = useRouter();
+  const coverRef = useRef<HTMLDivElement>(null);
+  const href = `/trips/${trip.slug}`;
+  const vtName = `trip-cover-${trip.slug}`;
   const [imgLoaded, setImgLoaded] = useState(false);
   return (
-    <Link href={`/trips/${trip.slug}`} style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
+    <Link href={href} onClick={(e) => startCoverTransition(e, () => router.push(href), vtName, coverRef.current)} style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
       <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
         style={{ display: "flex", flexDirection: "column", borderRadius: 20, overflow: "hidden", background: "#fff", border: "1px solid #f1f5f9", position: "relative", willChange: "transform", height: "100%" }}>
         <div ref={shineRef} style={shineStyle} />
-        <div style={{ position: "relative", height: 140, background: "#e2e8f0", overflow: "hidden" }}>
+        <div ref={coverRef} style={{ position: "relative", height: 140, background: "#e2e8f0", overflow: "hidden" }}>
           {trip.coverUrl
             ? <img src={trip.coverUrl} alt={trip.title} loading="lazy"
                 onLoad={() => setImgLoaded(true)}

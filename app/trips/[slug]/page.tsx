@@ -259,8 +259,8 @@ export default async function TripDetailPage({ params }: Props) {
             <BackButton fallback="/" />
           </div>
           {trip.coverUrl
-            ? <img src={trip.coverUrl} alt={trip.title} />
-            : <div style={{ width: "100%", height: 480, background: "#e2e8f0" }} />
+            ? <img src={trip.coverUrl} alt={trip.title} data-vt={`trip-cover-${slug}`} style={{ viewTransitionName: `trip-cover-${slug}` }} />
+            : <div data-vt={`trip-cover-${slug}`} style={{ width: "100%", height: 480, background: "#e2e8f0", viewTransitionName: `trip-cover-${slug}` }} />
           }
           <div className="hero-overlay">
             <div className="hero-content">

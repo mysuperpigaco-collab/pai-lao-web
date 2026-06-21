@@ -3,10 +3,13 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import ScrollReveal from "@/components/ui/ScrollReveal";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useLenis } from "lenis/react";
 import Link from "next/link";
 import { PROVINCES, getDistricts } from "@/data/thailand";
 import { useTiltCard } from "@/hooks/useTiltCard";
+import { startCoverTransition } from "@/lib/viewTransition";
+import { readSearchState, saveSearchState, patchSearchScroll, type SearchState } from "@/lib/searchStateCache";
 
 /* ─── Types ──────────────────────────────────────────────── */
 interface Trip {
@@ -46,6 +49,15 @@ function formatDate(iso?: string) {
   return new Date(iso).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" });
 }
 
+// Keep only the fields TripCard renders, so the cached snapshot stays small.
+function trimTripForCache(t: Trip): Trip {
+  return {
+    id: t.id, slug: t.slug, title: t.title, subtitle: t.subtitle,
+    coverUrl: t.coverUrl, mood: t.mood, province: t.province, district: t.district,
+    createdAt: t.createdAt, author: t.author, _count: t._count,
+  };
+}
+
 /* ─── Default export wrapped in Suspense ────────────────── */
 export default function TripsPage() {
   return (
@@ -57,22 +69,33 @@ export default function TripsPage() {
 
 function TripsInner() {
   const searchParams = useSearchParams();
+  const lenis = useLenis();
+  useLenis((l) => { if (l) patchSearchScroll("trips", l.scroll); });
 
-  const [trips,       setTrips      ] = useState<Trip[]>([]);
-  const [total,       setTotal      ] = useState(0);
-  const [page,        setPage       ] = useState(1);
-  const [loading,     setLoading    ] = useState(true);
+  // Restore previous search state (filters + loaded cards + scroll) on Back.
+  const snapRef = useRef<SearchState<Trip> | null | undefined>(undefined);
+  if (snapRef.current === undefined) snapRef.current = readSearchState<Trip>("trips");
+  const snap = snapRef.current;
+  const f = snap?.filters ?? {};
+
+  const [trips,       setTrips      ] = useState<Trip[]>(() => snap?.items ?? []);
+  const [total,       setTotal      ] = useState(() => snap?.total ?? 0);
+  const [page,        setPage       ] = useState(() => snap?.page ?? 1);
+  const [loading,     setLoading    ] = useState(() => !snap);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const [mood,     setMood    ] = useState(() => searchParams.get("mood")     ?? "");
-  const [province, setProvince] = useState(() => searchParams.get("province") ?? "");
-  const [district, setDistrict] = useState(() => searchParams.get("district") ?? "");
-  const [sort,     setSort    ] = useState(() => searchParams.get("sort")     ?? "popular");
+  const [mood,     setMood    ] = useState(() => f.mood     ?? (searchParams.get("mood")     ?? ""));
+  const [province, setProvince] = useState(() => f.province ?? (searchParams.get("province") ?? ""));
+  const [district, setDistrict] = useState(() => f.district ?? (searchParams.get("district") ?? ""));
+  const [sort,     setSort    ] = useState(() => f.sort     ?? (searchParams.get("sort")     ?? "popular"));
   const initQ = searchParams.get("q") ?? "";
-  const [q,        setQ       ] = useState(initQ);
-  const [inputQ,   setInputQ  ] = useState(initQ);
+  const [q,        setQ       ] = useState(() => f.q      ?? initQ);
+  const [inputQ,   setInputQ  ] = useState(() => f.inputQ ?? initQ);
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const skipInitialFetch = useRef(!!snap);
+  const didRestoreScroll = useRef(false);
+  const [armInfinite, setArmInfinite] = useState(() => !snap);
   const totalPages  = Math.ceil(total / PAGE_SIZE);
 
   /* fetch ─────────────────────────────────────────────────── */
@@ -94,7 +117,48 @@ function TripsInner() {
     append ? setLoadingMore(false) : setLoading(false);
   }, [mood, province, district, sort, q]);
 
-  useEffect(() => { setPage(1); fetch_(1, false); }, [fetch_]);
+  useEffect(() => {
+    if (skipInitialFetch.current) { skipInitialFetch.current = false; return; }
+    setPage(1); fetch_(1, false);
+  }, [fetch_]);
+
+  /* Persist search state so Back restores filters + loaded cards + scroll */
+  useEffect(() => {
+    saveSearchState<Trip>("trips", {
+      filters: { mood, province, district, sort, q, inputQ },
+      items: trips.map(trimTripForCache), total, page,
+      scrollY: lenis?.scroll ?? (typeof window !== "undefined" ? window.scrollY : 0),
+    });
+  }, [mood, province, district, sort, q, inputQ, trips, total, page, lenis]);
+
+  /* After a restore, arm infinite-scroll only once the user genuinely scrolls */
+  useEffect(() => {
+    if (armInfinite) return;
+    const arm = () => setArmInfinite(true);
+    window.addEventListener("wheel", arm, { passive: true, once: true });
+    window.addEventListener("touchmove", arm, { passive: true, once: true });
+    window.addEventListener("keydown", arm, { once: true });
+    return () => {
+      window.removeEventListener("wheel", arm);
+      window.removeEventListener("touchmove", arm);
+      window.removeEventListener("keydown", arm);
+    };
+  }, [armInfinite]);
+
+  /* Restore scroll once Lenis is ready, after the route-change reset to 0 */
+  useEffect(() => {
+    if (didRestoreScroll.current) return;
+    const y = snap?.scrollY;
+    if (!y) { didRestoreScroll.current = true; return; }
+    if (!lenis) return;
+    didRestoreScroll.current = true;
+    const apply = () => lenis.scrollTo(y, { immediate: true, force: true });
+    const r = requestAnimationFrame(() => requestAnimationFrame(apply));
+    const t1 = setTimeout(apply, 120);
+    const t2 = setTimeout(apply, 350);
+    return () => { cancelAnimationFrame(r); clearTimeout(t1); clearTimeout(t2); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lenis]);
 
   const handleSearchInput = (v: string) => {
     setInputQ(v);
@@ -103,7 +167,7 @@ function TripsInner() {
   };
 
   const loadMore = () => { const next = page + 1; setPage(next); fetch_(next, true); };
-  const sentinelRef = useInfiniteScroll(loadMore, !loadingMore && !loading && page < totalPages);
+  const sentinelRef = useInfiniteScroll(loadMore, armInfinite && !loadingMore && !loading && page < totalPages);
 
   const changeFilter = (setter: (v: string) => void, val: string) => {
     setter(val); setPage(1);
@@ -309,7 +373,8 @@ function TripsInner() {
         .tp-filters-wrap {
           background: white; border-bottom: 1px solid #f1f5f9;
           box-shadow: 0 4px 16px rgba(15,23,42,0.05);
-          position: sticky; top: 0; z-index: 20;
+          /* stick just below the 60px sticky navbar so moods aren't covered */
+          position: sticky; top: 60px; z-index: 20;
         }
         .tp-filters { max-width: 1280px; margin: 0 auto; padding: 16px 20px 12px; }
 
@@ -439,6 +504,10 @@ function TripsInner() {
 function TripCard({ trip }: { trip: Trip }) {
   const { cardRef, shineRef, onMove, onLeave, shineStyle } = useTiltCard();
   const [imgLoaded, setImgLoaded] = useState(false);
+  const router = useRouter();
+  const coverRef = useRef<HTMLDivElement>(null);
+  const href = `/trips/${trip.slug}`;
+  const vtName = `trip-cover-${trip.slug}`;
   const moodIcon: Record<string, string> = {
     "Cafe Hopping": "☕",
     "สายลุย": "🧗",
@@ -456,11 +525,11 @@ function TripCard({ trip }: { trip: Trip }) {
   const authorName = trip.author?.displayName || trip.author?.firstName || "นักเดินทาง";
 
   return (
-    <Link href={`/trips/${trip.slug}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
+    <Link href={href} onClick={(e) => startCoverTransition(e, () => router.push(href), vtName, coverRef.current)} style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
       <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave} className="tc-card" style={{ position: "relative", willChange: "transform", height: "100%" }}>
         <div ref={shineRef} style={shineStyle} />
         {/* Image */}
-        <div className="tc-img">
+        <div className="tc-img" ref={coverRef}>
           {trip.coverUrl
             ? <img src={trip.coverUrl} alt={trip.title} loading="lazy"
                 onLoad={() => setImgLoaded(true)}
