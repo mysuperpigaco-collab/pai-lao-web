@@ -326,7 +326,7 @@ export default function ExplorerSection() {
       </div>
 
       {/* Category chips */}
-      <div style={{ display: "flex", flexWrap: "nowrap", overflowX: "auto", WebkitOverflowScrolling: "touch", gap: 8, marginBottom: 22, paddingBottom: 6, scrollbarWidth: "none" }}>
+      <div className="cat-row" style={{ marginBottom: 22 }}>
         {PLACE_CATS.map(c => {
           const active = category === c.id;
           return (
@@ -553,7 +553,7 @@ export default function ExplorerSection() {
           ) : (
             <>
               {/* Category chips */}
-              <div style={{ display: "flex", flexWrap: "nowrap", overflowX: "auto", WebkitOverflowScrolling: "touch", gap: 8, marginBottom: 16, paddingBottom: 6, scrollbarWidth: "none" }}>
+              <div className="cat-row" style={{ marginBottom: 16 }}>
                 {PLACE_CATS.map(c => {
                   const active = nearCat === c.id;
                   return (

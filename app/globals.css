@@ -380,3 +380,22 @@ body {
   .section-divider { grid-column: span 1; }
 }
 
+/* ── Category chip row: mobile = horizontal scroll, desktop = fill the row evenly ── */
+.cat-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 6px;
+}
+.cat-row::-webkit-scrollbar { display: none; }
+@media (min-width: 900px) {
+  .cat-row {
+    overflow-x: visible;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+  }
+}
+

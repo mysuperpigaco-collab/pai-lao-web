@@ -286,7 +286,7 @@ export default function AutoGridSection() {
   return (
     <div style={S.root}>
       {/* Tabs */}
-      <div style={S.tabWrap}>
+      <div className="cat-row" style={{ marginBottom: 22 }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setActiveTab(t.id)}
             style={{ ...S.tabBase, ...(activeTab === t.id ? S.tabActive : {}) }}>
