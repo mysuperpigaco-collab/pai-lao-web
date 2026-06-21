@@ -406,7 +406,8 @@ function PlacesInner() {
         .pl-filters-wrap {
           background: white; border-bottom: 1px solid #f1f5f9;
           box-shadow: 0 4px 16px rgba(15,23,42,0.05);
-          position: sticky; top: 0; z-index: 20;
+          /* stick just below the 60px sticky navbar so categories aren't covered */
+          position: sticky; top: 60px; z-index: 20;
         }
         .pl-filters { max-width: 1280px; margin: 0 auto; padding: 16px 20px 12px; }
 
