@@ -210,7 +210,7 @@ function MissionCard({ mission }: {
               ❌ ไม่ผ่าน — ส่งใหม่ได้เลย
             </div>
             {mission.place?.slug && (
-              <Link href={`/place/${mission.place.slug}`} target="_blank" rel="noopener noreferrer" style={{
+              <Link href={`/place/${mission.place.slug}`} style={{
                 display: "block", textAlign: "center",
                 background: "linear-gradient(135deg,#f59e0b,#d97706)",
                 color: "#fff", padding: "11px 0", borderRadius: 10,
@@ -221,7 +221,7 @@ function MissionCard({ mission }: {
             )}
           </div>
         ) : mission.place?.slug ? (
-          <Link href={`/place/${mission.place.slug}`} target="_blank" rel="noopener noreferrer" style={{
+          <Link href={`/place/${mission.place.slug}`} style={{
             display: "block", textAlign: "center",
             background: "linear-gradient(135deg,#10b981,#059669)",
             color: "#fff", padding: "11px 0", borderRadius: 10,

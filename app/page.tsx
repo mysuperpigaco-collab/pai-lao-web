@@ -48,8 +48,6 @@ function HeroCard({ trip }: { trip: Trip }) {
       <div ref={shineRef} style={shineStyle} />
       <Link
         href={`/trips/${trip.slug}`}
-        target="_blank"
-        rel="noopener noreferrer"
         style={{ display: "block", position: "absolute", inset: 0, textDecoration: "none", color: "inherit" }}
       >
       {/* Image */}
@@ -156,8 +154,6 @@ function MedCard({ trip, rank }: { trip: Trip; rank: number }) {
       <div ref={shineRef} style={shineStyle} />
       <Link
         href={`/trips/${trip.slug}`}
-        target="_blank"
-        rel="noopener noreferrer"
         style={{ display: "block", position: "absolute", inset: 0, textDecoration: "none", color: "inherit" }}
       >
       {trip.coverUrl ? (
@@ -226,8 +222,6 @@ function SmallCard({ trip, rank }: { trip: Trip; rank: number }) {
       <div ref={shineRef} style={shineStyle} />
     <Link
       href={`/trips/${trip.slug}`}
-      target="_blank"
-      rel="noopener noreferrer"
       style={{
         display: "flex",
         flexDirection: "column",

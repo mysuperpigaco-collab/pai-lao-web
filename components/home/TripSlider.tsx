@@ -156,7 +156,7 @@ export default function TripSlider({ activeTab, onTabChange }: TripSliderProps) 
 
       {/* ── Main Card ── */}
       <div style={{ position: "relative" }}>
-        <Link href={`/trips/${trip.slug}`} target="_blank" rel="noopener noreferrer" style={{ display: "block", textDecoration: "none", borderRadius: 24, overflow: "hidden", position: "relative", height: 320, boxShadow: "0 12px 40px rgba(0,0,0,0.14)" }}>
+        <Link href={`/trips/${trip.slug}`} style={{ display: "block", textDecoration: "none", borderRadius: 24, overflow: "hidden", position: "relative", height: 320, boxShadow: "0 12px 40px rgba(0,0,0,0.14)" }}>
           {trip.coverUrl
             ? <img src={trip.coverUrl} alt={trip.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s ease" }} />
             : <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,#10b981,#06b6d4)" }} />

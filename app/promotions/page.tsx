@@ -127,7 +127,7 @@ function PromoCard({ promo }: { promo: Promotion }) {
         )}
 
         {promo.place && (
-          <Link href={`/place/${promo.place.slug}`} target="_blank" rel="noopener noreferrer" style={{
+          <Link href={`/place/${promo.place.slug}`} style={{
             display: "inline-flex", alignItems: "center", gap: 4,
             fontSize: 12, color: "#2563eb", fontWeight: 600, textDecoration: "none",
             marginBottom: 8,
