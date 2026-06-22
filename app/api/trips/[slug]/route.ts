@@ -6,10 +6,11 @@ import { sanitizeServerHtml } from "@/lib/sanitize-server";
 
 type Params = { params: Promise<{ slug: string }> };
 
+// หมายเหตุ: รีวิวนี้เป็นของ "สถานที่" เท่านั้น (placeId) ห้ามผูก tripId
+// ไม่งั้นมันจะไปโผล่ในส่วนคอมเมนต์ของทริปด้วย
 async function autoPlaceReviews(
   stops: { shareToPlace: boolean; placeId: string | null; description: string; rating?: number | null; }[],
   authorId: string,
-  tripId: string,
 ) {
   const eligible = stops.filter(
     (s) => s.shareToPlace && s.placeId && s.description?.trim(),
@@ -24,7 +25,6 @@ async function autoPlaceReviews(
         data: {
           authorId,
           placeId: stop.placeId!,
-          tripId,
           rating: stop.rating ?? 5,
           text: stop.description.trim(),
         },
@@ -214,7 +214,7 @@ export async function PUT(request: Request, { params }: Params) {
         });
         // สร้าง review อัตโนมัติจาก timeline stops ที่ shareToPlace=true
         if (updated.timeline?.length) {
-          await autoPlaceReviews(updated.timeline, session.userId, updated.id).catch(() => {});
+          await autoPlaceReviews(updated.timeline, session.userId).catch(() => {});
         }
         return NextResponse.json({ message: "ส่งทริปเพื่อรอการอนุมัติแล้ว", trip: updated, pending: true });
       }
