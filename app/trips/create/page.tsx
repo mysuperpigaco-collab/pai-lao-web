@@ -658,28 +658,45 @@ export default function CreateStoryPage() {
               />
               <AIPolish value={content} onApply={setContent} mode="overall" />
             </div>
-            <div className="form-group">
+            <div className="form-group full-width">
               <label>งบประมาณ | <small>BUDGET (บาท)</small><HintTooltip text="ประมาณการงบรวมทั้งทริป รวมค่าเดินทาง ที่พัก และอาหาร ไม่จำเป็นต้องแม่นยำ" /></label>
               <input type="number" className="form-control" value={budget}
                 onChange={(e) => setBudget(e.target.value)} placeholder="เช่น 2500" step="1" max="2000000000" />
             </div>
-            <div className="form-group">
+            <div className="form-group full-width">
               <label>สไตล์ทริป | <small>MOOD</small><HintTooltip text="เลือกสไตล์ที่ตรงทริปนี้มากที่สุด ช่วยให้คนที่ชอบท่องเที่ยวสไตล์เดียวกันค้นหาพบ" /></label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {(() => {
+                const allOn = moods.length === TRIP_MOOD_VALUES.length;
+                return (
+                  <button type="button" onClick={() => setMoods(allOn ? [] : [...TRIP_MOOD_VALUES])}
+                    style={{
+                      width: "100%", padding: "11px", borderRadius: 12, marginBottom: 10,
+                      border: allOn ? "1.5px solid #7c3aed" : "1.5px dashed #cbd5e1",
+                      background: allOn ? "linear-gradient(135deg,#f5f3ff,#ede9fe)" : "#fff",
+                      color: allOn ? "#6d28d9" : "#64748b", fontWeight: 700, fontSize: 13,
+                      cursor: "pointer", fontFamily: "inherit", transition: "all .15s",
+                    }}>
+                    ✨ ทุกสไตล์ · All styles{allOn ? " ✓" : ""}
+                  </button>
+                );
+              })()}
+              <div className="mood-grid">
                 {TRIP_MOODS.map(m => {
                   const on = moods.includes(m.value);
                   return (
                     <button key={m.value} type="button" onClick={() => toggleMood(m.value)}
                       style={{
-                        display: "inline-flex", alignItems: "center", gap: 6,
-                        padding: "8px 14px", borderRadius: 999,
+                        display: "flex", alignItems: "center", gap: 8, width: "100%",
+                        padding: "11px 13px", borderRadius: 12, textAlign: "left",
                         border: on ? "1.5px solid #7c3aed" : "1.5px solid #e2e8f0",
                         background: on ? "linear-gradient(135deg,#f5f3ff,#ede9fe)" : "#fff",
                         color: on ? "#6d28d9" : "#64748b", fontWeight: 700, fontSize: 13,
                         cursor: "pointer", fontFamily: "inherit", transition: "all .15s",
                         boxShadow: on ? "0 2px 8px rgba(124,58,237,0.18)" : "none",
                       }}>
-                      <span style={{ fontSize: 15 }}>{m.icon}</span>{m.th} · {m.en}{on && <span style={{ fontSize: 11 }}>✓</span>}
+                      <span style={{ fontSize: 16, flexShrink: 0 }}>{m.icon}</span>
+                      <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.th} · {m.en}</span>
+                      {on && <span style={{ fontSize: 11, flexShrink: 0 }}>✓</span>}
                     </button>
                   );
                 })}
@@ -1052,6 +1069,7 @@ export default function CreateStoryPage() {
         .cover-preview{width:100%;height:100%;object-fit:cover}
         .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:25px;margin-top:40px}
         .full-width{grid-column:span 2}
+        .mood-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
         .form-group label{display:block;font-weight:700;font-size:14px;margin-bottom:8px;color:#374151}
         .form-group label span{color:#ef4444}
         .form-control{width:100%;padding:14px 20px;border-radius:15px;border:1px solid #e2e8f0;outline:none;background:#f8fafc;font-size:15px;transition:0.3s;box-sizing:border-box}
@@ -1100,6 +1118,7 @@ export default function CreateStoryPage() {
         @media(max-width:768px){
           .info-grid{grid-template-columns:1fr}
           .full-width{grid-column:span 1}
+          .mood-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
           .timeline-detail-row{grid-template-columns:1fr}
           .main-actions{flex-direction:column}
           .create-card{padding:24px;border-radius:32px}
