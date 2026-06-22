@@ -151,9 +151,11 @@ export default async function PlaceDetailPage({ params }: Props) {
     session
       ? prisma.bookmark.findUnique({ where: { userId_placeId: { userId: session.userId, placeId: place.id } } }).catch(() => null)
       : Promise.resolve(null),
-    // Community photos from all trips that visited this place (by placeId OR placeName)
+    // Community photos — เฉพาะจุดที่เปิดแชร์ (shareToPlace) และมาจากทริปที่อนุมัติ+เผยแพร่แล้วเท่านั้น
     prisma.timelineStop.findMany({
       where: {
+        shareToPlace: true,
+        trip: { isPublished: true, approvalStatus: "APPROVED", isDraft: false },
         OR: [
           { placeId: place.id },
           // exact match (case has no meaning for Thai names) so the placeName index is used

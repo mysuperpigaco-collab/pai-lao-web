@@ -4,35 +4,6 @@ import { getCurrentUser } from "@/lib/auth";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
 import { sanitizeServerHtml } from "@/lib/sanitize-server";
 
-// สร้าง review อัตโนมัติจาก timeline stops ที่ shareToPlace=true
-// เรียกหลัง trip/timeline ถูก save เสร็จสมบูรณ์แล้วเท่านั้น
-// หมายเหตุ: รีวิวนี้เป็นของ "สถานที่" เท่านั้น (placeId) ห้ามผูก tripId
-// ไม่งั้นมันจะไปโผล่ในส่วนคอมเมนต์ของทริปด้วย
-async function autoPlaceReviews(
-  stops: { shareToPlace: boolean; placeId: string | null; description: string; rating?: number | null; }[],
-  authorId: string,
-) {
-  const eligible = stops.filter(
-    (s) => s.shareToPlace && s.placeId && s.description?.trim(),
-  );
-  for (const stop of eligible) {
-    const existing = await prisma.review.findFirst({
-      where: { authorId, placeId: stop.placeId! },
-      select: { id: true },
-    });
-    if (!existing) {
-      await prisma.review.create({
-        data: {
-          authorId,
-          placeId: stop.placeId!,
-          rating: stop.rating ?? 5,
-          text: stop.description.trim(),
-        },
-      });
-    }
-  }
-}
-
 // ── GET /api/trips ─────────────────────────────────────────
 export async function GET(request: Request) {
   try {
@@ -291,10 +262,7 @@ export async function POST(request: Request) {
       detail: trip.title,
     }).catch(() => {});
 
-    // สร้าง review อัตโนมัติจาก timeline stops ที่ shareToPlace=true (เฉพาะ non-draft)
-    if (!isDraft && trip.timeline?.length) {
-      await autoPlaceReviews(trip.timeline, session.userId).catch(() => {});
-    }
+    // หมายเหตุ: รีวิว/รูปจะแชร์ไปหน้าสถานที่ "ตอนทริปได้รับอนุมัติ" เท่านั้น (ดู syncSharedReviewsForTrip)
 
     return NextResponse.json({ message: "สร้างทริปสำเร็จ", trip }, { status: 201 });
   } catch (error) {

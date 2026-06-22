@@ -10,7 +10,8 @@ async function autoReviewsForApprovedPlace(placeId: string) {
       placeId,
       shareToPlace: true,
       description: { not: "" },
-      trip: { isDraft: false },
+      // เฉพาะทริปที่อนุมัติ+เผยแพร่แล้วเท่านั้น (กันข้อมูลทริปที่ยังไม่อนุมัติรั่ว)
+      trip: { isPublished: true, approvalStatus: "APPROVED", isDraft: false },
     },
     select: {
       description: true,
@@ -28,7 +29,7 @@ async function autoReviewsForApprovedPlace(placeId: string) {
     });
     if (!existing) {
       await prisma.review.create({
-        data: { authorId, placeId, tripId: stop.tripId, rating: 5, text },
+        data: { authorId, placeId, rating: 5, text },
       });
     }
   }

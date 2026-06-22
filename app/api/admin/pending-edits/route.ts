@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { syncSharedReviewsForTrip } from "@/lib/sharedReviews";
 
 // GET /api/admin/pending-edits?type=TRIP|PLACE&page=&limit=
 export async function GET(request: Request) {
@@ -103,6 +104,7 @@ export async function PUT(request: Request) {
         } else {
           await prisma.trip.update({ where: { id: edit.targetId }, data: { ...data, approvalStatus: "APPROVED", isPublished: true, rejectionReason: null } });
         }
+        await syncSharedReviewsForTrip(edit.targetId).catch(() => {});
       }
     } else if (edit.targetType === "PLACE") {
       await prisma.place.update({

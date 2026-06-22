@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { syncSharedReviewsForTrip } from "@/lib/sharedReviews";
 
 // GET /api/admin/trips?q=&approval=&page=&limit=
 export async function GET(request: Request) {
@@ -79,6 +80,8 @@ export async function PUT(request: Request) {
       await prisma.adminLog.create({
         data: { adminId: session.userId, action: "APPROVE_TRIP", targetId: tripId, targetType: "TRIP", detail: `Trip: ${updated.title}` },
       });
+      // แชร์รีวิวไปหน้าสถานที่ (เฉพาะตอนอนุมัติ + สถานที่อนุมัติแล้ว)
+      await syncSharedReviewsForTrip(tripId).catch(() => {});
       return NextResponse.json({ message: "อนุมัติทริปสำเร็จ", trip: updated });
     }
 
