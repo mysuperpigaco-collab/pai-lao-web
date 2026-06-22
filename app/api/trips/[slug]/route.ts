@@ -73,7 +73,19 @@ export async function GET(_req: Request, { params }: Params) {
       ? trip.reviews.reduce((sum, r) => sum + r.rating, 0) / trip.reviews.length
       : 0;
 
-    return NextResponse.json({ trip: { ...trip, avgRating: Math.round(avgRating * 10) / 10 } });
+    // เจ้าของ: แนบ pending edit ล่าสุด (ถ้ามี) เพื่อให้หน้าแก้ไขโหลดค่าที่เพิ่งส่งไว้
+    let pendingEdit: any = null;
+    const viewer = await getCurrentUser();
+    if (viewer?.userId === trip.author.id) {
+      const pe = await (prisma as any).pendingEdit.findFirst({
+        where: { targetId: trip.id, targetType: "TRIP", status: "PENDING" },
+        orderBy: { createdAt: "desc" },
+        select: { pendingData: true },
+      }).catch(() => null);
+      pendingEdit = pe?.pendingData ?? null;
+    }
+
+    return NextResponse.json({ trip: { ...trip, avgRating: Math.round(avgRating * 10) / 10 }, pendingEdit });
   } catch (error) {
     console.error("GET /api/trips/[slug]:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
@@ -329,6 +341,7 @@ export async function PUT(request: Request, { params }: Params) {
     if (coverUrl    !== undefined) pendingData.coverUrl    = coverUrl;
     if (gallery     !== undefined) pendingData.gallery     = gallery;
     if (mood        !== undefined) pendingData.mood        = mood;
+    if (moods       !== undefined) pendingData.moods       = moods;
     if (titleStyle  !== undefined) pendingData.titleStyle  = titleStyle;
     if (budget      !== undefined) pendingData.budget      = budget ? Number(budget) : null;
     if (location    !== undefined) pendingData.location    = location;

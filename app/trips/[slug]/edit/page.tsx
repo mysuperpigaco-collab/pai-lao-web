@@ -161,23 +161,34 @@ export default function EditTripPage({ params }: Props) {
       .then(data => {
         if (!data.trip) { setNotFound(true); return; }
         const t = data.trip;
-        setTitle(t.title         ?? "");
+        // ถ้ามี pending edit ของเจ้าของ → โหลดค่าที่เพิ่งส่งไว้ (ไม่งั้นใช้ค่าจริงของทริป)
+        const pe = data.pendingEdit || {};
+        const pick = (k: string) => (pe[k] !== undefined ? pe[k] : t[k]);
+
+        setTitle(pick("title")         ?? "");
         setTitleStyle(t.titleStyle ?? "none");
-        setContent(t.description ?? "");
-        setBudget(t.budget ? String(t.budget) : "");
-        setMoods(Array.isArray(t.moods) && t.moods.length ? t.moods : (t.mood ? [t.mood] : []));
-        setTags(Array.isArray(t.tags) ? t.tags.join(", ") : "");
-        setYoutubeUrl(t.youtubeUrl ?? "");
-        setTiktokUrl(t.tiktokUrl   ?? "");
+        setContent(pick("description") ?? "");
+        const bud = pick("budget");
+        setBudget(bud ? String(bud) : "");
+        const md = pe.moods !== undefined ? pe.moods : t.moods;
+        setMoods(Array.isArray(md) && md.length ? md : (t.mood ? [t.mood] : []));
+        const tg = pick("tags");
+        setTags(Array.isArray(tg) ? tg.join(", ") : "");
+        setYoutubeUrl(pick("youtubeUrl") ?? "");
+        setTiktokUrl(pick("tiktokUrl")   ?? "");
         setExistingCoverUrl(t.coverUrl ?? "");
         setCoverPreview(t.coverUrl ?? null);
-        setExistingGallery(t.gallery ?? []);
+        setExistingGallery(pick("gallery") ?? []);
         setIsDraft(t.isDraft ?? false);
         setIsUnsubmitted((t.isDraft ?? false) || (!t.isPublished && !t.approvalStatus));
-        setTimeline((t.timeline ?? []).map((stop: any) => ({
+
+        // timeline: ถ้ามี pending ใช้รูปแบบ payload (place เป็น string), ไม่งั้นใช้รูปแบบ DB (placeName + relation place)
+        const usePending = Array.isArray(pe.timeline);
+        const srcStops: any[] = usePending ? pe.timeline : (t.timeline ?? []);
+        setTimeline(srcStops.map((stop: any) => ({
           date:          stop.date           ?? today,
           time:          stop.time           ?? "",
-          place:         stop.placeName      ?? "",
+          place:         usePending ? (stop.place ?? "") : (stop.placeName ?? ""),
           province:      normalizeProvince(stop.province ?? ""),
           district:      (stop.district ?? "").split(" (")[0],
           description:   stop.description    ?? "",
@@ -185,14 +196,14 @@ export default function EditTripPage({ params }: Props) {
           imagePreview:  stop.images?.[0]    ?? null,
           existingImage: stop.images?.[0]    ?? undefined,
           shareToPlace:  stop.shareToPlace   ?? false,
-          rating:        (stop as any).rating ?? 5,
+          rating:        stop.rating          ?? 5,
           placeId:       stop.placeId        ?? null,
           lat:           stop.lat            ?? null,
           lng:           stop.lng            ?? null,
           googleMapsUrl: stop.googleMapsUrl  ?? "",
           createPlace:   false, placeCategory: "NATURE",
-          placeApprovalStatus:  stop.place?.approvalStatus  ?? null,
-          placeRejectionReason: stop.place?.rejectionReason ?? null,
+          placeApprovalStatus:  usePending ? null : (stop.place?.approvalStatus  ?? null),
+          placeRejectionReason: usePending ? null : (stop.place?.rejectionReason ?? null),
         })));
       })
       .catch(() => setNotFound(true))
