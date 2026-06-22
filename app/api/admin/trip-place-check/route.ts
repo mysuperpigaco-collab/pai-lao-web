@@ -33,7 +33,8 @@ export async function GET(request: Request) {
     const flagged = stops
       .filter(s => {
         if (!s.placeId) return true; // unlinked — พิมพ์เองไม่เลือกจาก DB
-        if (s.place?.approvalStatus === "PENDING") return true; // linked แต่สถานที่ยังไม่ผ่าน
+        if (s.place?.approvalStatus === "PENDING")  return true; // linked แต่สถานที่ยังไม่ผ่าน
+        if (s.place?.approvalStatus === "REJECTED") return true; // เคยถูกปฏิเสธ → ให้อนุมัติใหม่ได้
         return false;
       })
       .map(s => ({
@@ -43,7 +44,7 @@ export async function GET(request: Request) {
         province:  s.province || s.place?.province || "",
         district:  s.district || s.place?.district || "",
         placeId:   s.placeId,
-        status:    !s.placeId ? "UNLINKED" : "PENDING",
+        status:    !s.placeId ? "UNLINKED" : (s.place?.approvalStatus ?? "PENDING"),
         place:     s.place ?? null,
       }));
 

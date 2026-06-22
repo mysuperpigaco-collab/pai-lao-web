@@ -219,6 +219,12 @@ function EditDetailModal({ edit, onClose, onApprove, onReject }: {
           <DiffView edit={edit} />
         </div>
 
+        {edit.targetType === "TRIP" && (
+          <div style={{ marginBottom: 20 }}>
+            <TripPlaceCheckWarning tripId={edit.targetId} />
+          </div>
+        )}
+
         <div className="adm-modal-actions">
           <button className="adm-btn ghost" onClick={onClose}>ปิด</button>
           <button className="adm-btn" style={{ background: "#dc2626" }} onClick={onReject}>❌ ปฏิเสธ</button>
@@ -299,13 +305,28 @@ function NearbyPlaceWarning({ placeId }: { placeId: string }) {
 function TripPlaceCheckWarning({ tripId }: { tripId: string }) {
   const [flagged, setFlagged] = useState<any[] | null>(null);
   const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch(`/api/admin/trip-place-check?tripId=${tripId}`)
-      .then(r => r.json())
-      .then(d => setFlagged(d.flagged || []))
-      .catch(() => setFlagged([]));
-  }, [tripId]);
+  const reload = () => fetch(`/api/admin/trip-place-check?tripId=${tripId}`)
+    .then(r => r.json())
+    .then(d => setFlagged(d.flagged || []))
+    .catch(() => setFlagged([]));
+
+  useEffect(() => { reload(); }, [tripId]);
+
+  const actOnPlace = async (placeId: string, action: "approve" | "reject") => {
+    if (!placeId) return;
+    if (action === "reject" && !confirm("ปฏิเสธสถานที่นี้?")) return;
+    setBusy(placeId);
+    try {
+      await fetch("/api/admin/places", {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ placeId, action }),
+      });
+      await reload();
+    } catch {}
+    setBusy(null);
+  };
 
   if (!flagged || flagged.length === 0) return null;
 
@@ -329,10 +350,10 @@ function TripPlaceCheckWarning({ tripId }: { tripId: string }) {
                 <span style={{ fontSize: 11, color: "#475569", fontWeight: 700 }}>จุดที่ {s.order}</span>
                 <span style={{
                   fontSize: 10, fontWeight: 800, borderRadius: 99, padding: "1px 7px",
-                  background: s.status === "PENDING" ? "#451a03" : "#1e293b",
-                  color: s.status === "PENDING" ? "#fbbf24" : "#94a3b8",
+                  background: s.status === "PENDING" ? "#451a03" : s.status === "REJECTED" ? "#450a0a" : "#1e293b",
+                  color: s.status === "PENDING" ? "#fbbf24" : s.status === "REJECTED" ? "#fca5a5" : "#94a3b8",
                 }}>
-                  {s.status === "PENDING" ? "⏳ PENDING" : "🔗 ไม่ได้ลิงก์"}
+                  {s.status === "PENDING" ? "⏳ รอตรวจ" : s.status === "REJECTED" ? "❌ ถูกปฏิเสธ" : "🔗 ไม่ได้ลิงก์"}
                 </span>
               </div>
               <div style={{ fontWeight: 700, color: "#bfdbfe", fontSize: 13 }}>{s.placeName}</div>
@@ -355,6 +376,26 @@ function TripPlaceCheckWarning({ tripId }: { tripId: string }) {
                       background: "#07111f", border: "1px solid #1e3a5f", borderRadius: 6, padding: "2px 8px" }}>
                     Google Maps
                   </a>
+                )}
+                {s.placeId && (s.status === "PENDING" || s.status === "REJECTED") && (
+                  <>
+                    <button type="button" disabled={busy === s.placeId}
+                      onClick={() => actOnPlace(s.placeId, "approve")}
+                      style={{ fontSize: 11, color: "#bbf7d0", cursor: "pointer", fontFamily: "inherit",
+                        background: "#052e16", border: "1px solid #166534", borderRadius: 6, padding: "2px 10px", fontWeight: 700,
+                        opacity: busy === s.placeId ? 0.6 : 1 }}>
+                      ✓ อนุมัติสถานที่
+                    </button>
+                    {s.status === "PENDING" && (
+                      <button type="button" disabled={busy === s.placeId}
+                        onClick={() => actOnPlace(s.placeId, "reject")}
+                        style={{ fontSize: 11, color: "#fca5a5", cursor: "pointer", fontFamily: "inherit",
+                          background: "#450a0a", border: "1px solid #7f1d1d", borderRadius: 6, padding: "2px 10px", fontWeight: 700,
+                          opacity: busy === s.placeId ? 0.6 : 1 }}>
+                        ✕ ปฏิเสธ
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
