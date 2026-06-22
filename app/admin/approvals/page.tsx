@@ -413,7 +413,7 @@ type TabKey = "trips" | "places" | "edit-trips" | "edit-places" | "claims";
 
 const TABS: { key: TabKey; label: string; icon: string }[] = [
   { key: "trips",       label: "ทริปใหม่",      icon: "🗺️" },
-  { key: "places",      label: "สถานที่ใหม่",   icon: "📍" },
+  { key: "places",      label: "สถานที่รอตรวจ", icon: "📍" },
   { key: "edit-trips",  label: "แก้ไขทริป",    icon: "✏️" },
   { key: "edit-places", label: "แก้ไขสถานที่", icon: "🏢" },
   { key: "claims",       label: "ยืนยันเจ้าของ",  icon: "🔑" },
@@ -442,7 +442,7 @@ export default function AdminApprovalsPage() {
   const loadCounts = useCallback(async () => {
     const [t, p, et, ep, cl] = await Promise.all([
       fetch("/api/admin/trips?approval=PENDING&limit=1").then(r => r.json()).then(d => d.total ?? 0).catch(() => 0),
-      fetch("/api/admin/places?approval=PENDING&limit=1").then(r => r.json()).then(d => d.total ?? 0).catch(() => 0),
+      fetch("/api/admin/places?approval=UNAPPROVED&limit=1").then(r => r.json()).then(d => d.total ?? 0).catch(() => 0),
       fetch("/api/admin/pending-edits?type=TRIP&limit=1").then(r => r.json()).then(d => d.total ?? 0).catch(() => 0),
       fetch("/api/admin/pending-edits?type=PLACE&limit=1").then(r => r.json()).then(d => d.total ?? 0).catch(() => 0),
       fetch("/api/admin/place-claims?status=PENDING").then(r => r.json()).then(d => (d.claims ?? []).length).catch(() => 0),
@@ -457,7 +457,7 @@ export default function AdminApprovalsPage() {
         const d = await fetch("/api/admin/trips?approval=PENDING&limit=50").then(r => r.json());
         setTrips(d.trips || []);
       } else if (tab === "places") {
-        const d = await fetch("/api/admin/places?approval=PENDING&limit=50").then(r => r.json());
+        const d = await fetch("/api/admin/places?approval=UNAPPROVED&limit=50").then(r => r.json());
         setPlaces(d.places || []);
       } else if (tab === "edit-trips") {
         const d = await fetch("/api/admin/pending-edits?type=TRIP&limit=50").then(r => r.json());

@@ -51,7 +51,9 @@ export async function GET(request: Request) {
   const skip     = (page - 1) * limit;
 
   const where: any = {
-    ...(approval ? { approvalStatus: approval } : {}),
+    ...(approval === "UNAPPROVED"
+        ? { approvalStatus: { in: ["PENDING", "REJECTED"] } }
+        : approval ? { approvalStatus: approval } : {}),
     ...(category ? { category } : {}),
     ...(verified === "true"  ? { isVerified: true  } : {}),
     ...(verified === "false" ? { isVerified: false } : {}),
