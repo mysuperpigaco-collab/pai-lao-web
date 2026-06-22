@@ -111,7 +111,8 @@ export default function CreateStoryPage() {
       shareToPlace: false,
       rating: 5,
       lat: null as number | null, lng: null as number | null,
-      googleMapsUrl: "" }
+      googleMapsUrl: "",
+      createPlace: false, placeCategory: "NATURE" }
   ]);
   const [placeSuggestions, setPlaceSuggestions] = useState<Record<number, any[]>>({});
   const [placeSearchLoading, setPlaceSearchLoading] = useState<Record<number, boolean>>({});
@@ -230,7 +231,7 @@ export default function CreateStoryPage() {
   };
 
   const addTimeline    = () => setTimeline([...timeline,
-    { date: today, time: "", place: "", province: "", district: "", description: "", imageFile: null, imagePreview: null, placeId: null, placeSlug: null, shareToPlace: false, rating: 5, lat: null, lng: null, googleMapsUrl: "" }]);
+    { date: today, time: "", place: "", province: "", district: "", description: "", imageFile: null, imagePreview: null, placeId: null, placeSlug: null, shareToPlace: false, rating: 5, lat: null, lng: null, googleMapsUrl: "", createPlace: false, placeCategory: "NATURE" }]);
   const removeTimeline = (i: number) => setTimeline(timeline.filter((_, idx) => idx !== i));
 
   // ── Place search for timeline stops ──────────────────────
@@ -291,29 +292,42 @@ export default function CreateStoryPage() {
 
   const openSuggest = (idx: number) => setSuggestForm(f => ({ ...f, [idx]: { open: true, cat: "NATURE", saving: false, mapsUrl: "" } }));
   const closeSuggest = (idx: number) => setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], open: false } }));
-  const suggestPlace = async (idx: number) => {
+  // ทำเครื่องหมายว่าจะสร้างสถานที่นี้ — ยังไม่ส่งไปแอดมิน รอจนกดบันทึก/เผยแพร่
+  const markCreatePlace = (idx: number) => {
     const item = timeline[idx];
-    const form = suggestForm[idx];
     if (!item.place.trim()) return;
-    setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], saving: true } }));
-    try {
-      const res = await fetch("/api/places/suggest", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: item.place, province: item.province, district: item.district, category: form?.cat ?? "NATURE", googleMapsUrl: form?.mapsUrl || undefined }),
-      });
-      const data = await res.json();
-      if (res.ok && data.place) {
-        const updated = [...timeline];
-        updated[idx].placeId   = data.place.id;
-        updated[idx].placeSlug = data.place.slug;
-        if (data.place.lat != null) { updated[idx].lat = data.place.lat; updated[idx].lng = data.place.lng; }
-        setTimeline(updated);
-        closeSuggest(idx);
-      } else {
-        alert(data.message ?? "เกิดข้อผิดพลาด");
+    const cat = suggestForm[idx]?.cat ?? "NATURE";
+    const updated = [...timeline];
+    updated[idx] = { ...updated[idx], createPlace: true, placeCategory: cat };
+    setTimeline(updated);
+    closeSuggest(idx);
+  };
+  const unmarkCreatePlace = (idx: number) => {
+    const updated = [...timeline];
+    updated[idx] = { ...updated[idx], createPlace: false };
+    setTimeline(updated);
+  };
+
+  // เรียกตอนบันทึก/เผยแพร่ — สร้างสถานที่แนะนำที่ผู้ใช้ทำเครื่องหมายไว้ แล้วผูก placeId
+  const resolveNewPlaces = async (stops: typeof timeline) => {
+    const out = [...stops];
+    for (let i = 0; i < out.length; i++) {
+      const s = out[i];
+      if (s.createPlace && !s.placeId && s.place?.trim() && s.province) {
+        try {
+          const res = await fetch("/api/places/suggest", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: s.place, province: s.province, district: s.district, category: s.placeCategory ?? "NATURE", googleMapsUrl: s.googleMapsUrl || undefined }),
+          });
+          const data = await res.json();
+          if (res.ok && data.place) {
+            out[i] = { ...s, placeId: data.place.id, placeSlug: data.place.slug,
+              lat: data.place.lat ?? s.lat, lng: data.place.lng ?? s.lng };
+          }
+        } catch {}
       }
-    } catch { alert("ไม่สามารถเชื่อมต่อระบบได้"); }
-    setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], saving: false } }));
+    }
+    return out;
   };
 
   // ── Save Draft ───────────────────────────────────────────
@@ -430,9 +444,11 @@ export default function CreateStoryPage() {
         : [];
       const galleryUrls = [...existingGallery, ...newGalleryUrls];
 
-      // 3. อัปโหลดรูป timeline แต่ละจุด
+      // 3. สร้างสถานที่แนะนำที่ทำเครื่องหมายไว้ (รวบมาสร้างตอนนี้) แล้วอัปโหลดรูป timeline
+      const resolvedTimeline = await resolveNewPlaces(timeline);
+      setTimeline(resolvedTimeline);
       const timelineData = await Promise.all(
-        timeline.map(async (stop, i) => ({
+        resolvedTimeline.map(async (stop, i) => ({
           placeId:      stop.placeId ?? undefined,
           shareToPlace: stop.shareToPlace ?? false,
           rating:       stop.rating ?? 5,
@@ -788,7 +804,7 @@ export default function CreateStoryPage() {
                     style={{ flex: "1 1 140px", minWidth: 0 }} />
                   <input type="time" className="form-control" value={item.time}
                     onChange={(e) => updateTimeline(idx, "time", e.target.value)}
-                    style={{ flex: "0 0 110px", minWidth: 0 }} />
+                    style={{ flex: "1 1 130px", minWidth: 0 }} />
                   <button type="button" className="btn-remove-circle" style={{ marginLeft: "auto" }} onClick={() => removeTimeline(idx)}>×</button>
                 </div>
 
@@ -838,8 +854,16 @@ export default function CreateStoryPage() {
                   </div>
                 )}
 
-                {/* Suggest new place button */}
-                {item.place.trim().length >= 2 && !item.placeId && (
+                {/* Suggest new place — ทำเครื่องหมายไว้ ค่อยสร้างจริงตอนบันทึก */}
+                {item.createPlace && !item.placeId ? (
+                  <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "#ecfdf5", border: "1.5px solid #6ee7b7", borderRadius: 12 }}>
+                    <span style={{ fontSize: 12, color: "#065f46", fontWeight: 700, flex: 1 }}>
+                      📍 จะสร้าง &ldquo;{item.place}&rdquo; เป็นสถานที่แนะนำเมื่อกดบันทึก
+                    </span>
+                    <button type="button" onClick={() => unmarkCreatePlace(idx)}
+                      style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 12, fontWeight: 700, padding: "2px 6px", fontFamily: "inherit" }}>ยกเลิก ×</button>
+                  </div>
+                ) : item.place.trim().length >= 2 && !item.placeId && (
                   <div style={{ marginBottom: 12 }}>
                     {!suggestForm[idx]?.open ? (
                       <button type="button" onClick={() => openSuggest(idx)}
@@ -865,21 +889,16 @@ export default function CreateStoryPage() {
                             <option value="ACCOMMODATION">🏨 ที่พัก</option>
                             <option value="CAMPING">⛺ แคมปิ้ง</option>
                           </select>
-                          <button type="button" onClick={() => suggestPlace(idx)} disabled={suggestForm[idx]?.saving}
-                            style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#10b981", color: "#fff", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, opacity: suggestForm[idx]?.saving ? 0.7 : 1 }}>
-                            {suggestForm[idx]?.saving ? "⏳..." : "✓ สร้าง"}
+                          <button type="button" onClick={() => markCreatePlace(idx)}
+                            style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#10b981", color: "#fff", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}>
+                            ✓ ตกลง
                           </button>
                           <button type="button" onClick={() => closeSuggest(idx)}
                             style={{ padding: "7px 12px", borderRadius: 8, border: "1.5px solid #d1fae5", background: "#fff", color: "#64748b", fontSize: 12, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}>
                             ยกเลิก
                           </button>
                         </div>
-                        <input type="url"
-                          value={suggestForm[idx]?.mapsUrl ?? ""}
-                          onChange={e => setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], mapsUrl: e.target.value } }))}
-                          placeholder="https://maps.google.com/?q=... (ไม่บังคับ)"
-                          style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #d1fae5", fontSize: 12, fontFamily: "inherit", background: "#fff", boxSizing: "border-box" as const }} />
-                        <p style={{ margin: 0, fontSize: 11, color: "#6b7280" }}>สถานที่จะแสดงต่อเมื่อได้รับการอนุมัติ และรอเจ้าของมา claim ภายหลัง</p>
+                        <p style={{ margin: 0, fontSize: 11, color: "#6b7280" }}>พิกัดจะใช้จากช่อง “ปักหมุดพิกัด” ด้านล่าง · สถานที่จะถูกส่งให้แอดมินตรวจสอบเมื่อกดบันทึก</p>
                       </div>
                     )}
                   </div>

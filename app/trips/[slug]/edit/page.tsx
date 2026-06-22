@@ -65,6 +65,7 @@ export default function EditTripPage({ params }: Props) {
     description: string; imageFile: File | null; imagePreview: string | null;
     existingImage?: string; shareToPlace: boolean; rating: number; placeId: string | null; placeSlug?: string;
     lat: number | null; lng: number | null; googleMapsUrl: string;
+    createPlace?: boolean; placeCategory?: string;
     placeApprovalStatus?: string | null; placeRejectionReason?: string | null;
   }[]>([]);
 
@@ -115,29 +116,42 @@ export default function EditTripPage({ params }: Props) {
   };
   const openSuggest  = (idx: number) => setSuggestForm(f => ({ ...f, [idx]: { open: true, cat: "NATURE", saving: false, mapsUrl: "" } }));
   const closeSuggest = (idx: number) => setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], open: false } }));
-  const suggestPlace = async (idx: number) => {
+  // ทำเครื่องหมายว่าจะสร้างสถานที่ — ยังไม่ส่งแอดมิน รอจนกดบันทึก
+  const markCreatePlace = (idx: number) => {
     const item = timeline[idx];
-    const form = suggestForm[idx];
     if (!item.place.trim()) return;
-    setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], saving: true } }));
-    try {
-      const res = await fetch("/api/places/suggest", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: item.place, province: item.province, district: item.district, category: form?.cat ?? "NATURE", googleMapsUrl: form?.mapsUrl || undefined }),
-      });
-      const data = await res.json();
-      if (res.ok && data.place) {
-        const updated = [...timeline];
-        updated[idx].placeId  = data.place.id;
-        updated[idx].placeSlug = data.place.slug;
-        if (data.place.lat != null) { updated[idx].lat = data.place.lat; updated[idx].lng = data.place.lng; }
-        setTimeline(updated);
-        closeSuggest(idx);
-      } else {
-        alert(data.message ?? "เกิดข้อผิดพลาด");
+    const cat = suggestForm[idx]?.cat ?? "NATURE";
+    const updated = [...timeline];
+    (updated[idx] as any).createPlace = true;
+    (updated[idx] as any).placeCategory = cat;
+    setTimeline(updated);
+    closeSuggest(idx);
+  };
+  const unmarkCreatePlace = (idx: number) => {
+    const updated = [...timeline];
+    (updated[idx] as any).createPlace = false;
+    setTimeline(updated);
+  };
+  // เรียกตอนบันทึก — สร้างสถานที่แนะนำที่ทำเครื่องหมายไว้ แล้วผูก placeId
+  const resolveNewPlaces = async (stops: any[]) => {
+    const out = [...stops];
+    for (let i = 0; i < out.length; i++) {
+      const s = out[i];
+      if (s.createPlace && !s.placeId && s.place?.trim() && s.province) {
+        try {
+          const res = await fetch("/api/places/suggest", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: s.place, province: s.province, district: s.district, category: s.placeCategory ?? "NATURE", googleMapsUrl: s.googleMapsUrl || undefined }),
+          });
+          const data = await res.json();
+          if (res.ok && data.place) {
+            out[i] = { ...s, placeId: data.place.id, placeSlug: data.place.slug,
+              lat: data.place.lat ?? s.lat, lng: data.place.lng ?? s.lng };
+          }
+        } catch {}
       }
-    } catch { alert("ไม่สามารถเชื่อมต่อระบบได้"); }
-    setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], saving: false } }));
+    }
+    return out;
   };
 
   // ── โหลดข้อมูลทริปที่มีอยู่ ───────────────────────────
@@ -176,6 +190,7 @@ export default function EditTripPage({ params }: Props) {
           lat:           stop.lat            ?? null,
           lng:           stop.lng            ?? null,
           googleMapsUrl: stop.googleMapsUrl  ?? "",
+          createPlace:   false, placeCategory: "NATURE",
           placeApprovalStatus:  stop.place?.approvalStatus  ?? null,
           placeRejectionReason: stop.place?.rejectionReason ?? null,
         })));
@@ -216,7 +231,7 @@ export default function EditTripPage({ params }: Props) {
   const addStop = () => setTimeline(prev => [...prev, {
     date: today, time: "", place: "", province: "", district: "", description: "",
     imageFile: null, imagePreview: null, shareToPlace: false, rating: 5, placeId: null,
-    lat: null, lng: null, googleMapsUrl: "",
+    lat: null, lng: null, googleMapsUrl: "", createPlace: false, placeCategory: "NATURE",
   }]);
 
   const removeStop = (i: number) => setTimeline(prev => prev.filter((_, j) => j !== i));
@@ -324,8 +339,12 @@ export default function EditTripPage({ params }: Props) {
       }
       const finalGallery = [...existingGallery, ...newGalleryUrls];
 
+      // สร้างสถานที่แนะนำที่ทำเครื่องหมายไว้ (รวบมาสร้างตอนนี้)
+      const resolvedTimeline = await resolveNewPlaces(timeline);
+      setTimeline(resolvedTimeline);
+
       const timelineData = await Promise.all(
-        timeline.map(async (stop) => {
+        resolvedTimeline.map(async (stop) => {
           let imageUrl = stop.existingImage ?? "";
           if (stop.imageFile) {
             imageUrl = await uploadFile(stop.imageFile, "checkpoints");
@@ -727,7 +746,15 @@ export default function EditTripPage({ params }: Props) {
                   </div>
                 )}
 
-                {item.place.trim().length >= 2 && !item.placeId && (
+                {item.createPlace && !item.placeId ? (
+                  <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "#ecfdf5", border: "1.5px solid #6ee7b7", borderRadius: 12 }}>
+                    <span style={{ fontSize: 12, color: "#065f46", fontWeight: 700, flex: 1 }}>
+                      📍 จะสร้าง &ldquo;{item.place}&rdquo; เป็นสถานที่แนะนำเมื่อกดบันทึก
+                    </span>
+                    <button type="button" onClick={() => unmarkCreatePlace(idx)}
+                      style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 12, fontWeight: 700, padding: "2px 6px", fontFamily: "inherit" }}>ยกเลิก ×</button>
+                  </div>
+                ) : item.place.trim().length >= 2 && !item.placeId && (
                   <div style={{ marginBottom: 12 }}>
                     {!suggestForm[idx]?.open ? (
                       <button type="button" onClick={() => openSuggest(idx)}
@@ -753,17 +780,14 @@ export default function EditTripPage({ params }: Props) {
                             <option value="ACCOMMODATION">🏨 ที่พัก</option>
                             <option value="CAMPING">⛺ แคมปิ้ง</option>
                           </select>
-                          <button type="button" onClick={() => suggestPlace(idx)} disabled={suggestForm[idx]?.saving}
-                            style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#10b981", color: "#fff", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", opacity: suggestForm[idx]?.saving ? 0.7 : 1 }}>
-                            {suggestForm[idx]?.saving ? "⏳..." : "✓ สร้าง"}
+                          <button type="button" onClick={() => markCreatePlace(idx)}
+                            style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#10b981", color: "#fff", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+                            ✓ ตกลง
                           </button>
                           <button type="button" onClick={() => closeSuggest(idx)}
                             style={{ padding: "7px 12px", borderRadius: 8, border: "1.5px solid #d1fae5", background: "#fff", color: "#64748b", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>ยกเลิก</button>
                         </div>
-                        <input type="text" placeholder="Google Maps URL (ไม่บังคับ)"
-                          value={suggestForm[idx]?.mapsUrl ?? ""}
-                          onChange={e => setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], mapsUrl: e.target.value } }))}
-                          style={{ padding: "8px 12px", borderRadius: 8, border: "1.5px solid #d1fae5", fontSize: 12, fontFamily: "inherit", background: "#fff" }} />
+                        <p style={{ margin: 0, fontSize: 11, color: "#6b7280" }}>พิกัดจะใช้จากช่อง “ปักหมุดพิกัด” ด้านล่าง · ส่งให้แอดมินตรวจสอบเมื่อกดบันทึก</p>
                       </div>
                     )}
                   </div>

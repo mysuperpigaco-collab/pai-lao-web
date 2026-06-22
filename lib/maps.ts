@@ -54,10 +54,18 @@ export async function googleUrlToLatLng(
   if (!url) return null;
   const direct = extractLatLngFromGoogleUrl(url);
   if (direct) return direct;
-  if (/(maps\.app\.goo\.gl|goo\.gl\/maps)/i.test(url)) {
+  if (/(maps\.app\.goo\.gl|goo\.gl\/maps|g\.co\/kgs)/i.test(url)) {
     try {
-      const res = await fetch(url, { redirect: "follow" });
-      return extractLatLngFromGoogleUrl(res.url || "");
+      const res = await fetch(url, {
+        redirect: "follow",
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; PaiLaoBot/1.0)" },
+      });
+      // 1) ลองจาก URL ปลายทางหลัง redirect ก่อน
+      const fromUrl = extractLatLngFromGoogleUrl(res.url || "");
+      if (fromUrl) return fromUrl;
+      // 2) ถ้าลิงก์ย่อไม่ redirect ตรง ๆ (เสิร์ฟ HTML) → สแกนพิกัดจากเนื้อหาหน้า
+      const body = await res.text();
+      return extractLatLngFromGoogleUrl(body);
     } catch {
       return null;
     }
