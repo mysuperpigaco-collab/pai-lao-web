@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { TITLE_STYLES, titleStyleCss } from "@/lib/titleStyle";
+import { TITLE_FONTS, TITLE_COLORS, titleStyleCss, parseTitleStyle, buildTitleStyle } from "@/lib/titleStyle";
 
 const EMOJIS = ["✈️","🏖️","⛰️","🌿","🛕","☕","🍜","📸","🌊","🚗","🎒","🌅","🏝️","🗺️","🏞️","🍃","🌸","🐘","❤️","✨","🔥","🎉","🌙","⭐"];
 
@@ -38,10 +38,16 @@ export default function TitleDecorator({
   };
 
   const previewStyle = titleStyleCss(styleKey);
+  const { font: curFont, color: curColor } = parseTitleStyle(styleKey);
 
   return (
     <div className="tdz">
       <style>{`
+        .tdz-input{width:100%;box-sizing:border-box;padding:14px 20px;border-radius:15px;
+          border:1px solid #e2e8f0;outline:none;background:#f8fafc;font-size:15px;
+          font-family:inherit;color:#1e293b;transition:0.3s}
+        .tdz-input::placeholder{color:#94a3b8}
+        .tdz-input:focus{border-color:#3b82f6;background:#fff;box-shadow:0 0 0 4px rgba(59,130,246,0.1)}
         .tdz-bar{display:flex;gap:8px;margin-top:8px}
         .tdz-tool{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;
           padding:9px 10px;border-radius:10px;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;
@@ -51,7 +57,8 @@ export default function TitleDecorator({
         .tdz-em{font-size:20px;background:none;border:none;cursor:pointer;padding:4px 5px;border-radius:6px;line-height:1}
         .tdz-em:hover{background:#f1f5f9}
         .tdz-lbl{font-size:12px;color:#94a3b8;margin:14px 0 7px;font-weight:700}
-        .tdz-styles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+        .tdz-styles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+        .tdz-sw{width:12px;height:12px;border-radius:4px;flex-shrink:0;display:inline-block;margin-right:6px;vertical-align:-2px}
         .tdz-sty{font-size:12px;padding:8px 6px;border-radius:10px;cursor:pointer;border:1.5px solid #e2e8f0;
           background:#fff;color:#64748b;font-family:inherit;font-weight:700;text-align:center;transition:all .15s}
         .tdz-sty:hover{border-color:#c4b5fd}
@@ -72,7 +79,7 @@ export default function TitleDecorator({
       <input
         ref={inputRef}
         type="text"
-        className="form-control"
+        className="tdz-input"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
@@ -95,16 +102,34 @@ export default function TitleDecorator({
         </div>
       )}
 
-      <div className="tdz-lbl">สไตล์ตัวอักษร · Title style</div>
+      <div className="tdz-lbl">แบบตัวอักษร · Font</div>
       <div className="tdz-styles">
-        {TITLE_STYLES.map(s => (
+        {TITLE_FONTS.map(f => (
           <button
-            key={s.key}
+            key={f.key}
             type="button"
-            className={`tdz-sty${styleKey === s.key ? " on" : ""}`}
-            onClick={() => onStyleChange(s.key)}
+            className={`tdz-sty${curFont === f.key ? " on" : ""}`}
+            onClick={() => onStyleChange(buildTitleStyle(f.key, curColor))}
+            style={f.css}
           >
-            {s.label}
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="tdz-lbl">สี · Color</div>
+      <div className="tdz-styles">
+        {TITLE_COLORS.map(c => (
+          <button
+            key={c.key}
+            type="button"
+            className={`tdz-sty${curColor === c.key ? " on" : ""}`}
+            onClick={() => onStyleChange(buildTitleStyle(curFont, c.key))}
+          >
+            {c.key !== "default" && (
+              <span className="tdz-sw" style={{ background: c.grad ?? c.color }} />
+            )}
+            {c.label}
           </button>
         ))}
       </div>
