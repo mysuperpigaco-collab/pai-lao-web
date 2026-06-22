@@ -316,6 +316,7 @@ export async function PUT(request: Request, { params }: Params) {
       title: trip.title, subtitle: trip.subtitle,
       description: trip.description, coverUrl: trip.coverUrl,
       gallery: trip.gallery, mood: trip.mood,
+      titleStyle: (trip as any).titleStyle,
       budget: trip.budget ? Number(trip.budget) : null,
       location: trip.location, tags: trip.tags,
       youtubeUrl: trip.youtubeUrl, tiktokUrl: trip.tiktokUrl,
@@ -328,6 +329,7 @@ export async function PUT(request: Request, { params }: Params) {
     if (coverUrl    !== undefined) pendingData.coverUrl    = coverUrl;
     if (gallery     !== undefined) pendingData.gallery     = gallery;
     if (mood        !== undefined) pendingData.mood        = mood;
+    if (titleStyle  !== undefined) pendingData.titleStyle  = titleStyle;
     if (budget      !== undefined) pendingData.budget      = budget ? Number(budget) : null;
     if (location    !== undefined) pendingData.location    = location;
     if (tags        !== undefined) pendingData.tags        = tags;
@@ -350,9 +352,10 @@ export async function PUT(request: Request, { params }: Params) {
       },
     });
 
-    // อัปเดต coverUrl ทันทีให้ profile เห็นรูปใหม่ (content อื่นรออนุมัติ)
+    // อัปเดต coverUrl + titleStyle ทันที (เป็นแค่การแสดงผล/ตกแต่ง ไม่ต้องรออนุมัติ)
     const immediateUpdate: Record<string, any> = {};
     if (coverUrl !== undefined) immediateUpdate.coverUrl = coverUrl;
+    if (titleStyle !== undefined) immediateUpdate.titleStyle = titleStyle;
     if (Object.keys(immediateUpdate).length > 0) {
       await prisma.trip.update({ where: { slug }, data: immediateUpdate });
     }
