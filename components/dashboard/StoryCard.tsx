@@ -79,18 +79,34 @@ export default function StoryCard({
       {/* Cover */}
       <div style={{ position: "relative", height: "170px", overflow: "hidden", background: "#f1f5f9", flexShrink: 0 }}>
         <img src={imgSrc} alt={story.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
-        {/* Status badge */}
-        <span style={{
-          position: "absolute", top: "10px", right: "10px",
-          display: "inline-flex", alignItems: "center", gap: "5px",
-          padding: "4px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: 700,
-          background: pendingEdit ? "#fffbeb" : published || story.approvalStatus === "APPROVED" ? "#dcfce7" : story.approvalStatus === "PENDING" ? "#eff6ff" : story.approvalStatus === "REJECTED" ? "#fef2f2" : "#f1f5f9",
-          color:      pendingEdit ? "#92400e" : published || story.approvalStatus === "APPROVED" ? "#15803d" : story.approvalStatus === "PENDING" ? "#1d4ed8" : story.approvalStatus === "REJECTED" ? "#b91c1c" : "#475569",
-          backdropFilter: "blur(4px)",
-        }}>
-          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: pendingEdit ? "#f59e0b" : published || story.approvalStatus === "APPROVED" ? "#22c55e" : story.approvalStatus === "PENDING" ? "#3b82f6" : story.approvalStatus === "REJECTED" ? "#ef4444" : "#94a3b8", flexShrink: 0 }} />
-          {pendingEdit ? "รออนุมัติการแก้ไข · Pending" : published || story.approvalStatus === "APPROVED" ? "เผยแพร่แล้ว · Published" : story.approvalStatus === "PENDING" ? "รออนุมัติ · Pending" : story.approvalStatus === "REJECTED" ? "ถูกปฏิเสธ · Rejected" : "ฉบับร่าง · Draft"}
-        </span>
+        {/* Status badge — เช็คสถานะอนุมัติก่อน isPublished (กันทริปถูกปฏิเสธโชว์ว่าเผยแพร่) */}
+        {(() => {
+          const st =
+            pendingEdit                          ? "pendingEdit"
+            : story.approvalStatus === "REJECTED" ? "rejected"
+            : story.approvalStatus === "PENDING"  ? "pending"
+            : (story.approvalStatus === "APPROVED" || (published && !story.approvalStatus)) ? "published"
+            : "draft";
+          const META: Record<string, { bg: string; color: string; dot: string; label: string }> = {
+            pendingEdit: { bg: "#fffbeb", color: "#92400e", dot: "#f59e0b", label: "รออนุมัติการแก้ไข · Pending" },
+            rejected:    { bg: "#fef2f2", color: "#b91c1c", dot: "#ef4444", label: "ถูกปฏิเสธ · Rejected" },
+            pending:     { bg: "#eff6ff", color: "#1d4ed8", dot: "#3b82f6", label: "รออนุมัติ · Pending" },
+            published:   { bg: "#dcfce7", color: "#15803d", dot: "#22c55e", label: "เผยแพร่แล้ว · Published" },
+            draft:       { bg: "#f1f5f9", color: "#475569", dot: "#94a3b8", label: "ฉบับร่าง · Draft" },
+          };
+          const m = META[st];
+          return (
+            <span style={{
+              position: "absolute", top: "10px", right: "10px",
+              display: "inline-flex", alignItems: "center", gap: "5px",
+              padding: "4px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: 700,
+              background: m.bg, color: m.color, backdropFilter: "blur(4px)",
+            }}>
+              <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: m.dot, flexShrink: 0 }} />
+              {m.label}
+            </span>
+          );
+        })()}
 
         {/* Rejected-place badge (มุมซ้ายบน — เลี่ยงป้ายสถานะมุมขวาบน) */}
         {hasRejected && (
