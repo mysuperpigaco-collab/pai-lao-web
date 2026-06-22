@@ -17,6 +17,7 @@ import ReadingProgress from "@/components/common/ReadingProgress";
 import BackToTop from "@/components/common/BackToTop";
 import MapView from "@/components/maps/MapView";
 import { googleMapsRoute, MAPS_ENABLED } from "@/lib/maps";
+import { titleStyleCss } from "@/lib/titleStyle";
 import "./trip-detail.css";
 
 /** Extract YouTube video ID from various URL formats */
@@ -179,7 +180,7 @@ export default async function TripDetailPage({ params }: Props) {
     where: { isPublished: true, NOT: { slug } },
     orderBy: { createdAt: "desc" },
     take: 3,
-    select: { slug: true, title: true, coverUrl: true, author: { select: { firstName: true, displayName: true } } },
+    select: { slug: true, title: true, titleStyle: true, coverUrl: true, author: { select: { firstName: true, displayName: true } } },
   }).catch(() => []);
 
   const isOwner = session?.userId === trip.author.id;
@@ -268,7 +269,7 @@ export default async function TripDetailPage({ params }: Props) {
                 {trip.mood && <span className="hero-badge">{trip.mood}</span>}
               </div>
               {trip.location && <p className="location">📍 {trip.location}</p>}
-              <h1>{trip.title}</h1>
+              <h1 style={titleStyleCss(trip.titleStyle)}>{trip.title}</h1>
               <div className="hero-meta">
                 <div className="hero-author">
                   {trip.author.avatarUrl
@@ -561,7 +562,7 @@ export default async function TripDetailPage({ params }: Props) {
                         }
                       </div>
                       <div className="related-info">
-                        <div className="related-title">{t.title}</div>
+                        <div className="related-title" style={titleStyleCss((t as any).titleStyle)}>{t.title}</div>
                         <div className="related-meta">{t.author.displayName || t.author.firstName}</div>
                       </div>
                     </Link>

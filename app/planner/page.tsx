@@ -123,6 +123,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { titleStyleCss } from "@/lib/titleStyle";
 import { useAuth } from "@/context/AuthContext";
 import { getDistricts } from "@/data/thailand";
 import { extractLatLngFromGoogleUrl, googleMapsPoint } from "@/lib/maps";
@@ -171,7 +172,7 @@ interface PlaceResult {
   lat?: number | null; lng?: number | null;
 }
 interface BmTrip {
-  id: string; slug: string; title: string; coverUrl?: string;
+  id: string; slug: string; title: string; titleStyle?: string | null; coverUrl?: string;
   timeline: { id: string; order: number; placeName: string; province: string; district?: string; description?: string; googleMapsUrl?: string; stopType?: string; placeId?: string }[];
 }
 
@@ -1241,7 +1242,7 @@ export default function PlannerPage() {
                       <img src={trip.coverUrl} alt="" style={{ width: 48, height: 38, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} />
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 13, color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{trip.title}</div>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, ...titleStyleCss(trip.titleStyle) }}>{trip.title}</div>
                       <div style={{ fontSize: 11, color: "#94a3b8" }}>📍 {trip.timeline?.length ?? 0} จุดแวะ · stops</div>
                     </div>
                     <span style={{ fontSize: 12, color: "#94a3b8", flexShrink: 0 }}>{expandedTrip === trip.id ? "▲" : "▼"}</span>

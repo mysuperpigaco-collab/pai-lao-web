@@ -11,7 +11,7 @@ export async function GET() {
     include: {
       trip: {
         select: {
-          id: true, slug: true, title: true, coverUrl: true, mood: true,
+          id: true, slug: true, title: true, titleStyle: true, coverUrl: true, mood: true,
           isPublished: true, approvalStatus: true,
           timeline: {
             orderBy: { order: "asc" },

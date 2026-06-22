@@ -10,10 +10,12 @@ import ExplorerSection from "@/components/home/ExplorerSection";
 import AutoGridSection from "@/components/home/AutoGridSection";
 import { useAuth } from "@/context/AuthContext";
 import { useFadeIn, useSingleFadeIn } from "@/hooks/useFadeIn";
+import { titleStyleCss } from "@/lib/titleStyle";
 
 interface Trip {
   slug: string;
   title: string;
+  titleStyle?: string | null;
   coverUrl?: string | null;
   province?: string | null;
   mood?: string | null;
@@ -92,7 +94,7 @@ function HeroCard({ trip }: { trip: Trip }) {
 
       {/* Bottom content */}
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, padding: "24px 24px 22px" }}>
-        <h3 style={{ fontSize: 26, fontWeight: 900, color: "white", margin: "0 0 8px", lineHeight: 1.3, textShadow: "0 2px 6px rgba(0,0,0,0.5)" }}>
+        <h3 style={{ fontSize: 26, fontWeight: 900, color: "white", margin: "0 0 8px", lineHeight: 1.3, textShadow: "0 2px 6px rgba(0,0,0,0.5)", ...titleStyleCss(trip.titleStyle) }}>
           {trip.title}
         </h3>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
@@ -197,7 +199,7 @@ function MedCard({ trip, rank }: { trip: Trip; rank: number }) {
 
       {/* Bottom content */}
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, padding: "14px 16px 14px" }}>
-        <h4 style={{ fontSize: 16, fontWeight: 900, color: "white", margin: "0 0 6px", lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>
+        <h4 style={{ fontSize: 16, fontWeight: 900, color: "white", margin: "0 0 6px", lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", textShadow: "0 1px 4px rgba(0,0,0,0.6)", ...titleStyleCss(trip.titleStyle) }}>
           {trip.title}
         </h4>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -271,7 +273,7 @@ function SmallCard({ trip, rank }: { trip: Trip; rank: number }) {
         )}
         {/* Title overlay */}
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 2, padding: "8px 10px" }}>
-          <p style={{ fontSize: 13, fontWeight: 800, color: "white", margin: 0, lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}>
+          <p style={{ fontSize: 13, fontWeight: 800, color: "white", margin: 0, lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", textShadow: "0 1px 3px rgba(0,0,0,0.6)", ...titleStyleCss(trip.titleStyle) }}>
             {trip.title}
           </p>
         </div>

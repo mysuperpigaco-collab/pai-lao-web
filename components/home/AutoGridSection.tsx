@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useTiltCard } from "@/hooks/useTiltCard";
 import ScrollReveal from "@/components/ui/ScrollReveal";
+import { titleStyleCss } from "@/lib/titleStyle";
 
 interface Trip {
-  slug: string; title: string; coverUrl?: string | null;
+  slug: string; title: string; titleStyle?: string | null; coverUrl?: string | null;
   province?: string | null; district?: string | null; mood?: string | null;
   author?: { displayName?: string | null; firstName: string; avatarUrl?: string | null };
   _count?: { reviews: number; bookmarks: number; likes: number };
@@ -112,7 +113,7 @@ function TripCard({ trip }: { trip: Trip }) {
           <div style={S.grad} />
         </div>
         <div style={S.body}>
-          <h4 style={S.title}>{trip.title}</h4>
+          <h4 style={{ ...S.title, ...titleStyleCss(trip.titleStyle) }}>{trip.title}</h4>
           <div style={S.footer}>
             <div style={S.author}>
               {avatar

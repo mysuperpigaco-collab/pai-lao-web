@@ -72,7 +72,7 @@ export async function GET(request: Request) {
     // ── Shared select for scored sorts ───────────────────────
     const scoredSelect = {
       id: true, slug: true, title: true, subtitle: true,
-      coverUrl: true, mood: true, moods: true, budget: true, location: true,
+      coverUrl: true, mood: true, moods: true, titleStyle: true, budget: true, location: true,
       tags: true, createdAt: true, isPublished: true, viewCount: true,
       approvalStatus: true, rejectionReason: true,
       author: { select: { id: true, username: true, displayName: true, firstName: true, avatarUrl: true } },
@@ -131,7 +131,7 @@ export async function GET(request: Request) {
         orderBy,
         select: {
           id: true, slug: true, title: true, subtitle: true,
-          coverUrl: true, mood: true, moods: true, budget: true, location: true,
+          coverUrl: true, mood: true, moods: true, titleStyle: true, budget: true, location: true,
           tags: true, createdAt: true, isPublished: true, viewCount: true,
           approvalStatus: true, rejectionReason: true,
           author: { select: { id: true, username: true, displayName: true, firstName: true, avatarUrl: true } },
@@ -205,7 +205,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { title, subtitle, description, coverUrl, gallery, mood, moods, budget, location, tags, timeline,
+    const { title, subtitle, description, coverUrl, gallery, mood, moods, titleStyle, budget, location, tags, timeline,
             youtubeUrl, tiktokUrl, durationDays, tripStyle, transportMode, isDraft } = body;
 
     if (isDraft) {
@@ -242,6 +242,7 @@ export async function POST(request: Request) {
         gallery:     gallery     ?? [],
         mood:        mood        ?? "ทั่วไป",
         moods:       Array.isArray(moods) ? moods : [],
+        titleStyle:  titleStyle  ?? "none",
         budget:      budget      ? Math.round(Number(budget)) : null,
         location:    location    ?? "",
         tags:        tags        ?? [],

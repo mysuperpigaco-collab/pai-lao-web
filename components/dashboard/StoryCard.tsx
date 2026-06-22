@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useTiltCard } from "@/hooks/useTiltCard";
+import { titleStyleCss } from "@/lib/titleStyle";
 
 interface TripItem {
   slug:            string;
   title:           string;
+  titleStyle?:     string | null;
   coverUrl?:       string | null;
   createdAt:       string;
   isPublished?:    boolean;
@@ -108,7 +110,7 @@ export default function StoryCard({
 
       {/* Body */}
       <div style={{ padding: "14px 16px 16px", flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
-        <h4 style={{ fontSize: "14px", fontWeight: 800, color: "#1e293b", margin: 0, lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>
+        <h4 style={{ fontSize: "14px", fontWeight: 800, color: "#1e293b", margin: 0, lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden", ...titleStyleCss(story.titleStyle) }}>
           {story.title}
         </h4>
         <p style={{ fontSize: "12px", color: "#94a3b8", margin: 0 }}>📅 {formatDate(story.createdAt)}</p>

@@ -10,6 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
 import { getDistricts, normalizeProvince, PROVINCES } from "@/data/thailand";
 import { TRIP_MOODS, TRIP_MOOD_VALUES } from "@/data/tripMoods";
+import TitleDecorator from "@/components/trips/TitleDecorator";
 import { extractLatLngFromGoogleUrl } from "@/lib/maps";
 import RichTextEditor from "@/components/common/RichTextEditor";
 import AIPolish from "@/components/common/AIPolish";
@@ -92,6 +93,7 @@ export default function CreateStoryPage() {
   const [galleryLimit, setGalleryLimit] = useState(50);
 
   const [title,      setTitle     ] = useState("");
+  const [titleStyle, setTitleStyle] = useState("none");
   const [content,    setContent   ] = useState("");
   const [budget,     setBudget    ] = useState("");
   const [moods,      setMoods     ] = useState<string[]>([]);
@@ -358,6 +360,7 @@ export default function CreateStoryPage() {
         gallery: existingGallery,
         mood: finalMoods[0],
         moods: finalMoods,
+        titleStyle,
         budget: budget || null,
         location: timeline[0]?.province || "",
         tags: tags.split(",").map((t: string) => t.trim()).filter(Boolean),
@@ -457,6 +460,7 @@ export default function CreateStoryPage() {
         gallery:  galleryUrls,
         mood: finalMoods[0],
         moods: finalMoods,
+        titleStyle,
         budget:   budget || null,
         location: timeline[0]?.province || "",
         tags:       tags.split(",").map(t => t.trim()).filter(Boolean),
@@ -646,8 +650,14 @@ export default function CreateStoryPage() {
           <div className="info-grid">
             <div className="form-group full-width">
               <label>หัวข้อเรื่องเล่า | <small>TITLE</small> <span>*</span><HintTooltip text="ตั้งชื่อให้น่าดึงดูด บอกจุดเด่นหรืออารมณ์ทริป เช่น '3 วันคนเดียวเชียงราย ไม่อ้างว้างอย่างที่คิด'" /></label>
-              <input type="text" className="form-control" value={title}
-                onChange={(e) => setTitle(e.target.value)} placeholder="ตั้งชื่อทริปให้น่าสนใจ..." required />
+              <TitleDecorator
+                value={title}
+                onChange={setTitle}
+                styleKey={titleStyle}
+                onStyleChange={setTitleStyle}
+                coverUrl={coverPreview}
+                moodLabel={moods[0] ? (TRIP_MOODS.find(m => m.value === moods[0])?.th ?? null) : null}
+              />
             </div>
             <div className="form-group full-width">
               <label>เรื่องเล่าโดยรวม | <small>OVERALL</small> <span>*</span><HintTooltip text="เล่าภาพรวมทริป — ความประทับใจ ไฮไลต์ อารมณ์ที่ได้รับ ไม่ต้องลงรายละเอียดทุกจุด ส่วนนั้นใส่ใน Timeline" /></label>
@@ -657,11 +667,6 @@ export default function CreateStoryPage() {
                 placeholder="เล่าความประทับใจในภาพรวมของทริปนี้... แทรกรูปภาพได้เลย 🖼️"
               />
               <AIPolish value={content} onApply={setContent} mode="overall" />
-            </div>
-            <div className="form-group full-width">
-              <label>งบประมาณ | <small>BUDGET (บาท)</small><HintTooltip text="ประมาณการงบรวมทั้งทริป รวมค่าเดินทาง ที่พัก และอาหาร ไม่จำเป็นต้องแม่นยำ" /></label>
-              <input type="number" className="form-control" value={budget}
-                onChange={(e) => setBudget(e.target.value)} placeholder="เช่น 2500" step="1" max="2000000000" />
             </div>
             <div className="form-group full-width">
               <label>สไตล์ทริป | <small>MOOD</small><HintTooltip text="เลือกสไตล์ที่ตรงทริปนี้มากที่สุด ช่วยให้คนที่ชอบท่องเที่ยวสไตล์เดียวกันค้นหาพบ" /></label>
@@ -705,7 +710,12 @@ export default function CreateStoryPage() {
                 เลือกได้หลายสไตล์ · ถ้าไม่เลือก จะถือว่าครบทุกสไตล์
               </small>
             </div>
-            <div className="form-group full-width">
+            <div className="form-group">
+              <label>งบประมาณ | <small>BUDGET (บาท)</small><HintTooltip text="ประมาณการงบรวมทั้งทริป รวมค่าเดินทาง ที่พัก และอาหาร ไม่จำเป็นต้องแม่นยำ" /></label>
+              <input type="number" className="form-control" value={budget}
+                onChange={(e) => setBudget(e.target.value)} placeholder="เช่น 2500" step="1" max="2000000000" />
+            </div>
+            <div className="form-group">
               <label>แท็ก | <small>TAGS (คั่นด้วยจุลภาค)</small><HintTooltip text="คีย์เวิร์ดที่ช่วยให้คนค้นหาทริปนี้เจอ เช่น กาญจนบุรี, น้ำตก, วันเดียว — คั่นด้วย , (จุลภาค)" /></label>
               <input type="text" className="form-control" value={tags}
                 onChange={(e) => setTags(e.target.value)} placeholder="เช่น กาญจนบุรี, น้ำตก, วันเดียว" />

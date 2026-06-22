@@ -44,7 +44,7 @@ export async function GET() {
     const bookmarks = await prisma.bookmark.findMany({
       where: { userId: session.userId },
       include: {
-        trip:  { select: { id: true, slug: true, title: true, coverUrl: true, mood: true } },
+        trip:  { select: { id: true, slug: true, title: true, titleStyle: true, coverUrl: true, mood: true } },
         place: { select: { id: true, slug: true, title: true, coverUrl: true, category: true } },
       },
       orderBy: { createdAt: "desc" },

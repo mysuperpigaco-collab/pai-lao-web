@@ -6,10 +6,11 @@ import ScrollReveal from "@/components/ui/ScrollReveal";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTiltCard } from "@/hooks/useTiltCard";
+import { titleStyleCss } from "@/lib/titleStyle";
 
 // ── Types ───────────────────────────────────────────────
 interface TripResult {
-  slug: string; title: string; coverUrl?: string | null;
+  slug: string; title: string; titleStyle?: string | null; coverUrl?: string | null;
   province?: string | null; district?: string | null;
   mood?: string | null; avgRating?: number | null;
   _count?: { reviews: number; bookmarks: number; likes: number };
@@ -141,7 +142,7 @@ function SearchTripCard({ trip }: { trip: TripResult }) {
           </div>
         </div>
         <div style={{ padding: "11px 13px" }}>
-          <h4 style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", margin: "0 0 3px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{trip.title}</h4>
+          <h4 style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", margin: "0 0 3px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", ...titleStyleCss(trip.titleStyle) }}>{trip.title}</h4>
           <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>
             {trip.province ? `📍 ${trip.province}` : ""}
             {trip.author ? ` · ${trip.author.displayName || trip.author.firstName}` : ""}

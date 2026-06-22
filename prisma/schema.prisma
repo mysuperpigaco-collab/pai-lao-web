@@ -198,6 +198,7 @@ model Trip {
 
   mood        String        // ตัวหลัก (= moods[0]) เก็บไว้เพื่อ backward-compat
   moods       String[]      @default([])  // หลายสไตล์ของทริป (multi-select)
+  titleStyle  String?       @default("none") // สไตล์สี/ฟอนต์ของหัวข้อ (none|bold|serif|red|sunset|ocean|purple|gold)
   budget      Int?
   location    String?
   tags        String[]

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback, Suspense } from "react";
+import { titleStyleCss } from "@/lib/titleStyle";
 import { useTiltCard } from "@/hooks/useTiltCard";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -15,7 +16,7 @@ interface PublicUser {
   _count?: { followers: number; following: number; trips: number };
 }
 interface TripCard {
-  id: string; slug: string; title: string; coverUrl: string;
+  id: string; slug: string; title: string; titleStyle?: string | null; coverUrl: string;
   mood: string; province?: string; location?: string; createdAt: string;
   viewCount?: number;
   _count: { likes: number; bookmarks: number; reviews?: number };
@@ -253,7 +254,7 @@ function ModernTripCard({ trip, ownerAvatar, ownerName }: { trip: TripCard; owne
         </span>}
       </div>
       <div style={{padding:"12px 14px 13px", flex:1, display:"flex", flexDirection:"column", gap:6}}>
-        <h4 style={{fontSize:14, fontWeight:800, color:"#1e293b", margin:0, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" as any, lineHeight:1.35}}>
+        <h4 style={{fontSize:14, fontWeight:800, color:"#1e293b", margin:0, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" as any, lineHeight:1.35, ...titleStyleCss(trip.titleStyle)}}>
           {trip.title}
         </h4>
         <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", gap:6, marginTop:"auto", paddingTop:6, borderTop:"1px solid rgba(241,245,249,0.8)"}}>

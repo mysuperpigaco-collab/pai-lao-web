@@ -6,6 +6,7 @@ import ScrollReveal from "@/components/ui/ScrollReveal";
 import { useSearchParams } from "next/navigation";
 import { useLenis } from "lenis/react";
 import Link from "next/link";
+import { titleStyleCss } from "@/lib/titleStyle";
 import { PROVINCES, getDistricts } from "@/data/thailand";
 import { useTiltCard } from "@/hooks/useTiltCard";
 import { readSearchState, saveSearchState, patchSearchScroll, type SearchState } from "@/lib/searchStateCache";
@@ -15,6 +16,7 @@ interface Trip {
   id: string;
   slug: string;
   title: string;
+  titleStyle?: string | null;
   subtitle?: string | null;
   coverUrl?: string | null;
   mood?: string | null;
@@ -548,7 +550,7 @@ function TripCard({ trip }: { trip: Trip }) {
 
         {/* Body */}
         <div className="tc-body">
-          <h3 className="tc-title">{trip.title}</h3>
+          <h3 className="tc-title" style={titleStyleCss(trip.titleStyle)}>{trip.title}</h3>
           {trip.subtitle && <p className="tc-subtitle">{trip.subtitle}</p>}
           <p className="tc-loc">
             📍 {trip.province || "ไทย"}

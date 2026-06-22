@@ -1,11 +1,13 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { titleStyleCss } from "@/lib/titleStyle";
 
 interface Trip {
   id: string;
   slug: string;
   title: string;
+  titleStyle?: string | null;
   subtitle?: string | null;
   coverUrl?: string | null;
   province?: string | null;
@@ -194,7 +196,7 @@ export default function TripSlider({ activeTab, onTabChange }: TripSliderProps) 
 
           {/* Bottom content */}
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "24px 24px 22px" }}>
-            <h3 style={{ color: "#fff", fontSize: 22, fontWeight: 900, margin: "0 0 6px", lineHeight: 1.3, textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
+            <h3 style={{ color: "#fff", fontSize: 22, fontWeight: 900, margin: "0 0 6px", lineHeight: 1.3, textShadow: "0 2px 8px rgba(0,0,0,0.4)", ...titleStyleCss(trip.titleStyle) }}>
               {trip.title}
             </h3>
             {trip.subtitle && (

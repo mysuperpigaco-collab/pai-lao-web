@@ -65,7 +65,7 @@ export async function GET(_req: Request, { params }: Params) {
       orderBy: { createdAt: "desc" },
       take: 12,
       select: {
-        id: true, slug: true, title: true, coverUrl: true,
+        id: true, slug: true, title: true, titleStyle: true, coverUrl: true,
         mood: true, location: true, createdAt: true,
         _count: { select: { likes: true, bookmarks: true } },
       },

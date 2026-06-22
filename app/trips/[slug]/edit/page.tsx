@@ -6,6 +6,7 @@ import Link from "next/link";
 import { uploadFile, uploadFiles } from "@/lib/uploadHelper";
 import { getDistricts, normalizeProvince, PROVINCES } from "@/data/thailand";
 import { TRIP_MOODS, TRIP_MOOD_VALUES } from "@/data/tripMoods";
+import TitleDecorator from "@/components/trips/TitleDecorator";
 import { extractLatLngFromGoogleUrl } from "@/lib/maps";
 import {
   BackButton,
@@ -48,6 +49,7 @@ export default function EditTripPage({ params }: Props) {
   const [existingGallery, setExistingGallery] = useState<string[]>([]);
 
   const [title,      setTitle     ] = useState("");
+  const [titleStyle, setTitleStyle] = useState("none");
   const [content,    setContent   ] = useState("");
   const [budget,     setBudget    ] = useState("");
   const [moods,      setMoods     ] = useState<string[]>([]);
@@ -146,6 +148,7 @@ export default function EditTripPage({ params }: Props) {
         if (!data.trip) { setNotFound(true); return; }
         const t = data.trip;
         setTitle(t.title         ?? "");
+        setTitleStyle(t.titleStyle ?? "none");
         setContent(t.description ?? "");
         setBudget(t.budget ? String(t.budget) : "");
         setMoods(Array.isArray(t.moods) && t.moods.length ? t.moods : (t.mood ? [t.mood] : []));
@@ -277,6 +280,7 @@ export default function EditTripPage({ params }: Props) {
           gallery: finalGallery,
           mood: finalMoods[0],
           moods: finalMoods,
+          titleStyle,
           budget: budget || null,
           tags: tags.split(",").map(t => t.trim()).filter(Boolean),
           youtubeUrl: youtubeUrl.trim() || null,
@@ -354,6 +358,7 @@ export default function EditTripPage({ params }: Props) {
           gallery:     finalGallery,
           mood: finalMoods[0],
           moods: finalMoods,
+          titleStyle,
           budget:      budget || null,
           tags:        tags.split(",").map(t => t.trim()).filter(Boolean),
           youtubeUrl:  youtubeUrl.trim() || null,
@@ -530,16 +535,17 @@ export default function EditTripPage({ params }: Props) {
 
           {/* Info grid */}
           <div className="info-grid">
-            <div className="form-group">
-              <label>ชื่อเรื่องเล่า | <small>TITLE</small> <span style={{ color: "#ef4444" }}>*</span></label>
-              <input type="text" className="form-control" value={title}
-                onChange={e => setTitle(e.target.value)} placeholder="ตั้งชื่อทริปของคุณ..." />
-            </div>
-
             <div className="form-group full-width">
-              <label>งบประมาณ | <small>BUDGET (บาท)</small></label>
-              <input type="number" className="form-control" value={budget}
-                onChange={e => setBudget(e.target.value)} placeholder="0" min="0" step="1" max="2000000000" />
+              <label>ชื่อเรื่องเล่า | <small>TITLE</small> <span style={{ color: "#ef4444" }}>*</span></label>
+              <TitleDecorator
+                value={title}
+                onChange={setTitle}
+                styleKey={titleStyle}
+                onStyleChange={setTitleStyle}
+                coverUrl={coverPreview}
+                moodLabel={moods[0] ? (TRIP_MOODS.find(m => m.value === moods[0])?.th ?? null) : null}
+                placeholder="ตั้งชื่อทริปของคุณ..."
+              />
             </div>
 
             <div className="form-group full-width">
@@ -585,7 +591,13 @@ export default function EditTripPage({ params }: Props) {
               </small>
             </div>
 
-            <div className="form-group full-width">
+            <div className="form-group">
+              <label>งบประมาณ | <small>BUDGET (บาท)</small></label>
+              <input type="number" className="form-control" value={budget}
+                onChange={e => setBudget(e.target.value)} placeholder="0" min="0" step="1" max="2000000000" />
+            </div>
+
+            <div className="form-group">
               <label>แท็ก | <small>TAGS (คั่นด้วยจุลภาค)</small></label>
               <input type="text" className="form-control" value={tags}
                 onChange={e => setTags(e.target.value)} placeholder="เช่น กาญจนบุรี, น้ำตก, วันเดียว" />
