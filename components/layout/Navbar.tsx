@@ -86,10 +86,15 @@ export default function Navbar() {
           box-shadow: 0 2px 16px rgba(5,150,105,0.18);
         }
         .nb-inner {
-          max-width: 1200px; margin: 0 auto; padding: 0 16px;
+          max-width: 1340px; margin: 0 auto; padding: 0 16px;
           height: 60px;
           display: flex; justify-content: space-between; align-items: center;
           gap: 12px;
+        }
+        /* โซนซ้าย: โลโก้ + เมนู เป็นก้อนเดียว → nb-inner เหลือ 3 ลูก (ซ้าย/ค้นหา/ขวา)
+           space-between เลยทำให้ช่องว่างซ้าย-ขวาของช่องค้นหาเท่ากันเอง */
+        .nb-left {
+          display: flex; align-items: center; gap: 10px; flex-shrink: 0;
         }
         /* Logo */
         .nb-logo {
@@ -128,7 +133,7 @@ export default function Navbar() {
         .nb-search {
           display: flex; align-items: center;
           background: rgba(255,255,255,0.18); border-radius: 14px; padding: 0 14px 0 10px;
-          flex: 1 1 160px; min-width: 0; max-width: 360px;
+          flex: 0 0 280px; min-width: 0;
           border: 1.5px solid rgba(255,255,255,0.35);
           height: 42px; gap: 8px; backdrop-filter: blur(4px);
         }
@@ -239,13 +244,11 @@ export default function Navbar() {
         }
         .nb-plan-btn:hover { background: rgba(255,255,255,0.28); }
         .nb-plan-btn span { color: rgba(255,255,255,0.7) !important; }
-        /* ── เปิดครบ 2 ฟีเจอร์ (promo+mission) → ซ่อนช่องค้นหา inline กันแถบล้น
-              อิงจำนวนฟีเจอร์จริง ไม่ใช่ความกว้างจอ (จอกว้าง media query ไม่ทำงาน) ── */
-        .nb-nav.feat-2 .nb-search { display: none; }
-        /* ── Narrow desktop: ซ่อนช่องค้นหา inline กันแถบแน่นเกินตอนจอแคบ ── */
-        @media (max-width: 1024px) {
-          .nb-search { display: none; }
-        }
+        /* ── ซ่อนช่องค้นหา inline เฉพาะตอนจอแคบเกินจะใส่ได้ครบ (อิงจำนวนฟีเจอร์)
+              จอกว้างของจริงจะโชว์ search เสมอ และจัดสมดุลช่องว่าง 2 ข้างเท่ากัน ── */
+        @media (max-width: 1080px) { .nb-search { display: none; } }
+        @media (max-width: 1180px) { .nb-nav.feat-1 .nb-search { display: none; } }
+        @media (max-width: 1300px) { .nb-nav.feat-2 .nb-search { display: none; } }
         /* ── Mobile ── */
         @media (max-width: 768px) {
           .nb-links        { display: none; }
@@ -263,23 +266,27 @@ export default function Navbar() {
 
       <div className="nb-inner">
 
-        {/* Logo */}
-        <Link href="/" className="nb-logo">
-          <div className="nb-logo-icon">🗺️</div>
-          <div className="nb-logo-text">
-            <span className="nb-logo-th">ไปเล่า</span>
-            <span className="nb-logo-en">PAI · LAO</span>
-          </div>
-        </Link>
+        {/* ── โซนซ้าย: โลโก้ + เมนู (จับกลุ่มไว้เป็นก้อนเดียว เพื่อให้ space-between
+              เหลือช่องว่างซ้าย/ขวาของช่องค้นหาเท่ากัน) ── */}
+        <div className="nb-left">
+          {/* Logo */}
+          <Link href="/" className="nb-logo">
+            <div className="nb-logo-icon">🗺️</div>
+            <div className="nb-logo-text">
+              <span className="nb-logo-th">ไปเล่า</span>
+              <span className="nb-logo-en">PAI · LAO</span>
+            </div>
+          </Link>
 
-        {/* Nav Links — desktop only */}
-        <div className="nb-links">
-          <Link href="/"      className="nb-link">🏠 หน้าแรก <span style={{fontSize:12,color:"#94a3b8",fontWeight:700}}>Home</span></Link>
-          <Link href="/place" className="nb-link">🗺️ สถานที่ <span style={{fontSize:12,color:"#94a3b8",fontWeight:700}}>Places</span></Link>
-          <Link href="/trips" className="nb-link">✈️ ทริป <span style={{fontSize:12,color:"#94a3b8",fontWeight:700}}>Trips</span></Link>
+          {/* Nav Links — desktop only */}
+          <div className="nb-links">
+            <Link href="/"      className="nb-link">🏠 หน้าแรก <span style={{fontSize:12,color:"#94a3b8",fontWeight:700}}>Home</span></Link>
+            <Link href="/place" className="nb-link">🗺️ สถานที่ <span style={{fontSize:12,color:"#94a3b8",fontWeight:700}}>Places</span></Link>
+            <Link href="/trips" className="nb-link">✈️ ทริป <span style={{fontSize:12,color:"#94a3b8",fontWeight:700}}>Trips</span></Link>
+          </div>
         </div>
 
-        {/* Search — desktop only */}
+        {/* Search — desktop only, จัดกึ่งกลาง ขนาดพอดีคำ */}
         <div className="nb-search">
           <select value={searchType} onChange={e => setSearchType(e.target.value)}>
             <option value="ทริป">ทริป · Trips</option>
