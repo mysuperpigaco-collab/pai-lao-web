@@ -276,14 +276,16 @@ export async function PUT(request: Request, { params }: Params) {
       return NextResponse.json({ message: "บันทึกแบบร่างแล้ว", trip: updated });
     }
 
-    // ── เจ้าของ: ถ้าทริปยังรออนุมัติครั้งแรก → อัปเดตตรงได้เลย ──
-    if ((trip as any).approvalStatus === "PENDING") {
+    // ── เจ้าของ: ทริปที่ยังรออนุมัติครั้งแรก (PENDING) หรือถูกปฏิเสธ (REJECTED)
+    //    → อัปเดตตรง + ส่งกลับเข้าคิวรออนุมัติใหม่ (ไม่สร้าง PendingEdit) ──
+    if ((trip as any).approvalStatus === "PENDING" || (trip as any).approvalStatus === "REJECTED") {
       if (timeline !== undefined) {
         await prisma.timelineStop.deleteMany({ where: { trip: { slug } } });
       }
       await (prisma as any).trip.update({
         where: { slug },
         data: {
+          approvalStatus: "PENDING", rejectionReason: null,
           ...(title       !== undefined && { title }),
           ...(subtitle    !== undefined && { subtitle }),
           ...(description !== undefined && { description: sanitizeServerHtml(description) }),
@@ -320,6 +322,10 @@ export async function PUT(request: Request, { params }: Params) {
           }),
         },
       });
+      // ล้าง PendingEdit เก่าที่ค้าง (กันโผล่ซ้ำในแท็บแก้ไขของแอดมิน)
+      await (prisma as any).pendingEdit.deleteMany({
+        where: { targetId: (trip as any).id, targetType: "TRIP", status: { in: ["PENDING", "REJECTED"] } },
+      }).catch(() => {});
       return NextResponse.json({ message: "อัปเดตข้อมูลสำเร็จ รอแอดมินอนุมัติอยู่", pending: true });
     }
 
