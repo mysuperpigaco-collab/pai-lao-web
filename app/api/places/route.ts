@@ -80,6 +80,8 @@ export async function GET(request: Request) {
 
     const communityStops = await prisma.timelineStop.findMany({
       where: {
+        shareToPlace: true,
+        trip: { isPublished: true, approvalStatus: "APPROVED", isDraft: false },
         OR: [
           { placeId: { in: placeIds } },
           { placeId: null, placeName: { in: placeTitles, mode: "insensitive" } },

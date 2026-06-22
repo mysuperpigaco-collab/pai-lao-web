@@ -886,6 +886,11 @@ export default function EditTripPage({ params }: Props) {
                         <span style={{ fontSize: 12, color: "#94a3b8" }}>{item.rating ?? 5}/5</span>
                       </div>
                     )}
+                    {item.shareToPlace && (
+                      <div style={{ marginTop: 8, paddingLeft: 48, fontSize: 11, color: "#b45309", lineHeight: 1.5 }}>
+                        ℹ️ ถ้าคุณเคยรีวิว/แชร์สถานที่นี้มาก่อน หน้าสถานที่จะแสดงเฉพาะรีวิวแรกของคุณ (รีวิวใหม่จะไม่ถูกเพิ่มซ้ำ)
+                      </div>
+                    )}
                   </div>
                 )}
 
