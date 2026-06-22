@@ -218,38 +218,41 @@ export default async function TripDetailPage({ params }: Props) {
           position: "sticky", top: 0, zIndex: 50,
           background: approvalStatus === "REJECTED" ? "#7f1d1d" : "#78350f",
           borderBottom: `2px solid ${approvalStatus === "REJECTED" ? "#ef4444" : "#f59e0b"}`,
-          padding: "12px 24px",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          gap: 12, flexWrap: "wrap",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: "1.2rem" }}>
-              {approvalStatus === "REJECTED" ? "❌" : "⏳"}
-            </span>
-            <div>
-              <div style={{ color: "#fff", fontWeight: 700, fontSize: "0.9rem" }}>
-                {approvalStatus === "REJECTED"
-                  ? "ทริปนี้ถูกปฏิเสธ — ไม่แสดงต่อสาธารณะ"
-                  : "ทริปนี้กำลังรอการตรวจสอบจากแอดมิน — ยังไม่แสดงต่อสาธารณะ"}
-              </div>
-              {approvalStatus === "REJECTED" && (trip as any).rejectionReason && (
-                <div style={{ color: "#fca5a5", fontSize: "0.8rem", marginTop: 2 }}>
-                  เหตุผล: {(trip as any).rejectionReason}
+          <div style={{
+            maxWidth: 1200, margin: "0 auto", padding: "12px 24px",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            gap: 12, flexWrap: "wrap",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: "1.2rem" }}>
+                {approvalStatus === "REJECTED" ? "❌" : "⏳"}
+              </span>
+              <div>
+                <div style={{ color: "#fff", fontWeight: 700, fontSize: "0.9rem" }}>
+                  {approvalStatus === "REJECTED"
+                    ? "ทริปนี้ถูกปฏิเสธ — ไม่แสดงต่อสาธารณะ"
+                    : "ทริปนี้กำลังรอการตรวจสอบจากแอดมิน — ยังไม่แสดงต่อสาธารณะ"}
                 </div>
-              )}
+                {approvalStatus === "REJECTED" && (trip as any).rejectionReason && (
+                  <div style={{ color: "#fca5a5", fontSize: "0.8rem", marginTop: 2 }}>
+                    เหตุผล: {(trip as any).rejectionReason}
+                  </div>
+                )}
+              </div>
             </div>
+            {isAdmin && (
+              <a href="/admin/approvals"
+                style={{
+                  background: "rgba(255,255,255,0.15)", color: "#fff",
+                  borderRadius: 8, padding: "6px 14px", fontSize: "0.8rem",
+                  fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap",
+                  border: "1px solid rgba(255,255,255,0.3)",
+                }}>
+                🛡️ ไปหน้าอนุมัติ
+              </a>
+            )}
           </div>
-          {isAdmin && (
-            <a href="/admin/approvals"
-              style={{
-                background: "rgba(255,255,255,0.15)", color: "#fff",
-                borderRadius: 8, padding: "6px 14px", fontSize: "0.8rem",
-                fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap",
-                border: "1px solid rgba(255,255,255,0.3)",
-              }}>
-              🛡️ ไปหน้าอนุมัติ
-            </a>
-          )}
         </div>
       )}
 
