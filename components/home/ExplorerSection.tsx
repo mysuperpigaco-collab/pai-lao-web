@@ -276,8 +276,8 @@ export default function ExplorerSection() {
       {/* Tab toggle */}
       <div style={{ display: "inline-flex", gap: 4, padding: 4, background: "#f1f5f9", borderRadius: 14, marginBottom: 20 }}>
         {([
-          { id: "area",   icon: "🗾", label: "เลือกพื้นที่" },
-          { id: "nearby", icon: "📍", label: "ใกล้ฉัน" },
+          { id: "area",   icon: "🗾", label: "เลือกพื้นที่ · Area" },
+          { id: "nearby", icon: "📍", label: "ใกล้ฉัน · Nearby" },
         ] as const).map(t => {
           const active = mode === t.id;
           return (

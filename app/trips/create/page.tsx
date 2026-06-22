@@ -679,7 +679,7 @@ export default function CreateStoryPage() {
                         cursor: "pointer", fontFamily: "inherit", transition: "all .15s",
                         boxShadow: on ? "0 2px 8px rgba(124,58,237,0.18)" : "none",
                       }}>
-                      <span style={{ fontSize: 15 }}>{m.icon}</span>{m.th}{on && <span style={{ fontSize: 11 }}>✓</span>}
+                      <span style={{ fontSize: 15 }}>{m.icon}</span>{m.th} · {m.en}{on && <span style={{ fontSize: 11 }}>✓</span>}
                     </button>
                   );
                 })}
@@ -883,7 +883,7 @@ export default function CreateStoryPage() {
                 </div>
                 <div className="timeline-detail-row">
                   <div style={{ display:"flex", flexDirection:"column", flex:1, gap:6 }}>
-                    <textarea className="form-control desc-area" placeholder="เล่าบรรยากาศที่จุดนี้..."
+                    <textarea className="form-control desc-area" placeholder="เล่าบรรยากาศที่จุดนี้... · Describe this stop..."
                       value={item.description} onChange={(e) => updateTimeline(idx, "description", e.target.value)} data-lenis-prevent />
                   </div>
                   <div className="cp-upload-container">
@@ -985,7 +985,7 @@ export default function CreateStoryPage() {
             {!existingDraft && (
               <button type="button" onClick={saveDraft} disabled={isSavingDraft}
                 style={{ padding: "13px 20px", borderRadius: 14, border: "2px solid #f59e0b", background: isSavingDraft ? "#fef3c7" : "#fffbeb", color: "#92400e", fontWeight: 800, fontSize: 14, cursor: isSavingDraft ? "not-allowed" : "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 8 }}>
-                {isSavingDraft ? "⏳ กำลังบันทึก..." : "📌 บันทึกชั่วคราว"}
+                {isSavingDraft ? "⏳ กำลังบันทึก..." : "📌 บันทึกร่าง · Save Draft"}
               </button>
             )}
             <button ref={magPublish.ref} onMouseMove={magPublish.onMouseMove} onMouseLeave={magPublish.onMouseLeave} type="submit" className="btn-action-publish" disabled={isLoading}>

@@ -558,7 +558,7 @@ export default function EditTripPage({ params }: Props) {
                         cursor: "pointer", fontFamily: "inherit", transition: "all .15s",
                         boxShadow: on ? "0 2px 8px rgba(124,58,237,0.18)" : "none",
                       }}>
-                      <span style={{ fontSize: 15 }}>{m.icon}</span>{m.th}{on && <span style={{ fontSize: 11 }}>✓</span>}
+                      <span style={{ fontSize: 15 }}>{m.icon}</span>{m.th} · {m.en}{on && <span style={{ fontSize: 11 }}>✓</span>}
                     </button>
                   );
                 })}
@@ -768,7 +768,7 @@ export default function EditTripPage({ params }: Props) {
                   <div style={{ display:"flex", flexDirection:"column", flex:1, gap:6 }}>
                     <textarea className="form-control desc-area" value={item.description}
                       onChange={e => updateTimeline(idx, "description", e.target.value)}
-                      placeholder="อธิบายสถานที่นี้..." data-lenis-prevent />
+                      placeholder="อธิบายสถานที่นี้... · Describe this stop..." data-lenis-prevent />
                   </div>
                   <div className="cp-upload-container">
                     {item.imagePreview ? (

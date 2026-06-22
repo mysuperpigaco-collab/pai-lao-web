@@ -19,8 +19,8 @@ interface Trip {
 type TabKey = "popular" | "trending";
 
 const TABS: { key: TabKey; label: string; icon: string; desc: string }[] = [
-  { key: "popular",  label: "ยอดนิยมตลอดกาล", icon: "🏆", desc: "วัดจากยอด Bookmark" },
-  { key: "trending", label: "มาแรงล่าสุด",     icon: "🔥", desc: "ไลค์สูงใน 90 วัน"  },
+  { key: "popular",  label: "ยอดนิยมตลอดกาล · Popular", icon: "🏆", desc: "วัดจากยอด Bookmark" },
+  { key: "trending", label: "มาแรงล่าสุด · Trending",   icon: "🔥", desc: "ไลค์สูงใน 90 วัน"  },
 ];
 
 interface TripSliderProps {

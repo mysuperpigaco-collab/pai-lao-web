@@ -244,7 +244,7 @@ function TripsInner() {
                 onChange={e => changeFilter(setDistrict, e.target.value)}
                 disabled={!province}
               >
-                <option value="">{province ? "ทุกอำเภอ" : "เลือกจังหวัดก่อน"}</option>
+                <option value="">{province ? "ทุกอำเภอ · All Districts" : "เลือกจังหวัดก่อน · Select Province First"}</option>
                 {getDistricts(province).map(d => <option key={d} value={d.split(" (")[0]}>{d}</option>)}
               </select>
             </div>

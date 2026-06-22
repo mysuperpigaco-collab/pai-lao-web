@@ -284,7 +284,7 @@ export default function DashboardPage() {
         <div className="dp-page-header">
           <div>
             <h1 className="dp-greeting">
-              สวัสดี{user ? `, ${user.displayName || user.firstName}` : ""} 👋
+              สวัสดี{user ? `, ${user.displayName || user.firstName}` : ""} 👋 · Welcome
             </h1>
             <p className="dp-subheading">จัดการโปรไฟล์ เรื่องเล่า และกิจกรรมทั้งหมดของคุณ</p>
           </div>
@@ -590,9 +590,9 @@ export default function DashboardPage() {
               <div className="tab-bar">
                 <div className="tabs">
                   {([
-                    ["my-stories",   "✍️ เรื่องเล่าของฉัน"],
-                    ["saved",        "🗺️ ทริปที่บันทึก"],
-                    ["saved-places", "📍 สถานที่บันทึก"],
+                    ["my-stories",   "✍️ เรื่องเล่าของฉัน · My Stories"],
+                    ["saved",        "🗺️ ทริปที่บันทึก · Saved Trips"],
+                    ["saved-places", "📍 สถานที่บันทึก · Saved Places"],
                   ] as [string, string][]).map(([id, label]) => (
                     <button key={id} className={`tab-btn${activeTab === id ? " active" : ""}`} onClick={() => setActiveTab(id as any)}>
                       {label}
@@ -638,7 +638,7 @@ export default function DashboardPage() {
                 ) : (
                   <div style={{ textAlign: "center", padding: "60px 20px" }}>
                     <div style={{ fontSize: "48px", marginBottom: "12px" }}>📍</div>
-                    <p style={{ color: "#94a3b8", fontSize: "15px", margin: "0 0 20px" }}>ยังไม่มีสถานที่ที่บันทึกไว้</p>
+                    <p style={{ color: "#94a3b8", fontSize: "15px", margin: "0 0 20px" }}>ยังไม่มีสถานที่ที่บันทึกไว้ · No saved places yet</p>
                     <Link href="/place" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, background: "linear-gradient(135deg,#10b981,#06b6d4)", color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>
                       🗺️ ค้นหาสถานที่
                     </Link>
@@ -694,7 +694,7 @@ export default function DashboardPage() {
                     {activeTab === "my-stories" ? "📭" : "🔖"}
                   </div>
                   <p style={{ color: "#94a3b8", fontSize: "15px", margin: "0 0 20px" }}>
-                    {activeTab === "my-stories" ? "ยังไม่มีเรื่องเล่า · No stories yet" : "ยังไม่มีทริปที่บันทึกไว้"}
+                    {activeTab === "my-stories" ? "ยังไม่มีเรื่องเล่า · No stories yet" : "ยังไม่มีทริปที่บันทึกไว้ · No saved trips yet"}
                   </p>
                   {activeTab === "my-stories" && (
                     <Link href="/trips/create" style={{

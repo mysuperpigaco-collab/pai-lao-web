@@ -1131,9 +1131,10 @@ export default function PlannerPage() {
                 {!searching && placeResults.length === 0 && !sQ && !sProv && (
                   <div style={{ textAlign: "center", padding: "32px 16px", color: "#94a3b8" }}>
                     <div style={{ fontSize: 36, marginBottom: 10 }}>🏞️</div>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: "#64748b", marginBottom: 4 }}>ค้นหาสถานที่</div>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: "#64748b", marginBottom: 4 }}>ค้นหาสถานที่ · Find Places</div>
                     <div style={{ fontSize: 11, lineHeight: 1.8 }}>
                       พิมพ์ชื่อ หรือเลือกจังหวัด<br />
+                      Search by name or province<br />
                       แล้วกด + เพิ่มเข้าแผน
                     </div>
                   </div>
