@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { TITLE_FONTS, TITLE_COLORS, titleStyleCss, parseTitleStyle, buildTitleStyle } from "@/lib/titleStyle";
+import { TITLE_FONTS, titleStyleCss, parseTitleFont } from "@/lib/titleStyle";
 
 const EMOJIS = ["✈️","🏖️","⛰️","🌿","🛕","☕","🍜","📸","🌊","🚗","🎒","🌅","🏝️","🗺️","🏞️","🍃","🌸","🐘","❤️","✨","🔥","🎉","🌙","⭐"];
 
@@ -38,7 +38,7 @@ export default function TitleDecorator({
   };
 
   const previewStyle = titleStyleCss(styleKey);
-  const { font: curFont, color: curColor } = parseTitleStyle(styleKey);
+  const curFont = parseTitleFont(styleKey);
 
   return (
     <div className="tdz">
@@ -109,27 +109,10 @@ export default function TitleDecorator({
             key={f.key}
             type="button"
             className={`tdz-sty${curFont === f.key ? " on" : ""}`}
-            onClick={() => onStyleChange(buildTitleStyle(f.key, curColor))}
+            onClick={() => onStyleChange(f.key)}
             style={f.css}
           >
             {f.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="tdz-lbl">สี · Color</div>
-      <div className="tdz-styles">
-        {TITLE_COLORS.map(c => (
-          <button
-            key={c.key}
-            type="button"
-            className={`tdz-sty${curColor === c.key ? " on" : ""}`}
-            onClick={() => onStyleChange(buildTitleStyle(curFont, c.key))}
-          >
-            {c.key !== "default" && (
-              <span className="tdz-sw" style={{ background: c.grad ?? c.color }} />
-            )}
-            {c.label}
           </button>
         ))}
       </div>
