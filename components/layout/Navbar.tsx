@@ -68,8 +68,15 @@ export default function Navbar() {
   const dashboardHref = user?.role === "BUSINESS" ? "/business/dashboard" : "/dashboard";
   const avatarInitial = user ? (user.displayName || user.firstName).charAt(0).toUpperCase() : "";
 
+  // จำนวนฟีเจอร์ที่โชว์ใน navbar (มิชชัน/โปรโมชั่น) — โชว์เฉพาะตอน login เท่านั้น
+  // ใช้กำหนด layout: เปิดครบ 2 จะซ่อนช่องค้นหา inline กันแถบล้น
+  const featureCount = user
+    ? (siteSettings.missionsEnabled === "true" ? 1 : 0) +
+      (siteSettings.promotionsEnabled === "true" ? 1 : 0)
+    : 0;
+
   return (
-    <nav className="nb-nav" ref={navRef}>
+    <nav className={`nb-nav feat-${featureCount}`} ref={navRef}>
       <style>{`
         .nb-nav {
           position: sticky; top: 0; z-index: 1000;
@@ -121,7 +128,8 @@ export default function Navbar() {
         .nb-search {
           display: flex; align-items: center;
           background: rgba(255,255,255,0.18); border-radius: 14px; padding: 0 14px 0 10px;
-          flex: 0 1 360px; border: 1.5px solid rgba(255,255,255,0.35);
+          flex: 1 1 160px; min-width: 0; max-width: 360px;
+          border: 1.5px solid rgba(255,255,255,0.35);
           height: 42px; gap: 8px; backdrop-filter: blur(4px);
         }
         .nb-search select {
@@ -231,7 +239,10 @@ export default function Navbar() {
         }
         .nb-plan-btn:hover { background: rgba(255,255,255,0.28); }
         .nb-plan-btn span { color: rgba(255,255,255,0.7) !important; }
-        /* ── Narrow desktop: ซ่อนช่องค้นหา inline กันแถบแน่นเกิน (เช่นเปิด promo+mission พร้อมกัน) ── */
+        /* ── เปิดครบ 2 ฟีเจอร์ (promo+mission) → ซ่อนช่องค้นหา inline กันแถบล้น
+              อิงจำนวนฟีเจอร์จริง ไม่ใช่ความกว้างจอ (จอกว้าง media query ไม่ทำงาน) ── */
+        .nb-nav.feat-2 .nb-search { display: none; }
+        /* ── Narrow desktop: ซ่อนช่องค้นหา inline กันแถบแน่นเกินตอนจอแคบ ── */
         @media (max-width: 1024px) {
           .nb-search { display: none; }
         }
