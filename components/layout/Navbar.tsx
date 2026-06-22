@@ -88,11 +88,11 @@ export default function Navbar() {
         .nb-inner {
           max-width: 1340px; margin: 0 auto; padding: 0 16px;
           height: 60px;
-          display: flex; justify-content: space-between; align-items: center;
+          /* รวมทุกเมนูเป็นกลุ่มเดียวแล้วจัดไว้กลางแถบ → ที่ว่างซ้าย-ขวาเหลือเท่ากัน */
+          display: flex; justify-content: center; align-items: center;
           gap: 12px;
         }
-        /* โซนซ้าย: โลโก้ + เมนู เป็นก้อนเดียว → nb-inner เหลือ 3 ลูก (ซ้าย/ค้นหา/ขวา)
-           space-between เลยทำให้ช่องว่างซ้าย-ขวาของช่องค้นหาเท่ากันเอง */
+        /* โซนซ้าย: โลโก้ + เมนู จับเป็นก้อนเดียวไม่ให้แตก */
         .nb-left {
           display: flex; align-items: center; gap: 10px; flex-shrink: 0;
         }
@@ -251,6 +251,7 @@ export default function Navbar() {
         @media (max-width: 1300px) { .nb-nav.feat-2 .nb-search { display: none; } }
         /* ── Mobile ── */
         @media (max-width: 768px) {
+          .nb-inner        { justify-content: space-between; }
           .nb-links        { display: none; }
           .nb-search       { display: none; }
           .nb-avatar-name  { display: none; }
@@ -314,12 +315,12 @@ export default function Navbar() {
             <div style={{ width: "70px", height: "36px", background: "#f0fdf4", borderRadius: "12px" }} />
           ) : user ? (
             <>
-              {/* Plan button — desktop only, for USER role */}
+              {siteSettings.missionsEnabled === "true" && <Link href="/missions" className="nb-link nb-feature-link">🎯 ภารกิจ <span style={{fontSize:11,fontWeight:700,color:"rgba(0,0,0,0.75)"}}>Missions</span></Link>}
+              {siteSettings.promotionsEnabled === "true" && <Link href="/promotions" className="nb-link nb-feature-link">🎁 โปรโมชั่น <span style={{fontSize:11,fontWeight:700,color:"rgba(0,0,0,0.75)"}}>Deals</span></Link>}
+              {/* Plan button — desktop only, for USER role · วางไว้ติดปุ่มเขียนทริป */}
               {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && user.role !== "BUSINESS" && (
                 <Link href="/planner" className="nb-plan-btn">📅 วางแผนเที่ยว <span style={{fontSize:12,opacity:0.85,fontWeight:700}}>Planner</span></Link>
               )}
-              {siteSettings.missionsEnabled === "true" && <Link href="/missions" className="nb-link nb-feature-link">🎯 ภารกิจ <span style={{fontSize:11,fontWeight:700,color:"rgba(0,0,0,0.75)"}}>Missions</span></Link>}
-              {siteSettings.promotionsEnabled === "true" && <Link href="/promotions" className="nb-link nb-feature-link">🎁 โปรโมชั่น <span style={{fontSize:11,fontWeight:700,color:"rgba(0,0,0,0.75)"}}>Deals</span></Link>}
               {/* Write / Add Place */}
               {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && (
                 user.role === "BUSINESS" ? (
