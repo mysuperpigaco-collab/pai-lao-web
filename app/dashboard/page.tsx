@@ -318,7 +318,7 @@ export default function DashboardPage() {
               </span>
               <span style={{ display: "flex", flexDirection: "column", gap: "1px", lineHeight: 1 }}>
                 <strong style={{ fontSize: "14px", fontWeight: 900, color: "#fff" }}>เขียนเรื่องใหม่</strong>
-                <small style={{ fontSize: "10px", fontWeight: 400, color: "rgba(255,255,255,0.85)" }}>แชร์ประสบการณ์</small>
+                <small style={{ fontSize: "10px", fontWeight: 400, color: "rgba(255,255,255,0.85)" }}>Write a Story</small>
               </span>
             </Link>
           </div>
@@ -335,15 +335,15 @@ export default function DashboardPage() {
               <h3 className="sb-title">บัญชีของฉัน <small>My Account</small></h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#475569" }}>
-                  <span>ประเภท</span>
+                  <span>ประเภท · Type</span>
                   <span style={{ fontWeight: 700, color: "#0f172a" }}>🎒 Traveler</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#475569" }}>
-                  <span>บันทึกไว้</span>
+                  <span>บันทึกไว้ · Saved</span>
                   <span style={{ fontWeight: 700, color: "#0f172a" }}>{savedTrips.length + savedPlaces.length} รายการ</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#475569" }}>
-                  <span>เรื่องเล่า</span>
+                  <span>เรื่องเล่า · Stories</span>
                   <span style={{ fontWeight: 700, color: "#2563eb" }}>{myTrips.length} เรื่อง</span>
                 </div>
               </div>

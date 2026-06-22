@@ -316,7 +316,7 @@ export default function SearchPageClient() {
               province={province.split(" (")[0]}
               value={district}
               onChange={v => { setDistrict(v); if (searched) doSearch({ district: v }); }}
-              placeholder="ทุกอำเภอ"
+              placeholder="ทุกอำเภอ · All"
               style={{ border: "none", background: "transparent", fontSize: 13, padding: 0, boxShadow: "none", display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}
             />
           </div>

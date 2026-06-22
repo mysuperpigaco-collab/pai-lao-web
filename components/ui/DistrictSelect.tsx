@@ -14,7 +14,7 @@ interface Props {
 
 export default function DistrictSelect({
   province, value, onChange,
-  placeholder = "-- ทุกอำเภอ --",
+  placeholder = "-- ทุกอำเภอ · All Districts --",
   className = "", style, disabled,
 }: Props) {
   const districts = province ? getDistricts(province) : [];
@@ -54,7 +54,7 @@ export default function DistrictSelect({
         borderRadius: 12, padding: "8px 14px", opacity: 0.5,
         fontSize: 13, color: "#94a3b8", ...style,
       }} className={className}>
-        🏘️ <span>เลือกจังหวัดก่อน</span>
+        🏘️ <span>เลือกจังหวัดก่อน · Select province first</span>
       </div>
     );
   }

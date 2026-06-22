@@ -16,7 +16,7 @@ interface ProvinceSelectProps {
 export default function ProvinceSelect({
   value,
   onChange,
-  placeholder = "-- เลือกจังหวัด --",
+  placeholder = "-- เลือกจังหวัด · Select Province --",
   className = "",
   style,
   disabled = false,
@@ -149,7 +149,7 @@ export default function ProvinceSelect({
               onMouseEnter={(e) => (e.currentTarget.style.background = "#f8fafc")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
-              -- เลือกจังหวัด --
+              -- เลือกจังหวัด · Select Province --
             </div>
             {filtered.length === 0 ? (
               <div style={{ padding: "12px 16px", color: "#94a3b8", fontSize: 14 }}>ไม่พบจังหวัดที่ค้นหา</div>

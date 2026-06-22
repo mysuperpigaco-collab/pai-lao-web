@@ -241,7 +241,7 @@ export default function PromotionsPage() {
         </select>
         <select value={district} onChange={e => setDistrict(e.target.value)} disabled={!province}
           style={{ flex: "1 1 160px", maxWidth: 220, padding: "10px 16px", borderRadius: 10, border: "1.5px solid #e5e7eb", fontSize: 14, outline: "none", background: "#fff", opacity: province ? 1 : 0.5 }}>
-          <option value="">{province ? "ทุกอำเภอ" : "เลือกจังหวัดก่อน"}</option>
+          <option value="">{province ? "ทุกอำเภอ · All Districts" : "เลือกจังหวัดก่อน · Select province first"}</option>
           {province && getDistricts(province).map(d => <option key={d} value={d.split(" (")[0]}>{d}</option>)}
         </select>
         {(province || district || search) && (

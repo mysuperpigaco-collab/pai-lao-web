@@ -231,6 +231,10 @@ export default function Navbar() {
         }
         .nb-plan-btn:hover { background: rgba(255,255,255,0.28); }
         .nb-plan-btn span { color: rgba(255,255,255,0.7) !important; }
+        /* ── Narrow desktop: ซ่อนช่องค้นหา inline กันแถบแน่นเกิน (เช่นเปิด promo+mission พร้อมกัน) ── */
+        @media (max-width: 1024px) {
+          .nb-search { display: none; }
+        }
         /* ── Mobile ── */
         @media (max-width: 768px) {
           .nb-links        { display: none; }
@@ -267,12 +271,12 @@ export default function Navbar() {
         {/* Search — desktop only */}
         <div className="nb-search">
           <select value={searchType} onChange={e => setSearchType(e.target.value)}>
-            <option>ทริป</option>
-            <option>ที่เที่ยว</option>
+            <option value="ทริป">ทริป · Trips</option>
+            <option value="ที่เที่ยว">ที่เที่ยว · Places</option>
           </select>
           <input
             type="text"
-            placeholder="ค้นหาทริปหรือสถานที่..."
+            placeholder="ค้นหา · Search trips, places..."
             value={searchQ}
             onChange={e => setSearchQ(e.target.value)}
             onKeyDown={e => e.key === "Enter" && handleSearch()}
@@ -302,17 +306,17 @@ export default function Navbar() {
               {user.role !== "ADMIN" && user.role !== "SUPERADMIN" && (
                 user.role === "BUSINESS" ? (
                   <Link ref={magWrite.ref} onMouseMove={magWrite.onMouseMove} onMouseLeave={magWrite.onMouseLeave} href="/business/places/create" className="nb-write-btn">
-                    <IconPlus /><span>เพิ่มสถานที่</span>
+                    <IconPlus /><span>เพิ่มสถานที่ · Add Place</span>
                   </Link>
                 ) : (
                   <Link ref={magWrite.ref} onMouseMove={magWrite.onMouseMove} onMouseLeave={magWrite.onMouseLeave} href="/trips/create" className="nb-write-btn">
-                    <IconPencil /><span>เขียนทริป</span>
+                    <IconPencil /><span>เขียนทริป · Write</span>
                   </Link>
                 )
               )}
               {(user.role === "ADMIN" || user.role === "SUPERADMIN") && (
                 <Link ref={magWrite.ref} onMouseMove={magWrite.onMouseMove} onMouseLeave={magWrite.onMouseLeave} href="/admin" className="nb-write-btn">
-                  <IconPencil /><span>แอดมิน</span>
+                  <IconPencil /><span>แอดมิน · Admin</span>
                 </Link>
               )}
 
@@ -327,12 +331,12 @@ export default function Navbar() {
               </Link>
 
               {/* Logout */}
-              <button onClick={logout} className="nb-logout">ออก</button>
+              <button onClick={logout} className="nb-logout">ออก · Logout</button>
             </>
           ) : (
             <>
-              <Link href="/login"  className="nb-login">เข้าสู่ระบบ</Link>
-              <Link ref={magSignup.ref} onMouseMove={magSignup.onMouseMove} onMouseLeave={magSignup.onMouseLeave} href="/signup" className="nb-signup">สมัครสมาชิก</Link>
+              <Link href="/login"  className="nb-login">เข้าสู่ระบบ · Login</Link>
+              <Link ref={magSignup.ref} onMouseMove={magSignup.onMouseMove} onMouseLeave={magSignup.onMouseLeave} href="/signup" className="nb-signup">สมัครสมาชิก · Sign up</Link>
             </>
           )}
         </div>
@@ -345,20 +349,23 @@ export default function Navbar() {
 
       {/* Mobile dropdown menu */}
       <div className={`nb-mobile-menu${menuOpen ? " open" : ""}`}>
-        <Link href="/"      className="nb-m-link" onClick={() => setMenuOpen(false)}>🏠 หน้าแรก</Link>
-        <Link href="/place" className="nb-m-link" onClick={() => setMenuOpen(false)}>🗺️ สถานที่</Link>
-        <Link href="/trips" className="nb-m-link" onClick={() => setMenuOpen(false)}>✈️ ทริป</Link>
+        <Link href="/"      className="nb-m-link" onClick={() => setMenuOpen(false)}>🏠 หน้าแรก · Home</Link>
+        <Link href="/place" className="nb-m-link" onClick={() => setMenuOpen(false)}>🗺️ สถานที่ · Places</Link>
+        <Link href="/trips" className="nb-m-link" onClick={() => setMenuOpen(false)}>✈️ ทริป · Trips</Link>
+        {user?.role !== "ADMIN" && user?.role !== "SUPERADMIN" && user?.role !== "BUSINESS" && user && (
+          <Link href="/planner" className="nb-m-link" onClick={() => setMenuOpen(false)}>📅 วางแผนเที่ยว · Planner</Link>
+        )}
         {siteSettings.missionsEnabled === "true" && <Link href="/missions" className="nb-m-link" onClick={() => setMenuOpen(false)}>🎯 ภารกิจ · Missions</Link>}
         {siteSettings.promotionsEnabled === "true" && <Link href="/promotions" className="nb-m-link" onClick={() => setMenuOpen(false)}>🎁 โปรโมชั่น · Deals</Link>}
         {user && (
           <button className="nb-m-logout" onClick={() => { logout(); setMenuOpen(false); }}>
-            ออกจากระบบ
+            ออกจากระบบ · Logout
           </button>
         )}
         {!user && !isLoading && (
           <>
-            <Link href="/login"  className="nb-m-link" onClick={() => setMenuOpen(false)}>🔑 เข้าสู่ระบบ</Link>
-            <Link href="/signup" className="nb-m-link" onClick={() => setMenuOpen(false)}>✨ สมัครสมาชิก</Link>
+            <Link href="/login"  className="nb-m-link" onClick={() => setMenuOpen(false)}>🔑 เข้าสู่ระบบ · Login</Link>
+            <Link href="/signup" className="nb-m-link" onClick={() => setMenuOpen(false)}>✨ สมัครสมาชิก · Sign up</Link>
           </>
         )}
       </div>

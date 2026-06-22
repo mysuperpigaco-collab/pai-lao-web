@@ -271,7 +271,7 @@ function PlacesInner() {
                 onChange={e => changeFilter(setDistrict, e.target.value)}
                 disabled={!province}
               >
-                <option value="">{province ? "ทุกอำเภอ · All Districts" : "เลือกจังหวัดก่อน"}</option>
+                <option value="">{province ? "ทุกอำเภอ · All Districts" : "เลือกจังหวัดก่อน · Select province first"}</option>
                 {getDistricts(province).map(d => <option key={d} value={d.split(" (")[0]}>{d}</option>)}
               </select>
             </div>
