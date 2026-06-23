@@ -44,30 +44,30 @@ export default function TitleDecorator({
     <div className="tdz">
       <style>{`
         .tdz-input{width:100%;box-sizing:border-box;padding:14px 20px;border-radius:15px;
-          border:1px solid #e2e8f0;outline:none;background:#f8fafc;font-size:15px;
-          font-family:inherit;color:#1e293b;transition:0.3s}
-        .tdz-input::placeholder{color:#94a3b8}
-        .tdz-input:focus{border-color:#3b82f6;background:#fff;box-shadow:0 0 0 4px rgba(59,130,246,0.1)}
+          border:1px solid var(--pl-border);outline:none;background:var(--pl-bg);font-size:15px;
+          font-family:inherit;color:var(--pl-text-primary);transition:0.3s}
+        .tdz-input::placeholder{color:var(--pl-text-muted)}
+        .tdz-input:focus{border-color:#3b82f6;background:var(--pl-white);box-shadow:0 0 0 4px rgba(59,130,246,0.1)}
         .tdz-bar{display:flex;gap:8px;margin-top:8px}
         .tdz-tool{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;
-          padding:9px 10px;border-radius:10px;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;
-          color:#64748b;font-family:inherit;font-weight:700;transition:all .15s}
+          padding:9px 10px;border-radius:10px;cursor:pointer;border:1.5px solid var(--pl-border);background:var(--pl-white);
+          color:var(--pl-text-secondary);font-family:inherit;font-weight:700;transition:all .15s}
         .tdz-tool:hover{border-color:#c4b5fd;color:#6d28d9}
-        .tdz-tray{display:flex;flex-wrap:wrap;gap:2px;padding:8px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;margin-top:8px}
+        .tdz-tray{display:flex;flex-wrap:wrap;gap:2px;padding:8px;background:var(--pl-white);border:1px solid var(--pl-border);border-radius:10px;margin-top:8px}
         .tdz-em{font-size:20px;background:none;border:none;cursor:pointer;padding:4px 5px;border-radius:6px;line-height:1}
-        .tdz-em:hover{background:#f1f5f9}
-        .tdz-lbl{font-size:12px;color:#94a3b8;margin:14px 0 7px;font-weight:700}
+        .tdz-em:hover{background:var(--pl-bg)}
+        .tdz-lbl{font-size:12px;color:var(--pl-text-muted);margin:14px 0 7px;font-weight:700}
         .tdz-styles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
         .tdz-sw{width:12px;height:12px;border-radius:4px;flex-shrink:0;display:inline-block;margin-right:6px;vertical-align:-2px}
-        .tdz-sty{font-size:12px;padding:8px 6px;border-radius:10px;cursor:pointer;border:1.5px solid #e2e8f0;
-          background:#fff;color:#64748b;font-family:inherit;font-weight:700;text-align:center;transition:all .15s}
+        .tdz-sty{font-size:12px;padding:8px 6px;border-radius:10px;cursor:pointer;border:1.5px solid var(--pl-border);
+          background:var(--pl-white);color:var(--pl-text-secondary);font-family:inherit;font-weight:700;text-align:center;transition:all .15s}
         .tdz-sty:hover{border-color:#c4b5fd}
         .tdz-sty.on{border-color:#7c3aed;background:#f5f3ff;color:#6d28d9}
-        .tdz-preview{margin-top:16px;padding:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px}
-        .tdz-pv-head{font-size:11px;color:#94a3b8;margin-bottom:10px;display:flex;align-items:center;gap:6px;font-weight:700}
+        .tdz-preview{margin-top:16px;padding:14px;background:var(--pl-bg);border:1px solid var(--pl-border);border-radius:12px}
+        .tdz-pv-head{font-size:11px;color:var(--pl-text-muted);margin-bottom:10px;display:flex;align-items:center;gap:6px;font-weight:700}
         .tdz-pv-dot{width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block}
         .tdz-pv-row{display:flex;gap:14px;flex-wrap:wrap;align-items:stretch}
-        .tdz-card{width:210px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden}
+        .tdz-card{width:210px;background:var(--pl-white);border:1px solid var(--pl-border);border-radius:12px;overflow:hidden}
         .tdz-cover{height:84px;background:linear-gradient(135deg,#a5b4fc,#c7d2fe);background-size:cover;background-position:center}
         .tdz-hero{flex:1;min-width:180px;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#1e3a5f,#2d5a7c);padding:18px 16px;display:flex;align-items:center}
         @media(max-width:768px){
