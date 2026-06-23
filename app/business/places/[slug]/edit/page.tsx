@@ -287,8 +287,8 @@ export default function EditPlacePage({ params }: Props) {
     <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"80px 20px",minHeight:"calc(100vh - 80px)"}}>
       <div style={{background:"white",borderRadius:24,padding:"48px 40px",textAlign:"center",maxWidth:400,boxShadow:"0 8px 40px rgba(15,23,42,0.10)"}}>
         <div style={{fontSize:"52px",marginBottom:16}}>⏳</div>
-        <h2 style={{fontSize:"20px",fontWeight:800,color:"#1e293b",marginBottom:8}}>ส่งคำขอแก้ไขแล้ว!</h2>
-        <p style={{color:"#64748b",fontSize:"14px",lineHeight:1.7,marginBottom:24}}>
+        <h2 style={{fontSize:"20px",fontWeight:800,color:"var(--pl-text-primary)",marginBottom:8}}>ส่งคำขอแก้ไขแล้ว!</h2>
+        <p style={{color:"var(--pl-text-secondary)",fontSize:"14px",lineHeight:1.7,marginBottom:24}}>
           การแก้ไขข้อมูลสถานที่จะถูกตรวจสอบโดยแอดมินก่อนที่จะมีผล<br/>
           โดยปกติใช้เวลา 1–2 วันทำการ
         </p>
@@ -383,7 +383,7 @@ export default function EditPlacePage({ params }: Props) {
                     <span style={{fontSize:18}}>{c.icon}</span>
                     <span style={{display:"flex",flexDirection:"column",alignItems:"flex-start",gap:1}}>
                       <span style={{fontSize:12,fontWeight:700,lineHeight:1.2}}>{c.th}</span>
-                      <span style={{fontSize:10,color:"#94a3b8",fontWeight:500,lineHeight:1.2}}>{c.en}</span>
+                      <span style={{fontSize:10,color:"var(--pl-text-muted)",fontWeight:500,lineHeight:1.2}}>{c.en}</span>
                     </span>
                   </button>
                 ))}
@@ -430,7 +430,7 @@ export default function EditPlacePage({ params }: Props) {
             <div className="field mt16">
               <label>
                 ปักหมุดตำแหน่ง · Pin Location
-                <span style={{fontSize:12,fontWeight:400,color:"#94a3b8",marginLeft:8}}>
+                <span style={{fontSize:12,fontWeight:400,color:"var(--pl-text-muted)",marginLeft:8}}>
                   คลิกบนแผนที่เพื่อระบุพิกัดที่แน่นอน
                 </span>
               </label>
@@ -439,7 +439,7 @@ export default function EditPlacePage({ params }: Props) {
                 onChange={(la, lo) => { setLat(la); setLng(lo); }}
               />
               {lat != null && lng != null && (
-                <div style={{fontSize:12,color:"#64748b",marginTop:6,display:"flex",alignItems:"center",gap:8}}>
+                <div style={{fontSize:12,color:"var(--pl-text-secondary)",marginTop:6,display:"flex",alignItems:"center",gap:8}}>
                   📍 {lat.toFixed(6)}, {lng.toFixed(6)}
                   <button type="button" onClick={() => { setLat(null); setLng(null); }}
                     style={{color:"#ef4444",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,padding:0}}>
@@ -524,7 +524,7 @@ export default function EditPlacePage({ params }: Props) {
                   <div style={{ fontWeight:800, fontSize:14, color:"#0f172a" }}>
                     🕐 เวลาเปิด-ปิด · Opening Hours
                   </div>
-                  <div style={{ fontSize:12, color:"#64748b", marginTop:2 }}>เลือกช่วงเวลาที่เปิดให้บริการ</div>
+                  <div style={{ fontSize:12, color:"var(--pl-text-secondary)", marginTop:2 }}>เลือกช่วงเวลาที่เปิดให้บริการ</div>
                 </div>
                 <label style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer",
                   background: openAll ? "#dcfce7" : "#fff",
@@ -532,7 +532,7 @@ export default function EditPlacePage({ params }: Props) {
                   borderRadius:10, padding:"6px 12px", transition:"all 0.15s" }}>
                   <input type="checkbox" checked={openAll} onChange={e => setOpenAll(e.target.checked)}
                     style={{ accentColor:"#22c55e", width:16, height:16 }} />
-                  <span style={{ fontSize:13, fontWeight:700, color: openAll ? "#16a34a" : "#475569" }}>
+                  <span style={{ fontSize:13, fontWeight:700, color: openAll ? "#16a34a" : "var(--pl-text-secondary)" }}>
                     เปิดตลอด 24 ชม. · Open 24 hrs
                   </span>
                 </label>
@@ -544,7 +544,7 @@ export default function EditPlacePage({ params }: Props) {
                     <input type="time" className="form-control" value={openTime}
                       onChange={e => setOpenTime(e.target.value)} style={{ width:"100%" }} />
                   </div>
-                  <div style={{ paddingBottom:10, color:"#94a3b8", fontWeight:800, fontSize:20, textAlign:"center" }}>—</div>
+                  <div style={{ paddingBottom:10, color:"var(--pl-text-muted)", fontWeight:800, fontSize:20, textAlign:"center" }}>—</div>
                   <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                     <label style={{ fontSize:13, fontWeight:700, color:"#334155" }}>ปิด · Closes</label>
                     <input type="time" className="form-control" value={closeTime}
@@ -568,7 +568,7 @@ export default function EditPlacePage({ params }: Props) {
                 <div style={{ fontWeight:800, fontSize:14, color:"#0f172a" }}>
                   📅 วันหยุด / วันปิดทำการ · Closed Days
                 </div>
-                <div style={{ fontSize:12, color:"#64748b", marginTop:2 }}>
+                <div style={{ fontSize:12, color:"var(--pl-text-secondary)", marginTop:2 }}>
                   เลือกวันที่ปิดให้บริการ · Select days when closed
                 </div>
               </div>
@@ -628,7 +628,7 @@ export default function EditPlacePage({ params }: Props) {
 
             {/* Amenity grid */}
             <div style={{ marginBottom: 24 }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 10 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 10 }}>
                 🏷️ สิ่งอำนวยความสะดวก · Facilities
               </p>
               <div className="amenity-grid">
@@ -665,7 +665,7 @@ export default function EditPlacePage({ params }: Props) {
 
             {/* Pet Policy */}
             <div>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 10 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 10 }}>
                 🐾 นโยบายสัตว์เลี้ยง · Pet Policy
               </p>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -683,7 +683,7 @@ export default function EditPlacePage({ params }: Props) {
                       padding: "10px 16px", borderRadius: 12, border: `2px solid`,
                       borderColor: petPolicy === p.val ? p.color : "#e2e8f0",
                       background: petPolicy === p.val ? p.bg : "#fff",
-                      color: petPolicy === p.val ? p.color : "#64748b",
+                      color: petPolicy === p.val ? p.color : "var(--pl-text-secondary)",
                       fontWeight: 700, fontSize: 13, cursor: "pointer",
                       transition: "all 0.15s",
                     }}
@@ -694,7 +694,7 @@ export default function EditPlacePage({ params }: Props) {
                 ))}
               </div>
               {!petPolicy && (
-                <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 8 }}>
+                <p style={{ fontSize: 12, color: "var(--pl-text-muted)", marginTop: 8 }}>
                   * หากไม่ระบุ จะไม่แสดงข้อมูลนโยบายสัตว์เลี้ยง
                 </p>
               )}

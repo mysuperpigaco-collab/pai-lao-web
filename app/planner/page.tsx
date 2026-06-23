@@ -53,9 +53,9 @@ function SortableStopCard({ stop, idx, total, stopColor, onEdit, onRemove }: {
         )}
       </div>
       {/* Card */}
-      <div style={{ flex: 1, background: "#fff", borderRadius: 18, border: `1.5px solid ${isDragging ? "#93c5fd" : "#e2e8f0"}`, boxShadow: isDragging ? "0 8px 24px rgba(59,130,246,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", transition: "border-color 0.2s,box-shadow 0.2s", overflow: "hidden" }}>
+      <div style={{ flex: 1, background: "var(--pl-white)", borderRadius: 18, border: `1.5px solid ${isDragging ? "#93c5fd" : "#e2e8f0"}`, boxShadow: isDragging ? "0 8px 24px rgba(59,130,246,0.18)" : "0 2px 8px rgba(0,0,0,0.04)", transition: "border-color 0.2s,box-shadow 0.2s", overflow: "hidden" }}>
         {/* Drag handle bar — full-width, easy to grab */}
-        <div {...attributes} {...listeners} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", background: isDragging ? "#eff6ff" : "#f8fafc", borderBottom: "1px solid #f1f5f9", cursor: isDragging ? "grabbing" : "grab", userSelect: "none", touchAction: "none" }}>
+        <div {...attributes} {...listeners} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", background: isDragging ? "#eff6ff" : "var(--pl-bg)", borderBottom: "1px solid #f1f5f9", cursor: isDragging ? "grabbing" : "grab", userSelect: "none", touchAction: "none" }}>
           <svg width="16" height="10" viewBox="0 0 16 10" fill="none" style={{ flexShrink: 0 }}>
             {[0,3.5,7].map(y => (
               <g key={y}>
@@ -65,14 +65,14 @@ function SortableStopCard({ stop, idx, total, stopColor, onEdit, onRemove }: {
               </g>
             ))}
           </svg>
-          <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600, letterSpacing: "0.3px" }}>ลากเพื่อจัดลำดับ · Drag to reorder</span>
+          <span style={{ fontSize: 10, color: "var(--pl-text-muted)", fontWeight: 600, letterSpacing: "0.3px" }}>ลากเพื่อจัดลำดับ · Drag to reorder</span>
         </div>
         <div style={{ padding: "12px 16px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             {/* Name row */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" as const, marginBottom: 4 }}>
-              <span style={{ fontWeight: 800, fontSize: 15, color: "#1e293b" }}>{stop.name}</span>
+              <span style={{ fontWeight: 800, fontSize: 15, color: "var(--pl-text-primary)" }}>{stop.name}</span>
               <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 20, background: meta.bg, color: meta.color, fontWeight: 700, flexShrink: 0 }}>
                 {meta.icon} {meta.label.split(" · ")[0]}
               </span>
@@ -92,12 +92,12 @@ function SortableStopCard({ stop, idx, total, stopColor, onEdit, onRemove }: {
               </div>
             )}
             {(stop.province || stop.district) && (
-              <div style={{ fontSize: 12, color: "#64748b", marginBottom: stop.notes ? 6 : 0 }}>
+              <div style={{ fontSize: 12, color: "var(--pl-text-secondary)", marginBottom: stop.notes ? 6 : 0 }}>
                 📍 {[stop.province, stop.district].filter(Boolean).join(" · ")}
               </div>
             )}
             {stop.notes && (
-              <p style={{ margin: "6px 0 0", fontSize: 13, color: "#374151", lineHeight: 1.6 }}>{stop.notes}</p>
+              <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--pl-text-secondary)", lineHeight: 1.6 }}>{stop.notes}</p>
             )}
             {stop.googleMapsUrl && (
               <MapsButton url={stop.googleMapsUrl} placeName={stop.name} variant="text"
@@ -133,7 +133,7 @@ import ProvinceSelect from "@/components/ui/ProvinceSelect";
 const StopMap = dynamic(() => import("@/components/maps/StopMap"), {
   ssr: false,
   loading: () => (
-    <div style={{ height: 200, borderRadius: 12, background: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 13, fontWeight: 600 }}>
+    <div style={{ height: 200, borderRadius: 12, background: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--pl-text-muted)", fontSize: 13, fontWeight: 600 }}>
       กำลังโหลดแผนที่…
     </div>
   ),
@@ -150,7 +150,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import MapsButton from "@/components/common/MapsButton";
-const MapView = dynamic(() => import("@/components/maps/MapView"), { ssr: false, loading: () => <div style={{ height: "100%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 13 }}>กำลังโหลดแผนที่…</div> });
+const MapView = dynamic(() => import("@/components/maps/MapView"), { ssr: false, loading: () => <div style={{ height: "100%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--pl-text-muted)", fontSize: 13 }}>กำลังโหลดแผนที่…</div> });
 
 interface PlanStop {
   id: string; order: number; name: string; day: number;
@@ -181,7 +181,7 @@ const STOP_TYPES = [
   { v: "EAT",        label: "ร้านอาหาร · Eat",         icon: "🍽️", color: "#f59e0b", bg: "#fffbeb" },
   { v: "SLEEP",      label: "ที่พัก · Stay",            icon: "🏨", color: "#8b5cf6", bg: "#f5f3ff" },
   { v: "ACTIVITY",   label: "กิจกรรม · Activity",       icon: "🎯", color: "#10b981", bg: "#ecfdf5" },
-  { v: "TRANSPORT",  label: "เดินทาง · Transport",      icon: "🚌", color: "#64748b", bg: "#f8fafc" },
+  { v: "TRANSPORT",  label: "เดินทาง · Transport",      icon: "🚌", color: "var(--pl-text-secondary)", bg: "var(--pl-bg)" },
 ];
 const ST = (v?: string) => STOP_TYPES.find(t => t.v === v) ?? STOP_TYPES[0];
 
@@ -501,10 +501,10 @@ export default function PlannerPage() {
       {/* ════ HEADER ════ */}
       <div className="planner-header">
       <div className="planner-header-inner">
-        <Link href="/dashboard" style={{ color: "#64748b", textDecoration: "none", fontSize: 20, lineHeight: 1, padding: "4px 8px", borderRadius: 8, background: "#f8fafc", border: "1px solid #e2e8f0", flexShrink: 0 }}>←</Link>
+        <Link href="/dashboard" style={{ color: "var(--pl-text-secondary)", textDecoration: "none", fontSize: 20, lineHeight: 1, padding: "4px 8px", borderRadius: 8, background: "var(--pl-bg)", border: "1px solid #e2e8f0", flexShrink: 0 }}>←</Link>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontWeight: 900, fontSize: 18, color: "#1e293b", whiteSpace: "nowrap" }}>📅 วางแผนเที่ยว</div>
-          <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, letterSpacing: "0.5px" }}>TRIP PLANNER</div>
+          <div style={{ fontWeight: 900, fontSize: 18, color: "var(--pl-text-primary)", whiteSpace: "nowrap" }}>📅 วางแผนเที่ยว</div>
+          <div style={{ fontSize: 11, color: "var(--pl-text-muted)", fontWeight: 600, letterSpacing: "0.5px" }}>TRIP PLANNER</div>
         </div>
         <div style={{ flex: 1 }} />
         {activePlan && (
@@ -512,7 +512,7 @@ export default function PlannerPage() {
             <button onClick={togglePublic} style={{
               padding: "7px 14px", borderRadius: 20, border: "1.5px solid",
               borderColor: activePlan.isPublic ? "#10b981" : "#e2e8f0",
-              background: activePlan.isPublic ? "#ecfdf5" : "#f8fafc",
+              background: activePlan.isPublic ? "#ecfdf5" : "var(--pl-bg)",
               color: activePlan.isPublic ? "#065f46" : "#64748b",
               fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit",
               display: "flex", alignItems: "center", gap: 5, flexShrink: 0, whiteSpace: "nowrap"
@@ -543,7 +543,7 @@ export default function PlannerPage() {
       {/* ════ 3-COLUMN LAYOUT ════ */}
       <style>{`
         .planner-header {
-          background: rgba(255,255,255,0.90); border-bottom: 1px solid #e2e8f0;
+          background: var(--pl-white); border-bottom: 1px solid #e2e8f0;
           min-height: 56px; position: sticky; top: 60px; z-index: 100;
           box-shadow: 0 1px 4px rgba(0,0,0,0.06);
         }
@@ -632,7 +632,7 @@ export default function PlannerPage() {
                 </button>
                 <button onClick={() => setShowNew(false)} style={{
                   padding: "9px 14px", borderRadius: 10, border: "1.5px solid #e2e8f0",
-                  background: "#fff", color: "#64748b", fontWeight: 700, fontSize: 12,
+                  background: "var(--pl-white)", color: "var(--pl-text-secondary)", fontWeight: 700, fontSize: 12,
                   cursor: "pointer", fontFamily: "inherit"
                 }}>ยกเลิก</button>
               </div>
@@ -698,9 +698,9 @@ export default function PlannerPage() {
               <style>{"@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
             </div>
             ) : plans.length === 0 ? (
-              <div style={{ padding: "32px 16px", textAlign: "center", color: "#94a3b8" }}>
+              <div style={{ padding: "32px 16px", textAlign: "center", color: "var(--pl-text-muted)" }}>
                 <div style={{ fontSize: 36, marginBottom: 10 }}>📋</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#64748b", marginBottom: 4 }}>ยังไม่มีแผนเที่ยว</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 4 }}>ยังไม่มีแผนเที่ยว</div>
                 <div style={{ fontSize: 11, lineHeight: 1.7 }}>กด &ldquo;+ สร้างแผนใหม่&rdquo;<br />เพื่อเริ่มวางแผน</div>
               </div>
             ) : plans.map(plan => {
@@ -720,13 +720,13 @@ export default function PlannerPage() {
                     {past && <span style={{ fontSize: 9, fontWeight: 800, background: "#fef3c7", color: "#92400e", padding: "1px 6px", borderRadius: 999, flexShrink: 0 }}>ผ่านแล้ว</span>}
                   </div>
                   {(plan.startDate || plan.province) && (
-                    <div style={{ fontSize: 11, color: "#64748b", marginBottom: 3, display: "flex", gap: 8 }}>
+                    <div style={{ fontSize: 11, color: "var(--pl-text-secondary)", marginBottom: 3, display: "flex", gap: 8 }}>
                       {plan.startDate && <span>📅 {plan.startDate}</span>}
                       {plan.province && <span>📍 {plan.province}</span>}
                     </div>
                   )}
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600 }}>🚩 {plan.stops.length} จุดหมาย</span>
+                    <span style={{ fontSize: 11, color: "var(--pl-text-muted)", fontWeight: 600 }}>🚩 {plan.stops.length} จุดหมาย</span>
                     {isActive && (
                       <button onClick={e => { e.stopPropagation(); deletePlan(plan.id); }}
                         style={{ marginLeft: "auto", padding: "2px 8px", borderRadius: 6, border: "1px solid #fecaca",
@@ -749,8 +749,8 @@ export default function PlannerPage() {
 
           {/* ── แผนที่เส้นทาง (sticky บนสุดของ scroll area) ── */}
           {mapPoints.length > 0 ? (
-            <div className="route-map-sticky" style={{ position: "relative", overflow: "hidden", isolation: "isolate", background: "#fff", borderBottom: "2px solid #e2e8f0" }}>
-              <div style={{ position: "absolute", top: 8, left: 12, zIndex: 1000, background: "rgba(255,255,255,0.92)", borderRadius: 10, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#1e293b", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", backdropFilter: "blur(4px)" }}>
+            <div className="route-map-sticky" style={{ position: "relative", overflow: "hidden", isolation: "isolate", background: "var(--pl-white)", borderBottom: "2px solid #e2e8f0" }}>
+              <div style={{ position: "absolute", top: 8, left: 12, zIndex: 1000, background: "rgba(255,255,255,0.92)", borderRadius: 10, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "var(--pl-text-primary)", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", backdropFilter: "blur(4px)" }}>
                 🗺️ แผนที่เส้นทาง · {mapPoints.length} จุด
               </div>
               <button
@@ -767,7 +767,7 @@ export default function PlannerPage() {
               <MapView points={mapPoints} showRoute height={220} />
             </div>
           ) : activePlan ? (
-            <div style={{ height: 52, borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "#94a3b8", fontSize: 12, background: "#f8fafc" }}>
+            <div style={{ height: 52, borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "var(--pl-text-muted)", fontSize: 12, background: "var(--pl-bg)" }}>
               <span>🗺️</span><span>เพิ่มสถานที่เพื่อแสดงแผนที่เส้นทาง</span>
             </div>
           ) : null}
@@ -779,9 +779,9 @@ export default function PlannerPage() {
                 📅
               </div>
               <div>
-                <div style={{ fontWeight: 900, fontSize: 22, color: "#1e293b", marginBottom: 8 }}>วางแผนเที่ยวของคุณ</div>
+                <div style={{ fontWeight: 900, fontSize: 22, color: "var(--pl-text-primary)", marginBottom: 8 }}>วางแผนเที่ยวของคุณ</div>
                 <div style={{ fontWeight: 700, fontSize: 14, color: "#3b82f6", marginBottom: 4 }}>Plan Your Next Adventure</div>
-                <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.8, maxWidth: 320 }}>
+                <div style={{ fontSize: 13, color: "var(--pl-text-secondary)", lineHeight: 1.8, maxWidth: 320 }}>
                   ค้นหาสถานที่จากแผงขวา · ดึงจุดแวะจากทริปที่บุ๊คมาร์ค<br />
                   จัดลำดับ · แชร์ใน LINE/Facebook · บันทึกเป็น PDF
                 </div>
@@ -830,7 +830,7 @@ export default function PlannerPage() {
                             )}
                           </div>
                           <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: "#fff" }}>{activePlan.title}</h2>
-                          {activePlan.description && <p style={{ margin: "6px 0 0", fontSize: 13, color: "#94a3b8" }}>{activePlan.description}</p>}
+                          {activePlan.description && <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--pl-text-muted)" }}>{activePlan.description}</p>}
                           <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" as const }}>
                             {activePlan.startDate && (
                               <span style={{ fontSize: 12, color: "#cbd5e1", background: "rgba(255,255,255,0.08)", padding: "4px 10px", borderRadius: 20 }}>
@@ -878,7 +878,7 @@ export default function PlannerPage() {
                   เพิ่มจุดแวะเอง · Add Custom Stop
                 </button>
               ) : (
-                <div style={{ background: "#fff", borderRadius: 20, padding: "18px 20px", marginBottom: 16, border: "2px solid #6ee7b7", boxShadow: "0 4px 16px rgba(16,185,129,0.1)" }}>
+                <div style={{ background: "var(--pl-white)", borderRadius: 20, padding: "18px 20px", marginBottom: 16, border: "2px solid #6ee7b7", boxShadow: "0 4px 16px rgba(16,185,129,0.1)" }}>
                   <div style={{ fontWeight: 800, fontSize: 14, color: "#065f46", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
                     <span>✏️</span> เพิ่มจุดแวะเอง · Custom Stop
                   </div>
@@ -887,7 +887,7 @@ export default function PlannerPage() {
                       <button key={t.v} type="button" onClick={() => setCustomType(t.v)} style={{
                         padding: "5px 12px", borderRadius: 20, border: "2px solid",
                         borderColor: customType === t.v ? t.color : "#e2e8f0",
-                        background: customType === t.v ? t.bg : "#f8fafc",
+                        background: customType === t.v ? t.bg : "var(--pl-bg)",
                         color: customType === t.v ? t.color : "#64748b",
                         fontWeight: customType === t.v ? 800 : 500, fontSize: 12,
                         cursor: "pointer", fontFamily: "inherit"
@@ -935,7 +935,7 @@ export default function PlannerPage() {
                     const center = c ?? TH_CENTER;
                     return (
                       <div style={{ marginBottom: 12 }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", marginBottom: 4 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 4 }}>
                           📍 ปักหมุดตำแหน่ง · ลากหมุดเพื่อเลือก{c ? "" : " (เริ่มที่กรุงเทพฯ)"}
                         </div>
                         <StopMap lat={center.lat} lng={center.lng} draggable
@@ -952,7 +952,7 @@ export default function PlannerPage() {
                     }}>+ เพิ่มจุดนี้ · Add Stop</button>
                     <button onClick={() => setAddingCustom(false)} style={{
                       padding: "10px 18px", borderRadius: 12, border: "1.5px solid #e2e8f0",
-                      background: "#f8fafc", color: "#64748b", fontWeight: 700, fontSize: 13,
+                      background: "var(--pl-bg)", color: "var(--pl-text-secondary)", fontWeight: 700, fontSize: 13,
                       cursor: "pointer", fontFamily: "inherit"
                     }}>ยกเลิก</button>
                   </div>
@@ -969,7 +969,7 @@ export default function PlannerPage() {
                     <button key={dayNum} onClick={() => { setSelectedDay(dayNum); setCustomDay(dayNum); }} style={{
                       flexShrink:0, padding:"8px 14px", borderRadius:14,
                       border:`2px solid ${isAct ? "#3b82f6" : "#e2e8f0"}`,
-                      background: isAct ? "#eff6ff" : "#f8fafc",
+                      background: isAct ? "#eff6ff" : "var(--pl-bg)",
                       color: isAct ? "#1d4ed8" : "#64748b",
                       fontWeight: isAct ? 800 : 600, fontSize:12,
                       cursor:"pointer", fontFamily:"inherit",
@@ -1022,9 +1022,9 @@ export default function PlannerPage() {
 
               {/* Stops for selected day — drag-and-drop */}
               {stopsForDay.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "36px 0", color: "#94a3b8" }}>
+                <div style={{ textAlign: "center", padding: "36px 0", color: "var(--pl-text-muted)" }}>
                   <div style={{ fontSize: 40, marginBottom: 10 }}>📅</div>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: "#64748b", marginBottom: 4 }}>ยังไม่มีจุดในวันที่ {selectedDay} · No stops for Day {selectedDay}</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: "var(--pl-text-secondary)", marginBottom: 4 }}>ยังไม่มีจุดในวันที่ {selectedDay} · No stops for Day {selectedDay}</div>
                   <div style={{ fontSize: 12, lineHeight: 1.7 }}>เพิ่มจุดแวะจากแผงขวา<br />หรือกด &ldquo;เพิ่มจุดแวะเอง&rdquo; ด้านบน</div>
                 </div>
               ) : (
@@ -1086,7 +1086,7 @@ export default function PlannerPage() {
               }}>
                 <div style={{ fontSize: 18, marginBottom: 2 }}>{icon}</div>
                 <div>{th}</div>
-                <div style={{ fontSize: 9, color: "#94a3b8", letterSpacing: "0.5px" }}>{en}</div>
+                <div style={{ fontSize: 9, color: "var(--pl-text-muted)", letterSpacing: "0.5px" }}>{en}</div>
               </button>
             ))}
           </div>
@@ -1096,7 +1096,7 @@ export default function PlannerPage() {
             <div style={{ flex: 1, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
               <div style={{ padding: "14px 14px 8px", borderBottom: "1px solid #f1f5f9" }}>
                 <div style={{ position: "relative", marginBottom: 8 }}>
-                  <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "#94a3b8" }}>🔍</span>
+                  <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "var(--pl-text-muted)" }}>🔍</span>
                   <input value={sQ} onChange={e => setSQ(e.target.value)}
                     placeholder="ชื่อสถานที่ · Place name..." style={{ ...inp, paddingLeft: 32 }} />
                 </div>
@@ -1124,15 +1124,15 @@ export default function PlannerPage() {
 
               <div className="planner-scroll-area" data-lenis-prevent style={{ flex: 1, minHeight: 0, overflowY: "auto", WebkitOverflowScrolling: "touch", padding: "10px 14px" }}>
                 {searching && (
-                  <div style={{ textAlign: "center", padding: "20px 0", color: "#94a3b8", fontSize: 13 }}>
+                  <div style={{ textAlign: "center", padding: "20px 0", color: "var(--pl-text-muted)", fontSize: 13 }}>
                     <div style={{ fontSize: 24, marginBottom: 6 }}>🔍</div>
                     กำลังค้นหา · Searching...
                   </div>
                 )}
                 {!searching && placeResults.length === 0 && !sQ && !sProv && (
-                  <div style={{ textAlign: "center", padding: "32px 16px", color: "#94a3b8" }}>
+                  <div style={{ textAlign: "center", padding: "32px 16px", color: "var(--pl-text-muted)" }}>
                     <div style={{ fontSize: 36, marginBottom: 10 }}>🏞️</div>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: "#64748b", marginBottom: 4 }}>ค้นหาสถานที่ · Find Places</div>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: "var(--pl-text-secondary)", marginBottom: 4 }}>ค้นหาสถานที่ · Find Places</div>
                     <div style={{ fontSize: 11, lineHeight: 1.8 }}>
                       พิมพ์ชื่อ หรือเลือกจังหวัด<br />
                       Search by name or province<br />
@@ -1141,7 +1141,7 @@ export default function PlannerPage() {
                   </div>
                 )}
                 {!searching && placeResults.length === 0 && (sQ || sProv) && !searching && (
-                  <div style={{ textAlign: "center", padding: "24px 0", color: "#94a3b8", fontSize: 13 }}>
+                  <div style={{ textAlign: "center", padding: "24px 0", color: "var(--pl-text-muted)", fontSize: 13 }}>
                     ไม่พบสถานที่ · No results
                   </div>
                 )}
@@ -1153,8 +1153,8 @@ export default function PlannerPage() {
                       <div style={{ width: "100%", height: 80, background: "linear-gradient(135deg,#e0f2fe,#d1fae5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>🏛️</div>
                     )}
                     <div style={{ padding: "10px 12px" }}>
-                      <div style={{ fontWeight: 700, fontSize: 13, color: "#1e293b", marginBottom: 2 }}>{p.title}</div>
-                      <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: "var(--pl-text-primary)", marginBottom: 2 }}>{p.title}</div>
+                      <div style={{ fontSize: 11, color: "var(--pl-text-secondary)", marginBottom: 8 }}>
                         📍 {p.province}{p.district ? ` · ${p.district}` : ""} &nbsp;·&nbsp; {p.category}
                       </div>
                       <button disabled={!activePlan || addingToStop === p.id} onClick={() => addStop({
@@ -1225,9 +1225,9 @@ export default function PlannerPage() {
               <style>{"@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}"}</style>
             </div>
               ) : bmTrips.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "32px 16px", color: "#94a3b8" }}>
+                <div style={{ textAlign: "center", padding: "32px 16px", color: "var(--pl-text-muted)" }}>
                   <div style={{ fontSize: 40, marginBottom: 10 }}>🔖</div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: "#64748b", marginBottom: 4 }}>ยังไม่มีทริปบุ๊คมาร์ค</div>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: "var(--pl-text-secondary)", marginBottom: 4 }}>ยังไม่มีทริปบุ๊คมาร์ค</div>
                   <div style={{ fontSize: 11, lineHeight: 1.8 }}>
                     ไปกด 🔖 ในหน้าทริปที่ชอบ<br />
                     แล้วกลับมาดึงจุดแวะได้เลย
@@ -1242,19 +1242,19 @@ export default function PlannerPage() {
                       <img src={trip.coverUrl} alt="" style={{ width: 48, height: 38, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} />
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 13, color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, ...titleStyleCss(trip.titleStyle) }}>{trip.title}</div>
-                      <div style={{ fontSize: 11, color: "#94a3b8" }}>📍 {trip.timeline?.length ?? 0} จุดแวะ · stops</div>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: "var(--pl-text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, ...titleStyleCss(trip.titleStyle) }}>{trip.title}</div>
+                      <div style={{ fontSize: 11, color: "var(--pl-text-muted)" }}>📍 {trip.timeline?.length ?? 0} จุดแวะ · stops</div>
                     </div>
-                    <span style={{ fontSize: 12, color: "#94a3b8", flexShrink: 0 }}>{expandedTrip === trip.id ? "▲" : "▼"}</span>
+                    <span style={{ fontSize: 12, color: "var(--pl-text-muted)", flexShrink: 0 }}>{expandedTrip === trip.id ? "▲" : "▼"}</span>
                   </div>
                   {expandedTrip === trip.id && trip.timeline?.map((stop, si) => {
                     const meta = ST(stop.stopType);
                     return (
-                      <div key={si} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", borderTop: "1px solid #f1f5f9", background: "#fff" }}>
+                      <div key={si} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", borderTop: "1px solid #f1f5f9", background: "var(--pl-white)" }}>
                         <span style={{ fontSize: 16, flexShrink: 0, width: 24, textAlign: "center" }}>{meta.icon}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 600, fontSize: 12, color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{stop.placeName}</div>
-                          <div style={{ fontSize: 10, color: "#94a3b8" }}>{[stop.province, stop.district].filter(Boolean).join(" · ")}</div>
+                          <div style={{ fontWeight: 600, fontSize: 12, color: "var(--pl-text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{stop.placeName}</div>
+                          <div style={{ fontSize: 10, color: "var(--pl-text-muted)" }}>{[stop.province, stop.district].filter(Boolean).join(" · ")}</div>
                         </div>
                         <button disabled={!activePlan || addingToStop === (stop.placeId ?? stop.placeName)} onClick={() => addStop({
                           name: stop.placeName, province: stop.province, district: stop.district,
@@ -1281,23 +1281,23 @@ export default function PlannerPage() {
       {/* ── Edit stop modal ── */}
       {editStop && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.6)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setEditStop(null)}>
-          <div onClick={e => e.stopPropagation()} data-lenis-prevent style={{ background: "#fff", borderRadius: 24, padding: 28, width: "100%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 40px 80px rgba(0,0,0,0.2)" }}>
+          <div onClick={e => e.stopPropagation()} data-lenis-prevent style={{ background: "var(--pl-white)", borderRadius: 24, padding: 28, width: "100%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 40px 80px rgba(0,0,0,0.2)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
               <span style={{ fontSize: 24 }}>✏️</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 900, fontSize: 16, color: "#1e293b" }}>แก้ไขจุดแวะ · Edit Stop</div>
-                <div style={{ fontSize: 13, color: "#374151", fontWeight: 700, marginTop: 2 }}>{editStop.name}</div>
+                <div style={{ fontWeight: 900, fontSize: 16, color: "var(--pl-text-primary)" }}>แก้ไขจุดแวะ · Edit Stop</div>
+                <div style={{ fontSize: 13, color: "var(--pl-text-secondary)", fontWeight: 700, marginTop: 2 }}>{editStop.name}</div>
               </div>
             </div>
             {/* Location info row */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "10px 14px", borderRadius: 12, background: "#f8fafc", border: "1px solid #e2e8f0", marginBottom: 16 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "10px 14px", borderRadius: 12, background: "var(--pl-bg)", border: "1px solid #e2e8f0", marginBottom: 16 }}>
               {editStop.stopType && (
                 <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20, background: ST(editStop.stopType).bg, color: ST(editStop.stopType).color }}>
                   {ST(editStop.stopType).icon} {ST(editStop.stopType).label.split(" · ")[0]}
                 </span>
               )}
               {(editStop.province || editStop.district) && (
-                <span style={{ fontSize: 11, color: "#64748b", display: "flex", alignItems: "center", gap: 3 }}>
+                <span style={{ fontSize: 11, color: "var(--pl-text-secondary)", display: "flex", alignItems: "center", gap: 3 }}>
                   📍 {[editStop.province, editStop.district].filter(Boolean).join(" · ")}
                 </span>
               )}
@@ -1313,7 +1313,7 @@ export default function PlannerPage() {
               const isCustom = !editStop.placeId;
               if (!c && !isCustom) {
                 return (
-                  <div style={{ marginBottom: 14, padding: "10px 14px", borderRadius: 12, background: "#f8fafc", border: "1px dashed #cbd5e1", fontSize: 12, color: "#94a3b8", textAlign: "center" }}>
+                  <div style={{ marginBottom: 14, padding: "10px 14px", borderRadius: 12, background: "var(--pl-bg)", border: "1px dashed #cbd5e1", fontSize: 12, color: "var(--pl-text-muted)", textAlign: "center" }}>
                     📍 ไม่มีพิกัดสำหรับสถานที่นี้ — เพิ่มลิงก์ Google Maps ด้านล่างเพื่อแสดงแผนที่
                   </div>
                 );
@@ -1338,7 +1338,7 @@ export default function PlannerPage() {
                   <button key={d} type="button" onClick={() => setEditDay(d)} style={{
                     padding:"5px 14px", borderRadius:20,
                     border:`2px solid ${editDay === d ? "#3b82f6" : "#e2e8f0"}`,
-                    background: editDay === d ? "#eff6ff" : "#f8fafc",
+                    background: editDay === d ? "#eff6ff" : "var(--pl-bg)",
                     color: editDay === d ? "#1d4ed8" : "#64748b",
                     fontWeight: editDay === d ? 800 : 600, fontSize:12,
                     cursor:"pointer", fontFamily:"inherit"
@@ -1381,7 +1381,7 @@ export default function PlannerPage() {
               }}>{savingEdit ? "⏳ บันทึก..." : "✓ บันทึก · Save"}</button>
               <button onClick={() => setEditStop(null)} style={{
                 flex: 1, padding: "12px", borderRadius: 14, border: "1.5px solid #e2e8f0",
-                background: "#f8fafc", color: "#374151", fontWeight: 700, fontSize: 14,
+                background: "var(--pl-bg)", color: "var(--pl-text-secondary)", fontWeight: 700, fontSize: 14,
                 cursor: "pointer", fontFamily: "inherit"
               }}>ยกเลิก · Cancel</button>
             </div>
@@ -1420,6 +1420,6 @@ export default function PlannerPage() {
   );
 }
 
-const lbl: React.CSSProperties = { display: "block", fontWeight: 700, fontSize: 11, color: "#64748b", marginBottom: 5, letterSpacing: "0.3px" };
-const inp: React.CSSProperties = { width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const, color: "#1e293b" };
-const ab: React.CSSProperties  = { width: 28, height: 28, borderRadius: 8, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#64748b", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" };
+const lbl: React.CSSProperties = { display: "block", fontWeight: 700, fontSize: 11, color: "var(--pl-text-secondary)", marginBottom: 5, letterSpacing: "0.3px" };
+const inp: React.CSSProperties = { width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "var(--pl-bg)", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const, color: "var(--pl-text-primary)" };
+const ab: React.CSSProperties  = { width: 28, height: 28, borderRadius: 8, border: "1px solid #e2e8f0", background: "var(--pl-bg)", color: "var(--pl-text-secondary)", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" };

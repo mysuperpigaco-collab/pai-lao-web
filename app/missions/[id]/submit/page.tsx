@@ -38,26 +38,26 @@ export default function SubmitMissionPage({ params }: { params: Promise<{ id: st
   };
 
   if (done) return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc" }}>
-      <div style={{ textAlign: "center", background: "#fff", padding: "48px 32px", borderRadius: "24px", boxShadow: "0 4px 24px rgba(15,23,42,0.08)" }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--pl-bg)" }}>
+      <div style={{ textAlign: "center", background: "var(--pl-white)", padding: "48px 32px", borderRadius: "24px", boxShadow: "0 4px 24px rgba(15,23,42,0.08)" }}>
         <div style={{ fontSize: "56px", marginBottom: "16px" }}>🎉</div>
         <h2 style={{ fontSize: "22px", fontWeight: 900, color: "#0f172a", margin: "0 0 8px" }}>ส่งผลงานสำเร็จ!</h2>
-        <p style={{ color: "#64748b", marginBottom: "24px" }}>รอแอดมินตรวจสอบและยืนยัน</p>
+        <p style={{ color: "var(--pl-text-secondary)", marginBottom: "24px" }}>รอแอดมินตรวจสอบและยืนยัน</p>
         <button onClick={() => router.push("/missions")} style={{ padding: "12px 32px", background: "linear-gradient(135deg,#2563eb,#10b981)", color: "#fff", borderRadius: "12px", fontWeight: 700, border: "none", cursor: "pointer", fontSize: "14px" }}>กลับหน้าภารกิจ</button>
       </div>
     </div>
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc", padding: "32px 16px" }}>
+    <div style={{ minHeight: "100vh", background: "var(--pl-bg)", padding: "32px 16px" }}>
       <div style={{ maxWidth: "560px", margin: "0 auto" }}>
-        <button onClick={() => router.back()} style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: "14px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "6px" }}>← กลับ</button>
-        <div style={{ background: "#fff", borderRadius: "24px", padding: "28px 24px", boxShadow: "0 4px 24px rgba(15,23,42,0.06)" }}>
+        <button onClick={() => router.back()} style={{ background: "none", border: "none", color: "var(--pl-text-secondary)", cursor: "pointer", fontSize: "14px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "6px" }}>← กลับ</button>
+        <div style={{ background: "var(--pl-white)", borderRadius: "24px", padding: "28px 24px", boxShadow: "0 4px 24px rgba(15,23,42,0.06)" }}>
           <h1 style={{ fontSize: "20px", fontWeight: 900, color: "#0f172a", margin: "0 0 20px" }}>ส่งผลงานภารกิจ</h1>
 
           <div style={{ marginBottom: "20px" }}>
             <label style={{ display: "block", fontWeight: 700, fontSize: "13px", color: "#374151", marginBottom: "8px" }}>รูปภาพ (สูงสุด 5 รูป) *</label>
-            <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "14px", border: "2px dashed #e2e8f0", borderRadius: "12px", cursor: uploading ? "wait" : "pointer", color: "#64748b", fontSize: "13px" }}>
+            <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "14px", border: "2px dashed #e2e8f0", borderRadius: "12px", cursor: uploading ? "wait" : "pointer", color: "var(--pl-text-secondary)", fontSize: "13px" }}>
               {uploading ? "กำลังอัปโหลด..." : "📸 เลือกรูปภาพ"}
               <input hidden type="file" accept="image/*" multiple onChange={handlePhotos} disabled={uploading} />
             </label>

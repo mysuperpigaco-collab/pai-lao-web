@@ -233,11 +233,11 @@ export default function EditPlacePage() {
           position: absolute; inset: 0;
           display: flex; flex-direction: column;
           justify-content: center; align-items: center;
-          gap: 10px; color: #64748b;
+          gap: 10px; color: var(--pl-text-secondary);
         }
         .ep2-cover-placeholder span { font-size: 56px; }
         .ep2-cover-placeholder h3 { font-size: 18px; font-weight: 800; color: #334155; margin: 0; }
-        .ep2-cover-placeholder p  { font-size: 13px; color: #94a3b8; margin: 0; }
+        .ep2-cover-placeholder p  { font-size: 13px; color: var(--pl-text-muted); margin: 0; }
         .ep2-cover-overlay {
           position: absolute; inset: 0;
           background: rgba(15,23,42,0.45);
@@ -283,7 +283,7 @@ export default function EditPlacePage() {
 
         .ep2-gallery-empty {
           text-align: center; padding: 50px 20px;
-          color: #94a3b8; display: flex; flex-direction: column;
+          color: var(--pl-text-muted); display: flex; flex-direction: column;
           align-items: center; gap: 8px;
         }
         .ep2-gallery-empty span { font-size: 48px; }

@@ -124,14 +124,14 @@ export default async function PlacePreviewPage({ params }: Props) {
 
               {place.description && (
                 <div className="pd-card">
-                  <h2>🗒️ เกี่ยวกับสถานที่นี้ <span style={{ fontSize: 14, fontWeight: 600, color: "#64748b" }}>About this place</span></h2>
+                  <h2>🗒️ เกี่ยวกับสถานที่นี้ <span style={{ fontSize: 14, fontWeight: 600, color: "var(--pl-text-secondary)" }}>About this place</span></h2>
                   <p className="pd-description">{place.description}</p>
                 </div>
               )}
 
               {place.gallery?.length > 0 && (
                 <div className="pd-card">
-                  <h2>📸 รูปภาพ <span style={{ fontSize: 14, fontWeight: 600, color: "#64748b" }}>Gallery</span></h2>
+                  <h2>📸 รูปภาพ <span style={{ fontSize: 14, fontWeight: 600, color: "var(--pl-text-secondary)" }}>Gallery</span></h2>
                   <div className="pd-gallery">
                     {place.gallery.map((img, i) => (
                       <div key={i} className="pd-gal-item">
@@ -144,14 +144,14 @@ export default async function PlacePreviewPage({ params }: Props) {
 
               {place.googleMapsUrl && (
                 <div className="pd-card pd-map-card">
-                  <h2>🗺️ แผนที่ <span style={{ fontSize: 14, fontWeight: 600, color: "#64748b" }}>Map</span></h2>
+                  <h2>🗺️ แผนที่ <span style={{ fontSize: 14, fontWeight: 600, color: "var(--pl-text-secondary)" }}>Map</span></h2>
                   <MapsButton url={place.googleMapsUrl} placeName={place.title} className="pd-map-btn" />
                 </div>
               )}
 
               {place.reviews.length > 0 && (
                 <div className="pd-card">
-                  <h2>💬 รีวิว ({place._count.reviews}) <span style={{ fontSize: 14, fontWeight: 600, color: "#64748b" }}>Reviews</span></h2>
+                  <h2>💬 รีวิว ({place._count.reviews}) <span style={{ fontSize: 14, fontWeight: 600, color: "var(--pl-text-secondary)" }}>Reviews</span></h2>
                   {place.reviews.map(r => (
                     <div key={r.id} style={{ borderBottom: "1px solid #f1f5f9", paddingBottom: 12, marginBottom: 12 }}>
                       <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
@@ -170,7 +170,7 @@ export default async function PlacePreviewPage({ params }: Props) {
               )}
 
               {place.reviews.length === 0 && (
-                <div className="pd-card" style={{ textAlign: "center", color: "#94a3b8", padding: "32px" }}>
+                <div className="pd-card" style={{ textAlign: "center", color: "var(--pl-text-muted)", padding: "32px" }}>
                   <div style={{ fontSize: 32, marginBottom: 8 }}>💬</div>
                   <p style={{ margin: 0 }}>ยังไม่มีรีวิว · No reviews yet</p>
                 </div>
@@ -179,7 +179,7 @@ export default async function PlacePreviewPage({ params }: Props) {
 
             <aside className="pd-sidebar">
               <div className="pd-side-card pd-info-card">
-                <div className="pd-side-title">📋 ข้อมูลสำคัญ <span style={{ fontSize: 11, color: "#94a3b8" }}>Key Info</span></div>
+                <div className="pd-side-title">📋 ข้อมูลสำคัญ <span style={{ fontSize: 11, color: "var(--pl-text-muted)" }}>Key Info</span></div>
                 <div className="pd-info-list">
                   {place.openHours && (
                     <div className="pd-info-row">
@@ -226,7 +226,7 @@ export default async function PlacePreviewPage({ params }: Props) {
               </div>
 
               <div className="pd-side-card">
-                <div className="pd-side-title">📍 ที่ตั้ง <span style={{ fontSize: 11, color: "#94a3b8" }}>Location</span></div>
+                <div className="pd-side-title">📍 ที่ตั้ง <span style={{ fontSize: 11, color: "var(--pl-text-muted)" }}>Location</span></div>
                 <div className="pd-loc-province">{place.province}</div>
                 <div className="pd-loc-district">อ.{place.district}</div>
                 {place.address && <div className="pd-loc-address">{place.address}</div>}

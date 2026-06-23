@@ -396,7 +396,7 @@ export default function EditBusinessProfilePage() {
         .ep-logo-placeholder { width: 130px; height: 130px; border-radius: 28px; border: 5px solid white; box-shadow: 0 8px 24px rgba(15,23,42,0.12); background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 48px; }
         .ep-logo-edit-btn { position: absolute; bottom: 8px; right: 8px; width: 36px; height: 36px; border-radius: 50%; background: #2563eb; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.35); }
         .ep-profile-text h1 { font-size: 32px; font-weight: 900; color: #0f172a; margin-bottom: 6px; }
-        .ep-profile-text p { color: #64748b; font-size: 14px; }
+        .ep-profile-text p { color: var(--pl-text-secondary); font-size: 14px; }
         @media (max-width: 768px) { .ep-hero-content { padding: 0 22px 28px; margin-top: -60px; } .ep-cover-wrap { height: 200px; } .ep-logo-img, .ep-logo-placeholder { width: 100px; height: 100px; } .ep-profile-text h1 { font-size: 24px; } }
       `}</style>
     </div>

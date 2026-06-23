@@ -55,7 +55,7 @@ function TimePicker({
 }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label style={{ fontSize: 13, fontWeight: 700, color: "#334155" }}>{label}</label>
+      <label style={{ fontSize: 13, fontWeight: 700, color: "var(--pl-text-secondary)" }}>{label}</label>
       <input
         type="time"
         className="ui-input"
@@ -474,16 +474,16 @@ export default function CreatePlacePage() {
 
             {/* ── Opening Hours ── */}
             <div style={{
-              background: "#f8fafc", borderRadius: 14, padding: "18px 20px",
-              border: "1px solid #e2e8f0", marginBottom: 20,
+              background: "var(--pl-bg)", borderRadius: 14, padding: "18px 20px",
+              border: "1px solid var(--pl-border)", marginBottom: 20,
             }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
                 marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: 14, color: "#0f172a" }}>
+                  <div style={{ fontWeight: 800, fontSize: 14, color: "var(--pl-text-primary)" }}>
                     🕐 เวลาเปิด-ปิด · Opening Hours
                   </div>
-                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
+                  <div style={{ fontSize: 12, color: "var(--pl-text-secondary)", marginTop: 2 }}>
                     เลือกช่วงเวลาที่เปิดให้บริการ
                   </div>
                 </div>
@@ -502,7 +502,7 @@ export default function CreatePlacePage() {
               {!openAll && (
                 <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 8, alignItems: "end" }}>
                   <TimePicker label="เปิด · Opens" value={openTime} onChange={setOpenTime} />
-                  <div style={{ paddingBottom: 10, color: "#94a3b8", fontWeight: 800, fontSize: 20, textAlign: "center" }}>—</div>
+                  <div style={{ paddingBottom: 10, color: "var(--pl-text-muted)", fontWeight: 800, fontSize: 20, textAlign: "center" }}>—</div>
                   <TimePicker label="ปิด · Closes" value={closeTime} onChange={setCloseTime} />
                 </div>
               )}
@@ -519,14 +519,14 @@ export default function CreatePlacePage() {
 
             {/* ── Closed Days ── */}
             <div style={{
-              background: "#f8fafc", borderRadius: 14, padding: "18px 20px",
-              border: "1px solid #e2e8f0", marginBottom: 20,
+              background: "var(--pl-bg)", borderRadius: 14, padding: "18px 20px",
+              border: "1px solid var(--pl-border)", marginBottom: 20,
             }}>
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontWeight: 800, fontSize: 14, color: "#0f172a" }}>
+                <div style={{ fontWeight: 800, fontSize: 14, color: "var(--pl-text-primary)" }}>
                   📅 วันหยุด / วันปิดทำการ · Closed Days
                 </div>
-                <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
+                <div style={{ fontSize: 12, color: "var(--pl-text-secondary)", marginTop: 2 }}>
                   เลือกวันที่ปิดให้บริการ · Select days when your place is closed
                 </div>
               </div>
@@ -598,7 +598,7 @@ export default function CreatePlacePage() {
 
             {/* Amenity grid */}
             <div style={{ marginBottom: 24 }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 10 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 10 }}>
                 🏷️ สิ่งอำนวยความสะดวก · Facilities
               </p>
               <div className="amenity-grid">
@@ -635,7 +635,7 @@ export default function CreatePlacePage() {
 
             {/* Pet Policy */}
             <div>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "#475569", marginBottom: 10 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 10 }}>
                 🐾 นโยบายสัตว์เลี้ยง · Pet Policy
               </p>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -664,7 +664,7 @@ export default function CreatePlacePage() {
                 ))}
               </div>
               {!petPolicy && (
-                <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 8 }}>
+                <p style={{ fontSize: 12, color: "var(--pl-text-muted)", marginTop: 8 }}>
                   * หากไม่ระบุ จะไม่แสดงข้อมูลนโยบายสัตว์เลี้ยง
                 </p>
               )}

@@ -40,7 +40,7 @@ function HintTooltip({ text }: { text: string }) {
         <span style={{
           position: "absolute", bottom: "calc(100% + 8px)", left: "50%",
           transform: "translateX(-50%)",
-          background: "#1e293b", color: "#f8fafc",
+          background: "var(--pl-text-primary)", color: "#f8fafc",
           padding: "8px 12px", borderRadius: 10,
           fontSize: 12, fontWeight: 500, lineHeight: 1.6,
           width: 230, zIndex: 200,
@@ -48,7 +48,7 @@ function HintTooltip({ text }: { text: string }) {
           pointerEvents: "none",
         }}>
           {text}
-          <span style={{ position: "absolute", bottom: -5, left: "50%", transform: "translateX(-50%) rotate(45deg)", width: 10, height: 10, background: "#1e293b", display: "block" }} />
+          <span style={{ position: "absolute", bottom: -5, left: "50%", transform: "translateX(-50%) rotate(45deg)", width: 10, height: 10, background: "var(--pl-text-primary)", display: "block" }} />
         </span>
       )}
     </span>
@@ -524,7 +524,7 @@ export default function CreateStoryPage() {
         background: "linear-gradient(135deg,#f0fdf4,#ecfdf5)", padding: 24,
       }}>
         <div style={{
-          maxWidth: 480, width: "100%", background: "#fff", borderRadius: 24,
+          maxWidth: 480, width: "100%", background: "var(--pl-white)", borderRadius: 24,
           padding: "48px 40px", textAlign: "center",
           boxShadow: "0 8px 40px rgba(0,0,0,0.1)", border: "1.5px solid #d1fae5",
         }}>
@@ -532,10 +532,10 @@ export default function CreateStoryPage() {
           <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#065f46", margin: "0 0 12px" }}>
             ส่งทริปสำเร็จแล้ว!
           </h2>
-          <p style={{ fontSize: "0.9rem", color: "#6b7280", lineHeight: 1.7, margin: "0 0 8px" }}>
+          <p style={{ fontSize: "0.9rem", color: "var(--pl-text-secondary)", lineHeight: 1.7, margin: "0 0 8px" }}>
             ทริปของคุณอยู่ระหว่าง<strong style={{ color: "#d97706" }}> รอแอดมินตรวจสอบ</strong>
           </p>
-          <p style={{ fontSize: "0.85rem", color: "#9ca3af", lineHeight: 1.6, margin: "0 0 32px" }}>
+          <p style={{ fontSize: "0.85rem", color: "var(--pl-text-muted)", lineHeight: 1.6, margin: "0 0 32px" }}>
             เมื่อผ่านการตรวจสอบแล้ว ทริปจะถูกเผยแพร่บนแพลตฟอร์มโดยอัตโนมัติ
             คุณสามารถดูสถานะได้ที่หน้า Dashboard
           </p>
@@ -553,7 +553,7 @@ export default function CreateStoryPage() {
             <button
               onClick={() => { setSubmitted(false); setTitle(""); setContent(""); setCoverFile(null); setCoverPreview(null); setGalleryFiles([]); setGalleryPreviews([]); }}
               style={{
-                background: "#f1f5f9", color: "#475569",
+                background: "#f1f5f9", color: "var(--pl-text-secondary)",
                 border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "12px 28px",
                 fontWeight: 700, fontSize: "0.9rem", cursor: "pointer",
               }}
@@ -577,7 +577,7 @@ export default function CreateStoryPage() {
             style={{
               width:"100%",maxWidth:430,minHeight:84,display:"flex",alignItems:"center",
               gap:14,padding:"14px 16px",border:`1.5px solid ${isBackHover?"#bfdbfe":"#dbe7f3"}`,
-              borderRadius:22,color:"#0f172a",
+              borderRadius:22,color:"var(--pl-text-primary)",
               background:"linear-gradient(180deg,rgba(255,255,255,0.99),rgba(248,250,252,0.96))",
               boxShadow:isBackHover?"0 18px 36px rgba(15,23,42,0.1)":"0 12px 26px rgba(15,23,42,0.06)",
               textDecoration:"none",transform:isBackHover?"translateY(-3px)":"translateY(0)",
@@ -588,8 +588,8 @@ export default function CreateStoryPage() {
               <LayoutDashboard size={20} />
             </span>
             <span style={{minWidth:0,display:"flex",flex:"1 1 auto",flexDirection:"column",lineHeight:1.15}}>
-              <strong style={{color:"#0f172a",fontSize:14,fontWeight:900}}>กลับไปแดชบอร์ด</strong>
-              <small style={{marginTop:5,color:"#64748b",fontSize:11,fontWeight:700}}>ดูโปรไฟล์และเรื่องเล่าของฉัน</small>
+              <strong style={{color:"var(--pl-text-primary)",fontSize:14,fontWeight:900}}>กลับไปแดชบอร์ด</strong>
+              <small style={{marginTop:5,color:"var(--pl-text-secondary)",fontSize:11,fontWeight:700}}>ดูโปรไฟล์และเรื่องเล่าของฉัน</small>
             </span>
             <span style={{width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",
               flex:"0 0 28px",borderRadius:10,color:"#2563eb",background:"#eff6ff",
@@ -694,7 +694,7 @@ export default function CreateStoryPage() {
                       width: "100%", padding: "11px", borderRadius: 12, marginBottom: 10,
                       border: allOn ? "1.5px solid #7c3aed" : "1.5px dashed #cbd5e1",
                       background: allOn ? "linear-gradient(135deg,#f5f3ff,#ede9fe)" : "#fff",
-                      color: allOn ? "#6d28d9" : "#64748b", fontWeight: 700, fontSize: 13,
+                      color: allOn ? "#6d28d9" : "var(--pl-text-secondary)", fontWeight: 700, fontSize: 13,
                       cursor: "pointer", fontFamily: "inherit", transition: "all .15s",
                     }}>
                     ✨ ทุกสไตล์ · All styles{allOn ? " ✓" : ""}
@@ -711,7 +711,7 @@ export default function CreateStoryPage() {
                         padding: "11px 13px", borderRadius: 12, textAlign: "left",
                         border: on ? "1.5px solid #7c3aed" : "1.5px solid #e2e8f0",
                         background: on ? "linear-gradient(135deg,#f5f3ff,#ede9fe)" : "#fff",
-                        color: on ? "#6d28d9" : "#64748b", fontWeight: 700, fontSize: 13,
+                        color: on ? "#6d28d9" : "var(--pl-text-secondary)", fontWeight: 700, fontSize: 13,
                         cursor: "pointer", fontFamily: "inherit", transition: "all .15s",
                         boxShadow: on ? "0 2px 8px rgba(124,58,237,0.18)" : "none",
                       }}>
@@ -722,7 +722,7 @@ export default function CreateStoryPage() {
                   );
                 })}
               </div>
-              <small style={{ color: "#94a3b8", fontSize: 11, marginTop: 6, display: "block" }}>
+              <small style={{ color: "var(--pl-text-muted)", fontSize: 11, marginTop: 6, display: "block" }}>
                 เลือกได้หลายสไตล์ · ถ้าไม่เลือก จะถือว่าครบทุกสไตล์
               </small>
             </div>
@@ -737,13 +737,13 @@ export default function CreateStoryPage() {
                 onChange={(e) => setTags(e.target.value)} placeholder="เช่น กาญจนบุรี, น้ำตก, วันเดียว" />
             </div>
             <div className="form-group full-width">
-              <label>🎬 YouTube Video URL <small style={{color:"#94a3b8",fontWeight:500}}>(ไม่บังคับ · Optional)</small></label>
+              <label>🎬 YouTube Video URL <small style={{color:"var(--pl-text-muted)",fontWeight:500}}>(ไม่บังคับ · Optional)</small></label>
               <input type="url" className="form-control" value={youtubeUrl}
                 onChange={(e) => setYoutubeUrl(e.target.value)}
                 placeholder="https://www.youtube.com/watch?v=... หรือ https://youtu.be/..." />
             </div>
             <div className="form-group full-width">
-              <label>🎵 TikTok Video URL <small style={{color:"#94a3b8",fontWeight:500}}>(ไม่บังคับ · Optional)</small></label>
+              <label>🎵 TikTok Video URL <small style={{color:"var(--pl-text-muted)",fontWeight:500}}>(ไม่บังคับ · Optional)</small></label>
               <input type="url" className="form-control" value={tiktokUrl}
                 onChange={(e) => setTiktokUrl(e.target.value)}
                 placeholder="https://www.tiktok.com/@user/video/..." />
@@ -753,7 +753,7 @@ export default function CreateStoryPage() {
           {/* 3. Gallery */}
           <div className="section-box">
             <h3 className="section-label">🖼️ แกลเลอรี่ | <small>GALLERY</small><HintTooltip text="รูปภาพเพิ่มเติมที่แสดงบรรยากาศทริป นอกเหนือจากรูปปก สามารถเพิ่มได้หลายรูป" /></h3>
-            <p style={{fontSize:12,color:"#94a3b8",marginBottom:12}}>
+            <p style={{fontSize:12,color:"var(--pl-text-muted)",marginBottom:12}}>
               {galleryFiles.length} / {galleryLimit} รูป
               {galleryFiles.length >= galleryLimit && <span style={{color:"#ef4444",marginLeft:8}}>ถึงจำนวนสูงสุดแล้ว</span>}
             </p>
@@ -784,7 +784,7 @@ export default function CreateStoryPage() {
               {galleryFiles.length < galleryLimit && (
                 <label style={{width:100,height:80,border:"2px dashed #cbd5e1",borderRadius:12,
                   display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
-                  color:"#64748b",fontSize:12,fontWeight:700}}>
+                  color:"var(--pl-text-secondary)",fontSize:12,fontWeight:700}}>
                   + เพิ่ม
                   <input type="file" hidden accept="image/*" multiple onChange={handleGalleryUpload} />
                 </label>
@@ -817,7 +817,7 @@ export default function CreateStoryPage() {
                       borderColor: item.placeId ? "#10b981" : undefined,
                       background: item.placeId ? "#f0fdf4" : undefined }} />
                   {(placeSuggestions[idx]?.length > 0) && (
-                      <div style={{ position: "absolute", top: "110%", left: 0, right: 0, background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.1)", zIndex: 50, maxHeight: 240, overflowY: "auto" }}>
+                      <div style={{ position: "absolute", top: "110%", left: 0, right: 0, background: "var(--pl-white)", border: "1.5px solid #e2e8f0", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.1)", zIndex: 50, maxHeight: 240, overflowY: "auto" }}>
                         {placeSuggestions[idx].map((p: any) => (
                           <button key={p.id} type="button"
                             onClick={() => selectPlace(idx, p)}
@@ -826,9 +826,9 @@ export default function CreateStoryPage() {
                             onMouseLeave={e => (e.currentTarget.style.background = "none")}>
                             {p.coverUrl && <img src={p.coverUrl} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />}
                             <div>
-                              <div style={{ fontWeight: 700, fontSize: 13, color: "#1e293b" }}>{p.title}</div>
-                              <div style={{ fontSize: 11, color: "#64748b" }}>📍 {p.district}, {p.province}</div>
-                              <div style={{ fontSize: 10, color: p.business ? "#10b981" : "#94a3b8", fontWeight: 600 }}>
+                              <div style={{ fontWeight: 700, fontSize: 13, color: "var(--pl-text-primary)" }}>{p.title}</div>
+                              <div style={{ fontSize: 11, color: "var(--pl-text-secondary)" }}>📍 {p.district}, {p.province}</div>
+                              <div style={{ fontSize: 10, color: p.business ? "#10b981" : "var(--pl-text-muted)", fontWeight: 600 }}>
                                 {p.business ? "🏢 มีเจ้าของ" : "⭕ ยังไม่มีเจ้าของ"}
                               </div>
                             </div>
@@ -836,13 +836,13 @@ export default function CreateStoryPage() {
                         ))}
                         <button type="button"
                           onClick={() => setPlaceSuggestions(prev => ({ ...prev, [idx]: [] }))}
-                          style={{ display: "block", width: "100%", padding: "8px", border: "none", background: "#f8fafc", color: "#94a3b8", fontSize: 12, cursor: "pointer", fontFamily: "inherit", borderRadius: "0 0 12px 12px" }}>
+                          style={{ display: "block", width: "100%", padding: "8px", border: "none", background: "var(--pl-bg)", color: "var(--pl-text-muted)", fontSize: 12, cursor: "pointer", fontFamily: "inherit", borderRadius: "0 0 12px 12px" }}>
                           ปิด
                         </button>
                       </div>
                     )}
                     {placeSearchLoading[idx] && (
-                      <div style={{ position: "absolute", top: "110%", left: 0, padding: "10px 14px", background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 12, fontSize: 12, color: "#94a3b8" }}>
+                      <div style={{ position: "absolute", top: "110%", left: 0, padding: "10px 14px", background: "var(--pl-white)", border: "1.5px solid #e2e8f0", borderRadius: 12, fontSize: 12, color: "var(--pl-text-muted)" }}>
                         🔍 กำลังค้นหา...
                       </div>
                     )}
@@ -850,7 +850,7 @@ export default function CreateStoryPage() {
                 {item.placeId && (
                   <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12, padding:"6px 12px", background:"#f0fdf4", border:"1px solid #6ee7b7", borderRadius:8 }}>
                     <span style={{ fontSize:12, color:"#10b981", fontWeight:700, flex:1 }}>🔗 เชื่อมสถานที่แล้ว</span>
-                    <button type="button" onClick={() => clearPlaceLink(idx)} style={{ background:"none", border:"none", color:"#94a3b8", cursor:"pointer", fontSize:13, fontWeight:700, padding:"2px 6px", borderRadius:4 }}>ยกเลิก ×</button>
+                    <button type="button" onClick={() => clearPlaceLink(idx)} style={{ background:"none", border:"none", color:"var(--pl-text-muted)", cursor:"pointer", fontSize:13, fontWeight:700, padding:"2px 6px", borderRadius:4 }}>ยกเลิก ×</button>
                   </div>
                 )}
 
@@ -861,7 +861,7 @@ export default function CreateStoryPage() {
                       📍 จะสร้าง &ldquo;{item.place}&rdquo; เป็นสถานที่แนะนำเมื่อกดบันทึก
                     </span>
                     <button type="button" onClick={() => unmarkCreatePlace(idx)}
-                      style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 12, fontWeight: 700, padding: "2px 6px", fontFamily: "inherit" }}>ยกเลิก ×</button>
+                      style={{ background: "none", border: "none", color: "var(--pl-text-muted)", cursor: "pointer", fontSize: 12, fontWeight: 700, padding: "2px 6px", fontFamily: "inherit" }}>ยกเลิก ×</button>
                   </div>
                 ) : item.place.trim().length >= 2 && !item.placeId && (
                   <div style={{ marginBottom: 12 }}>
@@ -874,10 +874,10 @@ export default function CreateStoryPage() {
                       <div style={{ background: "#f0fdf4", border: "1.5px solid #6ee7b7", borderRadius: 14, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
                         <div style={{ fontWeight: 800, fontSize: 13, color: "#065f46" }}>📍 สร้างสถานที่แนะนำ: <span style={{ color: "#10b981" }}>{item.place}</span></div>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                          <label style={{ fontSize: 12, color: "#374151", fontWeight: 700, flexShrink: 0 }}>ประเภท:</label>
+                          <label style={{ fontSize: 12, color: "var(--pl-text-secondary)", fontWeight: 700, flexShrink: 0 }}>ประเภท:</label>
                           <select value={suggestForm[idx]?.cat ?? "NATURE"}
                             onChange={e => setSuggestForm(f => ({ ...f, [idx]: { ...f[idx], cat: e.target.value } }))}
-                            style={{ flex: 1, minWidth: 140, padding: "7px 10px", borderRadius: 8, border: "1.5px solid #d1fae5", fontSize: 12, fontFamily: "inherit", background: "#fff" }}>
+                            style={{ flex: 1, minWidth: 140, padding: "7px 10px", borderRadius: 8, border: "1.5px solid #d1fae5", fontSize: 12, fontFamily: "inherit", background: "var(--pl-white)" }}>
                             <option value="NATURE">🌿 ธรรมชาติ</option>
                             <option value="TEMPLE">🛕 วัด/ศาสนสถาน</option>
                             <option value="CAFE">☕ คาเฟ่</option>
@@ -894,11 +894,11 @@ export default function CreateStoryPage() {
                             ✓ ตกลง
                           </button>
                           <button type="button" onClick={() => closeSuggest(idx)}
-                            style={{ padding: "7px 12px", borderRadius: 8, border: "1.5px solid #d1fae5", background: "#fff", color: "#64748b", fontSize: 12, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}>
+                            style={{ padding: "7px 12px", borderRadius: 8, border: "1.5px solid #d1fae5", background: "var(--pl-white)", color: "var(--pl-text-secondary)", fontSize: 12, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}>
                             ยกเลิก
                           </button>
                         </div>
-                        <p style={{ margin: 0, fontSize: 11, color: "#6b7280" }}>พิกัดจะใช้จากช่อง “ปักหมุดพิกัด” ด้านล่าง · สถานที่จะถูกส่งให้แอดมินตรวจสอบเมื่อกดบันทึก</p>
+                        <p style={{ margin: 0, fontSize: 11, color: "var(--pl-text-secondary)" }}>พิกัดจะใช้จากช่อง “ปักหมุดพิกัด” ด้านล่าง · สถานที่จะถูกส่งให้แอดมินตรวจสอบเมื่อกดบันทึก</p>
                       </div>
                     )}
                   </div>
@@ -961,21 +961,21 @@ export default function CreateStoryPage() {
                         style={{ width: 38, height: 22, borderRadius: 11, background: item.shareToPlace ? "#10b981" : "#cbd5e1",
                           position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
                         <div style={{ position: "absolute", top: 3, left: item.shareToPlace ? 19 : 3,
-                          width: 16, height: 16, borderRadius: "50%", background: "#fff",
+                          width: 16, height: 16, borderRadius: "50%", background: "var(--pl-white)",
                           transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
                       </div>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: item.shareToPlace ? "#065f46" : "#64748b" }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: item.shareToPlace ? "#065f46" : "var(--pl-text-secondary)" }}>
                         {item.shareToPlace ? "✅ แชร์รูปและรีวิวนี้ไปยังหน้าสถานที่" : "แชร์รูปและรีวิวนี้ไปยังหน้าสถานที่"}
                       </span>
                     </div>
                     {item.shareToPlace && (
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, paddingLeft: 48 }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "#475569" }}>คะแนน:</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "var(--pl-text-secondary)" }}>คะแนน:</span>
                         {[1,2,3,4,5].map(s => (
                           <span key={s} onClick={() => updateTimeline(idx, "rating", s)}
                             style={{ fontSize: 22, cursor: "pointer", color: s <= (item.rating ?? 5) ? "#f59e0b" : "#d1d5db", transition: "color 0.15s" }}>★</span>
                         ))}
-                        <span style={{ fontSize: 12, color: "#94a3b8" }}>{item.rating ?? 5}/5</span>
+                        <span style={{ fontSize: 12, color: "var(--pl-text-muted)" }}>{item.rating ?? 5}/5</span>
                       </div>
                     )}
                     {item.shareToPlace && (
@@ -988,7 +988,7 @@ export default function CreateStoryPage() {
 
                 {/* PlacePicker — ปักหมุดพิกัดของจุดแวะ */}
                 <div style={{ marginTop: 14 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#475569", marginBottom: 6 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 6 }}>
                     📍 ปักหมุดพิกัด (ไม่บังคับ)
                     {item.lat != null && <span style={{ color: "#10b981", marginLeft: 8 }}>✓ {item.lat.toFixed(5)}, {item.lng?.toFixed(5)}</span>}
                   </div>
@@ -1094,8 +1094,8 @@ export default function CreateStoryPage() {
         .create-card{background:rgba(255,255,255,0.88);padding:60px;border-radius:50px;box-shadow:0 30px 80px rgba(0,0,0,0.08);width:100%;max-width:1050px;position:relative}
         .top-nav-actions{margin-bottom:30px}
         .header-text{text-align:center;margin-bottom:50px}
-        .header-text h2{font-size:34px;font-weight:900;color:#1e293b;letter-spacing:-0.5px}
-        .header-text p{color:#94a3b8;font-size:14px;letter-spacing:2px;text-transform:uppercase;font-weight:600;margin-top:10px}
+        .header-text h2{font-size:34px;font-weight:900;color:var(--pl-text-primary);letter-spacing:-0.5px}
+        .header-text p{color:var(--pl-text-muted);font-size:14px;letter-spacing:2px;text-transform:uppercase;font-weight:600;margin-top:10px}
         .cover-upload-area{width:100%;height:420px;border:3px dashed #e2e8f0;border-radius:40px;overflow:hidden;cursor:pointer;position:relative;background:#fafbfc;transition:0.4s}
         .cover-upload-area:hover{border-color:#3b82f6;background:#f0f7ff;transform:scale(1.005)}
         .upload-placeholder{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
@@ -1104,20 +1104,20 @@ export default function CreateStoryPage() {
         .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:25px;margin-top:40px}
         .full-width{grid-column:span 2}
         .mood-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-        .form-group label{display:block;font-weight:700;font-size:14px;margin-bottom:8px;color:#374151}
+        .form-group label{display:block;font-weight:700;font-size:14px;margin-bottom:8px;color:var(--pl-text-secondary)}
         .form-group label span{color:#ef4444}
-        .form-control{width:100%;padding:14px 20px;border-radius:15px;border:1px solid #e2e8f0;outline:none;background:#f8fafc;font-size:15px;transition:0.3s;box-sizing:border-box}
-        .form-control:focus{border-color:#3b82f6;background:white;box-shadow:0 0 0 4px rgba(59,130,246,0.1)}
+        .form-control{width:100%;padding:14px 20px;border-radius:15px;border:1px solid var(--pl-border);outline:none;background:var(--pl-bg);font-size:15px;transition:0.3s;box-sizing:border-box}
+        .form-control:focus{border-color:#3b82f6;background:var(--pl-white);box-shadow:0 0 0 4px rgba(59,130,246,0.1)}
         .text-area{height:140px;resize:vertical}
-        .section-box{margin-top:40px;padding:35px;border-radius:40px;background:#fff;border:1px solid #f1f5f9;box-shadow:0 10px 20px rgba(0,0,0,0.01)}
-        .section-label{font-weight:900;font-size:20px;margin-bottom:25px;color:#1e293b;border-left:5px solid #3b82f6;padding-left:15px}
+        .section-box{margin-top:40px;padding:35px;border-radius:40px;background:var(--pl-white);border:1px solid var(--pl-border);box-shadow:0 10px 20px rgba(0,0,0,0.01)}
+        .section-label{font-weight:900;font-size:20px;margin-bottom:25px;color:var(--pl-text-primary);border-left:5px solid #3b82f6;padding-left:15px}
         .timeline-card{background:#fcfcfd;border:1px solid #edf2f7;border-radius:30px;padding:30px;margin-bottom:25px;box-shadow:0 4px 10px rgba(0,0,0,0.02)}
         .timeline-top-row{display:flex;gap:15px;margin-bottom:15px}
         .timeline-location-row{display:flex;gap:15px;margin-bottom:15px}
         .timeline-detail-row{display:grid;grid-template-columns:1fr 180px;gap:20px;margin-top:15px}
-        .desc-area{height:110px;border-radius:20px;resize:none;background:white!important}
+        .desc-area{height:110px;border-radius:20px;resize:none;background:var(--pl-white)!important}
         .cp-upload-container{height:110px}
-        .cp-label{width:100%;height:100%;border:2px dashed #cbd5e1;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#64748b;font-size:12px;font-weight:700;transition:0.3s;background:white}
+        .cp-label{width:100%;height:100%;border:2px dashed #cbd5e1;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--pl-text-secondary);font-size:12px;font-weight:700;transition:0.3s;background:var(--pl-white)}
         .cp-label:hover{border-color:#3b82f6;color:#3b82f6;background:#f0f7ff}
         .cp-preview-box{position:relative;width:100%;height:100%;border-radius:20px;overflow:hidden}
         .cp-preview-box img{width:100%;height:100%;object-fit:cover}
@@ -1127,14 +1127,14 @@ export default function CreateStoryPage() {
         .btn-add-checkpoint-premium:hover{background:#3b82f6;color:white;transform:scale(1.01);box-shadow:0 15px 30px rgba(59,130,246,0.2)}
         .btn-add-checkpoint-premium .plus{font-size:24px}
         .main-actions{display:flex;gap:25px;margin-top:60px}
-        .btn-action-preview{flex:1;padding:20px;border-radius:25px;border:2px solid #3b82f6;color:#3b82f6;font-weight:800;cursor:pointer;background:white;transition:0.3s;font-size:16px}
+        .btn-action-preview{flex:1;padding:20px;border-radius:25px;border:2px solid #3b82f6;color:#3b82f6;font-weight:800;cursor:pointer;background:var(--pl-white);transition:0.3s;font-size:16px}
         .btn-action-preview:hover{background:#f0f7ff;box-shadow:0 10px 20px rgba(59,130,246,0.1)}
         .btn-action-publish{flex:2;padding:20px;border-radius:25px;border:none;background:linear-gradient(135deg,#3b82f6,#10b981);color:white;font-weight:800;cursor:pointer;font-size:18px;box-shadow:0 20px 40px rgba(59,130,246,0.3);transition:0.4s}
         .btn-action-publish:hover:not(:disabled){transform:translateY(-5px);box-shadow:0 30px 60px rgba(59,130,246,0.4)}
         .btn-action-publish:disabled{opacity:0.7;cursor:not-allowed}
         .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.9);backdrop-filter:blur(12px);z-index:3000;display:flex;justify-content:center;padding:50px 20px;overflow-y:auto}
-        .modal-content{background:white;width:100%;max-width:900px;border-radius:50px;position:relative;height:fit-content;overflow:hidden;padding-bottom:60px;box-shadow:0 50px 100px rgba(0,0,0,0.5)}
-        .close-btn{position:absolute;top:30px;right:30px;font-size:30px;border:none;background:rgba(255,255,255,0.9);color:#1e293b;width:50px;height:50px;border-radius:50%;cursor:pointer;z-index:10;box-shadow:0 10px 20px rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;transition:0.3s}
+        .modal-content{background:var(--pl-white);width:100%;max-width:900px;border-radius:50px;position:relative;height:fit-content;overflow:hidden;padding-bottom:60px;box-shadow:0 50px 100px rgba(0,0,0,0.5)}
+        .close-btn{position:absolute;top:30px;right:30px;font-size:30px;border:none;background:rgba(255,255,255,0.9);color:var(--pl-text-primary);width:50px;height:50px;border-radius:50%;cursor:pointer;z-index:10;box-shadow:0 10px 20px rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;transition:0.3s}
         .close-btn:hover{background:#ef4444;color:white;transform:rotate(90deg)}
         .pv-header{width:100%;height:500px;position:relative}
         .pv-header img{width:100%;height:100%;object-fit:cover}
@@ -1142,12 +1142,12 @@ export default function CreateStoryPage() {
         .pv-tag{background:#3b82f6;padding:6px 18px;border-radius:50px;font-size:13px;font-weight:800;text-transform:uppercase}
         .pv-title-box h1{font-size:42px;margin:15px 0;font-weight:900;line-height:1.1}
         .pv-body{padding:50px}
-        .pv-main-content{line-height:2;color:#475569;font-size:18px;margin-bottom:50px;white-space:pre-wrap}.pv-main-content.trip-rich-content{white-space:normal}
+        .pv-main-content{line-height:2;color:var(--pl-text-secondary);font-size:18px;margin-bottom:50px;white-space:pre-wrap}.pv-main-content.trip-rich-content{white-space:normal}
         .pv-timeline{border-left:4px solid #3b82f6;padding-left:40px;margin-left:15px}
         .pv-item{position:relative;margin-bottom:50px}
         .pv-dot{position:absolute;left:-49px;top:8px;width:18px;height:18px;background:#3b82f6;border-radius:50%;border:4px solid #fff;box-shadow:0 0 0 6px rgba(59,130,246,0.2)}
-        .pv-info h4{margin:0;font-size:24px;color:#1e293b;font-weight:800}
-        .pv-desc{color:#64748b;line-height:1.8;margin:15px 0;font-size:16px}
+        .pv-info h4{margin:0;font-size:24px;color:var(--pl-text-primary);font-weight:800}
+        .pv-desc{color:var(--pl-text-secondary);line-height:1.8;margin:15px 0;font-size:16px}
         .pv-checkpoint-img{width:100%;max-width:500px;border-radius:30px;margin-top:20px;box-shadow:0 20px 40px rgba(0,0,0,0.1)}
         @media(max-width:768px){
           .info-grid{grid-template-columns:1fr}
