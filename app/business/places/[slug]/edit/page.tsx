@@ -130,8 +130,9 @@ export default function EditPlacePage({ params }: Props) {
         // normalize district: ตรวจว่า district ที่ DB เก็บอยู่ใน list ของจังหวัดนั้นไหม
         const districtList = getDistricts(normalizedProv);
         const rawDist = p.district ?? "";
-        const matchedDist = districtList.find(d => d === rawDist || d.startsWith(rawDist) || rawDist.startsWith(d)) ?? rawDist;
-        setDistrict(matchedDist);
+        // option ของอำเภอใช้ value เป็น "ไทยล้วน" (d.split(" (")[0]) → ต้องเก็บ district ให้ตรงรูปแบบนั้น
+        const matchedFull = districtList.find(d => d === rawDist || d.startsWith(rawDist) || rawDist.startsWith(d));
+        setDistrict((matchedFull ?? rawDist).split(" (")[0]);
         setAddress(p.address ?? "");
         setGoogleMaps(p.googleMapsUrl ?? "");
         setLat(p.lat ?? null);
