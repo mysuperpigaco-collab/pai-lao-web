@@ -42,7 +42,7 @@ function ResetPasswordForm() {
             ขอลิงก์ใหม่
           </Link>
         </div>
-        <style jsx>{` .page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:transparent;padding:24px;position:relative;overflow:hidden;} .bg{position:absolute;inset:0;background:radial-gradient(circle at top left,rgba(37,99,235,0.15),transparent 30%),radial-gradient(circle at bottom right,rgba(16,185,129,0.15),transparent 30%);} .card{position:relative;z-index:2;width:100%;max-width:480px;background:rgba(255,255,255,0.84);backdrop-filter:blur(20px);border-radius:38px;padding:42px;border:1px solid rgba(255,255,255,0.6);box-shadow:0 25px 60px rgba(15,23,42,0.08);} .logo{width:72px;height:72px;margin:0 auto 20px;border-radius:24px;background:linear-gradient(135deg,#2563eb,#10b981);display:flex;align-items:center;justify-content:center;} `}</style>
+        <style jsx>{` .page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:transparent;padding:24px;position:relative;overflow:hidden;} .bg{position:absolute;inset:0;background:radial-gradient(circle at top left,rgba(37,99,235,0.15),transparent 30%),radial-gradient(circle at bottom right,rgba(16,185,129,0.15),transparent 30%);} .card{position:relative;z-index:2;width:100%;max-width:480px;background:var(--pl-white);backdrop-filter:blur(20px);border-radius:38px;padding:42px;border:1px solid var(--pl-border);box-shadow:0 25px 60px rgba(15,23,42,0.08);} .logo{width:72px;height:72px;margin:0 auto 20px;border-radius:24px;background:linear-gradient(135deg,#2563eb,#10b981);display:flex;align-items:center;justify-content:center;} `}</style>
       </div>
     );
   }
@@ -155,26 +155,26 @@ function ResetPasswordForm() {
       <style jsx>{`
         .page { min-height:100vh; display:flex; align-items:center; justify-content:center; background:transparent; padding:24px; position:relative; overflow:hidden; }
         .bg { position:absolute; inset:0; background: radial-gradient(circle at top left,rgba(37,99,235,0.15),transparent 30%), radial-gradient(circle at bottom right,rgba(16,185,129,0.15),transparent 30%); }
-        .card { position:relative; z-index:2; width:100%; max-width:480px; background:rgba(255,255,255,0.84); backdrop-filter:blur(20px); border-radius:38px; padding:42px; border:1px solid rgba(255,255,255,0.6); box-shadow:0 25px 60px rgba(15,23,42,0.08); }
+        .card { position:relative; z-index:2; width:100%; max-width:480px; background:var(--pl-white); backdrop-filter:blur(20px); border-radius:38px; padding:42px; border:1px solid var(--pl-border); box-shadow:0 25px 60px rgba(15,23,42,0.08); }
         .logo { width:72px; height:72px; margin:0 auto 16px; border-radius:24px; background:linear-gradient(135deg,#2563eb,#10b981); display:flex; align-items:center; justify-content:center; }
         .mini { display:block; text-align:center; font-size:11px; font-weight:800; letter-spacing:2px; color:#94a3b8; margin-bottom:14px; }
-        h1 { text-align:center; font-size:32px; font-weight:900; color:#0f172a; margin:0 0 10px; }
-        h2 { font-size:26px; font-weight:900; color:#0f172a; margin:0 0 10px; }
-        .desc { text-align:center; color:#64748b; font-size:14px; line-height:1.7; margin-bottom:28px; }
+        h1 { text-align:center; font-size:32px; font-weight:900; color:var(--pl-text-primary); margin:0 0 10px; }
+        h2 { font-size:26px; font-weight:900; color:var(--pl-text-primary); margin:0 0 10px; }
+        .desc { text-align:center; color:var(--pl-text-secondary); font-size:14px; line-height:1.7; margin-bottom:28px; }
         .input-group { margin-bottom:16px; }
-        label { display:block; margin-bottom:8px; font-size:14px; font-weight:700; color:#334155; }
-        .input-wrap { height:56px; display:flex; align-items:center; gap:10px; padding:0 14px; border:1.5px solid #dbeafe; border-radius:16px; background:rgba(255,255,255,0.95); color:#94a3b8; transition:0.2s; }
+        label { display:block; margin-bottom:8px; font-size:14px; font-weight:700; color:var(--pl-text-primary); }
+        .input-wrap { height:56px; display:flex; align-items:center; gap:10px; padding:0 14px; border:1.5px solid var(--pl-border); border-radius:16px; background:var(--pl-bg); color:#94a3b8; transition:0.2s; }
         .input-wrap:focus-within { border-color:#2563eb; box-shadow:0 0 0 4px rgba(37,99,235,0.09); }
         .input-wrap.has-error { border-color:#fca5a5; }
-        input { width:100%; min-width:0; border:0; outline:0; background:transparent; color:#0f172a; font-size:15px; }
+        input { width:100%; min-width:0; border:0; outline:0; background:transparent; color:var(--pl-text-primary); font-size:15px; }
         input::placeholder { color:#94a3b8; }
-        .icon-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:0; background:transparent; cursor:pointer; color:#64748b; border-radius:8px; }
+        .icon-btn { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:0; background:transparent; cursor:pointer; color:var(--pl-text-secondary); border-radius:8px; }
         .icon-btn:hover { color:#2563eb; background:#eff6ff; }
         .strength { margin:-4px 0 16px; display:grid; gap:6px; }
         .strength-track { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
         .strength-track span { height:5px; border-radius:999px; background:#e2e8f0; }
         .strength-track span.active { background:linear-gradient(90deg,#4facfe,#43e97b); }
-        .strength small { color:#64748b; font-size:12px; font-weight:600; }
+        .strength small { color:var(--pl-text-secondary); font-size:12px; font-weight:600; }
         .error-text { color:#dc2626; font-size:12px; font-weight:700; display:block; margin-top:4px; }
         .error-msg { color:#dc2626; font-size:13px; font-weight:700; text-align:center; margin:-4px 0 12px; }
         .submit-btn { width:100%; height:58px; border:none; border-radius:18px; background:linear-gradient(135deg,#2563eb,#10b981); color:white; font-size:15px; font-weight:900; cursor:pointer; transition:0.3s; box-shadow:0 14px 28px rgba(37,99,235,0.22); margin-top:8px; }

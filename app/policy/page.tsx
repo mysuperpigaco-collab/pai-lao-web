@@ -20,7 +20,7 @@ function PolicyPageInner() {
   }, [searchParams]);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
+    <div style={{ minHeight: "100vh", background: "var(--pl-bg)" }}>
 
       {/* ── Hero ── */}
       <div style={{
@@ -32,17 +32,17 @@ function PolicyPageInner() {
         <h1 style={{ color: "#fff", fontWeight: 900, fontSize: "clamp(1.5rem,4vw,2.2rem)", margin: "0 0 10px" }}>
           นโยบายและข้อกำหนด
         </h1>
-        <p style={{ color: "#94a3b8", fontSize: 15, margin: "0 0 6px" }}>
+        <p style={{ color: "var(--pl-text-muted)", fontSize: 15, margin: "0 0 6px" }}>
           Terms, Privacy &amp; Community Standards · {SITE_NAME}
         </p>
-        <p style={{ color: "#64748b", fontSize: 13, margin: 0 }}>
+        <p style={{ color: "var(--pl-text-secondary)", fontSize: 13, margin: 0 }}>
           อัปเดตล่าสุด: {LAST_UPDATED}
         </p>
       </div>
 
       {/* ── Tabs ── */}
       <div style={{
-        background: "#fff", borderBottom: "1px solid #e2e8f0",
+        background: "var(--pl-white)", borderBottom: "1px solid var(--pl-border)",
         position: "sticky", top: 0, zIndex: 20,
       }}>
         <div style={{
@@ -149,11 +149,11 @@ function PolicyPageInner() {
                   ["🗑️ ลบเนื้อหา", "ลบโพสต์ รีวิว หรือความคิดเห็นที่ละเมิด"],
                 ].map(([title, desc]) => (
                   <div key={title} style={{
-                    background: "#f8fafc", borderRadius: 12, padding: "14px 16px",
+                    background: "var(--pl-bg)", borderRadius: 12, padding: "14px 16px",
                     border: "1px solid #e2e8f0",
                   }}>
                     <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{title}</div>
-                    <div style={{ fontSize: 13, color: "#64748b" }}>{desc}</div>
+                    <div style={{ fontSize: 13, color: "var(--pl-text-secondary)" }}>{desc}</div>
                   </div>
                 ))}
               </div>
@@ -246,7 +246,7 @@ function PolicyPageInner() {
                     alignItems: "flex-start",
                   }}>
                     <div style={{ fontWeight: 700, fontSize: 14, minWidth: 160, color: "#0369a1" }}>{icon_title}</div>
-                    <div style={{ fontSize: 14, color: "#475569" }}>{desc}</div>
+                    <div style={{ fontSize: 14, color: "var(--pl-text-secondary)" }}>{desc}</div>
                   </div>
                 ))}
               </div>
@@ -287,11 +287,11 @@ function PolicyPageInner() {
                 ].map(([type, duration]) => (
                   <div key={type} style={{
                     display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8,
-                    padding: "10px 14px", background: "#f8fafc", borderRadius: 8,
+                    padding: "10px 14px", background: "var(--pl-bg)", borderRadius: 8,
                     border: "1px solid #e2e8f0", fontSize: 14,
                   }}>
-                    <span style={{ color: "#334155", fontWeight: 600 }}>{type}</span>
-                    <span style={{ color: "#64748b" }}>{duration}</span>
+                    <span style={{ color: "var(--pl-text-primary)", fontWeight: 600 }}>{type}</span>
+                    <span style={{ color: "var(--pl-text-secondary)" }}>{duration}</span>
                   </div>
                 ))}
               </div>
@@ -309,11 +309,11 @@ function PolicyPageInner() {
                   ["🔁 สิทธิ์ถอนความยินยอม", "ถอนความยินยอมได้ทุกเมื่อ"],
                 ].map(([title, desc]) => (
                   <div key={title} style={{
-                    background: "#f8fafc", borderRadius: 12, padding: "14px 16px",
+                    background: "var(--pl-bg)", borderRadius: 12, padding: "14px 16px",
                     border: "1px solid #e2e8f0",
                   }}>
                     <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{title}</div>
-                    <div style={{ fontSize: 13, color: "#64748b" }}>{desc}</div>
+                    <div style={{ fontSize: 13, color: "var(--pl-text-secondary)" }}>{desc}</div>
                   </div>
                 ))}
               </div>
@@ -496,7 +496,7 @@ function Section({ icon, title, children }: { icon: string; title: string; child
     <div style={{ marginBottom: 36 }}>
       <h2 style={{
         display: "flex", alignItems: "center", gap: 10,
-        fontSize: "1.05rem", fontWeight: 800, color: "#0f172a",
+        fontSize: "1.05rem", fontWeight: 800, color: "var(--pl-text-primary)",
         borderBottom: "2px solid #e2e8f0", paddingBottom: 10, marginBottom: 16,
       }}>
         <span>{icon}</span> {title}

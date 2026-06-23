@@ -248,3 +248,7 @@
   .ui-form-grid .col-full { grid-column: span 1; }
   .ui-section-card { padding: 22px; border-radius: 22px; }
 }
+
+/* ── DARK MODE ── (ส่วนใหญ่ใช้ token อยู่แล้ว เหลือแค่ input bg ที่ hardcoded) */
+[data-theme="dark"] .ui-input { background: var(--pl-bg); }
+[data-theme="dark"] .ui-input:focus { background: var(--pl-white); }

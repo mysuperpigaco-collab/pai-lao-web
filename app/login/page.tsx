@@ -75,7 +75,7 @@ function LoginInner() {
         <h2 style={{ fontWeight: 800, marginBottom: "10px", fontSize: "28px" }}>
           เข้าสู่ระบบ | <span style={{ color: "#3b82f6" }}>Login</span>
         </h2>
-        <p style={{ color: "#999", marginBottom: "35px", fontSize: "14px" }}>
+        <p style={{ color: "var(--pl-text-muted)", marginBottom: "35px", fontSize: "14px" }}>
           ยินดีต้อนรับกลับสู่สังคมนักเดินทาง | Welcome Back
         </p>
 
@@ -143,9 +143,9 @@ function LoginInner() {
 
       <style jsx>{`
         .auth-container { min-height: 85vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; background-color: transparent; }
-        .auth-card { background: rgba(255,255,255,0.90); padding: 50px; border-radius: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.05); width: 100%; max-width: 480px; text-align: center; }
+        .auth-card { background: var(--pl-white); padding: 50px; border-radius: 40px; box-shadow: var(--pl-shadow-card); width: 100%; max-width: 480px; text-align: center; }
         .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding: 0 5px; }
-        .remember-me { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #666; }
+        .remember-me { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--pl-text-secondary); }
         .remember-me input { width: 16px; height: 16px; accent-color: #3b82f6; cursor: pointer; }
         .btn-login-submit { width: 100%; padding: 16px; border-radius: 50px; border: none; background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%); color: white; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.3s; opacity: ${isLoading ? 0.7 : 1}; }
         .btn-login-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59,130,246,0.2); }

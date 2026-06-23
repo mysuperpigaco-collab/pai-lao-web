@@ -95,14 +95,14 @@ export default function ForgotPasswordPage() {
       <style jsx>{`
         .page { min-height:100vh; display:flex; align-items:center; justify-content:center; background:transparent; padding:24px; position:relative; overflow:hidden; }
         .bg { position:absolute; inset:0; background: radial-gradient(circle at top left,rgba(37,99,235,0.15),transparent 30%), radial-gradient(circle at bottom right,rgba(16,185,129,0.15),transparent 30%); }
-        .card { position:relative; z-index:2; width:100%; max-width:540px; background:rgba(255,255,255,0.84); backdrop-filter:blur(20px); border-radius:38px; padding:42px; border:1px solid rgba(255,255,255,0.6); box-shadow:0 25px 60px rgba(15,23,42,0.08); }
+        .card { position:relative; z-index:2; width:100%; max-width:540px; background:var(--pl-white); backdrop-filter:blur(20px); border-radius:38px; padding:42px; border:1px solid var(--pl-border); box-shadow:0 25px 60px rgba(15,23,42,0.08); }
         .logo { width:86px; height:86px; margin:0 auto 24px; border-radius:30px; background:linear-gradient(135deg,#2563eb,#10b981); display:flex; align-items:center; justify-content:center; font-size:42px; box-shadow:0 18px 38px rgba(37,99,235,0.24); }
         .mini { display:block; text-align:center; font-size:11px; font-weight:800; letter-spacing:2px; color:#94a3b8; margin-bottom:14px; }
-        h1 { text-align:center; font-size:42px; font-weight:900; color:#0f172a; margin:0 0 16px; }
-        .desc { text-align:center; color:#64748b; font-size:15px; line-height:1.7; margin-bottom:34px; }
+        h1 { text-align:center; font-size:42px; font-weight:900; color:var(--pl-text-primary); margin:0 0 16px; }
+        .desc { text-align:center; color:var(--pl-text-secondary); font-size:15px; line-height:1.7; margin-bottom:34px; }
         .input-group { margin-bottom:22px; }
-        label { display:block; margin-bottom:10px; font-size:14px; font-weight:700; color:#334155; }
-        input { width:100%; height:60px; border-radius:20px; border:1.5px solid #dbeafe; background:rgba(255,255,255,0.95); padding:0 18px; font-size:15px; outline:none; transition:0.25s; box-sizing:border-box; }
+        label { display:block; margin-bottom:10px; font-size:14px; font-weight:700; color:var(--pl-text-primary); }
+        input { width:100%; height:60px; border-radius:20px; border:1.5px solid var(--pl-border); background:var(--pl-bg); color:var(--pl-text-primary); padding:0 18px; font-size:15px; outline:none; transition:0.25s; box-sizing:border-box; }
         input:focus { border-color:#2563eb; box-shadow:0 0 0 4px rgba(37,99,235,0.08); }
         .error-msg { color:#dc2626; font-size:13px; font-weight:700; margin:-8px 0 12px; text-align:center; }
         .submit-btn { width:100%; height:62px; border:none; border-radius:22px; background:linear-gradient(135deg,#2563eb,#10b981); color:white; font-size:15px; font-weight:900; cursor:pointer; transition:0.3s ease; box-shadow:0 18px 38px rgba(37,99,235,0.22); }
