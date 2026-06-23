@@ -84,7 +84,7 @@ export default function BusinessNotifications() {
   const unread = unreadCount + visibleEditAlerts.length;
 
   return (
-    <div style={{ background: "white", borderRadius: 20, border: "1.5px solid #f1f5f9", marginBottom: 28, overflow: "hidden", boxShadow: "0 4px 24px rgba(15,23,42,0.06)" }}>
+    <div style={{ background: "var(--pl-white)", borderRadius: 20, border: "1.5px solid var(--pl-border)", marginBottom: 28, overflow: "hidden", boxShadow: "var(--pl-shadow-card)" }}>
 
       {/* ── Header ── */}
       <button onClick={() => setOpen(v => !v)} style={{
@@ -97,7 +97,7 @@ export default function BusinessNotifications() {
             🔔
           </div>
           <div>
-            <div style={{ fontWeight: 800, fontSize: 15, color: "#0f172a", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontWeight: 800, fontSize: 15, color: "var(--pl-text-primary)", display: "flex", alignItems: "center", gap: 8 }}>
               แจ้งเตือน
               {unread > 0 && (
                 <span style={{ background: "#ef4444", color: "white", fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 999, animation: "pulse 2s ease-in-out infinite" }}>
@@ -105,7 +105,7 @@ export default function BusinessNotifications() {
                 </span>
               )}
             </div>
-            <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 1 }}>รีวิวและการแจ้งเตือนสถานที่ของคุณ</div>
+            <div style={{ fontSize: 12, color: "var(--pl-text-muted)", marginTop: 1 }}>รีวิวและการแจ้งเตือนสถานที่ของคุณ</div>
           </div>
         </div>
         <span style={{ fontSize: 18, color: "#cbd5e1", transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.3s" }}>⌄</span>
@@ -148,12 +148,12 @@ export default function BusinessNotifications() {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
                       <span style={{ fontWeight: 800, fontSize: 13, color: "#991b1b" }}>การแก้ไขถูกปฏิเสธ</span>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 11, color: "#94a3b8" }}>{timeAgo(alert.createdAt)}</span>
+                        <span style={{ fontSize: 11, color: "var(--pl-text-muted)" }}>{timeAgo(alert.createdAt)}</span>
                         <button onClick={() => setDismissedEdits(prev => new Set([...prev, alert.id]))}
-                          style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 16, lineHeight: 1, padding: 0 }}>×</button>
+                          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--pl-text-muted)", fontSize: 16, lineHeight: 1, padding: 0 }}>×</button>
                       </div>
                     </div>
-                    <p style={{ fontSize: 12, color: "#475569", margin: "0 0 6px", fontWeight: 600 }}>
+                    <p style={{ fontSize: 12, color: "var(--pl-text-secondary)", margin: "0 0 6px", fontWeight: 600 }}>
                       📍 {alert.place?.title}
                     </p>
                     <p style={{ fontSize: 12, color: "#dc2626", margin: "0 0 8px" }}>
@@ -171,8 +171,8 @@ export default function BusinessNotifications() {
               {items.length === 0 && visibleEditAlerts.length === 0 && (
                 <div style={{ padding: "48px 24px", textAlign: "center" }}>
                   <div style={{ fontSize: 40, marginBottom: 10 }}>📭</div>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: "#334155", marginBottom: 4 }}>ยังไม่มีการแจ้งเตือน</div>
-                  <div style={{ fontSize: 13, color: "#94a3b8" }}>เมื่อมีรีวิวหรือการแจ้งเตือน จะแสดงที่นี่</div>
+                  <div style={{ fontWeight: 700, fontSize: 15, color: "var(--pl-text-secondary)", marginBottom: 4 }}>ยังไม่มีการแจ้งเตือน</div>
+                  <div style={{ fontSize: 13, color: "var(--pl-text-muted)" }}>เมื่อมีรีวิวหรือการแจ้งเตือน จะแสดงที่นี่</div>
                 </div>
               )}
               {items.map((item, idx) => {
@@ -199,8 +199,8 @@ export default function BusinessNotifications() {
                     {/* Content */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                        <span style={{ fontWeight: 800, fontSize: 13, color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>{item.place.title}</span>
-                        <span style={{ fontSize: 11, color: "#94a3b8", flexShrink: 0 }}>{timeAgo(item.createdAt)}</span>
+                        <span style={{ fontWeight: 800, fontSize: 13, color: "var(--pl-text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>{item.place.title}</span>
+                        <span style={{ fontSize: 11, color: "var(--pl-text-muted)", flexShrink: 0 }}>{timeAgo(item.createdAt)}</span>
                       </div>
 
                       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
@@ -208,12 +208,12 @@ export default function BusinessNotifications() {
                           ? <img src={item.author.avatarUrl} alt="" style={{ width: 18, height: 18, borderRadius: "50%", objectFit: "cover" }} />
                           : <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#3b82f6", color: "white", fontSize: 8, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{authorName.slice(0,1).toUpperCase()}</div>
                         }
-                        <span style={{ fontSize: 12, fontWeight: 700, color: "#475569" }}>{authorName}</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--pl-text-secondary)" }}>{authorName}</span>
                         <Stars r={item.rating} />
                       </div>
 
                       {item.text && (
-                        <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 8px", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>
+                        <p style={{ fontSize: 12, color: "var(--pl-text-secondary)", margin: "0 0 8px", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>
                           "{item.text}"
                         </p>
                       )}
@@ -239,7 +239,7 @@ export default function BusinessNotifications() {
               {hasMore && (
                 <div style={{ padding: "12px 22px", borderTop: "1px solid #f8fafc" }}>
                   <button onClick={loadMore} disabled={loadingMore}
-                    style={{ width: "100%", padding: "10px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontWeight: 700, fontSize: 13, cursor: loadingMore ? "wait" : "pointer", fontFamily: "inherit" }}>
+                    style={{ width: "100%", padding: "10px", borderRadius: 10, border: "1.5px solid var(--pl-border)", background: "var(--pl-bg)", color: "var(--pl-text-secondary)", fontWeight: 700, fontSize: 13, cursor: loadingMore ? "wait" : "pointer", fontFamily: "inherit" }}>
                     {loadingMore ? "⏳ กำลังโหลด..." : "⬇️ โหลดเพิ่ม"}
                   </button>
                 </div>

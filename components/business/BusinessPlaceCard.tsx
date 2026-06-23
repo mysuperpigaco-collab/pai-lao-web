@@ -55,7 +55,7 @@ const BASE_BTN: React.CSSProperties = {
   transition: "background 0.15s", cursor: "pointer", fontFamily: "inherit",
 };
 const VARIANT = {
-  view: { background: "#f8fafc", borderColor: "#e2e8f0", color: "#475569" },
+  view: { background: "var(--pl-bg)", borderColor: "var(--pl-border)", color: "var(--pl-text-secondary)" },
   edit: { background: "#eff6ff", borderColor: "#dbeafe", color: "#2563eb" },
   del:  { background: "#fff8f8", borderColor: "#fecaca", color: "#dc2626" },
 };
@@ -106,7 +106,7 @@ export default function BusinessPlaceCard({
 
   return (
     <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
-      style={{ background: "#fff", borderRadius: "20px", border: "1px solid #f1f5f9", overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,0.05)", display: "flex", flexDirection: "column", opacity: deleting ? 0.5 : 1, position: "relative", willChange: "transform" }}>
+      style={{ background: "var(--pl-white)", borderRadius: "20px", border: "1px solid var(--pl-border)", overflow: "hidden", boxShadow: "var(--pl-shadow-card)", display: "flex", flexDirection: "column", opacity: deleting ? 0.5 : 1, position: "relative", willChange: "transform" }}>
       <div ref={shineRef} style={shineStyle} />
       {/* Cover */}
       <div style={{ position: "relative", height: 180, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
@@ -163,8 +163,8 @@ export default function BusinessPlaceCard({
 
       {/* Body */}
       <div style={{ padding: "14px 16px 4px", flex: 1 }}>
-        <h4 style={{ fontSize: 14, fontWeight: 800, color: "#1e293b", margin: "0 0 4px", lineHeight: 1.4 }}>{title}</h4>
-        <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 8px" }}>📍 {province} · {district}</p>
+        <h4 style={{ fontSize: 14, fontWeight: 800, color: "var(--pl-text-primary)", margin: "0 0 4px", lineHeight: 1.4 }}>{title}</h4>
+        <p style={{ fontSize: 12, color: "var(--pl-text-secondary)", margin: "0 0 8px" }}>📍 {province} · {district}</p>
         {editStatus === "REJECTED" && (
           <p style={{ fontSize: 11, color: "#dc2626", background: "#fff5f5", border: "1px solid #fecaca", borderRadius: 6, padding: "5px 8px", margin: "0 0 8px" }}>
             ✗ การแก้ไขถูกปฏิเสธ{editRejectionReason ? `: ${editRejectionReason}` : ""}
@@ -195,10 +195,10 @@ export default function BusinessPlaceCard({
             <span style={{ fontSize: 11, fontWeight: 700, color: "#f59e0b" }}>{"★".repeat(Math.round(avgRating))} {avgRating.toFixed(1)}</span>
           )}
           {reviewCount != null && reviewCount > 0 && (
-            <span style={{ fontSize: 11, color: "#94a3b8" }}>💬 {reviewCount}</span>
+            <span style={{ fontSize: 11, color: "var(--pl-text-muted)" }}>💬 {reviewCount}</span>
           )}
           {bookmarkCount != null && bookmarkCount > 0 && (
-            <span style={{ fontSize: 11, color: "#94a3b8" }}>🔖 {bookmarkCount}</span>
+            <span style={{ fontSize: 11, color: "var(--pl-text-muted)" }}>🔖 {bookmarkCount}</span>
           )}
         </div>
       </div>
@@ -209,7 +209,7 @@ export default function BusinessPlaceCard({
         {claimStatus ? (
           confirmCancelClaim ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <p style={{ fontSize: 11, color: "#64748b", margin: 0, textAlign: "center", padding: "4px 0" }}>
+              <p style={{ fontSize: 11, color: "var(--pl-text-secondary)", margin: 0, textAlign: "center", padding: "4px 0" }}>
                 ยืนยันยกเลิกคำขอความเป็นเจ้าของ?
               </p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
@@ -218,7 +218,7 @@ export default function BusinessPlaceCard({
                   {cancellingClaim ? "⏳ กำลังยกเลิก..." : "✓ ยืนยัน"}
                 </button>
                 <button onClick={() => setConfirmCancelClaim(false)}
-                  style={{ padding: 10, borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#64748b", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                  style={{ padding: 10, borderRadius: 10, border: "1.5px solid var(--pl-border)", background: "var(--pl-bg)", color: "var(--pl-text-secondary)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                   ไม่ยกเลิก
                 </button>
               </div>
@@ -258,7 +258,7 @@ export default function BusinessPlaceCard({
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <p style={{ fontSize: 11, color: "#64748b", margin: 0, textAlign: "center", padding: "4px 0" }}>
+            <p style={{ fontSize: 11, color: "var(--pl-text-secondary)", margin: 0, textAlign: "center", padding: "4px 0" }}>
               {isClaimedPlace
                 ? "สถานที่จะยังอยู่ในระบบ แต่คุณจะไม่ใช่เจ้าของอีกต่อไป"
                 : "สถานที่จะถูกลบออกจากระบบถาวร ไม่สามารถกู้คืนได้"}
@@ -267,7 +267,7 @@ export default function BusinessPlaceCard({
               <button onClick={handleDelete} disabled={deleting} style={{ padding: 10, borderRadius: 10, border: "none", background: "#dc2626", color: "#fff", fontSize: 12, fontWeight: 800, cursor: deleting ? "wait" : "pointer", fontFamily: "inherit" }}>
                 {deleting ? "⏳ กำลัง..." : isClaimedPlace ? "✓ ยืนยันถอน" : "✓ ยืนยันลบ"}
               </button>
-              <button onClick={() => setConfirm(false)} style={{ padding: 10, borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#64748b", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+              <button onClick={() => setConfirm(false)} style={{ padding: 10, borderRadius: 10, border: "1.5px solid var(--pl-border)", background: "var(--pl-bg)", color: "var(--pl-text-secondary)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                 ยกเลิก
               </button>
             </div>

@@ -36,8 +36,8 @@ export default function BusinessProfileCard({ businessName, phone, lineId, logoU
 
   return (
     <div style={{
-      background: "#fff", borderRadius: "28px", border: "1px solid #f1f5f9",
-      boxShadow: "0 2px 16px rgba(15,23,42,0.05)",
+      background: "var(--pl-white)", borderRadius: "28px", border: "1px solid var(--pl-border)",
+      boxShadow: "var(--pl-shadow-card)",
       padding: isMobile ? "20px" : "28px 32px",
       display: "flex",
       flexDirection: isMobile ? "column" : "row",
@@ -55,7 +55,7 @@ export default function BusinessProfileCard({ businessName, phone, lineId, logoU
         }
         <div style={{ minWidth: 0, flex: 1 }}>
           <h2 style={{
-            fontSize: isMobile ? "18px" : "20px", fontWeight: 900, color: "#0f172a",
+            fontSize: isMobile ? "18px" : "20px", fontWeight: 900, color: "var(--pl-text-primary)",
             margin: "0 0 6px", overflow: "hidden", textOverflow: "ellipsis",
             whiteSpace: isMobile ? "normal" : "nowrap",
           }}>
@@ -65,8 +65,8 @@ export default function BusinessProfileCard({ businessName, phone, lineId, logoU
           <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", rowGap: 4 }}>
             {metaItems.map((text, i) => (
               <Fragment key={i}>
-                {i > 0 && <span style={{ width: 1, height: 14, background: "#e2e8f0", margin: "0 10px", flexShrink: 0, display: "inline-block" }} />}
-                <span style={{ fontSize: 13, color: "#64748b" }}>{text}</span>
+                {i > 0 && <span style={{ width: 1, height: 14, background: "var(--pl-border)", margin: "0 10px", flexShrink: 0, display: "inline-block" }} />}
+                <span style={{ fontSize: 13, color: "var(--pl-text-secondary)" }}>{text}</span>
               </Fragment>
             ))}
           </div>

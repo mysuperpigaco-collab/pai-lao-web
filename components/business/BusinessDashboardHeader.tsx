@@ -26,7 +26,7 @@ const S = {
   title: {
     fontSize: "22px",
     fontWeight: 900,
-    color: "#0f172a",
+    color: "var(--pl-text-primary)",
     margin: 0,
     display: "flex",
     alignItems: "center",
@@ -46,7 +46,7 @@ const S = {
 
   subtitle: {
     fontSize: "13px",
-    color: "#94a3b8",
+    color: "var(--pl-text-muted)",
     margin: 0,
   } as React.CSSProperties,
 
