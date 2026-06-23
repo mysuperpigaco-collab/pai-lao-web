@@ -20,8 +20,8 @@ function PromotionModal({ places, onClose, onSuccess }: {
   const [saving, setSaving] = React.useState(false);
   const [err, setErr] = React.useState("");
 
-  const inp: React.CSSProperties = { width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid #e2e8f0", fontSize: 13, fontFamily: "inherit", boxSizing: "border-box", outline: "none", background: "white" };
-  const lbl: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 5 };
+  const inp: React.CSSProperties = { width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid var(--pl-border)", fontSize: 13, fontFamily: "inherit", boxSizing: "border-box", outline: "none", background: "var(--pl-white)" };
+  const lbl: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 5 };
 
   const addCondition    = () => setConditions(c => [...c, ""]);
   const removeCondition = (i: number) => setConditions(c => c.filter((_, idx) => idx !== i));
@@ -48,15 +48,15 @@ function PromotionModal({ places, onClose, onSuccess }: {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(15,23,42,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: "white", borderRadius: 24, width: "100%", maxWidth: 560, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(15,23,42,0.2)" }}>
+      <div style={{ background: "var(--pl-white)", borderRadius: 24, width: "100%", maxWidth: 560, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(15,23,42,0.2)" }}>
 
         {/* Modal header */}
-        <div style={{ padding: "22px 24px 16px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "white", zIndex: 1, borderRadius: "24px 24px 0 0" }}>
+        <div style={{ padding: "22px 24px 16px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, background: "var(--pl-white)", zIndex: 1, borderRadius: "24px 24px 0 0" }}>
           <div>
             <div style={{ fontWeight: 900, fontSize: 17, color: "#0f172a" }}>🎁 เพิ่มโปรโมชั่น</div>
-            <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>ส่งคำขอโปรโมชั่น รอแอดมินอนุมัติ</div>
+            <div style={{ fontSize: 12, color: "var(--pl-text-muted)", marginTop: 2 }}>ส่งคำขอโปรโมชั่น รอแอดมินอนุมัติ</div>
           </div>
-          <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: "50%", border: "none", background: "#f1f5f9", cursor: "pointer", fontSize: 18, color: "#64748b", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
+          <button onClick={onClose} style={{ width: 34, height: 34, borderRadius: "50%", border: "none", background: "#f1f5f9", cursor: "pointer", fontSize: 18, color: "var(--pl-text-secondary)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>×</button>
         </div>
 
         <div style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
@@ -71,9 +71,9 @@ function PromotionModal({ places, onClose, onSuccess }: {
             </div>
           )}
           {places.length === 1 && (
-            <div style={{ background: "#f8fafc", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ background: "var(--pl-bg)", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 13 }}>📍</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#334155" }}>{places[0].title}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--pl-text-secondary)" }}>{places[0].title}</span>
             </div>
           )}
 
@@ -100,12 +100,12 @@ function PromotionModal({ places, onClose, onSuccess }: {
             <label style={lbl}>📅 ช่วงเวลาโปรโมชั่น *</label>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <div>
-                <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600, marginBottom: 4 }}>วันเริ่ม</div>
+                <div style={{ fontSize: 10, color: "var(--pl-text-muted)", fontWeight: 600, marginBottom: 4 }}>วันเริ่ม</div>
                 <input type="date" value={form.startDate} min={today} onChange={e => setForm(p => ({ ...p, startDate: e.target.value }))} style={inp} />
                 <input type="time" value={form.startTime} onChange={e => setForm(p => ({ ...p, startTime: e.target.value }))} style={{ ...inp, marginTop: 6 }} />
               </div>
               <div>
-                <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600, marginBottom: 4 }}>วันหมดอายุ</div>
+                <div style={{ fontSize: 10, color: "var(--pl-text-muted)", fontWeight: 600, marginBottom: 4 }}>วันหมดอายุ</div>
                 <input type="date" value={form.endDate} min={form.startDate || today} onChange={e => setForm(p => ({ ...p, endDate: e.target.value }))} style={inp} />
                 <input type="time" value={form.endTime} onChange={e => setForm(p => ({ ...p, endTime: e.target.value }))} style={{ ...inp, marginTop: 6 }} />
               </div>
@@ -116,12 +116,12 @@ function PromotionModal({ places, onClose, onSuccess }: {
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
               <label style={{ ...lbl, margin: 0 }}>📋 ข้อกำหนดและเงื่อนไข</label>
-              <button onClick={addCondition} style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 8, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#2563eb", cursor: "pointer", fontFamily: "inherit" }}>+ เพิ่มข้อ</button>
+              <button onClick={addCondition} style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 8, border: "1px solid #e2e8f0", background: "var(--pl-bg)", color: "#2563eb", cursor: "pointer", fontFamily: "inherit" }}>+ เพิ่มข้อ</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
               {conditions.map((c, i) => (
                 <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 700, minWidth: 20 }}>{i + 1}.</span>
+                  <span style={{ fontSize: 12, color: "var(--pl-text-muted)", fontWeight: 700, minWidth: 20 }}>{i + 1}.</span>
                   <input value={c} onChange={e => updateCondition(i, e.target.value)} placeholder={`เงื่อนไขข้อที่ ${i + 1} เช่น ซื้อขั้นต่ำ 200 บาท`}
                     style={{ ...inp, flex: 1 }} />
                   {conditions.length > 1 && (
@@ -136,7 +136,7 @@ function PromotionModal({ places, onClose, onSuccess }: {
 
           {/* Actions */}
           <div style={{ display: "flex", gap: 10, paddingTop: 4 }}>
-            <button onClick={onClose} style={{ flex: 1, padding: "12px", borderRadius: 12, border: "1.5px solid #e2e8f0", background: "white", color: "#64748b", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>ยกเลิก</button>
+            <button onClick={onClose} style={{ flex: 1, padding: "12px", borderRadius: 12, border: "1.5px solid var(--pl-border)", background: "var(--pl-white)", color: "var(--pl-text-secondary)", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>ยกเลิก</button>
             <button onClick={handleSubmit} disabled={saving} style={{ flex: 2, padding: "12px", borderRadius: 12, border: "none", background: saving ? "#e2e8f0" : "linear-gradient(135deg,#f59e0b,#ef4444)", color: saving ? "#94a3b8" : "white", fontWeight: 800, fontSize: 14, cursor: saving ? "wait" : "pointer", fontFamily: "inherit" }}>
               {saving ? "⏳ กำลังส่ง..." : "📤 ส่งคำขอโปรโมชั่น"}
             </button>
@@ -159,7 +159,7 @@ function PromotionBar({ places }: { places: Place[] }) {
   return (
     <>
       {/* Bar */}
-      <div style={{ background: "white", borderRadius: 16, border: "1.5px solid #fde68a", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
+      <div style={{ background: "var(--pl-white)", borderRadius: 16, border: "1.5px solid #fde68a", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ fontSize: 28 }}>🎁</div>
           <div>
@@ -173,7 +173,7 @@ function PromotionBar({ places }: { places: Place[] }) {
               {promos.slice(0, 2).map(p => (
                 <span key={p.id} style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 999, background: "#fffbeb", color: "#d97706", border: "1px solid #fde68a" }}>{p.title}</span>
               ))}
-              {promos.length > 2 && <span style={{ fontSize: 11, color: "#94a3b8" }}>+{promos.length - 2}</span>}
+              {promos.length > 2 && <span style={{ fontSize: 11, color: "var(--pl-text-muted)" }}>+{promos.length - 2}</span>}
             </div>
           )}
         </div>
@@ -242,7 +242,7 @@ function StatCard({ value, label, labelEn, color, bg }: {
     <div style={{ borderRadius: "24px", padding: "26px 28px", background: bg, display: "flex", flexDirection: "column", gap: "6px" }}>
       <strong style={{ fontSize: "40px", fontWeight: 900, color, lineHeight: 1 }}>{value}</strong>
       <span style={{ fontSize: "14px", fontWeight: 700, color: "#0f172a" }}>{label}</span>
-      <small style={{ fontSize: "11px", color: "#64748b" }}>{labelEn}</small>
+      <small style={{ fontSize: "11px", color: "var(--pl-text-secondary)" }}>{labelEn}</small>
     </div>
   );
 }
@@ -256,7 +256,7 @@ function DisputeButton({ slug, claimingSlug, onDispute }: { slug: string; claimi
     return (
       <div style={{ display: "flex", gap: 8 }}>
         <a href={`/place/${slug}`} target="_blank" rel="noreferrer"
-          style={{ flex: 1, padding: "8px 0", textAlign: "center", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
+          style={{ flex: 1, padding: "8px 0", textAlign: "center", borderRadius: 10, border: "1.5px solid var(--pl-border)", background: "var(--pl-bg)", color: "var(--pl-text-secondary)", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
           ดูสถานที่
         </a>
         <button onClick={() => setShowForm(true)}
@@ -278,7 +278,7 @@ function DisputeButton({ slug, claimingSlug, onDispute }: { slug: string; claimi
       />
       <div style={{ display: "flex", gap: 6 }}>
         <button onClick={() => setShowForm(false)}
-          style={{ flex: 1, padding: "8px 0", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#64748b", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+          style={{ flex: 1, padding: "8px 0", borderRadius: 10, border: "1.5px solid var(--pl-border)", background: "var(--pl-bg)", color: "var(--pl-text-secondary)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
           ยกเลิก
         </button>
         <button
@@ -461,10 +461,10 @@ export default function BusinessDashboardPage() {
 
       {/* ── PLACES GRID ── */}
       {places.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "60px 20px", background: "rgba(255,255,255,0.82)", borderRadius: "24px" }}>
+        <div style={{ textAlign: "center", padding: "60px 20px", background: "var(--pl-white)", borderRadius: "24px" }}>
           <p style={{ fontSize: "40px", marginBottom: "12px" }}>🏞️</p>
-          <h3 style={{ fontSize: "18px", fontWeight: 800, color: "#334155" }}>ยังไม่มีสถานที่</h3>
-          <p style={{ color: "#64748b", fontSize: "14px", marginBottom: "24px" }}>เพิ่มสถานที่แรกของคุณเพื่อให้นักท่องเที่ยวค้นพบ</p>
+          <h3 style={{ fontSize: "18px", fontWeight: 800, color: "var(--pl-text-secondary)" }}>ยังไม่มีสถานที่</h3>
+          <p style={{ color: "var(--pl-text-secondary)", fontSize: "14px", marginBottom: "24px" }}>เพิ่มสถานที่แรกของคุณเพื่อให้นักท่องเที่ยวค้นพบ</p>
           <Link href="/business/places/create" style={{
             display: "inline-flex", padding: "12px 28px", borderRadius: "999px",
             background: "#3b82f6", color: "white", fontWeight: 800, textDecoration: "none",
@@ -501,7 +501,7 @@ export default function BusinessDashboardPage() {
       )}
 
       {/* ── Claim unclaimed places ───────────────────────────── */}
-      <section style={{ marginTop: 40, background: "rgba(255,255,255,0.92)", borderRadius: 20, border: "1.5px solid #f1f5f9", overflow: "hidden" }}>
+      <section style={{ marginTop: 40, background: "var(--pl-white)", borderRadius: 20, border: "1.5px solid var(--pl-border)", overflow: "hidden" }}>
 
         {/* Header */}
         <div style={{ padding: "22px 28px 0", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
@@ -521,8 +521,8 @@ export default function BusinessDashboardPage() {
         {/* Search + filter bar */}
         <div style={{ padding: "16px 28px 20px", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
           {/* Search input */}
-          <div style={{ flex: "2 1 220px", display: "flex", alignItems: "center", gap: 10, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "0 14px", height: 44 }}>
-            <span style={{ color: "#94a3b8", flexShrink: 0, display: "flex" }}>
+          <div style={{ flex: "2 1 220px", display: "flex", alignItems: "center", gap: 10, background: "var(--pl-bg)", border: "1.5px solid var(--pl-border)", borderRadius: 12, padding: "0 14px", height: 44 }}>
+            <span style={{ color: "var(--pl-text-muted)", flexShrink: 0, display: "flex" }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </span>
             <input
@@ -530,17 +530,17 @@ export default function BusinessDashboardPage() {
               value={claimQuery}
               onChange={e => searchUnclaimedPlaces(e.target.value)}
               placeholder="ชื่อสถานที่..."
-              style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 14, fontFamily: "inherit", color: "#1e293b" }}
+              style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 14, fontFamily: "inherit", color: "var(--pl-text-primary)" }}
             />
-            {claimLoading && <span style={{ fontSize: 11, color: "#94a3b8", flexShrink: 0 }}>กำลังค้นหา...</span>}
+            {claimLoading && <span style={{ fontSize: 11, color: "var(--pl-text-muted)", flexShrink: 0 }}>กำลังค้นหา...</span>}
             {claimQuery && !claimLoading && (
               <button type="button" onClick={() => { setClaimQuery(""); setClaimResults([]); }}
-                style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 16, lineHeight: 1, flexShrink: 0 }}>×</button>
+                style={{ background: "none", border: "none", cursor: "pointer", color: "var(--pl-text-muted)", fontSize: 16, lineHeight: 1, flexShrink: 0 }}>×</button>
             )}
           </div>
 
           {/* Province filter */}
-          <div style={{ flex: "1 1 150px", display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "0 12px", height: 44, boxSizing: "border-box" }}>
+          <div style={{ flex: "1 1 150px", display: "flex", alignItems: "center", gap: 8, background: "var(--pl-bg)", border: "1.5px solid var(--pl-border)", borderRadius: 12, padding: "0 12px", height: 44, boxSizing: "border-box" }}>
             <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1 }}>🗾</span>
             <ProvinceSelect
               value={claimProvince}
@@ -551,7 +551,7 @@ export default function BusinessDashboardPage() {
           </div>
 
           {/* District filter */}
-          <div style={{ flex: "1 1 140px", display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "0 12px", height: 44, boxSizing: "border-box" }}>
+          <div style={{ flex: "1 1 140px", display: "flex", alignItems: "center", gap: 8, background: "var(--pl-bg)", border: "1.5px solid var(--pl-border)", borderRadius: 12, padding: "0 12px", height: 44, boxSizing: "border-box" }}>
             <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1 }}>🏘️</span>
             <DistrictSelect
               province={claimProvince.split(" (")[0]}
@@ -563,11 +563,11 @@ export default function BusinessDashboardPage() {
           </div>
 
           {/* Category filter */}
-          <div style={{ flex: "1 1 130px", display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "0 12px", height: 44, boxSizing: "border-box" }}>
+          <div style={{ flex: "1 1 130px", display: "flex", alignItems: "center", gap: 8, background: "var(--pl-bg)", border: "1.5px solid var(--pl-border)", borderRadius: 12, padding: "0 12px", height: 44, boxSizing: "border-box" }}>
             <span style={{ fontSize: 14, flexShrink: 0, lineHeight: 1 }}>🏷️</span>
             <select value={claimCategory}
               onChange={e => { setClaimCategory(e.target.value); runClaimSearch(claimQuery, claimProvince, claimDistrict, e.target.value); }}
-              style={{ flex: 1, border: "none", background: "transparent", fontSize: 13, color: "#374151", fontFamily: "inherit", cursor: "pointer", outline: "none", height: 44 }}>
+              style={{ flex: 1, border: "none", background: "transparent", fontSize: 13, color: "var(--pl-text-secondary)", fontFamily: "inherit", cursor: "pointer", outline: "none", height: 44 }}>
               <option value="">ทุกหมวด</option>
               {[["NATURE","🌿 ธรรมชาติ"],["CAFE","☕ คาเฟ่"],["BEACH","🏖️ ชายหาด"],["ACCOMMODATION","🏨 ที่พัก"],["FOOD","🍲 อาหาร"],["TEMPLE","🛕 วัด"],["ADVENTURE","🧗 ผจญภัย"],["MARKET","🛍️ ตลาด"],["MUSEUM","🏛️ พิพิธภัณฑ์"],["CAMPING","⛺ แคมปิ้ง"]].map(([v,l]) => (
                 <option key={v} value={v}>{l}</option>
@@ -589,7 +589,7 @@ export default function BusinessDashboardPage() {
             {claimResults.map(p => {
               const cover = p.communityCover || (p.coverUrl && p.coverUrl !== "/images/default-place.svg" ? p.coverUrl : null);
               return (
-                <div key={p.slug} style={{ background: "white", border: "1.5px solid #f1f5f9", borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 8px rgba(15,23,42,0.05)", transition: "box-shadow 0.2s" }}>
+                <div key={p.slug} style={{ background: "var(--pl-white)", border: "1.5px solid var(--pl-border)", borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 8px rgba(15,23,42,0.05)", transition: "box-shadow 0.2s" }}>
                   {/* Cover */}
                   <div style={{ height: 120, background: "#e2e8f0", position: "relative", overflow: "hidden" }}>
                     {cover
@@ -620,8 +620,8 @@ export default function BusinessDashboardPage() {
 
                   {/* Info */}
                   <div style={{ padding: "12px 14px" }}>
-                    <div style={{ fontWeight: 800, fontSize: 14, color: "#1e293b", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.title}</div>
-                    <div style={{ fontSize: 12, color: "#64748b", marginBottom: p.business ? 6 : 10 }}>📍 {[p.district, p.province?.split(" (")[0]].filter(Boolean).join(", ")}</div>
+                    <div style={{ fontWeight: 800, fontSize: 14, color: "var(--pl-text-primary)", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.title}</div>
+                    <div style={{ fontSize: 12, color: "var(--pl-text-secondary)", marginBottom: p.business ? 6 : 10 }}>📍 {[p.district, p.province?.split(" (")[0]].filter(Boolean).join(", ")}</div>
                     {p.business && (
                       <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700, marginBottom: 8 }}>🏢 {p.business.businessName}</div>
                     )}
@@ -630,7 +630,7 @@ export default function BusinessDashboardPage() {
                     ) : !p.business ? (
                       <div style={{ display: "flex", gap: 8 }}>
                         <a href={`/place/${p.slug}`} target="_blank" rel="noreferrer"
-                          style={{ flex: 1, padding: "8px 0", textAlign: "center", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
+                          style={{ flex: 1, padding: "8px 0", textAlign: "center", borderRadius: 10, border: "1.5px solid var(--pl-border)", background: "var(--pl-bg)", color: "var(--pl-text-secondary)", fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
                           ดูสถานที่
                         </a>
                         <button onClick={() => claimPlace(p.slug)} disabled={claimingSlug === p.slug}
@@ -648,7 +648,7 @@ export default function BusinessDashboardPage() {
 
         {/* Empty state */}
         {!claimLoading && claimQuery.length >= 2 && claimResults.length === 0 && (
-          <div style={{ padding: "32px 28px", textAlign: "center", color: "#94a3b8" }}>
+          <div style={{ padding: "32px 28px", textAlign: "center", color: "var(--pl-text-muted)" }}>
             <div style={{ fontSize: 36, marginBottom: 8 }}>🔍</div>
             <div style={{ fontSize: 14, fontWeight: 600 }}>ไม่พบสถานที่ที่ยังไม่มีเจ้าของ</div>
             <div style={{ fontSize: 12, marginTop: 4 }}>ลองเปลี่ยนคำค้นหาหรือลองใหม่อีกครั้ง</div>
@@ -656,7 +656,7 @@ export default function BusinessDashboardPage() {
         )}
 
         {!claimQuery && (
-          <div style={{ padding: "24px 28px 28px", textAlign: "center", color: "#94a3b8" }}>
+          <div style={{ padding: "24px 28px 28px", textAlign: "center", color: "var(--pl-text-muted)" }}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>🔍</div>
             <div style={{ fontSize: 13 }}>พิมพ์ชื่อสถานที่เพื่อค้นหา</div>
           </div>
@@ -682,8 +682,8 @@ export default function BusinessDashboardPage() {
         .dashboard-hero span { display: block; color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.7; max-width: 520px; }
 
         .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 12px; }
-        .section-title { font-size: 18px; font-weight: 900; margin: 0; color: #0f172a; }
-        .section-sub { font-size: 12px; color: #64748b; margin: 3px 0 0; }
+        .section-title { font-size: 18px; font-weight: 900; margin: 0; color: var(--pl-text-primary); }
+        .section-sub { font-size: 12px; color: var(--pl-text-secondary); margin: 3px 0 0; }
 
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px; }
 

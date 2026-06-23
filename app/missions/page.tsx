@@ -40,7 +40,7 @@ const STATUS_MAP: Record<string, { label: string; color: string; bg: string }> =
 function SkeletonCard() {
   return (
     <div style={{
-      background: "#fff",
+      background: "var(--pl-white)",
       borderRadius: 16,
       overflow: "hidden",
       boxShadow: "0 1px 8px rgba(0,0,0,0.06)",
@@ -92,7 +92,7 @@ function MissionCard({ mission }: {
   return (
     <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
       style={{
-        background: "#fff",
+        background: "var(--pl-white)",
         borderRadius: 16,
         overflow: "hidden",
         boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
@@ -136,15 +136,15 @@ function MissionCard({ mission }: {
       <div style={{ padding: "16px 20px 20px", flex: 1, display: "flex", flexDirection: "column" }}>
         {/* Province / place */}
         {(mission.province || mission.place) && (
-          <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 6 }}>
+          <div style={{ fontSize: 12, color: "var(--pl-text-secondary)", marginBottom: 6 }}>
             📍 {mission.place ? mission.place.title : mission.province}
           </div>
         )}
 
-        <div style={{ fontWeight: 700, fontSize: 16, color: "#111827", marginBottom: 6, lineHeight: 1.4 }}>
+        <div style={{ fontWeight: 700, fontSize: 16, color: "var(--pl-text-primary)", marginBottom: 6, lineHeight: 1.4 }}>
           {mission.title}
         </div>
-        <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 14, flex: 1, lineHeight: 1.6,
+        <div style={{ fontSize: 13, color: "var(--pl-text-secondary)", marginBottom: 14, flex: 1, lineHeight: 1.6,
           display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
         }}>
           {mission.description}
@@ -172,7 +172,7 @@ function MissionCard({ mission }: {
         {/* Slots */}
         {mission.maxSlots && (
           <div style={{ marginBottom: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#6b7280", marginBottom: 4 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--pl-text-secondary)", marginBottom: 4 }}>
               <span>ผู้เข้าร่วม</span>
               <span style={{ fontWeight: 600, color: isFull ? "#ef4444" : "#111827" }}>
                 {mission._count.participants}/{mission.maxSlots}
@@ -191,7 +191,7 @@ function MissionCard({ mission }: {
 
         {/* Action */}
         {expired ? (
-          <div style={{ textAlign: "center", fontSize: 13, color: "#9ca3af", padding: "10px 0" }}>
+          <div style={{ textAlign: "center", fontSize: 13, color: "var(--pl-text-muted)", padding: "10px 0" }}>
             ภารกิจสิ้นสุดแล้ว
           </div>
         ) : myStatus === "SUBMITTED" ? (
@@ -230,7 +230,7 @@ function MissionCard({ mission }: {
             🎯 ไปส่งผลงานที่สถานที่ →
           </Link>
         ) : (
-          <div style={{ textAlign: "center", padding: "10px 0", fontSize: 13, color: "#6b7280" }}>
+          <div style={{ textAlign: "center", padding: "10px 0", fontSize: 13, color: "var(--pl-text-secondary)" }}>
             ไปสถานที่และส่งผลงานผ่านหน้าสถานที่
           </div>
         )}
@@ -324,20 +324,20 @@ export default function MissionsPage() {
       <div style={{ minHeight: "60vh", background: "transparent", padding: "32px 24px 80px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           {enabled === false ? (
-            <div style={{ textAlign: "center", padding: "80px 24px", background: "#fff", borderRadius: 20 }}>
+            <div style={{ textAlign: "center", padding: "80px 24px", background: "var(--pl-white)", borderRadius: 20 }}>
               <div style={{ fontSize: 56, marginBottom: 14 }}>🔒</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: "#374151", marginBottom: 8 }}>ระบบภารกิจยังไม่เปิดให้บริการ</div>
-              <div style={{ fontSize: 14, color: "#9ca3af" }}>กลับมาใหม่เร็วๆ นี้ครับ</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "var(--pl-text-primary)", marginBottom: 8 }}>ระบบภารกิจยังไม่เปิดให้บริการ</div>
+              <div style={{ fontSize: 14, color: "var(--pl-text-muted)" }}>กลับมาใหม่เร็วๆ นี้ครับ</div>
             </div>
           ) : loading ? (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))", gap: 20 }}>
               {[1,2,3].map(i => <SkeletonCard key={i} />)}
             </div>
           ) : activeMissions.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "80px 24px", background: "#fff", borderRadius: 20 }}>
+            <div style={{ textAlign: "center", padding: "80px 24px", background: "var(--pl-white)", borderRadius: 20 }}>
               <div style={{ fontSize: 56, marginBottom: 14 }}>🎯</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: "#374151", marginBottom: 8 }}>ยังไม่มีภารกิจในขณะนี้</div>
-              <div style={{ fontSize: 14, color: "#9ca3af" }}>กลับมาใหม่เร็วๆ นี้นะครับ</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "var(--pl-text-primary)", marginBottom: 8 }}>ยังไม่มีภารกิจในขณะนี้</div>
+              <div style={{ fontSize: 14, color: "var(--pl-text-muted)" }}>กลับมาใหม่เร็วๆ นี้นะครับ</div>
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))", gap: 20 }}>

@@ -46,7 +46,7 @@ function isUrgent(endDate: string) {
 
 function SkeletonCard() {
   return (
-    <div style={{ background: "#fff", borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", animation: "pulse 1.5s ease-in-out infinite" }}>
+    <div style={{ background: "var(--pl-white)", borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", animation: "pulse 1.5s ease-in-out infinite" }}>
       <div style={{ height: 140, background: "#e5e7eb" }} />
       <div style={{ padding: "14px 16px 18px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
@@ -66,7 +66,7 @@ function PromoCard({ promo }: { promo: Promotion }) {
 
   return (
     <div style={{
-      background: "#fff", borderRadius: 20, overflow: "hidden",
+      background: "var(--pl-white)", borderRadius: 20, overflow: "hidden",
       boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
       transition: "transform 0.2s, box-shadow 0.2s",
       display: "flex", flexDirection: "column",
@@ -107,13 +107,13 @@ function PromoCard({ promo }: { promo: Promotion }) {
               ? <img src={promo.business.logoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               : "🏪"}
           </div>
-          <span style={{ fontSize: 12, fontWeight: 700, color: "#6b7280" }}>{promo.business.businessName}</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--pl-text-secondary)" }}>{promo.business.businessName}</span>
         </div>
 
-        <div style={{ fontWeight: 800, fontSize: 15, color: "#111827", marginBottom: 6, lineHeight: 1.4 }}>{promo.title}</div>
+        <div style={{ fontWeight: 800, fontSize: 15, color: "var(--pl-text-primary)", marginBottom: 6, lineHeight: 1.4 }}>{promo.title}</div>
 
         {promo.description && (
-          <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 8, lineHeight: 1.6, flex: 1,
+          <div style={{ fontSize: 13, color: "var(--pl-text-secondary)", marginBottom: 8, lineHeight: 1.6, flex: 1,
             display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
           }}>
             {promo.description}
@@ -133,11 +133,11 @@ function PromoCard({ promo }: { promo: Promotion }) {
             marginBottom: 8,
           }}>
             📍 {promo.place.title}
-            {promo.place.province && <span style={{ color: "#9ca3af", fontWeight: 400 }}>· {promo.place.province}</span>}
+            {promo.place.province && <span style={{ color: "var(--pl-text-muted)", fontWeight: 400 }}>· {promo.place.province}</span>}
           </Link>
         )}
 
-        <div style={{ fontSize: 11, color: "#9ca3af", marginTop: "auto" }}>
+        <div style={{ fontSize: 11, color: "var(--pl-text-muted)", marginTop: "auto" }}>
           {new Date(promo.startDate).toLocaleDateString("th-TH")} – {new Date(promo.endDate).toLocaleDateString("th-TH")}
         </div>
       </div>
@@ -230,23 +230,23 @@ export default function PromotionsPage() {
       </div>
 
       {/* Search/Filter bar — below hero */}
-      <div style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "16px 24px", display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+      <div style={{ background: "var(--pl-white)", borderBottom: "1px solid var(--pl-border)", padding: "16px 24px", display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
         <input type="text" placeholder="ค้นหาชื่อโปรโมชั่น, ร้าน..."
           value={search} onChange={e => setSearch(e.target.value)}
-          style={{ flex: "1 1 200px", maxWidth: 300, padding: "10px 16px", borderRadius: 10, border: "1.5px solid #e5e7eb", fontSize: 14, outline: "none" }} />
+          style={{ flex: "1 1 200px", maxWidth: 300, padding: "10px 16px", borderRadius: 10, border: "1.5px solid var(--pl-border)", fontSize: 14, outline: "none" }} />
         <select value={province} onChange={e => { setProvince(e.target.value); setDistrict(""); }}
-          style={{ flex: "1 1 160px", maxWidth: 220, padding: "10px 16px", borderRadius: 10, border: "1.5px solid #e5e7eb", fontSize: 14, outline: "none", background: "#fff" }}>
+          style={{ flex: "1 1 160px", maxWidth: 220, padding: "10px 16px", borderRadius: 10, border: "1.5px solid var(--pl-border)", fontSize: 14, outline: "none", background: "var(--pl-white)" }}>
           <option value="">ทุกจังหวัด</option>
           {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
         <select value={district} onChange={e => setDistrict(e.target.value)} disabled={!province}
-          style={{ flex: "1 1 160px", maxWidth: 220, padding: "10px 16px", borderRadius: 10, border: "1.5px solid #e5e7eb", fontSize: 14, outline: "none", background: "#fff", opacity: province ? 1 : 0.5 }}>
+          style={{ flex: "1 1 160px", maxWidth: 220, padding: "10px 16px", borderRadius: 10, border: "1.5px solid var(--pl-border)", fontSize: 14, outline: "none", background: "var(--pl-white)", opacity: province ? 1 : 0.5 }}>
           <option value="">{province ? "ทุกอำเภอ · All Districts" : "เลือกจังหวัดก่อน · Select province first"}</option>
           {province && getDistricts(province).map(d => <option key={d} value={d.split(" (")[0]}>{d}</option>)}
         </select>
         {(province || district || search) && (
           <button onClick={() => { setProvince(""); setDistrict(""); setSearch(""); }}
-            style={{ padding: "10px 16px", borderRadius: 10, border: "1.5px solid #e5e7eb", background: "#f9fafb", color: "#374151", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
+            style={{ padding: "10px 16px", borderRadius: 10, border: "1.5px solid var(--pl-border)", background: "var(--pl-bg)", color: "var(--pl-text-primary)", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
             ล้างตัวกรอง ✕
           </button>
         )}
@@ -258,7 +258,7 @@ export default function PromotionsPage() {
           {!loading && promotions.length > 0 && (
             <div style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ width: 4, height: 24, background: "#f59e0b", borderRadius: 2 }} />
-              <span style={{ fontWeight: 700, fontSize: 18, color: "#111827" }}>
+              <span style={{ fontWeight: 700, fontSize: 18, color: "var(--pl-text-primary)" }}>
                 {province || district ? `โปรโมชั่นใน${province || ""}${district ? ` · ${district}` : ""}` : "โปรโมชั่นทั้งหมด"}
               </span>
               <span style={{ background: "#fef3c7", color: "#b45309", borderRadius: 20, padding: "2px 10px", fontSize: 13, fontWeight: 600 }}>
@@ -267,21 +267,21 @@ export default function PromotionsPage() {
             </div>
           )}
           {enabled === false ? (
-            <div style={{ textAlign: "center", padding: "80px 24px", background: "#fff", borderRadius: 20 }}>
+            <div style={{ textAlign: "center", padding: "80px 24px", background: "var(--pl-white)", borderRadius: 20 }}>
               <div style={{ fontSize: 56, marginBottom: 14 }}>🔒</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: "#374151", marginBottom: 8 }}>ระบบโปรโมชั่นยังไม่เปิดให้บริการ</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "var(--pl-text-primary)", marginBottom: 8 }}>ระบบโปรโมชั่นยังไม่เปิดให้บริการ</div>
             </div>
           ) : loading ? (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 20 }}>
               {[1,2,3,4].map(i => <SkeletonCard key={i} />)}
             </div>
           ) : filtered.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "80px 24px", background: "#fff", borderRadius: 20 }}>
+            <div style={{ textAlign: "center", padding: "80px 24px", background: "var(--pl-white)", borderRadius: 20 }}>
               <div style={{ fontSize: 56, marginBottom: 14 }}>🎁</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: "#374151", marginBottom: 8 }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "var(--pl-text-primary)", marginBottom: 8 }}>
                 {province || district ? `ไม่พบโปรโมชั่นใน${province}${district ? ` · ${district}` : ""}` : "ยังไม่มีโปรโมชั่นในขณะนี้"}
               </div>
-              <div style={{ fontSize: 14, color: "#9ca3af" }}>
+              <div style={{ fontSize: 14, color: "var(--pl-text-muted)" }}>
                 {province || district ? "ลองเปลี่ยนจังหวัดหรืออำเภอดูครับ" : "กลับมาใหม่เร็วๆ นี้นะครับ"}
               </div>
             </div>

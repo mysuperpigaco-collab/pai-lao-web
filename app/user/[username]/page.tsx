@@ -169,7 +169,7 @@ function CoverManagerPanel({ username, covers, onUpdate, onClose }: {
               onMouseLeave={e=>{const ov=e.currentTarget.querySelector(".cm-ov") as HTMLElement; if(ov) ov.style.opacity="0";}}>
               <img src={url} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} />
               <div className="cm-ov" style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.55)",display:"flex",alignItems:"center",justifyContent:"center",gap:5,opacity:0,transition:"opacity 0.18s"}}>
-                <button onClick={() => setPreview(url)} style={{border:"none",borderRadius:7,fontSize:10,padding:"4px 8px",cursor:"pointer",fontWeight:700,background:"rgba(255,255,255,0.9)",color:"#1e293b",fontFamily:"inherit"}}>ดู</button>
+                <button onClick={() => setPreview(url)} style={{border:"none",borderRadius:7,fontSize:10,padding:"4px 8px",cursor:"pointer",fontWeight:700,background:"rgba(255,255,255,0.9)",color:"var(--pl-text-primary)",fontFamily:"inherit"}}>ดู</button>
                 <button onClick={() => remove(url)} style={{border:"none",borderRadius:7,fontSize:10,padding:"4px 8px",cursor:"pointer",fontWeight:700,background:"rgba(239,68,68,0.88)",color:"white",fontFamily:"inherit"}}>ลบ</button>
               </div>
             </div>
@@ -191,14 +191,14 @@ function CoverManagerPanel({ username, covers, onUpdate, onClose }: {
 function UserListModal({ title, users, onClose }: { title: string; users: FollowUser[]; onClose: () => void }) {
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={onClose}>
-      <div style={{background:"white",borderRadius:20,width:"100%",maxWidth:420,maxHeight:"80vh",display:"flex",flexDirection:"column",boxShadow:"0 20px 60px rgba(0,0,0,0.25)"}} onClick={e=>e.stopPropagation()}>
+      <div style={{background:"var(--pl-white)",borderRadius:20,width:"100%",maxWidth:420,maxHeight:"80vh",display:"flex",flexDirection:"column",boxShadow:"0 20px 60px rgba(0,0,0,0.25)"}} onClick={e=>e.stopPropagation()}>
         <div style={{padding:"18px 20px 14px",borderBottom:"1px solid #f1f5f9",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <h3 style={{fontWeight:800,fontSize:16,color:"#0f172a",margin:0}}>{title}</h3>
-          <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"#94a3b8",fontFamily:"inherit"}}>✕</button>
+          <h3 style={{fontWeight:800,fontSize:16,color:"var(--pl-text-primary)",margin:0}}>{title}</h3>
+          <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--pl-text-muted)",fontFamily:"inherit"}}>✕</button>
         </div>
         <div style={{overflowY:"auto",flex:1,padding:"10px 12px"}}>
           {users.length === 0
-            ? <p style={{textAlign:"center",color:"#94a3b8",padding:"24px 0",fontSize:14}}>ยังไม่มีรายชื่อ</p>
+            ? <p style={{textAlign:"center",color:"var(--pl-text-muted)",padding:"24px 0",fontSize:14}}>ยังไม่มีรายชื่อ</p>
             : users.map(u => {
                 const name = u.displayName || u.firstName;
                 return (
@@ -210,8 +210,8 @@ function UserListModal({ title, users, onClose }: { title: string; users: Follow
                       ? <img src={u.avatarUrl} alt={name} style={{width:42,height:42,borderRadius:"50%",objectFit:"cover",flexShrink:0}} />
                       : <div style={{width:42,height:42,borderRadius:"50%",background:"linear-gradient(135deg,#10b981,#3b82f6)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:800,fontSize:16,flexShrink:0}}>{name.charAt(0).toUpperCase()}</div>}
                     <div>
-                      <div style={{fontWeight:700,fontSize:14,color:"#0f172a"}}>{name}</div>
-                      <div style={{fontSize:12,color:"#94a3b8"}}>@{u.username}</div>
+                      <div style={{fontWeight:700,fontSize:14,color:"var(--pl-text-primary)"}}>{name}</div>
+                      <div style={{fontSize:12,color:"var(--pl-text-muted)"}}>@{u.username}</div>
                     </div>
                   </Link>
                 );
@@ -238,7 +238,7 @@ function ModernTripCard({ trip, ownerAvatar, ownerName }: { trip: TripCard; owne
       <Link href={"/trips/" + trip.slug}
         style={{
           display:"flex", flexDirection:"column",
-          background:"rgba(255,255,255,0.88)", backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)",
+          background:"var(--pl-white)", backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)",
           textDecoration:"none", color:"inherit",
           border:"1px solid rgba(226,232,240,0.6)",
         }}>
@@ -254,7 +254,7 @@ function ModernTripCard({ trip, ownerAvatar, ownerName }: { trip: TripCard; owne
         </span>}
       </div>
       <div style={{padding:"12px 14px 13px", flex:1, display:"flex", flexDirection:"column", gap:6}}>
-        <h4 style={{fontSize:14, fontWeight:800, color:"#1e293b", margin:0, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" as any, lineHeight:1.35, ...titleStyleCss(trip.titleStyle)}}>
+        <h4 style={{fontSize:14, fontWeight:800, color:"var(--pl-text-primary)", margin:0, overflow:"hidden", display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical" as any, lineHeight:1.35, ...titleStyleCss(trip.titleStyle)}}>
           {trip.title}
         </h4>
         <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", gap:6, marginTop:"auto", paddingTop:6, borderTop:"1px solid rgba(241,245,249,0.8)"}}>
@@ -262,9 +262,9 @@ function ModernTripCard({ trip, ownerAvatar, ownerName }: { trip: TripCard; owne
             {ownerAvatar
               ? <img src={ownerAvatar} alt={ownerName} style={{width:22,height:22,borderRadius:"50%",objectFit:"cover",flexShrink:0,border:"1.5px solid #e2e8f0"}} />
               : <div style={{width:22,height:22,borderRadius:"50%",background:"linear-gradient(135deg,#10b981,#06b6d4)",color:"#fff",fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{ownerName.charAt(0)}</div>}
-            <span style={{fontSize:11,fontWeight:700,color:"#475569",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{ownerName}</span>
+            <span style={{fontSize:11,fontWeight:700,color:"var(--pl-text-secondary)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{ownerName}</span>
           </div>
-          <div style={{display:"flex",gap:6,flexShrink:0,fontSize:11,fontWeight:700,color:"#94a3b8"}}>
+          <div style={{display:"flex",gap:6,flexShrink:0,fontSize:11,fontWeight:700,color:"var(--pl-text-muted)"}}>
             {(trip.viewCount ?? 0) > 0 && <span>👁 {fmt(trip.viewCount)}</span>}
             <span>❤️ {fmt(trip._count.likes)}</span>
           </div>
@@ -396,7 +396,7 @@ function UserProfileInner() {
   if (notFound || !user) return (
     <div style={{minHeight:"60vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:12}}>
       <div style={{fontSize:48}}>404</div>
-      <h2 style={{fontSize:20,fontWeight:800,color:"#1e293b"}}>ไม่พบผู้ใช้</h2>
+      <h2 style={{fontSize:20,fontWeight:800,color:"var(--pl-text-primary)"}}>ไม่พบผู้ใช้</h2>
       <Link href="/" style={{color:"#10b981",fontWeight:700,textDecoration:"none"}}>กลับหน้าแรก</Link>
     </div>
   );
@@ -568,7 +568,7 @@ function UserProfileInner() {
                   ))}
                 </div>
               ) : (
-                <div style={{textAlign:"center",padding:"60px 20px",color:"#94a3b8"}}>
+                <div style={{textAlign:"center",padding:"60px 20px",color:"var(--pl-text-muted)"}}>
                   <div style={{fontSize:44,marginBottom:12}}>✈️</div>
                   <p style={{fontSize:15,fontWeight:600}}>ยังไม่มีทริป</p>
                 </div>
@@ -583,7 +583,7 @@ function UserProfileInner() {
                   </div>
                 )}
                 {reviews.length === 0 ? (
-                  <div style={{textAlign:"center",padding:"60px 20px",color:"#94a3b8"}}>
+                  <div style={{textAlign:"center",padding:"60px 20px",color:"var(--pl-text-muted)"}}>
                     <div style={{fontSize:44,marginBottom:12}}>⭐</div>
                     <p style={{fontSize:15,fontWeight:600}}>ยังไม่มีรีวิว</p>
                   </div>
@@ -609,7 +609,7 @@ function UserProfileInner() {
                           )}
                           <div style={{padding:"12px 16px 14px"}}>
                             {!coverUrl && (
-                              <Link href={dest} style={{fontWeight:800,fontSize:14,color:"#1e293b",textDecoration:"none",display:"block",marginBottom:8}}>{destTitle}</Link>
+                              <Link href={dest} style={{fontWeight:800,fontSize:14,color:"var(--pl-text-primary)",textDecoration:"none",display:"block",marginBottom:8}}>{destTitle}</Link>
                             )}
                             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginBottom:8}}>
                               <div style={{display:"flex",alignItems:"center",gap:6}}>
@@ -626,12 +626,12 @@ function UserProfileInner() {
                               </div>
                             </div>
                             {!rv.isAnonymous && rv.text && (
-                              <p style={{fontSize:13,color:"#475569",margin:"0 0 8px",lineHeight:1.6,display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical" as any,overflow:"hidden"}}>
+                              <p style={{fontSize:13,color:"var(--pl-text-secondary)",margin:"0 0 8px",lineHeight:1.6,display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical" as any,overflow:"hidden"}}>
                                 "{rv.text}"
                               </p>
                             )}
-                            {rv.isAnonymous && <p style={{fontSize:12,color:"#94a3b8",margin:"0 0 8px",fontStyle:"italic"}}>รีวิวแบบไม่ระบุชื่อ</p>}
-                            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",fontSize:11,color:"#94a3b8"}}>
+                            {rv.isAnonymous && <p style={{fontSize:12,color:"var(--pl-text-muted)",margin:"0 0 8px",fontStyle:"italic"}}>รีวิวแบบไม่ระบุชื่อ</p>}
+                            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",fontSize:11,color:"var(--pl-text-muted)"}}>
                               <span>{new Date(rv.createdAt).toLocaleDateString("th-TH",{year:"numeric",month:"short",day:"numeric"})}</span>
                               {rv.likes > 0 && <span>❤️ {rv.likes} คนถูกใจ</span>}
                             </div>
@@ -653,7 +653,7 @@ function UserProfileInner() {
               display:"inline-flex", alignItems:"center", justifyContent:"center",
               padding:"10px 28px", borderRadius:999,
               background:"#f8fafc", border:"1.5px solid #e2e8f0",
-              color:"#475569", fontWeight:700, fontSize:14,
+              color:"var(--pl-text-secondary)", fontWeight:700, fontSize:14,
               textDecoration:"none",
             }}>
               ยกเลิก
@@ -711,29 +711,29 @@ function UserProfileInner() {
         /* Body */
         .up-body { max-width: 900px; margin: 0 auto; padding: 62px 20px 0; }
 
-        .up-displayname { font-size: 24px; font-weight: 900; color: #0f172a; margin: 0; line-height: 1.2; }
-        .up-username { font-size: 13px; color: #64748b; font-weight: 600; }
-        .up-since { font-size: 12px; color: #94a3b8; }
+        .up-displayname { font-size: 24px; font-weight: 900; color: var(--pl-text-primary); margin: 0; line-height: 1.2; }
+        .up-username { font-size: 13px; color: var(--pl-text-secondary); font-weight: 600; }
+        .up-since { font-size: 12px; color: var(--pl-text-muted); }
 
         .up-bio-card {
-          background: rgba(255,255,255,0.88); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+          background: var(--pl-white); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
           border: 1.5px solid rgba(226,232,240,0.6); border-radius: 18px;
           padding: 18px 20px; margin-bottom: 20px;
           box-shadow: 0 2px 12px rgba(15,23,42,0.05);
         }
         .up-bio-label { font-size: 11px; font-weight: 800; color: #10b981; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
-        .up-bio-text { font-size: 15px; color: #334155; line-height: 1.75; margin: 0; white-space: pre-wrap; }
+        .up-bio-text { font-size: 15px; color: var(--pl-text-secondary); line-height: 1.75; margin: 0; white-space: pre-wrap; }
 
         .up-stats {
           display: flex; border: 1px solid rgba(226,232,240,0.6); border-radius: 18px; overflow: hidden;
-          margin-bottom: 20px; background: rgba(255,255,255,0.88);
+          margin-bottom: 20px; background: var(--pl-white);
           backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
           box-shadow: 0 2px 12px rgba(15,23,42,0.05);
         }
         .up-stat { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 18px 12px; border-right: 1px solid #e2e8f0; }
         .up-stat:last-child { border-right: none; }
-        .up-stat strong { font-size: 24px; font-weight: 900; color: #0f172a; }
-        .up-stat span { font-size: 12px; color: #64748b; margin-top: 3px; }
+        .up-stat strong { font-size: 24px; font-weight: 900; color: var(--pl-text-primary); }
+        .up-stat span { font-size: 12px; color: var(--pl-text-secondary); margin-top: 3px; }
         .up-stat-btn { background: none; border: none; cursor: pointer; font-family: inherit; transition: background 0.15s; }
         .up-stat-btn:hover { background: rgba(240,253,244,0.8); }
         .up-stat-btn:hover strong { color: #10b981; }
@@ -741,33 +741,33 @@ function UserProfileInner() {
         .up-contact { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
         .up-contact-item {
           display: flex; align-items: center; gap: 6px; padding: 7px 13px;
-          background: rgba(255,255,255,0.82); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+          background: var(--pl-white); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
           border: 1px solid #e2e8f0; border-radius: 999px;
-          font-size: 13px; color: #334155; font-weight: 600; text-decoration: none;
+          font-size: 13px; color: var(--pl-text-secondary); font-weight: 600; text-decoration: none;
         }
         .up-contact-item:hover { background: rgba(240,253,244,0.9); border-color: #a7f3d0; }
 
         .up-tab-bar { display: flex; gap: 4px; border-bottom: 2px solid rgba(241,245,249,0.8); margin-bottom: 20px; }
         .up-tab {
           padding: 10px 20px; border-radius: 10px 10px 0 0; border: none;
-          background: transparent; font-size: 13px; font-weight: 700; color: #94a3b8;
+          background: transparent; font-size: 13px; font-weight: 700; color: var(--pl-text-muted);
           cursor: pointer; font-family: inherit; transition: 0.15s;
           display: flex; align-items: center; gap: 6px;
         }
         .up-tab.active { color: #2563eb; border-bottom: 2px solid #2563eb; background: rgba(239,246,255,0.8); }
-        .up-tab:hover:not(.active) { background: rgba(248,250,252,0.7); color: #64748b; }
+        .up-tab:hover:not(.active) { background: rgba(248,250,252,0.7); color: var(--pl-text-secondary); }
         .up-tab-count { font-size: 11px; background: #e2e8f0; color: #475569; padding: 1px 7px; border-radius: 999px; font-weight: 800; }
 
         .up-private-box {
           text-align: center; padding: 64px 20px;
-          background: rgba(255,255,255,0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-          border-radius: 20px; border: 1px solid #e2e8f0; margin: 24px 0; color: #64748b; font-size: 14px;
+          background: var(--pl-white); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+          border-radius: 20px; border: 1px solid #e2e8f0; margin: 24px 0; color: var(--pl-text-secondary); font-size: 14px;
         }
 
         .up-trips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
 
         .up-rv-card {
-          background: rgba(255,255,255,0.92);
+          background: var(--pl-white);
           backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
           border: 1.5px solid rgba(226,232,240,0.7); border-radius: 16px;
           overflow: hidden;
@@ -794,7 +794,7 @@ function UserProfileInner() {
 
 export default function UserProfilePage() {
   return (
-    <Suspense fallback={<div style={{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center",color:"#94a3b8"}}>Loading...</div>}>
+    <Suspense fallback={<div style={{minHeight:"60vh",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--pl-text-muted)"}}>Loading...</div>}>
       <UserProfileInner />
     </Suspense>
   );
