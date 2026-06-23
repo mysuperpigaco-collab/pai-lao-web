@@ -262,6 +262,14 @@ export default function Navbar() {
           .nb-write-btn span { display: none; }
           .nb-avatar-link  { padding: 4px; border-radius: 50%; }
           .nb-hamburger    { display: flex; }
+          /* ── ยังไม่ล็อกอิน: ปุ่ม Login/Signup จัดไทย-อังกฤษ 2 บรรทัด ให้พอดีจอแคบ
+                (ตอนล็อกอินแล้ว ปุ่มพวกนี้ไม่ถูก render — เมนูยุบเป็นแฮมเบอร์เกอร์ตามเดิม) ── */
+          .nb-login, .nb-signup {
+            display: flex; flex-direction: column; align-items: center;
+            line-height: 1.15; font-size: 12px; padding: 6px 10px;
+          }
+          .nb-btn-sep { display: none; }
+          .nb-btn-en  { font-size: 9px; opacity: 0.85; font-weight: 700; }
         }
       `}</style>
 
@@ -354,8 +362,8 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Link href="/login"  className="nb-login">เข้าสู่ระบบ · Login</Link>
-              <Link ref={magSignup.ref} onMouseMove={magSignup.onMouseMove} onMouseLeave={magSignup.onMouseLeave} href="/signup" className="nb-signup">สมัครสมาชิก · Sign up</Link>
+              <Link href="/login"  className="nb-login"><span className="nb-btn-th">เข้าสู่ระบบ</span><span className="nb-btn-sep">&nbsp;·&nbsp;</span><span className="nb-btn-en">Login</span></Link>
+              <Link ref={magSignup.ref} onMouseMove={magSignup.onMouseMove} onMouseLeave={magSignup.onMouseLeave} href="/signup" className="nb-signup"><span className="nb-btn-th">สมัครสมาชิก</span><span className="nb-btn-sep">&nbsp;·&nbsp;</span><span className="nb-btn-en">Sign up</span></Link>
             </>
           )}
         </div>
