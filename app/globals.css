@@ -477,8 +477,8 @@ body {
 [data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
 [data-theme="dark"] textarea,
 [data-theme="dark"] select {
-  color: var(--pl-text-primary);
-  background-color: var(--pl-bg);
+  color: var(--pl-text-primary) !important;
+  background-color: var(--pl-bg) !important;
 }
 [data-theme="dark"] input::placeholder,
 [data-theme="dark"] textarea::placeholder {
