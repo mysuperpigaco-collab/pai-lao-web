@@ -142,7 +142,7 @@ function FAQItem({ q, a, defaultOpen = false }: FAQ & { defaultOpen?: boolean })
   return (
     <div
       style={{
-        borderBottom: "1px solid #f1f5f9",
+        borderBottom: "1px solid var(--pl-border)",
         overflow: "hidden",
       }}
     >
@@ -154,7 +154,7 @@ function FAQItem({ q, a, defaultOpen = false }: FAQ & { defaultOpen?: boolean })
           cursor: "pointer", fontFamily: "inherit", textAlign: "left",
         }}
       >
-        <span style={{ fontWeight: 700, fontSize: 15, color: "#1e293b", lineHeight: 1.5 }}>{q}</span>
+        <span style={{ fontWeight: 700, fontSize: 15, color: "var(--pl-text-primary)", lineHeight: 1.5 }}>{q}</span>
         <span style={{
           flexShrink: 0, width: 28, height: 28, borderRadius: "50%",
           background: open ? "#10b981" : "#f1f5f9",
@@ -165,7 +165,7 @@ function FAQItem({ q, a, defaultOpen = false }: FAQ & { defaultOpen?: boolean })
         }}>+</span>
       </button>
       {open && (
-        <div style={{ padding: "0 24px 20px", fontSize: 14, color: "#475569", lineHeight: 1.8 }}>
+        <div style={{ padding: "0 24px 20px", fontSize: 14, color: "var(--pl-text-secondary)", lineHeight: 1.8 }}>
           {a}
         </div>
       )}
@@ -184,8 +184,8 @@ export default function FAQPage() {
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: 48 }}>
         <div style={{ fontSize: 48, marginBottom: 12 }}>❓</div>
-        <h1 style={{ fontSize: 32, fontWeight: 900, color: "#0f172a", margin: "0 0 12px" }}>คำถามที่พบบ่อย</h1>
-        <p style={{ fontSize: 15, color: "#64748b", margin: 0 }}>Frequently Asked Questions · หากไม่พบคำตอบ ติดต่อเราได้เสมอ</p>
+        <h1 style={{ fontSize: 32, fontWeight: 900, color: "var(--pl-text-primary)", margin: "0 0 12px" }}>คำถามที่พบบ่อย</h1>
+        <p style={{ fontSize: 15, color: "var(--pl-text-secondary)", margin: 0 }}>Frequently Asked Questions · หากไม่พบคำตอบ ติดต่อเราได้เสมอ</p>
       </div>
 
       {/* Section tabs */}
@@ -197,7 +197,7 @@ export default function FAQPage() {
             style={{
               padding: "10px 22px", borderRadius: 999, border: "1.5px solid",
               borderColor: activeSection === s.id ? "#10b981" : "#e2e8f0",
-              background: activeSection === s.id ? "#10b981" : "white",
+              background: activeSection === s.id ? "#10b981" : "var(--pl-white)",
               color: activeSection === s.id ? "white" : "#475569",
               fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit",
               transition: "all 0.2s", display: "flex", alignItems: "center", gap: 6,
@@ -209,12 +209,12 @@ export default function FAQPage() {
       </div>
 
       {/* FAQ list */}
-      <div style={{ background: "white", borderRadius: 20, border: "1.5px solid #f1f5f9", overflow: "hidden", boxShadow: "0 4px 24px rgba(15,23,42,0.06)" }}>
+      <div style={{ background: "var(--pl-white)", borderRadius: 20, border: "1.5px solid var(--pl-border)", overflow: "hidden", boxShadow: "0 4px 24px rgba(15,23,42,0.06)" }}>
         {/* Section header */}
-        <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid var(--pl-border)", display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 24 }}>{current.icon}</span>
-          <span style={{ fontWeight: 800, fontSize: 17, color: "#0f172a" }}>{current.label}</span>
-          <span style={{ marginLeft: "auto", fontSize: 12, color: "#94a3b8", fontWeight: 600 }}>{current.items.length} คำถาม</span>
+          <span style={{ fontWeight: 800, fontSize: 17, color: "var(--pl-text-primary)" }}>{current.label}</span>
+          <span style={{ marginLeft: "auto", fontSize: 12, color: "var(--pl-text-muted)", fontWeight: 600 }}>{current.items.length} คำถาม</span>
         </div>
 
         {current.items.map((item, i) => (

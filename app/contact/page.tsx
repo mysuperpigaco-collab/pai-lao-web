@@ -47,23 +47,23 @@ export default function ContactPage() {
   const inp: React.CSSProperties = {
     width: "100%", padding: "12px 16px", borderRadius: 12,
     border: "1.5px solid #e2e8f0", fontSize: 14, fontFamily: "inherit",
-    background: "white", color: "#1e293b", outline: "none", boxSizing: "border-box",
+    background: "var(--pl-white)", color: "var(--pl-text-primary)", outline: "none", boxSizing: "border-box",
   };
 
   if (sent) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 64px)", padding: "40px 20px" }}>
-      <div style={{ background: "white", borderRadius: 24, padding: "48px 40px", textAlign: "center", maxWidth: 440, boxShadow: "0 8px 40px rgba(15,23,42,0.10)" }}>
+      <div style={{ background: "var(--pl-white)", borderRadius: 24, padding: "48px 40px", textAlign: "center", maxWidth: 440, boxShadow: "0 8px 40px rgba(15,23,42,0.10)" }}>
         <div style={{ fontSize: 56, marginBottom: 16 }}>✅</div>
-        <h2 style={{ fontSize: 22, fontWeight: 900, color: "#0f172a", margin: "0 0 10px" }}>ส่งข้อความสำเร็จ!</h2>
-        <p style={{ color: "#64748b", fontSize: 14, lineHeight: 1.7, margin: "0 0 8px" }}>
+        <h2 style={{ fontSize: 22, fontWeight: 900, color: "var(--pl-text-primary)", margin: "0 0 10px" }}>ส่งข้อความสำเร็จ!</h2>
+        <p style={{ color: "var(--pl-text-secondary)", fontSize: 14, lineHeight: 1.7, margin: "0 0 8px" }}>
           ทีมงานไปเล่าได้รับข้อความของคุณแล้ว และจะตอบกลับทางอีเมล
         </p>
-        <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 28px" }}>
+        <p style={{ color: "var(--pl-text-muted)", fontSize: 13, margin: "0 0 28px" }}>
           📧 {form.email}
         </p>
         <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
           <button onClick={() => { setSent(false); setForm({ name: "", email: "", category: "general", subject: "", message: "" }); }}
-            style={{ padding: "11px 24px", borderRadius: 12, border: "1.5px solid #e2e8f0", background: "white", color: "#475569", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
+            style={{ padding: "11px 24px", borderRadius: 12, border: "1.5px solid #e2e8f0", background: "var(--pl-white)", color: "var(--pl-text-secondary)", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
             ส่งอีกครั้ง
           </button>
           <Link href="/" style={{ padding: "11px 24px", borderRadius: 12, border: "none", background: "#10b981", color: "white", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
@@ -80,8 +80,8 @@ export default function ContactPage() {
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: 40 }}>
         <div style={{ fontSize: 48, marginBottom: 12 }}>💬</div>
-        <h1 style={{ fontSize: 32, fontWeight: 900, color: "#0f172a", margin: "0 0 10px" }}>ติดต่อเรา</h1>
-        <p style={{ color: "#64748b", fontSize: 15, margin: 0 }}>
+        <h1 style={{ fontSize: 32, fontWeight: 900, color: "var(--pl-text-primary)", margin: "0 0 10px" }}>ติดต่อเรา</h1>
+        <p style={{ color: "var(--pl-text-secondary)", fontSize: 15, margin: 0 }}>
           Contact Us · ทีมงานพร้อมช่วยเหลือทุกวัน
         </p>
       </div>
@@ -89,27 +89,27 @@ export default function ContactPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 24, alignItems: "start" }} className="contact-grid">
 
         {/* Form */}
-        <form onSubmit={handleSubmit} style={{ background: "white", borderRadius: 20, border: "1.5px solid #f1f5f9", padding: "28px 28px 24px", boxShadow: "0 4px 24px rgba(15,23,42,0.06)", display: "flex", flexDirection: "column", gap: 18 }}>
+        <form onSubmit={handleSubmit} style={{ background: "var(--pl-white)", borderRadius: 20, border: "1.5px solid var(--pl-border)", padding: "28px 28px 24px", boxShadow: "0 4px 24px rgba(15,23,42,0.06)", display: "flex", flexDirection: "column", gap: 18 }}>
 
           {/* Name + Email */}
           <div className="contact-name-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>ชื่อ *</label>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 6 }}>ชื่อ *</label>
               <input value={form.name} onChange={e => set("name", e.target.value)} placeholder="ชื่อของคุณ" required style={inp} />
             </div>
             <div>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>อีเมล *</label>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 6 }}>อีเมล *</label>
               <input type="email" value={form.email} onChange={e => set("email", e.target.value)} placeholder="your@email.com" required style={inp} />
             </div>
           </div>
 
           {/* Category */}
           <div>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>หมวดหมู่</label>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 6 }}>หมวดหมู่</label>
             <div className="contact-cats" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {CATEGORIES.map(c => (
                 <button key={c.value} type="button" onClick={() => set("category", c.value)}
-                  style={{ padding: "7px 14px", borderRadius: 999, border: "1.5px solid", borderColor: form.category === c.value ? "#10b981" : "#e2e8f0", background: form.category === c.value ? "#f0fdf4" : "white", color: form.category === c.value ? "#065f46" : "#475569", fontWeight: form.category === c.value ? 700 : 400, fontSize: 13, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>
+                  style={{ padding: "7px 14px", borderRadius: 999, border: "1.5px solid", borderColor: form.category === c.value ? "#10b981" : "#e2e8f0", background: form.category === c.value ? "#f0fdf4" : "var(--pl-white)", color: form.category === c.value ? "#065f46" : "#475569", fontWeight: form.category === c.value ? 700 : 400, fontSize: 13, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>
                   {c.label}
                 </button>
               ))}
@@ -118,13 +118,13 @@ export default function ContactPage() {
 
           {/* Subject */}
           <div>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>หัวข้อ</label>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 6 }}>หัวข้อ</label>
             <input value={form.subject} onChange={e => set("subject", e.target.value)} placeholder="สรุปหัวข้อสั้นๆ" style={inp} />
           </div>
 
           {/* Message */}
           <div>
-            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>ข้อความ * <span style={{ color: "#94a3b8", fontWeight: 400 }}>(ขั้นต่ำ 10 ตัวอักษร)</span></label>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 6 }}>ข้อความ * <span style={{ color: "var(--pl-text-muted)", fontWeight: 400 }}>(ขั้นต่ำ 10 ตัวอักษร)</span></label>
             <textarea value={form.message} onChange={e => set("message", e.target.value)} placeholder="เขียนข้อความของคุณที่นี่..." rows={6} required
               style={{ ...inp, resize: "vertical", minHeight: 140 }} />
             <div style={{ fontSize: 11, color: form.message.length < 10 ? "#ef4444" : "#94a3b8", marginTop: 4, textAlign: "right" }}>
@@ -147,19 +147,19 @@ export default function ContactPage() {
         {/* Sidebar info */}
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
-          <div style={{ background: "white", borderRadius: 16, border: "1.5px solid #f1f5f9", padding: "20px", boxShadow: "0 2px 12px rgba(15,23,42,0.05)" }}>
-            <div style={{ fontWeight: 800, fontSize: 14, color: "#0f172a", marginBottom: 12 }}>📬 ข้อมูลติดต่อ</div>
+          <div style={{ background: "var(--pl-white)", borderRadius: 16, border: "1.5px solid var(--pl-border)", padding: "20px", boxShadow: "0 2px 12px rgba(15,23,42,0.05)" }}>
+            <div style={{ fontWeight: 800, fontSize: 14, color: "var(--pl-text-primary)", marginBottom: 12 }}>📬 ข้อมูลติดต่อ</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <div style={{ fontSize: 13, color: "#475569" }}>
-                <div style={{ fontWeight: 700, color: "#374151", marginBottom: 2 }}>อีเมล</div>
+              <div style={{ fontSize: 13, color: "var(--pl-text-secondary)" }}>
+                <div style={{ fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 2 }}>อีเมล</div>
                 <a href="mailto:supportpailao@gmail.com" style={{ color: "#2563eb" }}>supportpailao@gmail.com</a>
               </div>
-              <div style={{ fontSize: 13, color: "#475569" }}>
-                <div style={{ fontWeight: 700, color: "#374151", marginBottom: 2 }}>เวลาทำการ</div>
+              <div style={{ fontSize: 13, color: "var(--pl-text-secondary)" }}>
+                <div style={{ fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 2 }}>เวลาทำการ</div>
                 ทุกวัน 9:00 – 18:00 น.
               </div>
-              <div style={{ fontSize: 13, color: "#475569" }}>
-                <div style={{ fontWeight: 700, color: "#374151", marginBottom: 2 }}>เวลาตอบกลับ</div>
+              <div style={{ fontSize: 13, color: "var(--pl-text-secondary)" }}>
+                <div style={{ fontWeight: 700, color: "var(--pl-text-secondary)", marginBottom: 2 }}>เวลาตอบกลับ</div>
                 ภายใน 1–2 วันทำการ
               </div>
             </div>

@@ -19,10 +19,10 @@ export default function AboutPage() {
 
       {/* แนวคิด */}
       <section style={{ marginBottom: 40 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 900, color: "#0f172a", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 10 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 900, color: "var(--pl-text-primary)", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 10 }}>
           💡 แนวคิด
         </h2>
-        <div style={{ background: "white", borderRadius: 20, border: "1.5px solid #f1f5f9", padding: "28px 32px", boxShadow: "0 4px 24px rgba(15,23,42,0.05)", fontSize: 15, color: "#334155", lineHeight: 1.9 }}>
+        <div style={{ background: "var(--pl-white)", borderRadius: 20, border: "1.5px solid var(--pl-border)", padding: "28px 32px", boxShadow: "0 4px 24px rgba(15,23,42,0.05)", fontSize: 15, color: "var(--pl-text-secondary)", lineHeight: 1.9 }}>
           <p style={{ margin: "0 0 16px" }}>
             ไปเล่าเกิดขึ้นจากความเชื่อที่ว่า <strong>"ทุกการเดินทางมีเรื่องเล่า"</strong> นักท่องเที่ยวไทยมีประสบการณ์มากมายที่ซ่อนอยู่ในความทรงจำ แต่ขาดแพลตฟอร์มที่เหมาะสมในการแบ่งปันอย่างเป็นระบบ
           </p>
@@ -37,7 +37,7 @@ export default function AboutPage() {
 
       {/* ระบบโดยรวม */}
       <section style={{ marginBottom: 40 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 900, color: "#0f172a", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 10 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 900, color: "var(--pl-text-primary)", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 10 }}>
           🏗️ ระบบโดยรวม
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
@@ -87,8 +87,8 @@ export default function AboutPage() {
           ].map(item => (
             <div key={item.title} style={{ background: item.color, borderRadius: 16, border: `1.5px solid ${item.border}`, padding: "20px 22px" }}>
               <div style={{ fontSize: 28, marginBottom: 10 }}>{item.icon}</div>
-              <div style={{ fontWeight: 800, fontSize: 15, color: "#0f172a", marginBottom: 8 }}>{item.title}</div>
-              <div style={{ fontSize: 13, color: "#475569", lineHeight: 1.7 }}>{item.desc}</div>
+              <div style={{ fontWeight: 800, fontSize: 15, color: "var(--pl-text-primary)", marginBottom: 8 }}>{item.title}</div>
+              <div style={{ fontSize: 13, color: "var(--pl-text-secondary)", lineHeight: 1.7 }}>{item.desc}</div>
             </div>
           ))}
         </div>
@@ -96,10 +96,10 @@ export default function AboutPage() {
 
       {/* ค่านิยม */}
       <section style={{ marginBottom: 40 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 900, color: "#0f172a", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 10 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 900, color: "var(--pl-text-primary)", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 10 }}>
           🌱 สิ่งที่เราเชื่อ
         </h2>
-        <div style={{ background: "white", borderRadius: 20, border: "1.5px solid #f1f5f9", padding: "28px 32px", boxShadow: "0 4px 24px rgba(15,23,42,0.05)" }}>
+        <div style={{ background: "var(--pl-white)", borderRadius: 20, border: "1.5px solid var(--pl-border)", padding: "28px 32px", boxShadow: "0 4px 24px rgba(15,23,42,0.05)" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
             {[
               { icon: "🤝", title: "ชุมชนมาก่อน", desc: "ไปเล่าดีขึ้นได้เพราะผู้ใช้ทุกคน ทั้งการเพิ่มสถานที่ เขียนรีวิว และแบ่งปันทริป คือสิ่งที่ทำให้แพลตฟอร์มนี้มีคุณค่า" },
@@ -109,8 +109,8 @@ export default function AboutPage() {
               <div key={v.title} style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
                 <div style={{ fontSize: 24, flexShrink: 0 }}>{v.icon}</div>
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: "#0f172a", marginBottom: 4 }}>{v.title}</div>
-                  <div style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7 }}>{v.desc}</div>
+                  <div style={{ fontWeight: 800, fontSize: 15, color: "var(--pl-text-primary)", marginBottom: 4 }}>{v.title}</div>
+                  <div style={{ fontSize: 14, color: "var(--pl-text-secondary)", lineHeight: 1.7 }}>{v.desc}</div>
                 </div>
               </div>
             ))}

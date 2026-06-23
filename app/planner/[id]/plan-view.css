@@ -362,3 +362,19 @@ a { text-decoration: none; }
   .pv-footer { padding: 16px 18px; margin-top: 20px; }
   .pv-footer-brand { font-size: 12px; }
 }
+
+/* ── DARK MODE ── */
+[data-theme="dark"] body { background: transparent; }
+[data-theme="dark"] .pv-page { background: var(--pl-white); }
+[data-theme="dark"] .pv-day-date { color: var(--pl-text-secondary); }
+[data-theme="dark"] .pv-stop-card { background: var(--pl-bg); border-color: var(--pl-border); }
+[data-theme="dark"] .pv-stop-name { color: var(--pl-text-primary); }
+[data-theme="dark"] .pv-stop-loc { color: var(--pl-text-secondary); }
+[data-theme="dark"] .pv-stop-timing { border-top-color: var(--pl-border); }
+[data-theme="dark"] .pv-timing-chip { background: var(--pl-white); border-color: var(--pl-border); color: var(--pl-text-secondary); }
+[data-theme="dark"] .pv-stop-notes { color: var(--pl-text-secondary); }
+[data-theme="dark"] .pv-maps-print { color: var(--pl-text-muted); }
+[data-theme="dark"] .pv-share-title { color: var(--pl-text-primary); }
+[data-theme="dark"] .pv-share-url-box { background: var(--pl-white); border-color: var(--pl-border); }
+[data-theme="dark"] .pv-share-url-text { color: var(--pl-text-secondary); }
+[data-theme="dark"] .pv-footer { border-top-color: var(--pl-border); }
