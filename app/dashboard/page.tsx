@@ -13,7 +13,7 @@ function SavedPlaceCard({ p }: { p: any }) {
   return (
     <Link href={`/place/${p.slug}`} style={{ textDecoration: "none", color: "inherit" }}>
       <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
-        style={{ background: "#fff", borderRadius: 16, border: "1px solid #f1f5f9", overflow: "hidden", boxShadow: "0 2px 10px rgba(15,23,42,0.05)", position: "relative", willChange: "transform" }}>
+        style={{ background: "var(--pl-white)", borderRadius: 16, border: "1px solid var(--pl-border)", overflow: "hidden", boxShadow: "var(--pl-shadow-card)", position: "relative", willChange: "transform" }}>
         <div ref={shineRef} style={shineStyle} />
         <div style={{ height: 140, overflow: "hidden", background: "#e2e8f0", position: "relative" }}>
           {p.coverUrl
@@ -25,8 +25,8 @@ function SavedPlaceCard({ p }: { p: any }) {
           </span>
         </div>
         <div style={{ padding: "12px 14px" }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.title}</div>
-          <div style={{ fontSize: 11, color: "#94a3b8" }}>📍 สถานที่บันทึก</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--pl-text-primary)", marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.title}</div>
+          <div style={{ fontSize: 11, color: "var(--pl-text-muted)" }}>📍 สถานที่บันทึก</div>
         </div>
       </div>
     </Link>
@@ -99,7 +99,7 @@ function NoticeCard({ n, onDismiss }: { n: Notice; onDismiss: (id: string) => vo
       <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: s.icon_bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}>{n.icon}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontWeight: 800, fontSize: "14px", color: s.title, margin: "0 0 3px" }}>{n.title}</p>
-        <p style={{ fontSize: "13px", color: "#475569", margin: 0, lineHeight: 1.5 }}>{n.body}</p>
+        <p style={{ fontSize: "13px", color: "var(--pl-text-secondary)", margin: 0, lineHeight: 1.5 }}>{n.body}</p>
         {n.action && (
           n.action.onClick
             ? <button onClick={n.action.onClick} style={{ display: "inline-block", marginTop: "8px", fontSize: "12px", fontWeight: 700, color: s.icon_bg, textDecoration: "none", background: "rgba(255,255,255,0.7)", padding: "4px 12px", borderRadius: "999px", border: `1px solid ${s.border}`, cursor: "pointer" }}>
@@ -110,7 +110,7 @@ function NoticeCard({ n, onDismiss }: { n: Notice; onDismiss: (id: string) => vo
               </Link>
         )}
       </div>
-      <button onClick={() => onDismiss(n.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: "16px", lineHeight: 1, padding: "2px 4px", flexShrink: 0 }} aria-label="ปิด">×</button>
+      <button onClick={() => onDismiss(n.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--pl-text-muted)", fontSize: "16px", lineHeight: 1, padding: "2px 4px", flexShrink: 0 }} aria-label="ปิด">×</button>
     </div>
   );
 }
@@ -334,15 +334,15 @@ export default function DashboardPage() {
             <div className="dp-card" style={{ marginTop: "16px" }}>
               <h3 className="sb-title">บัญชีของฉัน <small>My Account</small></h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#475569" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "var(--pl-text-secondary)" }}>
                   <span>ประเภท · Type</span>
-                  <span style={{ fontWeight: 700, color: "#0f172a" }}>🎒 Traveler</span>
+                  <span style={{ fontWeight: 700, color: "var(--pl-text-primary)" }}>🎒 Traveler</span>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#475569" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "var(--pl-text-secondary)" }}>
                   <span>บันทึกไว้ · Saved</span>
-                  <span style={{ fontWeight: 700, color: "#0f172a" }}>{savedTrips.length + savedPlaces.length} รายการ</span>
+                  <span style={{ fontWeight: 700, color: "var(--pl-text-primary)" }}>{savedTrips.length + savedPlaces.length} รายการ</span>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "#475569" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "var(--pl-text-secondary)" }}>
                   <span>เรื่องเล่า · Stories</span>
                   <span style={{ fontWeight: 700, color: "#2563eb" }}>{myTrips.length} เรื่อง</span>
                 </div>
@@ -393,7 +393,7 @@ export default function DashboardPage() {
                 if (loadingNotifs) return (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginBottom: 24 }}>
                     {[1,2,3,4].map(i => (
-                      <div key={i} style={{ borderRadius: 16, padding: "13px 14px", border: "1.5px solid #e2e8f0", background: "#f8fafc" }}>
+                      <div key={i} style={{ borderRadius: 16, padding: "13px 14px", border: "1.5px solid #e2e8f0", background: "var(--pl-bg)" }}>
                         <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                           <div className="pl-shimmer" style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0 }} />
                           <div style={{ flex: 1 }}>
@@ -427,7 +427,7 @@ export default function DashboardPage() {
                   <div style={{ marginBottom: 24 }}>
                     <style>{`@keyframes plExcl{0%,100%{background:#f59e0b;box-shadow:0 0 0 0 rgba(239,68,68,0.55)}50%{background:#ef4444;box-shadow:0 0 0 5px rgba(239,68,68,0)}}`}</style>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
-                      <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0f172a", margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
+                      <h3 style={{ fontSize: 16, fontWeight: 800, color: "var(--pl-text-primary)", margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
                         🔔 การแจ้งเตือน · Notifications
                         {unreadCount > 0 && (
                           <span style={{ fontSize: 11, fontWeight: 800, color: "#fff", background: "#e11d48", padding: "2px 9px", borderRadius: 999, animation: "notifPulse 2s ease-in-out infinite" }}>
@@ -439,7 +439,7 @@ export default function DashboardPage() {
                         )}
                       </h3>
                       <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
-                        <span style={{ fontSize: 11, color: "#94a3b8" }}>{visibleItems.length} รายการ</span>
+                        <span style={{ fontSize: 11, color: "var(--pl-text-muted)" }}>{visibleItems.length} รายการ</span>
                         {unreadCount > 0 && (
                           <button onClick={markAllRead} style={{ fontSize: 11, fontWeight: 700, color: "#2563eb", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 999, padding: "4px 12px", cursor: "pointer", fontFamily: "inherit" }}>
                             ✓ อ่านทั้งหมด
@@ -482,8 +482,8 @@ export default function DashboardPage() {
                           const alreadyReplied = notif.replies.length > 0;
                           const starStr = notif.rating ? "★".repeat(Math.round(notif.rating)) : "";
                           return (
-                            <div key={notif.id} onClick={() => markSeen([nid])} style={{ background: isRead ? "#f8fafc" : "#fffbeb", border: isRead ? "1.5px solid #e2e8f0" : "1.5px solid #fde68a", borderLeft: isRead ? "4px solid #e2e8f0" : "4px solid #f59e0b", borderRadius: 16, padding: "13px 14px", display: "flex", flexDirection: "column", gap: 8, boxShadow: isRead ? "none" : "0 2px 12px rgba(245,158,11,0.10)", transition: "all 0.3s ease", opacity: isRead ? 0.75 : 1, position: "relative" }}>
-                              <button onClick={e => { e.stopPropagation(); dismissNotif(`tr:${notif.id}`); }} style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#94a3b8", fontFamily: "inherit", lineHeight: 1 }} title="ลบการแจ้งเตือน">×</button>
+                            <div key={notif.id} onClick={() => markSeen([nid])} style={{ background: isRead ? "var(--pl-bg)" : "#fffbeb", border: isRead ? "1.5px solid #e2e8f0" : "1.5px solid #fde68a", borderLeft: isRead ? "4px solid #e2e8f0" : "4px solid #f59e0b", borderRadius: 16, padding: "13px 14px", display: "flex", flexDirection: "column", gap: 8, boxShadow: isRead ? "none" : "0 2px 12px rgba(245,158,11,0.10)", transition: "all 0.3s ease", opacity: isRead ? 0.75 : 1, position: "relative" }}>
+                              <button onClick={e => { e.stopPropagation(); dismissNotif(`tr:${notif.id}`); }} style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "var(--pl-text-muted)", fontFamily: "inherit", lineHeight: 1 }} title="ลบการแจ้งเตือน">×</button>
                               <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                                 <div style={{ position: "relative", flexShrink: 0 }}>
                                   <div style={{ width: 36, height: 36, borderRadius: 10, background: isRead ? "#f1f5f9" : "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17 }}>✍️</div>
@@ -494,16 +494,16 @@ export default function DashboardPage() {
                                     <span style={{ fontSize: 12, fontWeight: isRead ? 600 : 800, color: isRead ? "#475569" : "#0f172a" }}>{reviewerName}</span>
                                     {!isRead && <span style={{ fontSize: 9, fontWeight: 800, background: "#fef3c7", color: "#92400e", padding: "1px 5px", borderRadius: 999 }}>ใหม่</span>}
                                   </div>
-                                  <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 2px" }}>รีวิวเรื่อง: {notif.trip.title}</p>
+                                  <p style={{ fontSize: 11, color: "var(--pl-text-secondary)", margin: "0 0 2px" }}>รีวิวเรื่อง: {notif.trip.title}</p>
                                   {starStr && <p style={{ fontSize: 12, color: "#f59e0b", margin: "0 0 3px", letterSpacing: 1 }}>{starStr}</p>}
-                                  <p style={{ fontSize: 11, color: isRead ? "#94a3b8" : "#374151", margin: 0, fontStyle: "italic", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>&ldquo;{notif.text}&rdquo;</p>
+                                  <p style={{ fontSize: 11, color: isRead ? "#94a3b8" : "var(--pl-text-secondary)", margin: 0, fontStyle: "italic", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>&ldquo;{notif.text}&rdquo;</p>
                                 </div>
                               </div>
                               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4, borderTop: "1px solid rgba(0,0,0,0.05)" }}>
                                 <Link href={`/trips/${notif.trip.slug}`} onClick={() => markSeen([nid])} style={{ fontSize: 11, fontWeight: 700, color: alreadyReplied ? "#64748b" : "#2563eb", textDecoration: "none", background: alreadyReplied ? "#f1f5f9" : "#eff6ff", padding: "3px 10px", borderRadius: 999, border: `1px solid ${alreadyReplied ? "#e2e8f0" : "#bfdbfe"}` }}>
                                   {alreadyReplied ? "✓ ตอบแล้ว" : "💬 ตอบกลับ"} →
                                 </Link>
-                                <span style={{ fontSize: 10, color: "#94a3b8" }}>{new Date(notif.createdAt).toLocaleDateString("th-TH")}</span>
+                                <span style={{ fontSize: 10, color: "var(--pl-text-muted)" }}>{new Date(notif.createdAt).toLocaleDateString("th-TH")}</span>
                               </div>
                             </div>
                           );
@@ -518,8 +518,8 @@ export default function DashboardPage() {
                           const replierName = latestReply?.author.displayName || latestReply?.author.firstName || "ผู้ใช้";
                           const isOwnerReply = latestReply?.author.role === "BUSINESS";
                           return (
-                            <div key={notif.id} style={{ background: isRead ? "#f8fafc" : (isOwnerReply ? "#f0fdf4" : "#eff6ff"), border: isRead ? "1.5px solid #e2e8f0" : `1.5px solid ${isOwnerReply ? "#bbf7d0" : "#bfdbfe"}`, borderLeft: isRead ? "4px solid #e2e8f0" : `4px solid ${isOwnerReply ? "#22c55e" : "#3b82f6"}`, borderRadius: 16, padding: "13px 14px", display: "flex", flexDirection: "column", gap: 8, boxShadow: isRead ? "none" : "0 2px 12px rgba(59,130,246,0.08)", transition: "all 0.3s ease", opacity: isRead ? 0.75 : 1, position: "relative", cursor: "pointer" }} onClick={() => markSeen([nid])}>
-                              <button onClick={e => { e.stopPropagation(); dismissNotif(`rp:${notif.id}`); }} style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#94a3b8", fontFamily: "inherit", lineHeight: 1 }} title="ลบการแจ้งเตือน">×</button>
+                            <div key={notif.id} style={{ background: isRead ? "var(--pl-bg)" : (isOwnerReply ? "#f0fdf4" : "#eff6ff"), border: isRead ? "1.5px solid #e2e8f0" : `1.5px solid ${isOwnerReply ? "#bbf7d0" : "#bfdbfe"}`, borderLeft: isRead ? "4px solid #e2e8f0" : `4px solid ${isOwnerReply ? "#22c55e" : "#3b82f6"}`, borderRadius: 16, padding: "13px 14px", display: "flex", flexDirection: "column", gap: 8, boxShadow: isRead ? "none" : "0 2px 12px rgba(59,130,246,0.08)", transition: "all 0.3s ease", opacity: isRead ? 0.75 : 1, position: "relative", cursor: "pointer" }} onClick={() => markSeen([nid])}>
+                              <button onClick={e => { e.stopPropagation(); dismissNotif(`rp:${notif.id}`); }} style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "var(--pl-text-muted)", fontFamily: "inherit", lineHeight: 1 }} title="ลบการแจ้งเตือน">×</button>
                               <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                                 <div style={{ position: "relative", flexShrink: 0 }}>
                                   <div style={{ width: 36, height: 36, borderRadius: 10, background: isRead ? "#f1f5f9" : (isOwnerReply ? "#dcfce7" : "#dbeafe"), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17 }}>{isOwnerReply ? "🏢" : "💬"}</div>
@@ -530,13 +530,13 @@ export default function DashboardPage() {
                                     <span style={{ fontSize: 12, fontWeight: isRead ? 600 : 800, color: isRead ? "#475569" : "#0f172a" }}>{replierName}{isOwnerReply ? " (เจ้าของ)" : ""}</span>
                                     {!isRead && <span style={{ fontSize: 9, fontWeight: 800, background: isOwnerReply ? "#dcfce7" : "#dbeafe", color: isOwnerReply ? "#15803d" : "#1e40af", padding: "1px 5px", borderRadius: 999 }}>ใหม่</span>}
                                   </div>
-                                  <p style={{ fontSize: 11, color: "#64748b", margin: "0 0 3px" }}>ตอบกลับรีวิวของคุณ · {destTitle}</p>
-                                  <p style={{ fontSize: 11, color: isRead ? "#94a3b8" : "#374151", margin: 0, fontStyle: "italic", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>&ldquo;{latestReply?.text}&rdquo;</p>
+                                  <p style={{ fontSize: 11, color: "var(--pl-text-secondary)", margin: "0 0 3px" }}>ตอบกลับรีวิวของคุณ · {destTitle}</p>
+                                  <p style={{ fontSize: 11, color: isRead ? "#94a3b8" : "var(--pl-text-secondary)", margin: 0, fontStyle: "italic", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden" }}>&ldquo;{latestReply?.text}&rdquo;</p>
                                 </div>
                               </div>
                               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4, borderTop: "1px solid rgba(0,0,0,0.05)" }}>
                                 <Link href={dest} onClick={() => markSeen([nid])} style={{ fontSize: 11, fontWeight: 700, color: isOwnerReply ? "#15803d" : "#2563eb", textDecoration: "none" }}>ดูรีวิว →</Link>
-                                <span style={{ fontSize: 10, color: "#94a3b8" }}>{new Date(latestReply?.createdAt ?? notif.id).toLocaleDateString("th-TH")}</span>
+                                <span style={{ fontSize: 10, color: "var(--pl-text-muted)" }}>{new Date(latestReply?.createdAt ?? notif.id).toLocaleDateString("th-TH")}</span>
                               </div>
                             </div>
                           );
@@ -546,15 +546,15 @@ export default function DashboardPage() {
                       {visibleAnnouncements.map(a => {
                         const anid = `an:${a.id}`;
                         const isRead = seenIds.has(anid);
-                        const bgMap: Record<string, string> = { info: isRead ? "#f8fafc" : "#eff6ff", success: isRead ? "#f8fafc" : "#f0fdf4", warning: isRead ? "#f8fafc" : "#fffbeb", tip: isRead ? "#f8fafc" : "#f5f3ff" };
+                        const bgMap: Record<string, string> = { info: isRead ? "var(--pl-bg)" : "#eff6ff", success: isRead ? "var(--pl-bg)" : "#f0fdf4", warning: isRead ? "var(--pl-bg)" : "#fffbeb", tip: isRead ? "var(--pl-bg)" : "#f5f3ff" };
                         const borderMap: Record<string, string> = { info: isRead ? "#e2e8f0" : "#bfdbfe", success: isRead ? "#e2e8f0" : "#bbf7d0", warning: isRead ? "#e2e8f0" : "#fde68a", tip: isRead ? "#e2e8f0" : "#ddd6fe" };
                         const colorMap: Record<string, string> = { info: "#2563eb", success: "#16a34a", warning: "#d97706", tip: "#7c3aed" };
                         const dotMap: Record<string, string>   = { info: "#3b82f6", success: "#22c55e", warning: "#f59e0b", tip: "#8b5cf6" };
                         return (
                           <div key={a.id} onClick={() => markSeen([anid])}
-                            style={{ background: bgMap[a.type] ?? "#f8fafc", border: `1.5px solid ${borderMap[a.type] ?? "#e2e8f0"}`, borderLeft: `4px solid ${dotMap[a.type] ?? "#e2e8f0"}`, borderRadius: 16, padding: "13px 14px", display: "flex", flexDirection: "column", gap: 8, boxShadow: isRead ? "none" : "0 2px 12px rgba(0,0,0,0.06)", transition: "all 0.3s ease", opacity: isRead ? 0.75 : 1, position: "relative", cursor: "pointer" }}>
+                            style={{ background: bgMap[a.type] ?? "var(--pl-bg)", border: `1.5px solid ${borderMap[a.type] ?? "#e2e8f0"}`, borderLeft: `4px solid ${dotMap[a.type] ?? "#e2e8f0"}`, borderRadius: 16, padding: "13px 14px", display: "flex", flexDirection: "column", gap: 8, boxShadow: isRead ? "none" : "0 2px 12px rgba(0,0,0,0.06)", transition: "all 0.3s ease", opacity: isRead ? 0.75 : 1, position: "relative", cursor: "pointer" }}>
                             <button onClick={e => { e.stopPropagation(); markSeen([`del:${anid}`, anid]); }}
-                              style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#94a3b8", fontFamily: "inherit", lineHeight: 1 }} title="ปิด">×</button>
+                              style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "var(--pl-text-muted)", fontFamily: "inherit", lineHeight: 1 }} title="ปิด">×</button>
                             <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                               <div style={{ position: "relative", flexShrink: 0 }}>
                                 <div style={{ width: 36, height: 36, borderRadius: 10, background: isRead ? "#f1f5f9" : (bgMap[a.type] ?? "#f1f5f9"), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{a.icon}</div>
@@ -565,10 +565,10 @@ export default function DashboardPage() {
                                   <span style={{ fontSize: 12, fontWeight: isRead ? 600 : 800, color: isRead ? "#475569" : colorMap[a.type] ?? "#0f172a" }}>{a.title}</span>
                                   {!isRead && <span style={{ fontSize: 9, fontWeight: 800, background: "#fef3c7", color: "#92400e", padding: "1px 5px", borderRadius: 999 }}>ใหม่</span>}
                                 </div>
-                                <p style={{ fontSize: 11, color: isRead ? "#94a3b8" : "#374151", margin: 0, lineHeight: 1.5 }}>{a.body}</p>
+                                <p style={{ fontSize: 11, color: isRead ? "#94a3b8" : "var(--pl-text-secondary)", margin: 0, lineHeight: 1.5 }}>{a.body}</p>
                               </div>
                             </div>
-                            <span style={{ fontSize: 10, color: "#94a3b8", alignSelf: "flex-end" }}>{new Date(a.createdAt).toLocaleDateString("th-TH")}</span>
+                            <span style={{ fontSize: 10, color: "var(--pl-text-muted)", alignSelf: "flex-end" }}>{new Date(a.createdAt).toLocaleDateString("th-TH")}</span>
                           </div>
                         );
                       })}
@@ -578,7 +578,7 @@ export default function DashboardPage() {
                     {hasMoreNotifs && (
                       <button
                         onClick={() => setVisibleNotifCount(c => c + 5)}
-                        style={{ marginTop: 10, width: "100%", padding: "10px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+                        style={{ marginTop: 10, width: "100%", padding: "10px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "var(--pl-bg)", color: "var(--pl-text-secondary)", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
                       >
                         ⬇️ แสดงเพิ่ม ({visibleItems.length - visibleNotifCount} รายการ)
                       </button>
@@ -604,7 +604,7 @@ export default function DashboardPage() {
               {/* ── Tab: saved places ── */}
               {activeTab === "saved-places" ? (
                 isLoading ? (
-                  <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                  <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--pl-text-muted)" }}>
                     <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, padding:"0 4px" }}>
                     {Array.from({ length:6 }).map((_,i) => (
                       <div key={i} style={{ borderRadius:14, overflow:"hidden", border:"1px solid #f1f5f9", background:"white" }}>
@@ -626,8 +626,8 @@ export default function DashboardPage() {
                   </div>
                 ) : savedPlaces.length > 0 ? (
                   <>
-                    <p style={{ fontSize: "13px", color: "#94a3b8", margin: "0 0 20px" }}>
-                      บันทึกสถานที่ไว้ <strong style={{ color: "#1e293b" }}>{savedPlaces.length}</strong> แห่ง
+                    <p style={{ fontSize: "13px", color: "var(--pl-text-muted)", margin: "0 0 20px" }}>
+                      บันทึกสถานที่ไว้ <strong style={{ color: "var(--pl-text-primary)" }}>{savedPlaces.length}</strong> แห่ง
                     </p>
                     <div className="story-grid">
                       {savedPlaces.map((p: any) => (
@@ -638,14 +638,14 @@ export default function DashboardPage() {
                 ) : (
                   <div style={{ textAlign: "center", padding: "60px 20px" }}>
                     <div style={{ fontSize: "48px", marginBottom: "12px" }}>📍</div>
-                    <p style={{ color: "#94a3b8", fontSize: "15px", margin: "0 0 20px" }}>ยังไม่มีสถานที่ที่บันทึกไว้ · No saved places yet</p>
+                    <p style={{ color: "var(--pl-text-muted)", fontSize: "15px", margin: "0 0 20px" }}>ยังไม่มีสถานที่ที่บันทึกไว้ · No saved places yet</p>
                     <Link href="/place" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, background: "linear-gradient(135deg,#10b981,#06b6d4)", color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>
                       🗺️ ค้นหาสถานที่
                     </Link>
                   </div>
                 )
               ) : isLoading ? (
-                <div style={{ textAlign: "center", padding: "60px 20px", color: "#94a3b8" }}>
+                <div style={{ textAlign: "center", padding: "60px 20px", color: "var(--pl-text-muted)" }}>
                   <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:12, padding:"0 4px" }}>
                     {Array.from({ length:6 }).map((_,i) => (
                       <div key={i} style={{ borderRadius:14, overflow:"hidden", border:"1px solid #f1f5f9", background:"white" }}>
@@ -664,8 +664,8 @@ export default function DashboardPage() {
                 </div>
               ) : stories.length > 0 ? (
                 <>
-                  <p style={{ fontSize: "13px", color: "#94a3b8", margin: "0 0 20px" }}>
-                    พบ <strong style={{ color: "#1e293b" }}>{stories.length}</strong> รายการ
+                  <p style={{ fontSize: "13px", color: "var(--pl-text-muted)", margin: "0 0 20px" }}>
+                    พบ <strong style={{ color: "var(--pl-text-primary)" }}>{stories.length}</strong> รายการ
                   </p>
                   <div className="story-grid">
                     {stories.map(story => (
@@ -693,7 +693,7 @@ export default function DashboardPage() {
                   <div style={{ fontSize: "48px", marginBottom: "12px" }}>
                     {activeTab === "my-stories" ? "📭" : "🔖"}
                   </div>
-                  <p style={{ color: "#94a3b8", fontSize: "15px", margin: "0 0 20px" }}>
+                  <p style={{ color: "var(--pl-text-muted)", fontSize: "15px", margin: "0 0 20px" }}>
                     {activeTab === "my-stories" ? "ยังไม่มีเรื่องเล่า · No stories yet" : "ยังไม่มีทริปที่บันทึกไว้ · No saved trips yet"}
                   </p>
                   {activeTab === "my-stories" && (
@@ -725,8 +725,8 @@ export default function DashboardPage() {
         .dp-container { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
 
         .dp-page-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; }
-        .dp-greeting { font-size: 28px; font-weight: 900; color: #0f172a; margin: 0 0 4px; }
-        .dp-subheading { font-size: 14px; color: #64748b; margin: 0; }
+        .dp-greeting { font-size: 28px; font-weight: 900; color: var(--pl-text-primary); margin: 0 0 4px; }
+        .dp-subheading { font-size: 14px; color: var(--pl-text-secondary); margin: 0; }
 
         .dp-write-btn { display: inline-flex; align-items: center; gap: 12px; padding: 10px 20px 10px 10px; border-radius: 14px; background: linear-gradient(135deg, #4facfe 0%, #43e97b 100%); color: #fff; text-decoration: none; border: none; cursor: pointer; box-shadow: 0 6px 18px rgba(79,172,254,0.30); font-family: inherit; }
         .dp-write-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -745,16 +745,16 @@ export default function DashboardPage() {
         .dp-grid { display: grid; grid-template-columns: 290px 1fr; gap: 28px; align-items: start; }
         .dp-sidebar { position: sticky; top: 100px; }
 
-        .dp-card { background: rgba(255,255,255,0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 24px; padding: 22px; border: 1px solid #f1f5f9; box-shadow: 0 2px 12px rgba(15,23,42,0.04); }
-        .sb-title { font-size: 14px; font-weight: 900; color: #1e293b; margin: 0 0 14px; }
-        .sb-title small { font-size: 11px; color: #94a3b8; font-weight: 400; margin-left: 5px; }
+        .dp-card { background: var(--pl-white); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 24px; padding: 22px; border: 1px solid var(--pl-border); box-shadow: 0 2px 12px rgba(15,23,42,0.04); }
+        .sb-title { font-size: 14px; font-weight: 900; color: var(--pl-text-primary); margin: 0 0 14px; }
+        .sb-title small { font-size: 11px; color: var(--pl-text-muted); font-weight: 400; margin-left: 5px; }
 
         .main-card { padding: 28px; }
-        .tab-bar { border-bottom: 2px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 22px; }
+        .tab-bar { border-bottom: 2px solid var(--pl-border); padding-bottom: 16px; margin-bottom: 22px; }
         .tabs { display: flex; gap: 4px; }
-        .tab-btn { padding: 9px 18px; border-radius: 10px; border: none; background: transparent; font-size: 13px; font-weight: 700; color: #94a3b8; cursor: pointer; transition: 0.2s; font-family: inherit; }
+        .tab-btn { padding: 9px 18px; border-radius: 10px; border: none; background: transparent; font-size: 13px; font-weight: 700; color: var(--pl-text-muted); cursor: pointer; transition: 0.2s; font-family: inherit; }
         .tab-btn.active { background: #eff6ff; color: #2563eb; }
-        .tab-btn:hover:not(.active) { background: #f8fafc; color: #64748b; }
+        .tab-btn:hover:not(.active) { background: var(--pl-bg); color: var(--pl-text-secondary); }
 
         .story-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 

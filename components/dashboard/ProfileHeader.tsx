@@ -102,7 +102,7 @@ export default function ProfileHeader({ isOwner, loading, user = DEFAULT_USER }:
 
   if (loading) {
     return (
-      <div style={{ background: "#fff", borderRadius: "28px", overflow: "hidden", border: "1px solid #f1f5f9", boxShadow: "0 4px 24px rgba(15,23,42,0.07)" }}>
+      <div style={{ background: "var(--pl-white)", borderRadius: "28px", overflow: "hidden", border: "1px solid var(--pl-border)", boxShadow: "var(--pl-shadow-card)" }}>
         <style>{`@keyframes _phsh{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
         <div style={{ height: "110px", background: "linear-gradient(135deg,#667eea 0%,#4facfe 50%,#43e97b 100%)", position: "relative" }}>
           <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle,rgba(255,255,255,0.15) 1px,transparent 1px)", backgroundSize: "20px 20px" }} />
@@ -140,7 +140,7 @@ export default function ProfileHeader({ isOwner, loading, user = DEFAULT_USER }:
   }
 
   return (
-    <div style={{ background: "#fff", borderRadius: "28px", overflow: "hidden", border: "1px solid #f1f5f9", boxShadow: "0 4px 24px rgba(15,23,42,0.07)" }}>
+    <div style={{ background: "var(--pl-white)", borderRadius: "28px", overflow: "hidden", border: "1px solid var(--pl-border)", boxShadow: "var(--pl-shadow-card)" }}>
       <div style={{ height: "110px", background: "linear-gradient(135deg,#667eea 0%,#4facfe 50%,#43e97b 100%)", position: "relative" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle,rgba(255,255,255,0.15) 1px,transparent 1px)", backgroundSize: "20px 20px" }} />
         <div style={{ position: "absolute", bottom: "-44px", left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -170,7 +170,7 @@ export default function ProfileHeader({ isOwner, loading, user = DEFAULT_USER }:
 
       <div style={{ padding: "56px 22px 24px", textAlign: "center" }}>
         <p style={{ fontSize: "11px", fontWeight: 700, color: "#4facfe", letterSpacing: "1.2px", textTransform: "uppercase", margin: "0 0 4px" }}>{u.username}</p>
-        <h2 style={{ fontSize: "20px", fontWeight: 900, color: "#0f172a", margin: "0 0 12px", lineHeight: 1.2 }}>{u.displayName}</h2>
+        <h2 style={{ fontSize: "20px", fontWeight: 900, color: "var(--pl-text-primary)", margin: "0 0 12px", lineHeight: 1.2 }}>{u.displayName}</h2>
 
         <div style={{ display: "flex", gap: "6px", justifyContent: "center", flexWrap: "wrap", marginBottom: "16px" }}>
           <span style={{ fontSize: "11px", fontWeight: 700, background: "#eff6ff", color: "#2563eb", padding: "4px 10px", borderRadius: "999px" }}>✓ Traveler</span>
@@ -178,7 +178,7 @@ export default function ProfileHeader({ isOwner, loading, user = DEFAULT_USER }:
         </div>
 
         {u.bio && (
-          <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 16px", lineHeight: 1.6, fontStyle: "italic" }}>{u.bio}</p>
+          <p style={{ fontSize: "12px", color: "var(--pl-text-secondary)", margin: "0 0 16px", lineHeight: 1.6, fontStyle: "italic" }}>{u.bio}</p>
         )}
 
         <div style={{ height: "1px", background: "#f1f5f9", margin: "0 0 16px" }} />
@@ -186,24 +186,24 @@ export default function ProfileHeader({ isOwner, loading, user = DEFAULT_USER }:
         <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", marginBottom: "16px" }}>
           <div style={{ textAlign: "center" }}>
             <strong ref={stories.ref} style={{ display: "block", fontSize: "20px", fontWeight: 900, color: "#2563eb", lineHeight: 1 }}>{stories.value}</strong>
-            <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 500 }}>เรื่องเล่า</span>
+            <span style={{ fontSize: "11px", color: "var(--pl-text-secondary)", fontWeight: 500 }}>เรื่องเล่า</span>
           </div>
           <div style={{ width: "1px", height: "32px", background: "#f1f5f9" }} />
           <div style={{ textAlign: "center" }}>
             <strong style={{ display: "block", fontSize: "20px", fontWeight: 900, color: "#22a06b", lineHeight: 1 }}>{u.likesCount}</strong>
-            <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 500 }}>Likes</span>
+            <span style={{ fontSize: "11px", color: "var(--pl-text-secondary)", fontWeight: 500 }}>Likes</span>
           </div>
           <div style={{ width: "1px", height: "32px", background: "#f1f5f9" }} />
           <div style={{ textAlign: "center" }}>
             <strong ref={following.ref} style={{ display: "block", fontSize: "20px", fontWeight: 900, color: "#7c3aed", lineHeight: 1 }}>{following.value}</strong>
-            <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 500 }}>ติดตาม</span>
+            <span style={{ fontSize: "11px", color: "var(--pl-text-secondary)", fontWeight: 500 }}>ติดตาม</span>
           </div>
         </div>
 
         {u.interests.length > 0 && (
           <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", justifyContent: "center", marginBottom: "20px" }}>
             {u.interests.map((tag: string) => (
-              <span key={tag} style={{ fontSize: "11px", padding: "4px 10px", borderRadius: "999px", background: "#f8fafc", border: "1px solid #e2e8f0", color: "#64748b", fontWeight: 600 }}>{tag}</span>
+              <span key={tag} style={{ fontSize: "11px", padding: "4px 10px", borderRadius: "999px", background: "var(--pl-bg)", border: "1px solid var(--pl-border)", color: "var(--pl-text-secondary)", fontWeight: 600 }}>{tag}</span>
             ))}
           </div>
         )}

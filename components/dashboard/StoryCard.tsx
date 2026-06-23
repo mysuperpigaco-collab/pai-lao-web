@@ -74,7 +74,7 @@ export default function StoryCard({
 
   return (
     <div ref={cardRef} onMouseMove={onMove} onMouseLeave={onLeave}
-      style={{ background: "#fff", borderRadius: "20px", border: "1px solid #f1f5f9", overflow: "hidden", boxShadow: "0 2px 12px rgba(15,23,42,0.05)", opacity: deleting ? 0.5 : 1, display: "flex", flexDirection: "column", position: "relative", willChange: "transform" }}>
+      style={{ background: "var(--pl-white)", borderRadius: "20px", border: "1px solid var(--pl-border)", overflow: "hidden", boxShadow: "var(--pl-shadow-card)", opacity: deleting ? 0.5 : 1, display: "flex", flexDirection: "column", position: "relative", willChange: "transform" }}>
       <div ref={shineRef} style={shineStyle} />
       {/* Cover */}
       <div style={{ position: "relative", height: "170px", overflow: "hidden", background: "#f1f5f9", flexShrink: 0 }}>
@@ -126,10 +126,10 @@ export default function StoryCard({
 
       {/* Body */}
       <div style={{ padding: "14px 16px 16px", flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
-        <h4 style={{ fontSize: "14px", fontWeight: 800, color: "#1e293b", margin: 0, lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden", ...titleStyleCss(story.titleStyle) }}>
+        <h4 style={{ fontSize: "14px", fontWeight: 800, color: "var(--pl-text-primary)", margin: 0, lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any, overflow: "hidden", ...titleStyleCss(story.titleStyle) }}>
           {story.title}
         </h4>
-        <p style={{ fontSize: "12px", color: "#94a3b8", margin: 0 }}>📅 {formatDate(story.createdAt)}</p>
+        <p style={{ fontSize: "12px", color: "var(--pl-text-muted)", margin: 0 }}>📅 {formatDate(story.createdAt)}</p>
       </div>
 
       {/* Action row */}
@@ -167,8 +167,8 @@ export default function StoryCard({
               {deleting ? "⏳ กำลังลบ..." : "🗑 ยืนยันลบ"}
             </button>
             <button onClick={() => setConfirm(false)} style={{
-              padding: "10px", borderRadius: "10px", border: "1.5px solid #e2e8f0",
-              background: "#f8fafc", color: "#64748b", fontSize: "12px", fontWeight: 700,
+              padding: "10px", borderRadius: "10px", border: "1.5px solid var(--pl-border)",
+              background: "var(--pl-bg)", color: "var(--pl-text-secondary)", fontSize: "12px", fontWeight: 700,
               cursor: "pointer", fontFamily: "inherit",
             }}>
               ยกเลิก
@@ -188,7 +188,7 @@ const BASE_BTN: React.CSSProperties = {
   transition: "background 0.15s",
 };
 const VARIANT = {
-  view: { background: "#f8fafc", borderColor: "#e2e8f0", color: "#475569" },
+  view: { background: "var(--pl-bg)", borderColor: "var(--pl-border)", color: "var(--pl-text-secondary)" },
   edit: { background: "#eff6ff", borderColor: "#dbeafe", color: "#2563eb" },
   del:  { background: "#fff8f8", borderColor: "#fecaca", color: "#dc2626" },
 };
