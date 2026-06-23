@@ -289,6 +289,9 @@ export default function Navbar() {
             </div>
           </Link>
 
+          {/* ปุ่มสลับธีม — วางระหว่างโลโก้กับเมนู (desktop เท่านั้น) */}
+          <span className="nb-theme"><ThemeToggle /></span>
+
           {/* Nav Links — desktop only */}
           <div className="nb-links">
             <Link href="/"      className="nb-link">🏠 หน้าแรก <span style={{fontSize:12,color:"#94a3b8",fontWeight:700}}>Home</span></Link>
@@ -321,8 +324,6 @@ export default function Navbar() {
 
         {/* Auth Zone */}
         <div className="nb-auth">
-          {/* ปุ่มสลับธีม — desktop เท่านั้น (มือถืออยู่ในเมนูแฮมเบอร์เกอร์) */}
-          <span className="nb-theme"><ThemeToggle /></span>
           {isLoading ? (
             <div style={{ width: "70px", height: "36px", background: "#f0fdf4", borderRadius: "12px" }} />
           ) : user ? (

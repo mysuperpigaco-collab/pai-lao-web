@@ -101,9 +101,9 @@ export default function PlaceCard({ place, distanceM, newTab = false }: Props) {
         style={{
           display: "flex", flexDirection: "column",
           borderRadius: 20, overflow: "hidden",
-          background: "#fff",
-          boxShadow: "0 2px 12px rgba(15,23,42,.06)",
-          border: "1px solid #f1f5f9",
+          background: "var(--pl-white)",
+          boxShadow: "var(--pl-shadow-card)",
+          border: "1px solid var(--pl-border)",
           willChange: "transform",
           position: "relative",
           height: "100%",
@@ -179,17 +179,17 @@ export default function PlaceCard({ place, distanceM, newTab = false }: Props) {
 
         {/* Body */}
         <div style={{ padding: "12px 14px 13px", flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 800, color: "#1e293b", margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", lineHeight: 1.35, height: "2.7em" } as React.CSSProperties}>
+          <h3 style={{ fontSize: 14, fontWeight: 800, color: "var(--pl-text-primary)", margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", lineHeight: 1.35, height: "2.7em" } as React.CSSProperties}>
             {place.title}
           </h3>
-          <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0, minHeight: "1.4em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <p style={{ fontSize: 11, color: "var(--pl-text-muted)", fontStyle: "italic", margin: 0, minHeight: "1.4em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {place.titleEn || ""}
           </p>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", paddingTop: 8, borderTop: "1px solid #f1f5f9" }}>
-            <span style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", paddingTop: 8, borderTop: "1px solid var(--pl-border)" }}>
+            <span style={{ fontSize: 11, color: "var(--pl-text-secondary)", fontWeight: 600 }}>
               📍 {[place.district, prov].filter(Boolean).join(", ")}
             </span>
-            <div style={{ display: "flex", gap: 6, fontSize: 11, fontWeight: 700, color: "#94a3b8" }}>
+            <div style={{ display: "flex", gap: 6, fontSize: 11, fontWeight: 700, color: "var(--pl-text-muted)" }}>
               {likes > 0 && <span>❤️ {likes}</span>}
               {bms   > 0 && <span>🔖 {bms}</span>}
             </div>

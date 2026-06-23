@@ -488,6 +488,24 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
         .pr-reply-submit { padding: 8px 16px; border-radius: 10px; border: none; background: linear-gradient(135deg, #10b981, #06b6d4); color: white; font-weight: 800; font-size: 12px; cursor: pointer; font-family: inherit; }
         .pr-reply-submit:disabled { opacity: 0.5; cursor: not-allowed; }
         .pr-reply-cancel { padding: 8px 16px; border-radius: 10px; border: 1.5px solid #e2e8f0; background: white; color: #64748b; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+
+        /* ── Dark mode ── */
+        :global([data-theme="dark"]) .pr-summary { background: var(--pl-bg); border-color: var(--pl-border); }
+        :global([data-theme="dark"]) .pr-big-num { color: var(--pl-text-primary); }
+        :global([data-theme="dark"]) .pr-count { color: var(--pl-text-muted); }
+        :global([data-theme="dark"]) .pr-bar-num { color: var(--pl-text-muted); }
+        :global([data-theme="dark"]) .pr-bar-label { color: var(--pl-text-secondary); }
+        :global([data-theme="dark"]) .pr-bar-track { background: rgba(255,255,255,0.12); }
+        :global([data-theme="dark"]) .pr-notice { background: var(--pl-bg); border-color: var(--pl-border); color: var(--pl-text-secondary); }
+        :global([data-theme="dark"]) .pr-form { background: var(--pl-bg); border-color: var(--pl-border); }
+        :global([data-theme="dark"]) .pr-form-title { color: var(--pl-text-primary); }
+        :global([data-theme="dark"]) .pr-star-hint { color: var(--pl-text-secondary); }
+        :global([data-theme="dark"]) .pr-textarea { background: var(--pl-white); border-color: var(--pl-border); color: var(--pl-text-primary); }
+        :global([data-theme="dark"]) .pr-empty p { color: var(--pl-text-secondary); }
+        :global([data-theme="dark"]) .pr-review { border-bottom-color: var(--pl-border); }
+        :global([data-theme="dark"]) .pr-reviewer-name { color: var(--pl-text-primary); }
+        :global([data-theme="dark"]) .pr-review-text { color: var(--pl-text-secondary); }
+        :global([data-theme="dark"]) .pr-reply-cancel { background: var(--pl-white); border-color: var(--pl-border); color: var(--pl-text-secondary); }
       `}</style>
     </div>
   );

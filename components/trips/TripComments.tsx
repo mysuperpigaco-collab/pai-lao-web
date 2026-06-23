@@ -87,20 +87,20 @@ function ReportModal({ targetId, targetType, onClose }: { targetId: string; targ
           <div style={{ textAlign: "center", padding: "20px 0" }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
             <h3 style={{ fontWeight: 800, color: "#0f172a", margin: "0 0 8px" }}>ส่งรายงานแล้ว</h3>
-            <p style={{ color: "#64748b", fontSize: 14, margin: "0 0 20px" }}>ขอบคุณที่แจ้งเรา ทีมงานจะตรวจสอบโดยเร็ว</p>
+            <p style={{ color: "var(--pl-text-secondary)", fontSize: 14, margin: "0 0 20px" }}>ขอบคุณที่แจ้งเรา ทีมงานจะตรวจสอบโดยเร็ว</p>
             <button onClick={onClose} style={{ padding: "8px 24px", borderRadius: 10, border: "none", background: "#0f172a", color: "white", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>ปิด</button>
           </div>
         ) : (
           <>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <h3 style={{ fontWeight: 800, fontSize: 16, color: "#0f172a", margin: 0 }}>🚩 รายงานเนื้อหา · Report</h3>
-              <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#94a3b8", lineHeight: 1 }}>×</button>
+              <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--pl-text-muted)", lineHeight: 1 }}>×</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {REPORT_TYPES.map(rt => (
                 <label key={rt.value} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 12,
-                  background: reason === rt.value ? "#eff6ff" : "#f8fafc",
-                  border: `1.5px solid ${reason === rt.value ? "#bfdbfe" : "#e2e8f0"}`,
+                  background: reason === rt.value ? "#eff6ff" : "var(--pl-bg)",
+                  border: `1.5px solid ${reason === rt.value ? "#bfdbfe" : "var(--pl-border)"}`,
                   cursor: "pointer", transition: "all 0.15s" }}>
                   <input type="radio" name="reason" value={rt.value} checked={reason === rt.value} onChange={() => setReason(rt.value)} style={{ accentColor: "#2563eb" }} />
                   <span style={{ fontSize: 13, fontWeight: reason === rt.value ? 700 : 500, color: reason === rt.value ? "#1e40af" : "#374151" }}>{rt.label}</span>
@@ -108,9 +108,9 @@ function ReportModal({ targetId, targetType, onClose }: { targetId: string; targ
               ))}
             </div>
             <textarea value={detail} onChange={e => setDetail(e.target.value)} placeholder="รายละเอียดเพิ่มเติม (ไม่บังคับ)..."
-              rows={3} style={{ width: "100%", borderRadius: 10, border: "1.5px solid #e2e8f0", padding: "10px 12px", fontSize: 13, resize: "none", fontFamily: "inherit", boxSizing: "border-box", marginBottom: 16 }} />
+              rows={3} style={{ width: "100%", borderRadius: 10, border: "1.5px solid var(--pl-border)", padding: "10px 12px", fontSize: 13, resize: "none", fontFamily: "inherit", boxSizing: "border-box", marginBottom: 16 }} />
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={onClose} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "white", color: "#475569", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>ยกเลิก</button>
+              <button onClick={onClose} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1.5px solid var(--pl-border)", background: "white", color: "var(--pl-text-secondary)", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>ยกเลิก</button>
               <button onClick={handleSubmit} disabled={submitting} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", background: "#e11d48", color: "white", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                 {submitting ? "⏳ กำลังส่ง..." : "🚩 ส่งรายงาน"}
               </button>
@@ -266,22 +266,22 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
       <h2>💬 รีวิวและความคิดเห็น</h2>
 
       {/* Rating summary */}
-      <div style={{ display: "flex", gap: 24, alignItems: "center", marginBottom: 24, background: "#f8fafc", borderRadius: 12, padding: 16 }}>
+      <div style={{ display: "flex", gap: 24, alignItems: "center", marginBottom: 24, background: "var(--pl-bg)", borderRadius: 12, padding: 16 }}>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 40, fontWeight: 900, color: "#1e293b" }}>{avgRating.toFixed(1)}</div>
+          <div style={{ fontSize: 40, fontWeight: 900, color: "var(--pl-text-primary)" }}>{avgRating.toFixed(1)}</div>
           <StarRow rating={Math.round(avgRating)} />
-          <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>{localReviews.length} รีวิว</div>
+          <div style={{ fontSize: 12, color: "var(--pl-text-secondary)", marginTop: 4 }}>{localReviews.length} รีวิว</div>
         </div>
         <div style={{ flex: 1 }}>
           {ratingBreakdown.map(({ star, count }) => (
             <div key={star} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
               <span style={{ fontSize: 12, width: 16 }}>{star}</span>
               <span style={{ color: "#f59e0b", fontSize: 12 }}>★</span>
-              <div style={{ flex: 1, height: 6, background: "#e2e8f0", borderRadius: 3 }}>
+              <div style={{ flex: 1, height: 6, background: "var(--pl-border)", borderRadius: 3 }}>
                 <div style={{ height: "100%", borderRadius: 3, background: "#f59e0b",
                   width: localReviews.length ? `${(count / localReviews.length) * 100}%` : "0%" }} />
               </div>
-              <span style={{ fontSize: 12, color: "#64748b", width: 20 }}>{count}</span>
+              <span style={{ fontSize: 12, color: "var(--pl-text-secondary)", width: 20 }}>{count}</span>
             </div>
           ))}
         </div>
@@ -294,7 +294,7 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
         </div>
       )}
       {isBusiness && (
-        <div style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "14px 18px", marginBottom: 24, color: "#64748b", fontSize: 13 }}>
+        <div style={{ background: "var(--pl-bg)", border: "1.5px solid var(--pl-border)", borderRadius: 12, padding: "14px 18px", marginBottom: 24, color: "var(--pl-text-secondary)", fontSize: 13 }}>
           🏢 บัญชีธุรกิจไม่สามารถรีวิวทริปได้ · Business accounts cannot review trips
         </div>
       )}
@@ -308,10 +308,10 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
 
       {/* First-time review form: rating + text */}
       {canInteract && !isOwner && !alreadyRated && (
-        <form onSubmit={handleSubmitReview} style={{ background: "#f8fafc", borderRadius: 12, padding: 16, marginBottom: 24, border: "1.5px solid #e2e8f0" }}>
+        <form onSubmit={handleSubmitReview} style={{ background: "var(--pl-bg)", borderRadius: 12, padding: 16, marginBottom: 24, border: "1.5px solid var(--pl-border)" }}>
           <div style={{ fontWeight: 700, marginBottom: 12 }}>✍️ เขียนรีวิว · Write a Review</div>
           <div style={{ display: "flex", gap: 6, marginBottom: 12, alignItems: "center" }}>
-            <span style={{ fontSize: 13, color: "#64748b", marginRight: 4 }}>คะแนน:</span>
+            <span style={{ fontSize: 13, color: "var(--pl-text-secondary)", marginRight: 4 }}>คะแนน:</span>
             {[1, 2, 3, 4, 5].map(s => (
               <button key={s} type="button" onClick={() => setNewRating(s)}
                 style={{ fontSize: 26, background: "none", border: "none", cursor: "pointer", padding: "0 2px",
@@ -321,7 +321,7 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
           </div>
           <textarea value={newComment} onChange={e => setNewComment(e.target.value)} required
             placeholder="แบ่งปันประสบการณ์ของคุณ..."
-            style={{ width: "100%", borderRadius: 8, border: "1px solid #e2e8f0", padding: "10px 12px",
+            style={{ width: "100%", borderRadius: 8, border: "1px solid var(--pl-border)", padding: "10px 12px",
               fontSize: 14, resize: "vertical", minHeight: 80, boxSizing: "border-box" }} />
           {submitError && <p style={{ color: "#dc2626", fontSize: 13, margin: "6px 0 0" }}>{submitError}</p>}
           <button type="submit" disabled={submitting || !newComment.trim()}
@@ -339,11 +339,11 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
           <div style={{ background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: 10, padding: "10px 16px", marginBottom: 12, color: "#166534", fontSize: 13, display: "flex", alignItems: "center", gap: 8 }}>
             ✅ คุณให้คะแนนทริปนี้แล้ว · Already rated — ยังสามารถเพิ่มความคิดเห็นได้
           </div>
-          <form onSubmit={handleSubmitComment} style={{ background: "#f8fafc", borderRadius: 12, padding: 14, border: "1.5px solid #e2e8f0", display: "flex", gap: 10 }}>
+          <form onSubmit={handleSubmitComment} style={{ background: "var(--pl-bg)", borderRadius: 12, padding: 14, border: "1.5px solid var(--pl-border)", display: "flex", gap: 10 }}>
             <textarea value={newComment} onChange={e => setNewComment(e.target.value)}
               placeholder="เพิ่มความคิดเห็น..."
               rows={2}
-              style={{ flex: 1, borderRadius: 8, border: "1px solid #e2e8f0", padding: "8px 12px", fontSize: 13, resize: "none", fontFamily: "inherit" }} />
+              style={{ flex: 1, borderRadius: 8, border: "1px solid var(--pl-border)", padding: "8px 12px", fontSize: 13, resize: "none", fontFamily: "inherit" }} />
             <button type="submit" disabled={submitting || !newComment.trim()}
               style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "#3b82f6", color: "white", fontWeight: 700, cursor: "pointer", flexShrink: 0, fontFamily: "inherit", opacity: !newComment.trim() ? 0.5 : 1 }}>
               {submitting ? "⏳" : "💬 ส่ง"}
@@ -354,27 +354,27 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
 
       {/* Not logged in */}
       {!user && (
-        <div style={{ background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "14px 18px", marginBottom: 24, color: "#64748b", fontSize: 13, textAlign: "center" }}>
+        <div style={{ background: "var(--pl-bg)", border: "1.5px solid var(--pl-border)", borderRadius: 12, padding: "14px 18px", marginBottom: 24, color: "var(--pl-text-secondary)", fontSize: 13, textAlign: "center" }}>
           <a href="/login" style={{ color: "#2563eb", fontWeight: 700 }}>เข้าสู่ระบบ</a> เพื่อเขียนรีวิว · <a href="/login" style={{ color: "#2563eb", fontWeight: 700 }}>Login</a> to write a review
         </div>
       )}
 
       {/* Review list */}
       {localReviews.length === 0 ? (
-        <p style={{ color: "#94a3b8", textAlign: "center", padding: "24px 0" }}>ยังไม่มีรีวิว เป็นคนแรกที่รีวิวทริปนี้!</p>
+        <p style={{ color: "var(--pl-text-muted)", textAlign: "center", padding: "24px 0" }}>ยังไม่มีรีวิว เป็นคนแรกที่รีวิวทริปนี้!</p>
       ) : (
         localReviews.map(review => (
-          <div key={review.id} style={{ borderBottom: "1px solid #f1f5f9", paddingBottom: 20, marginBottom: 20 }}>
+          <div key={review.id} style={{ borderBottom: "1px solid var(--pl-border)", paddingBottom: 20, marginBottom: 20 }}>
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
               {review.isAnonymous
-                ? <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#e2e8f0", color: "#94a3b8", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, flexShrink: 0 }}>?</div>
+                ? <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--pl-border)", color: "var(--pl-text-muted)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, flexShrink: 0 }}>?</div>
                 : <Avatar user={review.author} />}
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: 14 }}>
                       {review.isAnonymous
-                        ? <span style={{ color: "#94a3b8", fontStyle: "italic" }}>ผู้ใช้นิรนาม · Anonymous</span>
+                        ? <span style={{ color: "var(--pl-text-muted)", fontStyle: "italic" }}>ผู้ใช้นิรนาม · Anonymous</span>
                         : (review.author.role === "ADMIN" || review.author.role === "SUPERADMIN")
                           ? <span>{review.author.displayName || review.author.firstName}</span>
                           : <Link href={`/user/${review.author.username}`} style={{ color: "inherit", textDecoration: "none", fontWeight: 700 }} onMouseEnter={e => (e.currentTarget.style.color = "#2563eb")} onMouseLeave={e => (e.currentTarget.style.color = "inherit")}>{review.author.displayName || review.author.firstName}</Link>}
@@ -389,8 +389,8 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
                     </button>
                   )}
                 </div>
-                {review.text && <p style={{ margin: "8px 0 0", color: "#374151", lineHeight: 1.6, fontSize: 14 }}>{review.text}</p>}
-                <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 6 }}>
+                {review.text && <p style={{ margin: "8px 0 0", color: "var(--pl-text-secondary)", lineHeight: 1.6, fontSize: 14 }}>{review.text}</p>}
+                <div style={{ fontSize: 12, color: "var(--pl-text-muted)", marginTop: 6 }}>
                   {new Date(review.createdAt).toLocaleDateString("th-TH")}
                 </div>
 
@@ -401,8 +401,8 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
                     disabled={!user || user.role === "ADMIN" || user.role === "SUPERADMIN"}
                     style={{
                       padding: "4px 12px", borderRadius: 999,
-                      border: `1px solid ${likedReviews.has(review.id) ? "#fda4af" : "#e2e8f0"}`,
-                      background: likedReviews.has(review.id) ? "#fff1f2" : "#f8fafc",
+                      border: `1px solid ${likedReviews.has(review.id) ? "#fda4af" : "var(--pl-border)"}`,
+                      background: likedReviews.has(review.id) ? "#fff1f2" : "var(--pl-bg)",
                       color: likedReviews.has(review.id) ? "#e11d48" : "#64748b",
                       fontSize: 12, fontWeight: 700, cursor: user ? "pointer" : "default",
                       fontFamily: "inherit", transition: "all 0.15s",
@@ -413,7 +413,7 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
                   {user && (
                     <button
                       onClick={() => setReplyOpen(o => ({ ...o, [review.id]: !o[review.id] }))}
-                      style={{ padding: "4px 12px", borderRadius: 999, border: "1px solid #e2e8f0", background: "#f8fafc", color: "#475569", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                      style={{ padding: "4px 12px", borderRadius: 999, border: "1px solid var(--pl-border)", background: "var(--pl-bg)", color: "var(--pl-text-secondary)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                       💬 {replyOpen[review.id] ? "ยกเลิก" : "ตอบกลับ"}
                     </button>
                   )}
@@ -427,7 +427,7 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
                 {review.replies.map(reply => {
                   const isOwnerR = reply.author.role === "BUSINESS";
                   return (
-                    <div key={reply.id} style={{ background: isOwnerR ? "#f0fdf4" : "#f8fafc", border: `1px solid ${isOwnerR ? "#bbf7d0" : "#f1f5f9"}`, borderRadius: 12, padding: "10px 14px", display: "flex", gap: 10 }}>
+                    <div key={reply.id} style={{ background: isOwnerR ? "#f0fdf4" : "var(--pl-bg)", border: `1px solid ${isOwnerR ? "#bbf7d0" : "var(--pl-border)"}`, borderRadius: 12, padding: "10px 14px", display: "flex", gap: 10 }}>
                       <Avatar user={reply.author} size={28} />
                       <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
@@ -441,14 +441,14 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
                             : <span style={{ fontSize: 10, fontWeight: 800, background: "#eff6ff", color: "#2563eb", padding: "2px 6px", borderRadius: 999 }}>💬 ผู้ใช้</span>
                           }
                           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
-                            <span style={{ fontSize: 11, color: "#94a3b8" }}>{new Date(reply.createdAt).toLocaleDateString("th-TH")}</span>
+                            <span style={{ fontSize: 11, color: "var(--pl-text-muted)" }}>{new Date(reply.createdAt).toLocaleDateString("th-TH")}</span>
                             {user && user.id !== reply.author.id && (
                               <button onClick={() => setReportTarget({ id: reply.id, type: "REPLY" })}
-                                style={{ background: "none", border: "none", color: "#94a3b8", fontSize: 11, cursor: "pointer", padding: "0 2px", fontFamily: "inherit" }}>🚩</button>
+                                style={{ background: "none", border: "none", color: "var(--pl-text-muted)", fontSize: 11, cursor: "pointer", padding: "0 2px", fontFamily: "inherit" }}>🚩</button>
                             )}
                           </div>
                         </div>
-                        <p style={{ margin: 0, fontSize: 13, color: "#374151", lineHeight: 1.5 }}>{reply.text}</p>
+                        <p style={{ margin: 0, fontSize: 13, color: "var(--pl-text-secondary)", lineHeight: 1.5 }}>{reply.text}</p>
                       </div>
                     </div>
                   );
@@ -464,7 +464,7 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
                   onChange={e => setReplyText(t => ({ ...t, [review.id]: e.target.value }))}
                   placeholder="เขียนความคิดเห็น..."
                   rows={2}
-                  style={{ flex: 1, borderRadius: 10, border: "1.5px solid #e2e8f0", padding: "8px 12px", fontSize: 13, resize: "none", fontFamily: "inherit", outline: "none" }}
+                  style={{ flex: 1, borderRadius: 10, border: "1.5px solid var(--pl-border)", padding: "8px 12px", fontSize: 13, resize: "none", fontFamily: "inherit", outline: "none" }}
                 />
                 <button
                   onClick={() => handleReply(review.id)}

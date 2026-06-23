@@ -619,3 +619,57 @@
   border: none; border-top: 2px solid #f1f5f9;
   margin: 28px 0;
 }
+
+/* ─── DARK MODE ─── */
+[data-theme="dark"] .content-card,
+[data-theme="dark"] .side-card {
+  background: var(--pl-white);
+  border-color: var(--pl-border);
+  box-shadow: var(--pl-shadow-card);
+}
+[data-theme="dark"] .content-card h2,
+[data-theme="dark"] .side-card-title,
+[data-theme="dark"] .author-name,
+[data-theme="dark"] .a-stat strong,
+[data-theme="dark"] .info-val,
+[data-theme="dark"] .bm-card-title,
+[data-theme="dark"] .related-title,
+[data-theme="dark"] .tt-title { color: var(--pl-text-primary); }
+[data-theme="dark"] .description,
+[data-theme="dark"] .a-stat,
+[data-theme="dark"] .bm-card-sub,
+[data-theme="dark"] .tt-sub { color: var(--pl-text-secondary); }
+[data-theme="dark"] .author-sub,
+[data-theme="dark"] .info-label,
+[data-theme="dark"] .related-meta,
+[data-theme="dark"] .tt-url,
+[data-theme="dark"] .tt-arrow { color: var(--pl-text-muted); }
+[data-theme="dark"] .trip-tag {
+  background: var(--pl-white);
+  color: var(--pl-text-secondary);
+  border-color: var(--pl-border);
+}
+[data-theme="dark"] .info-icon {
+  background: rgba(255,255,255,0.05);
+  border-color: var(--pl-border);
+}
+[data-theme="dark"] .follow-btn {
+  background: var(--pl-bg);
+  border-color: var(--pl-border);
+  color: var(--pl-text-primary);
+}
+[data-theme="dark"] .related-item:hover { background: rgba(255,255,255,0.05); }
+[data-theme="dark"] .related-thumb { border-color: var(--pl-border); }
+[data-theme="dark"] .bm-card {
+  background: var(--pl-bg);
+  border-color: var(--pl-border);
+}
+[data-theme="dark"] .tt-card {
+  background: var(--pl-bg);
+  border-color: var(--pl-border);
+}
+[data-theme="dark"] .trip-rich-content { color: var(--pl-text-secondary); }
+[data-theme="dark"] .trip-rich-content h2,
+[data-theme="dark"] .trip-rich-content h3 { color: var(--pl-text-primary); }
+[data-theme="dark"] .trip-rich-content h2 { border-bottom-color: var(--pl-border); }
+[data-theme="dark"] .trip-rich-content hr { border-top-color: var(--pl-border); }

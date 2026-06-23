@@ -589,6 +589,21 @@ function PlacesInner() {
           .pl-grid, .pl-skeleton-grid { grid-template-columns: 1fr; gap: 10px; }
           .plc-img { height: 200px; }
         }
+
+        /* ── Dark mode ── */
+        :global([data-theme="dark"]) .pl-filters-wrap { background: var(--pl-white); border-bottom-color: var(--pl-border); }
+        :global([data-theme="dark"]) .pl-search-wrap { background: var(--pl-white); }
+        :global([data-theme="dark"]) .pl-search { color: var(--pl-text-primary); }
+        :global([data-theme="dark"]) .pl-search-clear { background: var(--pl-bg); color: var(--pl-text-secondary); }
+        :global([data-theme="dark"]) .pl-cat { background: var(--pl-bg); border-color: var(--pl-border); }
+        :global([data-theme="dark"]) .pl-cat-th { color: var(--pl-text-primary); }
+        :global([data-theme="dark"]) .pl-select-wrap { background: var(--pl-bg); border-color: var(--pl-border); }
+        :global([data-theme="dark"]) .pl-select { color: var(--pl-text-primary); }
+        :global([data-theme="dark"]) .pl-sort-chip { background: var(--pl-bg); border-color: var(--pl-border); color: var(--pl-text-secondary); }
+        :global([data-theme="dark"]) .pl-result-count { color: var(--pl-text-secondary); }
+        :global([data-theme="dark"]) .pl-result-count strong { color: var(--pl-text-primary); }
+        :global([data-theme="dark"]) .pl-clear-btn { background: var(--pl-white); border-color: var(--pl-border); }
+        :global([data-theme="dark"]) .pl-empty h3 { color: var(--pl-text-primary); }
       `}</style>
     </div>
   );

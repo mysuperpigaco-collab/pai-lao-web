@@ -503,6 +503,21 @@ function TripsInner() {
           .tp-grid, .tp-skeleton-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
           .tp-mood { padding: 7px 10px; min-width: 58px; }
         }
+
+        /* ── Dark mode ── */
+        :global([data-theme="dark"]) .tp-filters-wrap { background: var(--pl-white); border-bottom-color: var(--pl-border); }
+        :global([data-theme="dark"]) .tp-search-wrap { background: var(--pl-white); }
+        :global([data-theme="dark"]) .tp-search { color: var(--pl-text-primary); }
+        :global([data-theme="dark"]) .tp-search-clear { background: var(--pl-bg); color: var(--pl-text-secondary); }
+        :global([data-theme="dark"]) .tp-mood { background: var(--pl-bg); border-color: var(--pl-border); }
+        :global([data-theme="dark"]) .tp-mood-th { color: var(--pl-text-primary); }
+        :global([data-theme="dark"]) .tp-select-wrap { background: var(--pl-bg); border-color: var(--pl-border); }
+        :global([data-theme="dark"]) .tp-select { color: var(--pl-text-primary); }
+        :global([data-theme="dark"]) .tp-sort-chip { background: var(--pl-bg); border-color: var(--pl-border); color: var(--pl-text-secondary); }
+        :global([data-theme="dark"]) .tp-result-count { color: var(--pl-text-secondary); }
+        :global([data-theme="dark"]) .tp-result-count strong { color: var(--pl-text-primary); }
+        :global([data-theme="dark"]) .tp-clear-btn { background: var(--pl-white); border-color: var(--pl-border); }
+        :global([data-theme="dark"]) .tp-empty h3 { color: var(--pl-text-primary); }
       `}</style>
     </div>
   );
@@ -631,6 +646,13 @@ function TripCard({ trip }: { trip: Trip }) {
         .tc-stats { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .tc-stat { font-size: 12px; color: #7c3aed; font-weight: 700; }
         .tc-date { font-size: 11px; color: #94a3b8; font-weight: 600; }
+
+        /* ── Dark mode ── */
+        :global([data-theme="dark"]) .tc-card { background: var(--pl-white); border-color: var(--pl-border); }
+        :global([data-theme="dark"]) .tc-title { color: var(--pl-text-primary); }
+        :global([data-theme="dark"]) .tc-subtitle { color: var(--pl-text-secondary); }
+        :global([data-theme="dark"]) .tc-loc { color: var(--pl-text-secondary); }
+        :global([data-theme="dark"]) .tc-author-name { color: var(--pl-text-secondary); }
       `}</style>
     </Link>
   );
