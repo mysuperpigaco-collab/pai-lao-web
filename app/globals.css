@@ -60,14 +60,14 @@
 
 /* ── Dark mode tokens (เปิดด้วย data-theme="dark" บน <html>) ── */
 [data-theme="dark"] {
-  --pl-white:        rgba(17,28,46,0.66);   /* การ์ดหลัก (กระจกขุ่นโทนเข้ม) */
-  --pl-bg:           rgba(13,22,40,0.55);   /* พื้นรอง */
-  --pl-border:       rgba(255,255,255,0.12);
-  --pl-border-soft:  rgba(255,255,255,0.08);
+  --pl-white:        rgba(16,25,42,0.86);   /* การ์ดหลัก (ทึบขึ้นเพื่อคอนทราสต์) */
+  --pl-bg:           rgba(11,18,34,0.72);   /* พื้นรอง */
+  --pl-border:       rgba(255,255,255,0.14);
+  --pl-border-soft:  rgba(255,255,255,0.10);
 
-  --pl-text-primary:   #f1f5f9;
-  --pl-text-secondary: #cbd5e1;
-  --pl-text-muted:     #94a3b8;
+  --pl-text-primary:   #f3f6fb;
+  --pl-text-secondary: #d3dbe6;
+  --pl-text-muted:     #a7b2c2;
 
   --pl-blue-soft:    rgba(37,99,235,0.16);
   --pl-blue-mid:     rgba(37,99,235,0.28);
@@ -470,4 +470,20 @@ body {
 [data-theme="dark"] .pl-card-hover:hover {
   box-shadow: 0 20px 48px rgba(0,0,0,0.5);
 }
+
+/* ── Dark mode: ฟอร์มให้อ่านชัด (label / input / placeholder) ── */
+[data-theme="dark"] label { color: var(--pl-text-secondary); }
+[data-theme="dark"] label small { color: var(--pl-text-muted); }
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  color: var(--pl-text-primary);
+}
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--pl-text-muted);
+  opacity: 1;
+}
+/* select options เป็น native — บังคับพื้น/ตัวอักษรเข้ากับธีมมืด */
+[data-theme="dark"] select option { background: #14233e; color: var(--pl-text-primary); }
 
