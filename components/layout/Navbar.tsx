@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useMagneticButton } from "@/hooks/useMagneticButton";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 const IconSearch = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -262,6 +263,7 @@ export default function Navbar() {
           .nb-write-btn span { display: none; }
           .nb-avatar-link  { padding: 4px; border-radius: 50%; }
           .nb-hamburger    { display: flex; }
+          .nb-theme        { display: none; }
           /* ── ยังไม่ล็อกอิน: ปุ่ม Login/Signup จัดไทย-อังกฤษ 2 บรรทัด ให้พอดีจอแคบ
                 (ตอนล็อกอินแล้ว ปุ่มพวกนี้ไม่ถูก render — เมนูยุบเป็นแฮมเบอร์เกอร์ตามเดิม) ── */
           .nb-login, .nb-signup {
@@ -319,6 +321,8 @@ export default function Navbar() {
 
         {/* Auth Zone */}
         <div className="nb-auth">
+          {/* ปุ่มสลับธีม — desktop เท่านั้น (มือถืออยู่ในเมนูแฮมเบอร์เกอร์) */}
+          <span className="nb-theme"><ThemeToggle /></span>
           {isLoading ? (
             <div style={{ width: "70px", height: "36px", background: "#f0fdf4", borderRadius: "12px" }} />
           ) : user ? (
@@ -376,6 +380,7 @@ export default function Navbar() {
 
       {/* Mobile dropdown menu */}
       <div className={`nb-mobile-menu${menuOpen ? " open" : ""}`}>
+        <ThemeToggle variant="row" />
         <Link href="/"      className="nb-m-link" onClick={() => setMenuOpen(false)}>🏠 หน้าแรก · Home</Link>
         <Link href="/place" className="nb-m-link" onClick={() => setMenuOpen(false)}>🗺️ สถานที่ · Places</Link>
         <Link href="/trips" className="nb-m-link" onClick={() => setMenuOpen(false)}>✈️ ทริป · Trips</Link>

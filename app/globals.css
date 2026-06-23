@@ -58,6 +58,31 @@
   --pl-btn-h: 52px;
 }
 
+/* ── Dark mode tokens (เปิดด้วย data-theme="dark" บน <html>) ── */
+[data-theme="dark"] {
+  --pl-white:        rgba(17,28,46,0.66);   /* การ์ดหลัก (กระจกขุ่นโทนเข้ม) */
+  --pl-bg:           rgba(13,22,40,0.55);   /* พื้นรอง */
+  --pl-border:       rgba(255,255,255,0.12);
+  --pl-border-soft:  rgba(255,255,255,0.08);
+
+  --pl-text-primary:   #f1f5f9;
+  --pl-text-secondary: #cbd5e1;
+  --pl-text-muted:     #94a3b8;
+
+  --pl-blue-soft:    rgba(37,99,235,0.16);
+  --pl-blue-mid:     rgba(37,99,235,0.28);
+  --pl-green-soft:   rgba(34,160,107,0.16);
+
+  --pl-red-soft:     rgba(185,28,28,0.16);
+  --pl-red-mid:      rgba(185,28,28,0.20);
+
+  --pl-orange-soft:  rgba(154,52,18,0.16);
+  --pl-orange-border: rgba(254,215,170,0.25);
+
+  --pl-shadow-card: 0 20px 50px rgba(0,0,0,0.45);
+  color-scheme: dark;
+}
+
 /* ── Reset ── */
 * {
   margin: 0;
@@ -99,6 +124,15 @@ html {
   background-position: center 60%;
   background-attachment: fixed;
   background-color: #1a3a2a;
+}
+
+/* ── สลับภาพพื้นหลังเป็นภาพกลางคืนเมื่ออยู่โหมดมืด ── */
+html[data-theme="dark"] {
+  background-image: url('/images/hero-bg-night.jpg');
+  background-color: #0a1426;
+}
+html[data-theme="dark"]::before {
+  background-image: url('/images/hero-bg-night.jpg');
 }
 
 body {
@@ -403,5 +437,37 @@ body {
     padding-right: 6px !important;
   }
   .cat-row > * > span { white-space: nowrap; }
+}
+
+/* ============================================================
+ *  Dark mode — override คลาส global ที่ฝังสีตรง ๆ
+ * ============================================================ */
+[data-theme="dark"] .logo-text p { color: var(--pl-text-muted); }
+
+[data-theme="dark"] .signup-tabs { background: rgba(255,255,255,0.06); }
+[data-theme="dark"] .tab-btn { color: var(--pl-text-muted); }
+[data-theme="dark"] .tab-btn.active {
+  background: rgba(255,255,255,0.12);
+  color: var(--pl-blue);
+  box-shadow: none;
+}
+
+[data-theme="dark"] .label-en { color: var(--pl-text-muted); }
+[data-theme="dark"] .section-divider small { color: var(--pl-text-muted); }
+
+[data-theme="dark"] .interest-section {
+  background: rgba(255,255,255,0.04);
+  border-color: var(--pl-border);
+}
+[data-theme="dark"] .check-item { color: var(--pl-text-secondary); }
+
+[data-theme="dark"] .signup-card { box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+
+[data-theme="dark"] .pl-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.04) 90%);
+  background-size: 200% 100%;
+}
+[data-theme="dark"] .pl-card-hover:hover {
+  box-shadow: 0 20px 48px rgba(0,0,0,0.5);
 }
 

@@ -11,7 +11,7 @@ import SharedPlaceCard from "@/components/places/PlaceCard";
 const NearbyMap = dynamic(() => import("@/components/maps/NearbyMap"), {
   ssr: false,
   loading: () => (
-    <div style={{ height: 320, borderRadius: 16, background: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 14, fontWeight: 600 }}>
+    <div style={{ height: 320, borderRadius: 16, background: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--pl-text-muted)", fontSize: 14, fontWeight: 600 }}>
       กำลังโหลดแผนที่…
     </div>
   ),
@@ -231,12 +231,12 @@ export default function ExplorerSection() {
 
   // ── Styles ────────────────────────────────────────────────────────────────
   const wrap: CSSProperties = {
-    background: "white",
+    background: "var(--pl-white)",
     padding: "36px",
     borderRadius: 28,
-    boxShadow: "0 8px 28px rgba(15,23,42,0.06)",
+    boxShadow: "var(--pl-shadow-card)",
     marginTop: 48,
-    border: "1px solid #f1f5f9",
+    border: "1px solid var(--pl-border)",
     maxWidth: "100%",
     overflowX: "clip",
   };
@@ -244,10 +244,10 @@ export default function ExplorerSection() {
   const selectBase: CSSProperties = {
     padding: "11px 14px",
     borderRadius: 12,
-    border: "1.5px solid #e2e8f0",
+    border: "1.5px solid var(--pl-border)",
     fontSize: 14,
-    color: "#0f172a",
-    background: "white",
+    color: "var(--pl-text-primary)",
+    background: "var(--pl-white)",
     outline: "none",
     fontFamily: "inherit",
     cursor: "pointer",
@@ -264,17 +264,17 @@ export default function ExplorerSection() {
     <div style={wrap}>
       {/* Header */}
       <div style={{ marginBottom: 22 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 900, color: "#0f172a", margin: "0 0 6px" }}>
+        <h2 style={{ fontSize: 22, fontWeight: 900, color: "var(--pl-text-primary)", margin: "0 0 6px" }}>
           📍 เจาะลึกรายพื้นที่{" "}
           <span style={{ color: "#2563eb" }}>Explore by Area</span>
         </h2>
-        <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
+        <p style={{ fontSize: 13, color: "var(--pl-text-secondary)", margin: 0 }}>
           สถานที่ยอดนิยมในจังหวัดที่คุณเลือก วัดจากยอด Bookmark · Top places by area
         </p>
       </div>
 
       {/* Tab toggle */}
-      <div style={{ display: "inline-flex", gap: 4, padding: 4, background: "#f1f5f9", borderRadius: 14, marginBottom: 20 }}>
+      <div style={{ display: "inline-flex", gap: 4, padding: 4, background: "var(--pl-bg)", borderRadius: 14, marginBottom: 20 }}>
         {([
           { id: "area",   icon: "🗾", label: "เลือกพื้นที่ · Area" },
           { id: "nearby", icon: "📍", label: "ใกล้ฉัน · Nearby" },
@@ -305,16 +305,16 @@ export default function ExplorerSection() {
       {/* Filters */}
       <div style={{ display: "flex", gap: 16, marginBottom: 18, flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 200px", display: "flex", flexDirection: "column", gap: 5 }}>
-          <label style={{ fontSize: 12, fontWeight: 700, color: "#64748b" }}>🗾 จังหวัด · Province</label>
+          <label style={{ fontSize: 12, fontWeight: 700, color: "var(--pl-text-secondary)" }}>🗾 จังหวัด · Province</label>
           <select style={selectBase} value={province} onChange={e => handleProvinceChange(e.target.value)}>
             <option value="">-- เลือกจังหวัด / Select Province --</option>
             {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
         <div style={{ flex: "1 1 200px", display: "flex", flexDirection: "column", gap: 5 }}>
-          <label style={{ fontSize: 12, fontWeight: 700, color: "#64748b" }}>📌 อำเภอ · District</label>
+          <label style={{ fontSize: 12, fontWeight: 700, color: "var(--pl-text-secondary)" }}>📌 อำเภอ · District</label>
           <select
-            style={{ ...selectBase, opacity: !province ? 0.5 : 1, cursor: !province ? "not-allowed" : "pointer", background: !province ? "#f8fafc" : "white" }}
+            style={{ ...selectBase, opacity: !province ? 0.5 : 1, cursor: !province ? "not-allowed" : "pointer", background: !province ? "var(--pl-bg)" : "var(--pl-white)" }}
             value={district}
             onChange={e => setDistrict(e.target.value)}
             disabled={!province}
@@ -340,8 +340,8 @@ export default function ExplorerSection() {
                 gap: 1,
                 padding: "8px 14px",
                 borderRadius: 14,
-                border: active ? "1.5px solid #3b82f6" : "1.5px solid #e2e8f0",
-                background: active ? "linear-gradient(135deg,#eff6ff,#dbeafe)" : "#f8fafc",
+                border: active ? "1.5px solid #3b82f6" : "1.5px solid var(--pl-border)",
+                background: active ? "linear-gradient(135deg,#eff6ff,#dbeafe)" : "var(--pl-bg)",
                 cursor: "pointer",
                 transition: "all 0.18s",
                 fontFamily: "inherit",
@@ -351,7 +351,7 @@ export default function ExplorerSection() {
               }}
             >
               <span style={{ fontSize: 18, lineHeight: 1 }}>{c.icon}</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: active ? "#1d4ed8" : "#334155", lineHeight: 1.2 }}>{c.label}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: active ? "#1d4ed8" : "var(--pl-text-primary)", lineHeight: 1.2 }}>{c.label}</span>
               <span style={{ fontSize: 9, fontWeight: 500, color: active ? "#60a5fa" : "#94a3b8", lineHeight: 1 }}>{c.en}</span>
             </button>
           );
@@ -431,15 +431,15 @@ export default function ExplorerSection() {
             `}</style>
           </>
         ) : places.length === 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "52px 20px", gap: 12, textAlign: "center", background: "#f8fafc", borderRadius: 18 }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "52px 20px", gap: 12, textAlign: "center", background: "var(--pl-bg)", borderRadius: 18 }}>
             <span style={{ fontSize: 44 }}>📭</span>
-            <p style={{ fontSize: 15, color: "#475569", fontWeight: 700, margin: 0 }}>ยังไม่มีสถานที่ใน{province.split(" (")[0]}</p>
-            <small style={{ fontSize: 12, color: "#94a3b8" }}>No places in this area yet</small>
+            <p style={{ fontSize: 15, color: "var(--pl-text-secondary)", fontWeight: 700, margin: 0 }}>ยังไม่มีสถานที่ใน{province.split(" (")[0]}</p>
+            <small style={{ fontSize: 12, color: "var(--pl-text-muted)" }}>No places in this area yet</small>
           </div>
         ) : (
           <>
-            <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 16px" }}>
-              พบ <strong style={{ color: "#1e293b", fontWeight: 800 }}>{total}</strong> สถานที่ · {total} places
+            <p style={{ fontSize: 13, color: "var(--pl-text-secondary)", margin: "0 0 16px" }}>
+              พบ <strong style={{ color: "var(--pl-text-primary)", fontWeight: 800 }}>{total}</strong> สถานที่ · {total} places
               {category ? ` · ${CAT_LABEL[category] ?? category}` : ""}
               {district ? ` · ${district}` : ""}
             </p>
@@ -462,7 +462,7 @@ export default function ExplorerSection() {
               </div>
             )}
             {!areaHasMore && places.length > AREA_PAGE_SIZE && (
-              <p style={{ textAlign: "center", color: "#94a3b8", fontSize: 13, fontWeight: 600, marginTop: 18 }}>
+              <p style={{ textAlign: "center", color: "var(--pl-text-muted)", fontSize: 13, fontWeight: 600, marginTop: 18 }}>
                 แสดงครบทั้ง {total} สถานที่แล้ว
               </p>
             )}
@@ -522,8 +522,8 @@ export default function ExplorerSection() {
                       onClick={() => { setRadius(r.v); setRecenterKey(k => k + 1); }}
                       style={{
                         padding: "9px 16px", borderRadius: 11, fontFamily: "inherit",
-                        border: active ? "1.5px solid #10b981" : "1.5px solid #e2e8f0",
-                        background: active ? "linear-gradient(135deg,#ecfdf5,#d1fae5)" : "#f8fafc",
+                        border: active ? "1.5px solid #10b981" : "1.5px solid var(--pl-border)",
+                        background: active ? "linear-gradient(135deg,#ecfdf5,#d1fae5)" : "var(--pl-bg)",
                         color: active ? "#047857" : "#475569", fontSize: 13, fontWeight: 800,
                         cursor: "pointer", transition: "all 0.18s",
                       }}
@@ -546,7 +546,7 @@ export default function ExplorerSection() {
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "52px 20px", gap: 12, textAlign: "center", background: "linear-gradient(135deg,#f0fdf4,#eff6ff)", borderRadius: 18 }}>
               <div style={{ fontSize: 52 }}>🧭</div>
               <p style={{ fontSize: 15, color: "#0f766e", fontWeight: 800, margin: 0 }}>กดปุ่ม “ค้นหาใกล้ฉัน” เพื่อเริ่ม</p>
-              <small style={{ fontSize: 12, color: "#64748b", maxWidth: 360 }}>
+              <small style={{ fontSize: 12, color: "var(--pl-text-secondary)", maxWidth: 360 }}>
                 ระบบจะขอสิทธิ์เข้าถึงตำแหน่ง แล้วปักหมุดบนแผนที่ — คุณลากหมุดเพื่อเลือกจุดที่ต้องการได้ (เฉพาะในประเทศไทย)
               </small>
             </div>
@@ -563,15 +563,15 @@ export default function ExplorerSection() {
                       style={{
                         display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 1,
                         padding: "8px 14px", borderRadius: 14,
-                        border: active ? "1.5px solid #10b981" : "1.5px solid #e2e8f0",
-                        background: active ? "linear-gradient(135deg,#ecfdf5,#d1fae5)" : "#f8fafc",
+                        border: active ? "1.5px solid #10b981" : "1.5px solid var(--pl-border)",
+                        background: active ? "linear-gradient(135deg,#ecfdf5,#d1fae5)" : "var(--pl-bg)",
                         cursor: "pointer", transition: "all 0.18s", fontFamily: "inherit",
                         minWidth: 64, flexShrink: 0,
                         boxShadow: active ? "0 2px 10px rgba(16,185,129,0.18)" : "none",
                       }}
                     >
                       <span style={{ fontSize: 18, lineHeight: 1 }}>{c.icon}</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: active ? "#047857" : "#334155", lineHeight: 1.2 }}>{c.label}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: active ? "#047857" : "var(--pl-text-primary)", lineHeight: 1.2 }}>{c.label}</span>
                       <span style={{ fontSize: 9, fontWeight: 500, color: active ? "#34d399" : "#94a3b8", lineHeight: 1 }}>{c.en}</span>
                     </button>
                   );
@@ -589,7 +589,7 @@ export default function ExplorerSection() {
                   recenterKey={recenterKey}
                 />
               </div>
-              <p style={{ fontSize: 12, color: "#94a3b8", margin: "0 0 18px", textAlign: "center" }}>
+              <p style={{ fontSize: 12, color: "var(--pl-text-muted)", margin: "0 0 18px", textAlign: "center" }}>
                 ลากหมุด 📍 บนแผนที่เพื่อเปลี่ยนจุดค้นหา
               </p>
 
@@ -608,15 +608,15 @@ export default function ExplorerSection() {
                   ))}
                 </div>
               ) : nearPlaces.length === 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "44px 20px", gap: 10, textAlign: "center", background: "#f8fafc", borderRadius: 18 }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "44px 20px", gap: 10, textAlign: "center", background: "var(--pl-bg)", borderRadius: 18 }}>
                   <span style={{ fontSize: 42 }}>🔍</span>
-                  <p style={{ fontSize: 15, color: "#475569", fontWeight: 700, margin: 0 }}>ไม่พบสถานที่ในรัศมีนี้</p>
-                  <small style={{ fontSize: 12, color: "#94a3b8" }}>ลองขยายระยะทาง หรือเปลี่ยนหมวด แล้วลากหมุดดูครับ</small>
+                  <p style={{ fontSize: 15, color: "var(--pl-text-secondary)", fontWeight: 700, margin: 0 }}>ไม่พบสถานที่ในรัศมีนี้</p>
+                  <small style={{ fontSize: 12, color: "var(--pl-text-muted)" }}>ลองขยายระยะทาง หรือเปลี่ยนหมวด แล้วลากหมุดดูครับ</small>
                 </div>
               ) : (
                 <>
-                  <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 14px" }}>
-                    พบ <strong style={{ color: "#1e293b", fontWeight: 800 }}>{nearPlaces.length}</strong> สถานที่ในรัศมี {RADIUS_OPTIONS.find(r => r.v === radius)?.label}
+                  <p style={{ fontSize: 13, color: "var(--pl-text-secondary)", margin: "0 0 14px" }}>
+                    พบ <strong style={{ color: "var(--pl-text-primary)", fontWeight: 800 }}>{nearPlaces.length}</strong> สถานที่ในรัศมี {RADIUS_OPTIONS.find(r => r.v === radius)?.label}
                     {nearCat ? ` · ${CAT_LABEL[nearCat] ?? nearCat}` : ""}
                   </p>
                   <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 16 }}>
@@ -636,7 +636,7 @@ export default function ExplorerSection() {
                       </LoadMoreButton>
                     </div>
                   ) : (
-                    <p style={{ textAlign: "center", color: "#94a3b8", fontSize: 13, fontWeight: 600, marginTop: 18 }}>
+                    <p style={{ textAlign: "center", color: "var(--pl-text-muted)", fontSize: 13, fontWeight: 600, marginTop: 18 }}>
                       แสดงครบทั้ง {nearPlaces.length} สถานที่ในรัศมีนี้แล้ว
                     </p>
                   )}

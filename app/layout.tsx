@@ -58,7 +58,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="th" className={chakraPetch.variable}>
+    <html lang="th" className={chakraPetch.variable} suppressHydrationWarning>
+      <head>
+        {/* ตั้งธีมก่อน paint กัน flash โหมดผิด (FOUC) */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('pl-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();` }} />
+      </head>
       <body className={chakraPetch.className}>
         <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
         <Script id="ga4-init" strategy="afterInteractive">{`

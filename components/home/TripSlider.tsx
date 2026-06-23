@@ -79,8 +79,8 @@ export default function TripSlider({ activeTab, onTabChange }: TripSliderProps) 
   const TabBar = () => (
     <div style={{
       display: "grid", gridTemplateColumns: "1fr 1fr",
-      background: "#f1f5f9", borderRadius: 16, padding: 4,
-      border: "1.5px solid #e2e8f0", marginBottom: 14,
+      background: "var(--pl-bg)", borderRadius: 16, padding: 4,
+      border: "1.5px solid var(--pl-border)", marginBottom: 14,
     }}>
       <style>{`
         @keyframes trophy-swing {
@@ -107,7 +107,7 @@ export default function TripSlider({ activeTab, onTabChange }: TripSliderProps) 
                 ? "linear-gradient(135deg,#f97316,#ef4444)"
                 : "linear-gradient(135deg,#0ea5e9,#2563eb)"
               : "transparent",
-            color: isActive ? "#fff" : "#64748b",
+            color: isActive ? "#fff" : "var(--pl-text-secondary)",
             boxShadow: isActive ? "0 4px 14px rgba(0,0,0,0.14)" : "none",
           }}>
             <span style={{
@@ -141,7 +141,7 @@ export default function TripSlider({ activeTab, onTabChange }: TripSliderProps) 
     return (
       <div>
         <TabBar />
-        <div style={{ height: 280, display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc", borderRadius: 24, color: "#94a3b8", fontSize: 15, marginBottom: 32 }}>
+        <div style={{ height: 280, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--pl-white)", borderRadius: 24, color: "var(--pl-text-muted)", fontSize: 15, marginBottom: 32 }}>
           {activeTab === "trending" ? "ยังไม่มีทริปมาแรงในช่วงนี้" : "ยังไม่มีเรื่องเล่า — เป็นคนแรกที่เล่าให้ฟัง!"}
         </div>
       </div>

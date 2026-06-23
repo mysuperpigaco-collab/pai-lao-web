@@ -43,15 +43,15 @@ function fmt(n?: number) {
 const S: Record<string, CSSProperties> = {
   root:    { marginTop: 20, maxWidth: "100%", overflowX: "clip" },
   tabWrap: { display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4, marginBottom: 22, scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } as CSSProperties,
-  tabBase: { flexShrink: 0, display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 2, padding: "10px 16px", borderRadius: 14, minWidth: 72, border: "none", cursor: "pointer", fontFamily: "inherit", background: "#f1f5f9", color: "#475569", transition: "all .2s" },
-  tabActive: { background: "#0f172a", color: "#fff", boxShadow: "0 4px 14px rgba(15,23,42,.25)" },
+  tabBase: { flexShrink: 0, display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 2, padding: "10px 16px", borderRadius: 14, minWidth: 72, border: "none", cursor: "pointer", fontFamily: "inherit", background: "var(--pl-bg)", color: "var(--pl-text-secondary)", transition: "all .2s" },
+  tabActive: { background: "var(--pl-text-primary)", color: "var(--pl-white)", boxShadow: "0 4px 14px rgba(15,23,42,.25)" },
   tabIcon: { fontSize: 20, lineHeight: 1 },
   tabTh:   { fontSize: 12, fontWeight: 700 },
   tabEn:   { fontSize: 11, fontWeight: 700, opacity: 0.75 },
-  empty:   { textAlign: "center", padding: 52, color: "#94a3b8", fontSize: 15 },
+  empty:   { textAlign: "center", padding: 52, color: "var(--pl-text-muted)", fontSize: 15 },
   grid5:   { display: "grid", gridTemplateColumns: "repeat(5,minmax(0,1fr))", gap: 16 },
   grid4:   { display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 16 },
-  card:    { display: "flex", flexDirection: "column", borderRadius: 20, overflow: "hidden", background: "#fff", textDecoration: "none", color: "inherit", boxShadow: "0 2px 12px rgba(15,23,42,.06)", border: "1px solid #f1f5f9", transition: "transform .22s ease, box-shadow .22s ease", minWidth: 0 },
+  card:    { display: "flex", flexDirection: "column", borderRadius: 20, overflow: "hidden", background: "var(--pl-white)", textDecoration: "none", color: "inherit", boxShadow: "var(--pl-shadow-card)", border: "1px solid var(--pl-border)", transition: "transform .22s ease, box-shadow .22s ease", minWidth: 0 },
   imgWrap: { position: "relative", height: 164, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 },
   imgEl:   { width: "100%", height: "100%", objectFit: "cover", display: "block" },
   grad:    { position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(15,23,42,.55) 0%, transparent 55%)", pointerEvents: "none" },
@@ -60,14 +60,14 @@ const S: Record<string, CSSProperties> = {
   chipMood: { position: "absolute", bottom: 10, left: 10, background: "rgba(99,102,241,.85)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 999, backdropFilter: "blur(4px)", maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
   chipGreen:{ position: "absolute", top: 10, right: 10, background: "#dcfce7", color: "#15803d", fontSize: 10, fontWeight: 800, padding: "4px 9px", borderRadius: 999 },
   body:    { padding: "12px 14px 13px", flex: 1, display: "flex", flexDirection: "column", gap: 6 },
-  title:   { fontSize: 14, fontWeight: 800, color: "#1e293b", margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", lineHeight: 1.35, height: "2.7em" } as CSSProperties,
-  footer:  { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, marginTop: "auto", paddingTop: 6, borderTop: "1px solid #f1f5f9" },
+  title:   { fontSize: 14, fontWeight: 800, color: "var(--pl-text-primary)", margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", lineHeight: 1.35, height: "2.7em" } as CSSProperties,
+  footer:  { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, marginTop: "auto", paddingTop: 6, borderTop: "1px solid var(--pl-border)" },
   author:  { display: "flex", alignItems: "center", gap: 6, minWidth: 0, overflow: "hidden" },
   avatarImg: { width: 22, height: 22, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1.5px solid #e2e8f0", display: "block" },
   avatarPh:  { width: 22, height: 22, borderRadius: "50%", flexShrink: 0, background: "linear-gradient(135deg,#10b981,#06b6d4)", color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" },
-  authorName: { fontSize: 11, fontWeight: 700, color: "#475569", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
-  stats:   { display: "flex", gap: 6, flexShrink: 0, fontSize: 11, fontWeight: 700, color: "#94a3b8" },
-  loc:     { fontSize: 11, color: "#64748b", fontWeight: 600 },
+  authorName: { fontSize: 11, fontWeight: 700, color: "var(--pl-text-secondary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+  stats:   { display: "flex", gap: 6, flexShrink: 0, fontSize: 11, fontWeight: 700, color: "var(--pl-text-muted)" },
+  loc:     { fontSize: 11, color: "var(--pl-text-secondary)", fontWeight: 600 },
   seeAll:  { display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 28px", borderRadius: 14, background: "linear-gradient(135deg,#0f172a,#1e3a8a)", color: "#fff", textDecoration: "none", fontWeight: 800, fontSize: 14, boxShadow: "0 4px 14px rgba(15,23,42,.18)" },
 };
 
@@ -175,7 +175,7 @@ function PlaceCard({ place }: { place: Place }) {
         </div>
         <div style={S.body}>
           <h4 style={S.title}>{place.title}</h4>
-          <p style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", margin: 0, minHeight: "1.4em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{place.titleEn || ""}</p>
+          <p style={{ fontSize: 11, color: "var(--pl-text-muted)", fontStyle: "italic", margin: 0, minHeight: "1.4em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{place.titleEn || ""}</p>
           <div style={S.footer}>
             <span style={S.loc}>📍 {[place.district, prov].filter(Boolean).join(", ")}</span>
             <div style={S.stats}>
@@ -304,8 +304,8 @@ export default function AutoGridSection() {
       ) : tab.type === "trip" ? (
         trips.length === 0 ? <div style={S.empty}>ยังไม่มีเรื่องเล่า</div> : (
           <>
-            <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 14px" }}>
-              พบ <strong style={{ color: "#1e293b", fontWeight: 800 }}>{total}</strong> เรื่องเล่า
+            <p style={{ fontSize: 13, color: "var(--pl-text-secondary)", margin: "0 0 14px" }}>
+              พบ <strong style={{ color: "var(--pl-text-primary)", fontWeight: 800 }}>{total}</strong> เรื่องเล่า
             </p>
             <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols.trip},1fr)`, gap: 16 }}>
               {trips.map((t, i) => (
@@ -321,7 +321,7 @@ export default function AutoGridSection() {
               </div>
             )}
             {!hasMore && trips.length > 0 && (
-              <p style={{ textAlign: "center", color: "#94a3b8", fontSize: 13, fontWeight: 600, marginTop: 18 }}>
+              <p style={{ textAlign: "center", color: "var(--pl-text-muted)", fontSize: 13, fontWeight: 600, marginTop: 18 }}>
                 ดูครบทั้ง {total} เรื่องเล่าแล้ว
               </p>
             )}
@@ -330,8 +330,8 @@ export default function AutoGridSection() {
       ) : (
         places.length === 0 ? <div style={S.empty}>ยังไม่มีสถานที่</div> : (
           <>
-            <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 14px" }}>
-              พบ <strong style={{ color: "#1e293b", fontWeight: 800 }}>{total}</strong> สถานที่ · {tab.label}
+            <p style={{ fontSize: 13, color: "var(--pl-text-secondary)", margin: "0 0 14px" }}>
+              พบ <strong style={{ color: "var(--pl-text-primary)", fontWeight: 800 }}>{total}</strong> สถานที่ · {tab.label}
             </p>
             <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols.place},1fr)`, gap: 16 }}>
               {places.map((p, i) => (
@@ -347,7 +347,7 @@ export default function AutoGridSection() {
               </div>
             )}
             {!hasMore && places.length > 0 && (
-              <p style={{ textAlign: "center", color: "#94a3b8", fontSize: 13, fontWeight: 600, marginTop: 18 }}>
+              <p style={{ textAlign: "center", color: "var(--pl-text-muted)", fontSize: 13, fontWeight: 600, marginTop: 18 }}>
                 ดูครบทั้ง {total} สถานที่แล้ว
               </p>
             )}

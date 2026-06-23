@@ -59,11 +59,11 @@ export default function Footer() {
 
       <style jsx>{`
         .footer-container {
-          background-color: #fff;
-          border-top: 1px solid #eee;
+          background-color: var(--pl-white);
+          border-top: 1px solid var(--pl-border);
           padding: 60px 5% 30px;
           margin-top: 80px;
-          color: #333;
+          color: var(--pl-text-primary);
         }
         .footer-content {
           display: flex;
@@ -85,13 +85,13 @@ export default function Footer() {
         }
         .logo-icon { font-size: 28px; }
         .logo-text h2 { margin: 0; font-size: 22px; font-weight: 800; }
-        .logo-text p { margin: 0; font-size: 9px; color: #999; letter-spacing: 1px; }
+        .logo-text p { margin: 0; font-size: 9px; color: var(--pl-text-muted); letter-spacing: 1px; }
         .text-blue { color: #3b82f6; }
         .text-green { color: #22c55e; }
         
         .brand-desc {
           font-size: 14px;
-          color: #666;
+          color: var(--pl-text-secondary);
           line-height: 1.6;
         }
 
@@ -104,7 +104,7 @@ export default function Footer() {
           font-size: 16px;
           font-weight: 700;
           margin-bottom: 20px;
-          color: #444;
+          color: var(--pl-text-primary);
         }
         .link-col ul {
           list-style: none;
@@ -113,7 +113,7 @@ export default function Footer() {
         }
         .link-col li {
           font-size: 14px;
-          color: #777;
+          color: var(--pl-text-secondary);
           margin-bottom: 12px;
           cursor: pointer;
           transition: color 0.2s;
@@ -126,12 +126,12 @@ export default function Footer() {
           max-width: 1200px;
           margin: 40px auto 0;
           padding-top: 25px;
-          border-top: 1px solid #f5f5f5;
+          border-top: 1px solid var(--pl-border);
           display: flex;
           justify-content: space-between;
           align-items: center;
           font-size: 13px;
-          color: #999;
+          color: var(--pl-text-muted);
         }
         .social-mini {
           display: flex;
