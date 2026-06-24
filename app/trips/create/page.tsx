@@ -1096,8 +1096,8 @@ export default function CreateStoryPage() {
         .header-text{text-align:center;margin-bottom:50px}
         .header-text h2{font-size:34px;font-weight:900;color:var(--pl-text-primary);letter-spacing:-0.5px}
         .header-text p{color:var(--pl-text-muted);font-size:14px;letter-spacing:2px;text-transform:uppercase;font-weight:600;margin-top:10px}
-        .cover-upload-area{width:100%;height:420px;border:3px dashed #e2e8f0;border-radius:40px;overflow:hidden;cursor:pointer;position:relative;background:#fafbfc;transition:0.4s}
-        .cover-upload-area:hover{border-color:#3b82f6;background:#f0f7ff;transform:scale(1.005)}
+        .cover-upload-area{width:100%;height:420px;border:3px dashed var(--pl-border);border-radius:40px;overflow:hidden;cursor:pointer;position:relative;background:var(--pl-bg);transition:0.4s}
+        .cover-upload-area:hover{border-color:#3b82f6;background:rgba(59,130,246,0.10);transform:scale(1.005)}
         .upload-placeholder{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
         .upload-placeholder .icon-main{font-size:60px;margin-bottom:20px;display:block}
         .cover-preview{width:100%;height:100%;object-fit:cover}
