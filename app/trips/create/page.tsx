@@ -576,9 +576,9 @@ export default function CreateStoryPage() {
             onMouseLeave={() => setIsBackHover(false)}
             style={{
               width:"100%",maxWidth:430,minHeight:84,display:"flex",alignItems:"center",
-              gap:14,padding:"14px 16px",border:`1.5px solid ${isBackHover?"#bfdbfe":"#dbe7f3"}`,
+              gap:14,padding:"14px 16px",border:`1.5px solid ${isBackHover?"#bfdbfe":"var(--pl-border)"}`,
               borderRadius:22,color:"var(--pl-text-primary)",
-              background:"linear-gradient(180deg,rgba(255,255,255,0.99),rgba(248,250,252,0.96))",
+              background:"var(--pl-white)",
               boxShadow:isBackHover?"0 18px 36px rgba(15,23,42,0.1)":"0 12px 26px rgba(15,23,42,0.06)",
               textDecoration:"none",transform:isBackHover?"translateY(-3px)":"translateY(0)",
               transition:"transform 0.22s ease,box-shadow 0.22s ease,border-color 0.22s ease",

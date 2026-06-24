@@ -710,7 +710,7 @@ export default function PlannerPage() {
                 <div key={plan.id} onClick={() => setActivePlan(plan)} style={{
                   padding: "12px 16px", cursor: "pointer", transition: "background 0.15s",
                   borderLeft: `4px solid ${isActive ? (past ? "#f59e0b" : "#3b82f6") : (past ? "#fde68a" : "transparent")}`,
-                  background: isActive ? (past ? "linear-gradient(90deg,#fffbeb,#fef9c3)" : "linear-gradient(90deg,#eff6ff,#f8faff)") : "transparent",
+                  background: isActive ? (past ? "rgba(245,158,11,0.20)" : "rgba(37,99,235,0.20)") : "transparent",
                   borderBottom: "1px solid #f8fafc",
                   opacity: past && !isActive ? 0.75 : 1,
                 }}>
