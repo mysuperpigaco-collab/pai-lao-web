@@ -17,7 +17,7 @@ export async function GET(_req: Request, { params }: Params) {
           _count: { select: { trips: true, bookmarks: true } } } },
         timeline: {
           orderBy: { order: "asc" },
-          include: { place: { select: { approvalStatus: true, rejectionReason: true } } },
+          include: { place: { select: { approvalStatus: true, rejectionReason: true, lat: true, lng: true } } },
         },
         reviews: {
           orderBy: { createdAt: "desc" },
