@@ -31,6 +31,9 @@ const STOP_TYPE_META: Record<string, { icon: string; label: string; color: strin
   TRANSPORT:  { icon: "🚌", label: "เดินทาง",   color: "#64748b" },
 };
 
+// สีหมุด/ลำดับ — ต้องตรงกับ ROUTE_COLORS ในหน้าทริป (app/trips/[slug]/page.tsx) เพื่อให้เลขในไทม์ไลน์สีตรงกับหมุดบนแผนที่
+const ROUTE_COLORS = ["#ef4444","#f59e0b","#10b981","#0ea5e9","#6366f1","#7c3aed","#ec4899","#0f766e","#b45309","#15803d"];
+
 const TRANSPORT_ICON: Record<string, string> = {
   "รถทัวร์": "🚌", "รถส่วนตัว": "🚗", "รถไฟ": "🚆",
   "เครื่องบิน": "✈️", "เรือ": "⛵", "มอเตอร์ไซค์": "🏍️", "เดินเท้า": "🚶",
@@ -54,7 +57,11 @@ export default function TripTimeline({ timeline }: Props) {
     <div style={{ color: "#94a3b8", textAlign: "center", padding: "20px" }}>ยังไม่มี timeline</div>
   );
 
-  const groups = groupByDate([...timeline].sort((a, b) => a.order - b.order));
+  const sorted = [...timeline].sort((a, b) => a.order - b.order);
+  // สีของแต่ละจุดตามลำดับ → ใช้ชุดเดียวกับหมุดบนแผนที่ (เลข i+1 ตรงกับเลขหมุด)
+  const colorOf = new Map(sorted.map((s, i) => [s.id, ROUTE_COLORS[i % ROUTE_COLORS.length]]));
+  const numOf = new Map(sorted.map((s, i) => [s.id, i + 1]));
+  const groups = groupByDate(sorted);
 
   return (
     <div>
@@ -72,10 +79,11 @@ export default function TripTimeline({ timeline }: Props) {
               <div key={stop.id} style={{ display: "flex", gap: 14, marginBottom: 14 }}>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                   <div style={{ width: 36, height: 36, borderRadius: "50%",
-                    background: meta ? meta.color : "#3b82f6",
+                    background: colorOf.get(stop.id) ?? "#3b82f6",
                     color: "white", display: "flex", alignItems: "center", justifyContent: "center",
-                    fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
-                    {meta ? meta.icon : stop.order + 1}
+                    fontWeight: 700, fontSize: 14, flexShrink: 0,
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.18)" }}>
+                    {numOf.get(stop.id) ?? stop.order + 1}
                   </div>
                   <div style={{ width: 2, background: "#e2e8f0", flex: 1, minHeight: 20, margin: "4px 0" }} />
                 </div>
