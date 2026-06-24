@@ -25,6 +25,16 @@ export interface NearbyResult {
   distanceM: number;
 }
 
+// หมุด "ตำแหน่งฉัน" ทรงหยดน้ำสวย ๆ (สีแดง = you are here)
+function makeMyPin(): L.DivIcon {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 28 36">
+    <path d="M14 1C7.925 1 3 5.925 3 12c0 6 11 23 11 23s11-17 11-23C25 5.925 20.075 1 14 1z"
+      fill="#ef4444" stroke="white" stroke-width="2"/>
+    <circle cx="14" cy="12" r="4" fill="white"/>
+  </svg>`;
+  return L.divIcon({ html: svg, iconSize: [32, 42], iconAnchor: [16, 42], popupAnchor: [0, -42], className: "" });
+}
+
 function radiusToZoom(radius: number) {
   if (radius <= 500) return 15;
   if (radius <= 1000) return 14;
@@ -105,6 +115,7 @@ export default function NearbyMap({
       <Marker
         position={[lat, lng]}
         draggable
+        icon={makeMyPin()}
         eventHandlers={{
           dragend: (e) => {
             const m = (e.target as L.Marker).getLatLng();

@@ -22,6 +22,12 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
+// หมุดทรงหยดน้ำสวย ๆ
+const PIN_ICON = L.divIcon({
+  html: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 28 36"><path d="M14 1C7.925 1 3 5.925 3 12c0 6 11 23 11 23s11-17 11-23C25 5.925 20.075 1 14 1z" fill="#10b981" stroke="white" stroke-width="2"/><circle cx="14" cy="12" r="4" fill="white"/></svg>`,
+  iconSize: [32, 42], iconAnchor: [16, 42], popupAnchor: [0, -42], className: "",
+});
+
 // ขอบเขตไทย — จำกัดหมุดที่ลากได้ให้อยู่ในประเทศ
 const TH = { minLat: 5.5, maxLat: 20.6, minLng: 97.3, maxLng: 105.7 };
 const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
@@ -59,6 +65,7 @@ export default function StopMap({
       <Marker
         position={[lat, lng]}
         draggable={draggable}
+        icon={PIN_ICON}
         eventHandlers={
           draggable && onMove
             ? {

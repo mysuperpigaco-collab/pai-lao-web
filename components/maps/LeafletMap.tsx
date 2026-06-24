@@ -19,17 +19,24 @@ export interface MapPoint {
   href?: string;
   color?: string;
   num?: number;
+  icon?: string;   // emoji ตามหมวด (เช่น ☕ 🌿) — แสดงกลางหมุดเมื่อไม่มีเลข
 }
 
-function makeColoredIcon(color: string, num: number): L.DivIcon {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
+// หมุดทรงหยดน้ำสวย ๆ — รองรับ เลข (เส้นทาง) / อิโมจิ (หมวด) / จุดสีล้วน (ดีฟอลต์)
+function makePin(color: string, opts: { num?: number; emoji?: string } = {}): L.DivIcon {
+  const inner =
+    opts.num != null
+      ? `<text x="14" y="15.8" text-anchor="middle" fill="${color}" font-weight="900" font-size="9" font-family="system-ui,sans-serif">${opts.num}</text>`
+      : opts.emoji
+        ? `<text x="14" y="16.5" text-anchor="middle" font-size="11">${opts.emoji}</text>`
+        : `<circle cx="14" cy="12" r="3.2" fill="${color}"/>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" viewBox="0 0 28 36">
     <path d="M14 1C7.925 1 3 5.925 3 12c0 6 11 23 11 23s11-17 11-23C25 5.925 20.075 1 14 1z"
       fill="${color}" stroke="white" stroke-width="2"/>
-    <circle cx="14" cy="12" r="6.5" fill="white" opacity="0.92"/>
-    <text x="14" y="16" text-anchor="middle" fill="${color}" font-weight="900" font-size="9"
-      font-family="system-ui,sans-serif">${num}</text>
+    <circle cx="14" cy="12" r="6.6" fill="white" opacity="0.95"/>
+    ${inner}
   </svg>`;
-  return L.divIcon({ html: svg, iconSize: [28, 36], iconAnchor: [14, 36], popupAnchor: [0, -38], className: "" });
+  return L.divIcon({ html: svg, iconSize: [30, 40], iconAnchor: [15, 40], popupAnchor: [0, -40], className: "" });
 }
 
 function FitBounds({ points }: { points: MapPoint[] }) {
@@ -78,7 +85,7 @@ export default function LeafletMap({
         <Marker
           key={i}
           position={[p.lat, p.lng]}
-          {...(p.color != null && p.num != null ? { icon: makeColoredIcon(p.color, p.num) } : {})}
+          icon={makePin(p.color ?? "#2563eb", { num: p.num, emoji: p.icon })}
         >
           {p.label && (
             <Popup>

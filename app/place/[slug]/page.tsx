@@ -415,7 +415,7 @@ export default async function PlaceDetailPage({ params }: Props) {
               {MAPS_ENABLED && place.lat != null && place.lng != null ? (
                 <>
                   <MapView
-                    points={[{ lat: place.lat, lng: place.lng, label: place.title }]}
+                    points={[{ lat: place.lat, lng: place.lng, label: place.title, icon: catIcon }]}
                     height={320}
                   />
                   <a
