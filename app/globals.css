@@ -474,11 +474,26 @@ body {
 /* ── Dark mode: ฟอร์มให้อ่านชัด (label / input / placeholder) ── */
 [data-theme="dark"] label { color: var(--pl-text-secondary); }
 [data-theme="dark"] label small { color: var(--pl-text-muted); }
-[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="search"],
+[data-theme="dark"] input[type="url"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] input[type="tel"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="time"],
+[data-theme="dark"] input:not([type]),
 [data-theme="dark"] textarea,
 [data-theme="dark"] select {
   color: var(--pl-text-primary) !important;
   background-color: var(--pl-bg) !important;
+}
+/* ยกเว้น: ช่องค้นหาบน navbar (แถบเขียวคงเดิมทั้งสองโหมด → ตัวอักษรขาว พื้นโปร่ง) */
+[data-theme="dark"] .nb-nav .nb-search input,
+[data-theme="dark"] .nb-nav .nb-search select {
+  background-color: transparent !important;
+  color: #ffffff !important;
 }
 [data-theme="dark"] input::placeholder,
 [data-theme="dark"] textarea::placeholder {
