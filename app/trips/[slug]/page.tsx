@@ -164,13 +164,16 @@ export default async function TripDetailPage({ params }: Props) {
     ? trip.reviews.reduce((s: number, r: any) => s + r.rating, 0) / trip.reviews.length
     : 0;
 
+  const ROUTE_COLORS = ["#ef4444","#f59e0b","#10b981","#0ea5e9","#6366f1","#7c3aed","#ec4899","#0f766e","#b45309","#15803d"];
   const routePoints = trip.timeline
     .filter((s: any) => (s.lat ?? s.place?.lat) != null && (s.lng ?? s.place?.lng) != null)
-    .map((s: any) => ({
+    .map((s: any, i: number) => ({
       lat: (s.lat ?? s.place?.lat) as number,
       lng: (s.lng ?? s.place?.lng) as number,
       label: s.placeName || s.place?.title,
       href: s.place?.slug ? `${SITE_URL}/place/${s.place.slug}` : undefined,
+      num: i + 1,
+      color: ROUTE_COLORS[i % ROUTE_COLORS.length],
     }));
 
   const authorName = trip.author.displayName || trip.author.firstName || "?";
