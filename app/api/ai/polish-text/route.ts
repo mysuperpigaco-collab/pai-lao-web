@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
   const session = await getCurrentUser();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const rl = checkRateLimit(`ai:${session.userId}`, 20, 60_000);
+  const rl = await checkRateLimit(`ai:${session.userId}`, 20, 60_000);
   if (!rl.allowed) {
     return NextResponse.json({ error: "ใช้ AI บ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
   }

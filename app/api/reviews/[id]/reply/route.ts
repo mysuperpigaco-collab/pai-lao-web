@@ -16,7 +16,7 @@ export async function POST(
     }
 
     // ── Rate limit: 20 replies / นาที ต่อ user ──────────────
-    const rl = checkRateLimit(`reply:${session.userId}`, 20, 60_000);
+    const rl = await checkRateLimit(`reply:${session.userId}`, 20, 60_000);
     if (!rl.allowed) {
       return NextResponse.json({ message: "ส่งความคิดเห็นบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
     }

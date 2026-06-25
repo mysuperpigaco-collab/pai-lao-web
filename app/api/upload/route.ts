@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 
     // ── Rate limit: 30 uploads / นาที ต่อ user ──────────────
-    const rl = checkRateLimit(`upload:${session.userId}`, 30, 60_000);
+    const rl = await checkRateLimit(`upload:${session.userId}`, 30, 60_000);
     if (!rl.allowed) {
       return NextResponse.json({ message: "อัปโหลดบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
     }

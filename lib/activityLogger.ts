@@ -43,11 +43,11 @@ export interface LogActivityOptions {
   detail?:     string | null;
 }
 
-/** ดึง IP จาก NextRequest */
+/** ดึง IP จาก NextRequest — เชื่อ x-real-ip (Vercel เซ็ตเอง สปูฟไม่ได้) ก่อน x-forwarded-for ที่ client ปลอมได้ */
 export function getClientIp(request: NextRequest): string {
   return (
-    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
     request.headers.get("x-real-ip") ||
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
     "unknown"
   );
 }

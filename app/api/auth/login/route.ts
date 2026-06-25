@@ -6,8 +6,8 @@ import { checkRateLimit } from "@/lib/rateLimit";
 // ── helper: ดึง IP จาก request headers ──────────────────────
 function getIp(request: NextRequest): string {
   return (
-    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
     request.headers.get("x-real-ip") ||
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
     "unknown"
   );
 }
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   const userAgent = request.headers.get("user-agent") || undefined;
 
   // ── Rate limit: 10 ครั้ง / นาที ต่อ IP ──────────────────────
-  const rl = checkRateLimit(`login:${ip}`, 10, 60_000);
+  const rl = await checkRateLimit(`login:ip:${ip}`, 10, 60_000);
   if (!rl.allowed) {
     const retryAfter = Math.ceil((rl.resetAt - Date.now()) / 1000);
     return NextResponse.json(
@@ -33,6 +33,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { message: "กรุณากรอกอีเมล/ชื่อผู้ใช้ และรหัสผ่าน" },
         { status: 400 }
+      );
+    }
+
+    // ── Rate limit รายบัญชี: กันเดารหัสบัญชีเดียวด้วยการหมุน IP (15 ครั้ง / 15 นาที) ─
+    const rlAcct = await checkRateLimit(
+      `login:acct:${String(emailOrUsername).toLowerCase()}`,
+      15,
+      15 * 60_000
+    );
+    if (!rlAcct.allowed) {
+      const retryAfter = Math.ceil((rlAcct.resetAt - Date.now()) / 1000);
+      return NextResponse.json(
+        { message: `บัญชีนี้ถูกล็อกชั่วคราวจากการพยายามเข้าสู่ระบบหลายครั้ง กรุณารอ ${Math.ceil(retryAfter / 60)} นาที` },
+        { status: 429, headers: { "Retry-After": String(retryAfter) } }
       );
     }
 

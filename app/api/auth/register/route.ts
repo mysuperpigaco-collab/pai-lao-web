@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   const userAgent = request.headers.get("user-agent") ?? null;
 
   // ── Rate limit: 5 ครั้ง / 10 นาที ต่อ IP ───────────────────
-  const rl = checkRateLimit(`register:${ip}`, 5, 10 * 60_000);
+  const rl = await checkRateLimit(`register:${ip}`, 5, 10 * 60_000);
   if (!rl.allowed) {
     const retryAfter = Math.ceil((rl.resetAt - Date.now()) / 1000);
     return NextResponse.json(
