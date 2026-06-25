@@ -76,6 +76,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 3) หา/สร้าง/ลิงก์ผู้ใช้
+    let isNew = false;
     let user = await prisma.user.findFirst({
       where: { OR: [{ googleId }, { email }] },
       select: { id: true, username: true, role: true, bannedUntil: true, googleId: true, avatarUrl: true },
@@ -94,6 +95,7 @@ export async function GET(request: NextRequest) {
         });
       }
     } else {
+      isNew = true;
       const username = await uniqueUsername(email);
       user = await prisma.user.create({
         data: {
@@ -123,8 +125,10 @@ export async function GET(request: NextRequest) {
       role: user.role as any,
     });
 
+    // ผู้ใช้ Google ครั้งแรก → พาไปตั้งชื่อผู้ใช้ + รหัสผ่าน · คนเดิม → เข้าตามบทบาท
     const dest =
-      user.role === "SUPERADMIN" || user.role === "ADMIN" ? "/admin"
+      isNew ? "/dashboard/edit-profile?welcome=google"
+      : user.role === "SUPERADMIN" || user.role === "ADMIN" ? "/admin"
       : user.role === "BUSINESS" ? "/business/dashboard"
       : "/dashboard";
 

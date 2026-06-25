@@ -72,6 +72,7 @@ export default function EditProfilePage() {
   const [showConfPw, setShowConfPw] = useState(false);
 
   const [hasPassword, setHasPassword] = useState(true);
+  const [welcomeGoogle, setWelcomeGoogle] = useState(false);
   const [form, setForm] = useState({
     firstName: "", lastName: "", displayName: "", username: "", phone: "", gender: "",
     bio: "", lineId: "", facebook: "", instagram: "", tiktok: "",
@@ -81,6 +82,13 @@ export default function EditProfilePage() {
     profilePrivacy: "PUBLIC",
     showEmail: false, showPhone: false, showSocial: true, showBirthDate: false,
   });
+
+  // ตรวจว่ามาจากล็อกอิน Google ครั้งแรก (?welcome=google)
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("welcome") === "google") {
+      setWelcomeGoogle(true);
+    }
+  }, []);
 
   // Load from API
   useEffect(() => {
@@ -173,6 +181,13 @@ export default function EditProfilePage() {
           <h2>แก้ไขโปรไฟล์ · Edit Profile</h2>
           <p>ข้อมูลของ {displayName}</p>
         </div>
+
+        {welcomeGoogle && (
+          <div style={{ background: "linear-gradient(135deg,#eff6ff,#ecfdf5)", border: "1px solid #bfdbfe", borderRadius: 14, padding: "14px 18px", marginBottom: 20, color: "#1e40af", fontSize: 14, lineHeight: 1.7 }}>
+            🎉 <strong>ยินดีต้อนรับสู่ไปเล่า!</strong> คุณเข้าสู่ระบบด้วย Google แล้ว<br />
+            แนะนำให้ <strong>ตั้งชื่อผู้ใช้</strong> ที่ชอบ และ <strong>ตั้งรหัสผ่าน</strong> ไว้ เพื่อใช้ล็อกอินด้วยอีเมล/ชื่อผู้ใช้ได้อีกทาง
+          </div>
+        )}
 
         {apiError && (
           <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 12, padding: "12px 16px", marginBottom: 20, color: "#b91c1c", fontSize: 14 }}>
