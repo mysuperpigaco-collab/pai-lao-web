@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import MapsButton from "@/components/common/MapsButton";
+import { useRouteHover } from "@/components/maps/RouteHoverContext";
 
 interface TimelineStop {
   id: string;
@@ -52,6 +53,7 @@ function groupByDate(stops: TimelineStop[]) {
 export default function TripTimeline({ timeline }: Props) {
   const [expandedStop, setExpandedStop] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<{ stopId: string; imgIdx: number } | null>(null);
+  const { activeId, setActiveId } = useRouteHover();
 
   if (!timeline?.length) return (
     <div style={{ color: "#94a3b8", textAlign: "center", padding: "20px" }}>ยังไม่มี timeline</div>
@@ -75,20 +77,30 @@ export default function TripTimeline({ timeline }: Props) {
           {group.stops.map((stop) => {
             const meta = stop.stopType ? STOP_TYPE_META[stop.stopType] : null;
             const isExpanded = expandedStop === stop.id;
+            const accent = colorOf.get(stop.id) ?? "#3b82f6";
+            const isActive = activeId === stop.id;
             return (
-              <div key={stop.id} style={{ display: "flex", gap: 14, marginBottom: 14 }}>
+              <div key={stop.id} style={{ display: "flex", gap: 14, marginBottom: 14 }}
+                onMouseEnter={() => setActiveId(stop.id)}
+                onMouseLeave={() => setActiveId(null)}>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                   <div style={{ width: 36, height: 36, borderRadius: "50%",
-                    background: colorOf.get(stop.id) ?? "#3b82f6",
+                    background: accent,
                     color: "white", display: "flex", alignItems: "center", justifyContent: "center",
                     fontWeight: 700, fontSize: 14, flexShrink: 0,
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.18)" }}>
+                    boxShadow: isActive ? `0 0 0 4px ${accent}44, 0 2px 8px rgba(0,0,0,0.28)` : "0 2px 6px rgba(0,0,0,0.18)",
+                    transform: isActive ? "scale(1.15)" : "scale(1)",
+                    transition: "transform .12s ease, box-shadow .12s ease" }}>
                     {numOf.get(stop.id) ?? stop.order + 1}
                   </div>
                   <div style={{ width: 2, background: "#e2e8f0", flex: 1, minHeight: 20, margin: "4px 0" }} />
                 </div>
                 <div style={{ flex: 1, background: "#f8fafc", borderRadius: 14, padding: "14px 16px",
-                  cursor: "pointer", border: "1px solid #e2e8f0", marginBottom: 4 }}
+                  cursor: "pointer", marginBottom: 4,
+                  border: isActive ? `2px solid ${accent}` : "1px solid #e2e8f0",
+                  boxShadow: isActive ? `0 6px 18px ${accent}33` : "none",
+                  transform: isActive ? "translateX(3px)" : "translateX(0)",
+                  transition: "border-color .12s ease, box-shadow .12s ease, transform .12s ease" }}
                   onClick={() => setExpandedStop(isExpanded ? null : stop.id)}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div style={{ flex: 1 }}>

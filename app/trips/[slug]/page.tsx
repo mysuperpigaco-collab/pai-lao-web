@@ -16,6 +16,7 @@ import Link from "next/link";
 import ReadingProgress from "@/components/common/ReadingProgress";
 import BackToTop from "@/components/common/BackToTop";
 import MapView from "@/components/maps/MapView";
+import { RouteHoverProvider } from "@/components/maps/RouteHoverContext";
 import { googleMapsRoute, MAPS_ENABLED } from "@/lib/maps";
 import { titleStyleCss } from "@/lib/titleStyle";
 import "./trip-detail.css";
@@ -168,6 +169,7 @@ export default async function TripDetailPage({ params }: Props) {
   const routePoints = trip.timeline
     .filter((s: any) => (s.lat ?? s.place?.lat) != null && (s.lng ?? s.place?.lng) != null)
     .map((s: any, i: number) => ({
+      id: s.id as string,
       lat: (s.lat ?? s.place?.lat) as number,
       lng: (s.lng ?? s.place?.lng) as number,
       label: s.placeName || s.place?.title,
@@ -393,33 +395,35 @@ export default async function TripDetailPage({ params }: Props) {
               </div>
             )}
 
-            {MAPS_ENABLED && routePoints.length > 0 && (
-              <div className="content-card">
-                <h2>🗺️ เส้นทางทริป <span style={{ fontSize: 14, fontWeight: 600, color: "#94a3b8" }}>Route Map</span></h2>
-                <MapView points={routePoints} showRoute height={400} />
-                {routePoints.length > 1 && (
-                  <a
-                    href={googleMapsRoute(routePoints)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: "inline-block", marginTop: 12,
-                      padding: "10px 20px", background: "#2563eb",
-                      color: "#fff", borderRadius: 10,
-                      textDecoration: "none", fontWeight: 700, fontSize: 15,
-                    }}
-                  >
-                    🧭 นำทางทั้งเส้นทางด้วย Google Maps
-                  </a>
-                )}
-              </div>
-            )}
+            <RouteHoverProvider>
+              {MAPS_ENABLED && routePoints.length > 0 && (
+                <div className="content-card">
+                  <h2>🗺️ เส้นทางทริป <span style={{ fontSize: 14, fontWeight: 600, color: "#94a3b8" }}>Route Map</span></h2>
+                  <MapView points={routePoints} showRoute height={400} />
+                  {routePoints.length > 1 && (
+                    <a
+                      href={googleMapsRoute(routePoints)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "inline-block", marginTop: 12,
+                        padding: "10px 20px", background: "#2563eb",
+                        color: "#fff", borderRadius: 10,
+                        textDecoration: "none", fontWeight: 700, fontSize: 15,
+                      }}
+                    >
+                      🧭 นำทางทั้งเส้นทางด้วย Google Maps
+                    </a>
+                  )}
+                </div>
+              )}
 
-            {trip.timeline.length > 0 && (
-              <div className="content-card">
-                <TripTimeline timeline={trip.timeline} />
-              </div>
-            )}
+              {trip.timeline.length > 0 && (
+                <div className="content-card">
+                  <TripTimeline timeline={trip.timeline} />
+                </div>
+              )}
+            </RouteHoverProvider>
 
             <div className="content-card">
               <TripComments
