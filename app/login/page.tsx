@@ -116,6 +116,8 @@ function LoginInner() {
         </div>
         <p className="login-tab-hint">
           มีบัญชีอยู่แล้วล็อกอินได้เลยทั้งสองแท็บ · เลือกประเภทเฉพาะตอน<strong>สมัครใหม่ด้วย Google</strong>
+          <br />
+          <span style={{ opacity: 0.85 }}>Already have an account? Sign in from either tab · pick a type only when <strong>signing up with Google</strong></span>
         </p>
 
         {notice && (
