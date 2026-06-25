@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useRef } from "react";
 import Link from "next/link";
+import { useRouteHover } from "@/components/maps/RouteHoverContext";
 
 export interface PlaceCardData {
   id: string;
@@ -24,7 +25,10 @@ interface Props {
   place: PlaceCardData;
   distanceM?: number;
   newTab?: boolean;
+  linkOnHover?: boolean;   // โยง hover กับหมุดบนแผนที่ (ใช้ในหน้าค้นหาใกล้ฉัน)
 }
+
+const LINK_ACCENT = "#2563eb";
 
 const CAT_ICON: Record<string, string> = {
   NATURE:"🌿",CAFE:"☕",ACCOMMODATION:"🏨",CAMPING:"⛺",
@@ -43,11 +47,13 @@ function fmtDist(m: number) {
   return m < 1000 ? `${m} ม.` : `${(m / 1000).toFixed(m < 10000 ? 1 : 0)} กม.`;
 }
 
-export default function PlaceCard({ place, distanceM, newTab = false }: Props) {
+export default function PlaceCard({ place, distanceM, newTab = false, linkOnHover = false }: Props) {
   const [imgError,  setImgError ] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
   const cardRef  = useRef<HTMLDivElement>(null);
   const shineRef = useRef<HTMLDivElement>(null);
+  const { activeId, setActiveId } = useRouteHover();
+  const isActive = linkOnHover && activeId === place.id;
 
   const icon  = CAT_ICON[place.category]  ?? "📍";
   const label = CAT_LABEL[place.category] ?? place.category;
@@ -78,7 +84,10 @@ export default function PlaceCard({ place, distanceM, newTab = false }: Props) {
       shineRef.current.style.background = `radial-gradient(circle at ${x * 100}% ${y * 100}%, rgba(255,255,255,.22) 0%, transparent 65%)`;
   };
 
+  const onEnter = () => { if (linkOnHover) setActiveId(place.id); };
+
   const onLeave = () => {
+    if (linkOnHover) setActiveId(null);
     const el = cardRef.current;
     if (!el) return;
     el.style.transform  = "perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0) scale(1)";
@@ -92,10 +101,17 @@ export default function PlaceCard({ place, distanceM, newTab = false }: Props) {
       href={`/place/${place.slug}`}
       target={newTab ? "_blank" : undefined}
       rel={newTab ? "noopener noreferrer" : undefined}
-      style={{ textDecoration: "none", color: "inherit", display: "block", minWidth: 0, height: "100%" }}
+      style={{
+        textDecoration: "none", color: "inherit", display: "block", minWidth: 0, height: "100%",
+        borderRadius: 20,
+        transform: isActive ? "translateX(4px)" : "translateX(0)",
+        boxShadow: isActive ? `0 10px 26px ${LINK_ACCENT}55` : "none",
+        transition: "transform .14s ease, box-shadow .14s ease",
+      }}
     >
       <div
         ref={cardRef}
+        onMouseEnter={onEnter}
         onMouseMove={onMove}
         onMouseLeave={onLeave}
         style={{
@@ -103,7 +119,7 @@ export default function PlaceCard({ place, distanceM, newTab = false }: Props) {
           borderRadius: 20, overflow: "hidden",
           background: "var(--pl-white)",
           boxShadow: "var(--pl-shadow-card)",
-          border: "1px solid var(--pl-border)",
+          border: isActive ? `2px solid ${LINK_ACCENT}` : "1px solid var(--pl-border)",
           willChange: "transform",
           position: "relative",
           height: "100%",

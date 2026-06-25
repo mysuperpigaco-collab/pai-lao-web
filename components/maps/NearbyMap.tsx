@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Circle, CircleMarker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import { useRouteHover } from "./RouteHoverContext";
 
 // แก้ปัญหา icon หายเมื่อ bundle (เหมือน LeafletMap)
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -70,6 +71,7 @@ export default function NearbyMap({
   height?: number;
 }) {
   const zoom = radiusToZoom(radius);
+  const { activeId, setActiveId } = useRouteHover();
 
   return (
     <MapContainer
@@ -91,13 +93,24 @@ export default function NearbyMap({
       />
 
       {/* หมุดผลลัพธ์ */}
-      {results.map((p) =>
-        p.lat != null && p.lng != null ? (
+      {results.map((p) => {
+        if (p.lat == null || p.lng == null) return null;
+        const isActive = p.id === activeId;
+        return (
           <CircleMarker
             key={p.id}
             center={[p.lat, p.lng]}
-            radius={6}
-            pathOptions={{ color: "#1d4ed8", fillColor: "#3b82f6", fillOpacity: 0.9, weight: 1.5 }}
+            radius={isActive ? 10 : 6}
+            pathOptions={{
+              color: isActive ? "#1e3a8a" : "#1d4ed8",
+              fillColor: isActive ? "#2563eb" : "#3b82f6",
+              fillOpacity: isActive ? 1 : 0.9,
+              weight: isActive ? 3 : 1.5,
+            }}
+            eventHandlers={{
+              mouseover: () => setActiveId(p.id),
+              mouseout: () => setActiveId(null),
+            }}
           >
             <Popup>
               <a href={`/place/${p.slug}`} target="_blank" rel="noopener noreferrer" style={{ fontWeight: 700, color: "#1d4ed8" }}>
@@ -108,8 +121,8 @@ export default function NearbyMap({
               </div>
             </Popup>
           </CircleMarker>
-        ) : null
-      )}
+        );
+      })}
 
       {/* หมุดตำแหน่งฉัน (ลากได้ จำกัดในไทย) */}
       <Marker

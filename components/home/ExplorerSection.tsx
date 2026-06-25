@@ -6,6 +6,7 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { PROVINCES, getDistricts } from "@/data/thailand";
 import SharedPlaceCard from "@/components/places/PlaceCard";
+import { RouteHoverProvider } from "@/components/maps/RouteHoverContext";
 
 // แผนที่ปักหมุด — โหลดฝั่ง client เท่านั้น (Leaflet ใช้ window)
 const NearbyMap = dynamic(() => import("@/components/maps/NearbyMap"), {
@@ -553,7 +554,7 @@ export default function ExplorerSection() {
               </small>
             </div>
           ) : (
-            <>
+            <RouteHoverProvider>
               {/* Category chips */}
               <div className="cat-row" style={{ marginBottom: 16 }}>
                 {PLACE_CATS.map(c => {
@@ -624,7 +625,7 @@ export default function ExplorerSection() {
                   <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 16 }}>
                     {nearShown.map((p, i) => (
                       <ScrollReveal key={p.id} delay={Math.min(i % 12, 6) * 50}>
-                        <SharedPlaceCard place={p} distanceM={p.distanceM} newTab={true} />
+                        <SharedPlaceCard place={p} distanceM={p.distanceM} newTab={true} linkOnHover={true} />
                       </ScrollReveal>
                     ))}
                   </div>
@@ -644,7 +645,7 @@ export default function ExplorerSection() {
                   )}
                 </>
               )}
-            </>
+            </RouteHoverProvider>
           )}
         </div>
       )}
