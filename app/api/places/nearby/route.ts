@@ -43,6 +43,7 @@ export async function GET(request: Request) {
       select: {
         id: true, slug: true, title: true, titleEn: true, category: true,
         province: true, district: true, coverUrl: true, lat: true, lng: true,
+        descriptionShort: true,
         isVerified: true,
         business: { select: { businessName: true, isVerified: true } },
         _count: { select: { reviews: true, bookmarks: true } },

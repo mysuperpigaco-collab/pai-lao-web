@@ -185,6 +185,11 @@ export default function PlaceCard({ place, distanceM, newTab = false }: Props) {
           <p style={{ fontSize: 11, color: "var(--pl-text-muted)", fontStyle: "italic", margin: 0, minHeight: "1.4em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {place.titleEn || ""}
           </p>
+          {place.descriptionShort && (
+            <p style={{ fontSize: 12, color: "var(--pl-text-secondary)", margin: "2px 0 0", lineHeight: 1.45, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" } as React.CSSProperties}>
+              {place.descriptionShort}
+            </p>
+          )}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", paddingTop: 8, borderTop: "1px solid var(--pl-border)" }}>
             <span style={{ fontSize: 11, color: "var(--pl-text-secondary)", fontWeight: 600 }}>
               📍 {[place.district, prov].filter(Boolean).join(", ")}

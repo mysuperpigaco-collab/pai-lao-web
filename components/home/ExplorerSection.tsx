@@ -26,6 +26,7 @@ interface Place {
   province: string;
   district: string;
   category: string;
+  descriptionShort?: string | null;
   isVerified?: boolean;
   avgRating?: number | null;
   communityCover?: string | null;
@@ -68,6 +69,7 @@ const inThailand = (lat: number, lng: number) =>
 interface NearbyPlace {
   id: string; slug: string; title: string; titleEn?: string | null;
   category: string; province: string; district: string;
+  descriptionShort?: string | null;
   coverUrl: string; communityCover?: string | null;
   lat: number | null; lng: number | null;
   isVerified?: boolean;
