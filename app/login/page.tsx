@@ -6,6 +6,17 @@ import Link from "next/link";
 import InputField from "@/components/ui/InputField";
 import { useAuth } from "@/context/AuthContext";
 import { useMagneticButton } from "@/hooks/useMagneticButton";
+import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
+
+const GOOGLE_ERRORS: Record<string, string> = {
+  google_config: "ระบบ Google ยังไม่พร้อมใช้งาน",
+  google_state: "เซสชันหมดอายุ กรุณาลองใหม่อีกครั้ง",
+  google_token: "เชื่อมต่อ Google ไม่สำเร็จ กรุณาลองใหม่",
+  google_userinfo: "ดึงข้อมูลจาก Google ไม่สำเร็จ",
+  google_unverified: "อีเมล Google นี้ยังไม่ได้ยืนยัน",
+  google_error: "เกิดข้อผิดพลาดระหว่างเข้าสู่ระบบด้วย Google",
+  banned: "บัญชีนี้ถูกระงับการใช้งาน",
+};
 
 export default function LoginPage() {
   return <Suspense fallback={null}><LoginInner /></Suspense>;
@@ -30,6 +41,8 @@ function LoginInner() {
     if (v === "success") setNotice("✅ ยืนยันอีเมลสำเร็จ! เข้าสู่ระบบได้เลย");
     if (v === "invalid") setNotice("❌ ลิงก์ยืนยันหมดอายุหรือไม่ถูกต้อง");
     if (v === "error")   setNotice("❌ เกิดข้อผิดพลาด กรุณาลองใหม่");
+    const err = searchParams.get("error");
+    if (err && GOOGLE_ERRORS[err]) setError(GOOGLE_ERRORS[err]);
   }, [searchParams]);
 
   const handleResend = async () => {
@@ -135,6 +148,8 @@ function LoginInner() {
             {isLoading ? "กำลังตรวจสอบ..." : "เข้าสู่ระบบ | Sign In"}
           </button>
         </form>
+
+        <GoogleLoginButton />
 
         <div className="auth-footer">
           <p>ยังไม่มีบัญชี? <Link href="/signup" className="link-signup">สมัครสมาชิก</Link></p>

@@ -152,6 +152,7 @@ export async function PUT(request: Request) {
       if (!currentPw) return NextResponse.json({ message: "กรุณากรอกรหัสผ่านปัจจุบัน" }, { status: 400 });
       const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { password: true } });
       if (!user) return NextResponse.json({ message: "ไม่พบผู้ใช้" }, { status: 404 });
+      if (!user.password) return NextResponse.json({ message: "บัญชีนี้เข้าสู่ระบบด้วย Google ยังไม่มีรหัสผ่าน" }, { status: 400 });
       const ok = await verifyPassword(currentPw, user.password);
       if (!ok) return NextResponse.json({ message: "รหัสผ่านปัจจุบันไม่ถูกต้อง" }, { status: 400 });
       await prisma.user.update({ where: { id: session.userId }, data: { password: await hashPassword(newPw) } });

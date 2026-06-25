@@ -63,7 +63,8 @@ export async function POST(request: NextRequest) {
     });
 
     // ── ตรวจรหัสผ่าน (ใช้ message เดียวกัน ป้องกัน user enumeration) ─
-    const isValid = user ? await verifyPassword(password, user.password) : false;
+    // ผู้ใช้ที่สมัครด้วย Google จะไม่มี password → ล็อกอินด้วยรหัสผ่านไม่ได้
+    const isValid = user && user.password ? await verifyPassword(password, user.password) : false;
     if (!user || !isValid) {
       // บันทึก login ล้มเหลว
       await prisma.loginLog.create({

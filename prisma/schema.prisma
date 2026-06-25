@@ -39,8 +39,11 @@ model User {
   lastName    String
   username    String    @unique
   email       String    @unique
-  phone       String
-  password    String
+  phone       String?
+  password    String?
+
+  googleId     String?  @unique           // Google OAuth subject id (ลิงก์บัญชี Google)
+  authProvider String   @default("LOCAL") // LOCAL | GOOGLE
 
   displayName String?
   birthDate   DateTime?

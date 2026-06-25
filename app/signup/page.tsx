@@ -6,6 +6,7 @@ import { useMagneticButton } from "@/hooks/useMagneticButton";
 import SignupTabs from "@/components/auth/SignupTabs";
 import TravelerFields from "@/components/auth/TravelerFields";
 import InputField from "@/components/ui/InputField";
+import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
 
 export default function SignupPage() {
   const magSubmit = useMagneticButton();
@@ -284,6 +285,8 @@ export default function SignupPage() {
               {isLoading ? "กำลังสมัคร..." : "ยืนยันสมัครสมาชิก | Register Now"}
             </button>
           </form>
+
+          <GoogleLoginButton label="สมัคร / เข้าสู่ระบบด้วย Google" />
 
           <p className="login-link-text">
             มีบัญชีแล้ว? <Link href="/login">เข้าสู่ระบบ | Login</Link>

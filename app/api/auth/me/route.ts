@@ -59,6 +59,7 @@ export async function PUT(request: Request) {
       if (!/[0-9]/.test(newPw)) return NextResponse.json({ message: "รหัสผ่านใหม่ต้องมีตัวเลขอย่างน้อย 1 ตัว" }, { status: 400 });
       const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { password: true } });
       if (!user) return NextResponse.json({ message: "ไม่พบผู้ใช้" }, { status: 404 });
+      if (!user.password) return NextResponse.json({ message: "บัญชีนี้เข้าสู่ระบบด้วย Google ยังไม่มีรหัสผ่าน" }, { status: 400 });
       const ok = await verifyPassword(currentPw, user.password);
       if (!ok) return NextResponse.json({ message: "รหัสผ่านปัจจุบันไม่ถูกต้อง" }, { status: 400 });
     }
