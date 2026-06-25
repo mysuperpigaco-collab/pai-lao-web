@@ -27,6 +27,24 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("pl_token")?.value;
   const session = token ? await verifyToken(token) : null;
 
+  // ── Onboarding gate: ผู้ใช้ Google ที่ยังกรอกข้อมูลจำเป็นไม่ครบ (onb === false) ──
+  // บังคับให้อยู่หน้าแก้ไขโปรไฟล์จนกว่าจะกรอกครบ (token เก่าที่ไม่มี onb = ผ่าน)
+  if (session && (session as { onb?: boolean }).onb === false) {
+    const ONBOARD_ALLOW = [
+      "/dashboard/edit-profile", "/business/edit-profile",
+      "/logout", "/policy", "/forgot-password", "/reset-password", "/verify-email",
+    ];
+    const allowed =
+      ONBOARD_ALLOW.some((p) => pathname === p || pathname.startsWith(p + "/")) ||
+      AUTH_ROUTES.some((r) => pathname.startsWith(r));
+    if (!allowed) {
+      const dest = session.role === "BUSINESS" ? "/business/edit-profile" : "/dashboard/edit-profile";
+      const url = new URL(dest, request.url);
+      url.searchParams.set("welcome", "google");
+      return NextResponse.redirect(url);
+    }
+  }
+
   // Protected routes require login
   const isProtected = PROTECTED_ROUTES.some((r) => pathname.startsWith(r));
   if (isProtected && !session) {
@@ -65,13 +83,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/dashboard/:path*",
-    "/trips/create",
-    "/business/:path*",
-    "/admin/:path*",
-    "/planner/:path*",
-    "/login",
-    "/signup",
-  ],
+  // กันทุกหน้า (ยกเว้น api, ไฟล์ static, รูป) เพื่อให้ onboarding gate ครอบคลุมทั้งเว็บ
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.).*)"],
 };

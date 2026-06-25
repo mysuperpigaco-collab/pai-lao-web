@@ -286,7 +286,10 @@ export default function SignupPage() {
             </button>
           </form>
 
-          <GoogleLoginButton label="สมัคร / เข้าสู่ระบบด้วย Google" />
+          <GoogleLoginButton
+            label={accountType === "business" ? "สมัครเจ้าของสถานที่ด้วย Google" : "สมัคร / เข้าสู่ระบบด้วย Google"}
+            intent={accountType === "business" ? "business" : "user"}
+          />
 
           <p className="login-link-text">
             มีบัญชีแล้ว? <Link href="/login">เข้าสู่ระบบ | Login</Link>

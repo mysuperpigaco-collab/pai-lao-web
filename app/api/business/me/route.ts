@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser, hashPassword, verifyPassword } from "@/lib/auth";
+import { getCurrentUser, hashPassword, verifyPassword, signToken, setAuthCookie, isProfileComplete } from "@/lib/auth";
 
 // GET /api/business/me
 export async function GET() {
@@ -163,7 +163,7 @@ export async function PUT(request: Request) {
     const updated = await prisma.business.update({
       where: { userId: session.userId },
       data: {
-        ...(businessName !== undefined && { businessName }),
+        ...(businessName !== undefined && { businessName: String(businessName).trim() }),
         ...(contactName  !== undefined && { contactName }),
         ...(description  !== undefined && { description }),
         ...(province     !== undefined && { province }),
@@ -182,7 +182,27 @@ export async function PUT(request: Request) {
       },
     });
 
-    return NextResponse.json({ message: "อัปเดตสำเร็จ", business: updated });
+    // ── ออก token ใหม่พร้อมสถานะ onboarding (กันข้าม onboarding) ──
+    const me = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { username: true, role: true, authProvider: true },
+    });
+    const onb = isProfileComplete({
+      authProvider: me?.authProvider,
+      role: me?.role,
+      business: { businessName: updated.businessName, phone: updated.phone },
+    });
+    if (me) {
+      const token = await signToken({
+        userId: session.userId,
+        username: me.username,
+        role: me.role as any,
+        onb,
+      });
+      await setAuthCookie(token);
+    }
+
+    return NextResponse.json({ message: "อัปเดตสำเร็จ", business: updated, onboarded: onb });
   } catch (error) {
     console.error("PUT /api/business/me:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });

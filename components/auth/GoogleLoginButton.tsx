@@ -8,8 +8,15 @@ function isInAppBrowser(): boolean {
   return /\bLine\b|FBAN|FBAV|FB_IAB|Instagram|; wv\)/i.test(ua);
 }
 
-export default function GoogleLoginButton({ label = "เข้าสู่ระบบด้วย Google" }: { label?: string }) {
+export default function GoogleLoginButton({
+  label = "เข้าสู่ระบบด้วย Google",
+  intent,
+}: {
+  label?: string;
+  intent?: "user" | "business";
+}) {
   const [warn, setWarn] = useState(false);
+  const href = intent ? `/api/auth/google?intent=${intent}` : "/api/auth/google";
 
   const handleClick = (e: React.MouseEvent) => {
     if (isInAppBrowser()) {
@@ -28,7 +35,7 @@ export default function GoogleLoginButton({ label = "เข้าสู่ระ
       </div>
 
       <a
-        href="/api/auth/google"
+        href={href}
         onClick={handleClick}
         style={{
           display: "flex", alignItems: "center", justifyContent: "center", gap: 10,

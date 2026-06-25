@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser, hashPassword, verifyPassword } from "@/lib/auth";
+import { getCurrentUser, hashPassword, verifyPassword, signToken, setAuthCookie, isProfileComplete } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/auth/me
@@ -117,7 +117,30 @@ export async function PUT(request: Request) {
       },
     });
 
-    return NextResponse.json({ message: "อัปเดตสำเร็จ", user: updated });
+    // ── ออก token ใหม่พร้อมสถานะ onboarding (กันข้าม onboarding) ──
+    const fresh = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: {
+        role: true, authProvider: true, phone: true, gender: true,
+        business: { select: { businessName: true, phone: true } },
+      },
+    });
+    const onb = isProfileComplete({
+      authProvider: fresh?.authProvider,
+      phone: fresh?.phone,
+      gender: fresh?.gender,
+      role: fresh?.role,
+      business: fresh?.business,
+    });
+    const token = await signToken({
+      userId: session.userId,
+      username: updated.username,
+      role: (fresh?.role ?? session.role) as any,
+      onb,
+    });
+    await setAuthCookie(token);
+
+    return NextResponse.json({ message: "อัปเดตสำเร็จ", user: updated, onboarded: onb });
   } catch (error) {
     console.error("PUT /api/auth/me:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });

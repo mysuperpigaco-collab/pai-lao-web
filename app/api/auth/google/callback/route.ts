@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { signToken } from "@/lib/auth";
+import { signToken, isProfileComplete } from "@/lib/auth";
 
 const COOKIE_NAME = "pl_token";
 
@@ -32,6 +32,8 @@ export async function GET(request: NextRequest) {
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
   const savedState = request.cookies.get("pl_oauth_state")?.value;
+  // intent ที่ผู้ใช้เลือกจากแท็บ (นักรีวิว/เจ้าของสถานที่) — ใช้เฉพาะตอนสร้างบัญชีใหม่
+  const intent = request.cookies.get("pl_oauth_intent")?.value === "business" ? "business" : "user";
 
   // ตรวจ state กัน CSRF
   if (!code || !state || !savedState || state !== savedState) {
@@ -76,14 +78,21 @@ export async function GET(request: NextRequest) {
     }
 
     // 3) หา/สร้าง/ลิงก์ผู้ใช้
+    const userSelect = {
+      id: true, username: true, role: true, bannedUntil: true, googleId: true, avatarUrl: true,
+      authProvider: true, phone: true, gender: true,
+      business: { select: { businessName: true, phone: true } },
+    } as const;
+
     let isNew = false;
     let user = await prisma.user.findFirst({
       where: { OR: [{ googleId }, { email }] },
-      select: { id: true, username: true, role: true, bannedUntil: true, googleId: true, avatarUrl: true },
+      select: userSelect,
     });
 
     if (user) {
       // มีบัญชีอยู่แล้ว (เจอจาก googleId หรืออีเมลเดิม) → ลิงก์ Google + ตั้งยืนยันอีเมล
+      // หมายเหตุ: ใช้ role เดิมของผู้ใช้เสมอ — intent (แท็บ) ไม่เปลี่ยน role บัญชีที่มีอยู่แล้ว
       if (!user.googleId) {
         await prisma.user.update({
           where: { id: user.id },
@@ -97,19 +106,31 @@ export async function GET(request: NextRequest) {
     } else {
       isNew = true;
       const username = await uniqueUsername(email);
+      const fullName = [info.given_name, info.family_name].filter(Boolean).join(" ") || info.name || "ผู้ใช้";
       user = await prisma.user.create({
         data: {
           firstName: info.given_name || info.name || "ผู้ใช้",
           lastName: info.family_name || "",
+          displayName: fullName, // prefill ชื่อที่แสดงจาก Google
           username,
           email,
           googleId,
           authProvider: "GOOGLE",
           emailVerified: true,
           avatarUrl: info.picture || null,
-          role: "TRAVELER",
+          role: intent === "business" ? "BUSINESS" : "TRAVELER",
+          // เจ้าของสถานที่: สร้าง Business record รอกรอกข้อมูล (businessName ว่าง = ยังไม่ครบ → ต้อง onboarding)
+          ...(intent === "business" && {
+            business: {
+              create: {
+                businessName: "",
+                contactName: fullName,
+                email,
+              },
+            },
+          }),
         },
-        select: { id: true, username: true, role: true, bannedUntil: true, googleId: true, avatarUrl: true },
+        select: userSelect,
       });
     }
 
@@ -118,16 +139,25 @@ export async function GET(request: NextRequest) {
       return redirectWithError(request, "banned");
     }
 
-    // 5) ออก JWT + ตั้ง cookie แล้วเด้งตามบทบาท
+    // 5) เช็คว่าข้อมูลจำเป็นครบไหม (onb) → ออก JWT พร้อมสถานะ
+    const onb = isProfileComplete({
+      authProvider: user.authProvider,
+      phone: user.phone,
+      gender: user.gender,
+      role: user.role,
+      business: user.business,
+    });
+
     const tokenJwt = await signToken({
       userId: user.id,
       username: user.username,
       role: user.role as any,
+      onb,
     });
 
-    // ผู้ใช้ Google ครั้งแรก → พาไปตั้งชื่อผู้ใช้ + รหัสผ่าน · คนเดิม → เข้าตามบทบาท
-    const dest =
-      isNew ? "/dashboard/edit-profile?welcome=google"
+    // ยังกรอกไม่ครบ → พาไปหน้า onboarding ตามประเภท · ครบแล้ว → เข้าตามบทบาท
+    const dest = !onb
+      ? (user.role === "BUSINESS" ? "/business/edit-profile?welcome=google" : "/dashboard/edit-profile?welcome=google")
       : user.role === "SUPERADMIN" || user.role === "ADMIN" ? "/admin"
       : user.role === "BUSINESS" ? "/business/dashboard"
       : "/dashboard";
@@ -141,6 +171,7 @@ export async function GET(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7,
     });
     res.cookies.delete("pl_oauth_state");
+    res.cookies.delete("pl_oauth_intent");
     return res;
   } catch (err) {
     console.error("Google callback error:", err);

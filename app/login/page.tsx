@@ -28,6 +28,7 @@ function LoginInner() {
   const { login }    = useAuth();
   const magSubmit    = useMagneticButton();
 
+  const [loginRole,     setLoginRole    ] = useState<"user" | "business">("user");
   const [formData,      setFormData     ] = useState({ identifier: "", password: "", rememberMe: false });
   const [error,         setError        ] = useState("");
   const [notice,        setNotice       ] = useState("");
@@ -88,8 +89,33 @@ function LoginInner() {
         <h2 style={{ fontWeight: 800, marginBottom: "10px", fontSize: "28px" }}>
           เข้าสู่ระบบ | <span style={{ color: "#3b82f6" }}>Login</span>
         </h2>
-        <p style={{ color: "var(--pl-text-muted)", marginBottom: "35px", fontSize: "14px" }}>
+        <p style={{ color: "var(--pl-text-muted)", marginBottom: "24px", fontSize: "14px" }}>
           ยินดีต้อนรับกลับสู่สังคมนักเดินทาง | Welcome Back
+        </p>
+
+        {/* แท็บประเภทบัญชี — กำหนดว่าจะสมัคร/เข้าสู่ระบบด้วย Google ในนามไหน */}
+        <div className="login-tabs" role="tablist">
+          <button type="button" role="tab" aria-selected={loginRole === "user"}
+            className={`login-tab ${loginRole === "user" ? "active" : ""}`}
+            onClick={() => setLoginRole("user")}>
+            <span className="login-tab-emoji">🧭</span>
+            <span className="login-tab-text">
+              <strong>นักรีวิว</strong>
+              <small>Traveler</small>
+            </span>
+          </button>
+          <button type="button" role="tab" aria-selected={loginRole === "business"}
+            className={`login-tab ${loginRole === "business" ? "active" : ""}`}
+            onClick={() => setLoginRole("business")}>
+            <span className="login-tab-emoji">🏪</span>
+            <span className="login-tab-text">
+              <strong>เจ้าของสถานที่</strong>
+              <small>Business</small>
+            </span>
+          </button>
+        </div>
+        <p className="login-tab-hint">
+          มีบัญชีอยู่แล้วล็อกอินได้เลยทั้งสองแท็บ · เลือกประเภทเฉพาะตอน<strong>สมัครใหม่ด้วย Google</strong>
         </p>
 
         {notice && (
@@ -149,7 +175,10 @@ function LoginInner() {
           </button>
         </form>
 
-        <GoogleLoginButton />
+        <GoogleLoginButton
+          label={loginRole === "business" ? "ดำเนินการด้วย Google (เจ้าของสถานที่)" : "ดำเนินการด้วย Google (นักรีวิว)"}
+          intent={loginRole}
+        />
 
         <div className="auth-footer">
           <p>ยังไม่มีบัญชี? <Link href="/signup" className="link-signup">สมัครสมาชิก</Link></p>
@@ -159,6 +188,18 @@ function LoginInner() {
       <style jsx>{`
         .auth-container { min-height: 85vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; background-color: transparent; }
         .auth-card { background: var(--pl-white); padding: 50px; border-radius: 40px; box-shadow: var(--pl-shadow-card); width: 100%; max-width: 480px; text-align: center; }
+        .login-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .login-tab { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 12px; border-radius: 16px; border: 1.5px solid var(--pl-border, #e2e8f0); background: var(--pl-white, #fff); cursor: pointer; transition: all 0.18s ease; }
+        .login-tab:hover { border-color: #93c5fd; transform: translateY(-1px); }
+        .login-tab-emoji { font-size: 20px; line-height: 1; }
+        .login-tab-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+        .login-tab-text strong { font-size: 14px; font-weight: 800; color: var(--pl-text-primary, #0f172a); }
+        .login-tab-text small { font-size: 11px; color: var(--pl-text-muted, #94a3b8); font-weight: 600; }
+        .login-tab.active { border-color: transparent; background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%); box-shadow: 0 8px 18px rgba(59,130,246,0.25); }
+        .login-tab.active .login-tab-text strong { color: #fff; }
+        .login-tab.active .login-tab-text small { color: rgba(255,255,255,0.85); }
+        .login-tab-hint { font-size: 12px; color: var(--pl-text-muted, #94a3b8); text-align: center; margin: 0 0 26px; line-height: 1.6; }
+        .login-tab-hint strong { color: var(--pl-text-secondary, #475569); font-weight: 700; }
         .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding: 0 5px; }
         .remember-me { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--pl-text-secondary); }
         .remember-me input { width: 16px; height: 16px; accent-color: #3b82f6; cursor: pointer; }

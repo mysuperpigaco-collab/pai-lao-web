@@ -143,6 +143,14 @@ export default function EditProfilePage() {
     if (form.username && !/^[a-zA-Z0-9_]{3,30}$/.test(form.username.trim())) {
       setApiError("ชื่อผู้ใช้ต้องเป็นภาษาอังกฤษ ตัวเลข หรือ _ (3-30 ตัว)"); return;
     }
+    // ── ข้อมูลจำเป็น (กันข้าม onboarding) ──
+    const phoneDigits = form.phone.replace(/[^0-9]/g, "");
+    if (phoneDigits.length < 9 || phoneDigits.length > 10) {
+      setApiError("กรุณากรอกเบอร์โทร 9-10 หลัก (ตัวเลขเท่านั้น) · Please enter a valid 9–10 digit phone number"); return;
+    }
+    if (!form.gender) {
+      setApiError("กรุณาเลือกเพศ · Please select your gender"); return;
+    }
     setIsLoading(true); setApiError("");
     try {
       const body: any = {
@@ -184,8 +192,9 @@ export default function EditProfilePage() {
 
         {welcomeGoogle && (
           <div style={{ background: "linear-gradient(135deg,#eff6ff,#ecfdf5)", border: "1px solid #bfdbfe", borderRadius: 14, padding: "14px 18px", marginBottom: 20, color: "#1e40af", fontSize: 14, lineHeight: 1.7 }}>
-            🎉 <strong>ยินดีต้อนรับสู่ไปเล่า!</strong> คุณเข้าสู่ระบบด้วย Google แล้ว<br />
-            แนะนำให้ <strong>ตั้งชื่อผู้ใช้</strong> ที่ชอบ และ <strong>ตั้งรหัสผ่าน</strong> ไว้ เพื่อใช้ล็อกอินด้วยอีเมล/ชื่อผู้ใช้ได้อีกทาง
+            🎉 <strong>ยินดีต้อนรับสู่ไปเล่า!</strong> คุณเข้าสู่ระบบด้วย Google แล้ว · Welcome!<br />
+            กรุณากรอก <strong>เบอร์โทร</strong> และ <strong>เพศ</strong> ให้ครบก่อนเริ่มใช้งาน · Please complete your phone &amp; gender to continue<br />
+            <span style={{ color: "#475569" }}>แนะนำให้ <strong>ตั้งชื่อผู้ใช้</strong> และ <strong>ตั้งรหัสผ่าน</strong> เพื่อใช้ล็อกอินด้วยอีเมล/ชื่อผู้ใช้ได้อีกทาง</span>
           </div>
         )}
 
@@ -207,11 +216,11 @@ export default function EditProfilePage() {
             <div className="section-label full-width">👤 ข้อมูลส่วนตัว · Personal Info</div>
 
             <div className="form-group">
-              <label>ชื่อจริง <span className="req">*</span></label>
+              <label>ชื่อจริง · First Name <span className="req">*</span></label>
               <input className="form-control" name="firstName" value={form.firstName} onChange={handleChange} required placeholder="ชื่อจริง" />
             </div>
             <div className="form-group">
-              <label>นามสกุล <span className="req">*</span></label>
+              <label>นามสกุล · Last Name <span className="req">*</span></label>
               <input className="form-control" name="lastName" value={form.lastName} onChange={handleChange} required placeholder="นามสกุล" />
             </div>
             <div className="form-group">
@@ -224,15 +233,17 @@ export default function EditProfilePage() {
               <small style={{ fontSize: 11, color: "#94a3b8" }}>ใช้ล็อกอิน + เป็นลิงก์โปรไฟล์ /user/{form.username || "username"} · a-z, 0-9, _ (3-30 ตัว)</small>
             </div>
             <div className="form-group">
-              <label>เพศ · Gender</label>
-              <select className="form-control" name="gender" value={form.gender} onChange={handleChange}>
-                <option value="">ไม่ระบุ</option>
+              <label>เพศ · Gender <span className="req">*</span></label>
+              <select className="form-control" name="gender" value={form.gender} onChange={handleChange} required>
+                <option value="">— เลือกเพศ · Select gender —</option>
                 {GENDER_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
             <div className="form-group">
-              <label>เบอร์โทร · Phone</label>
-              <input className="form-control" name="phone" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value.replace(/[^0-9+\-() ]/g, "") }))} placeholder="08XXXXXXXX" />
+              <label>เบอร์โทร · Phone <span className="req">*</span></label>
+              <input className="form-control" name="phone" inputMode="numeric" maxLength={10} value={form.phone}
+                onChange={e => setForm(f => ({ ...f, phone: e.target.value.replace(/[^0-9]/g, "") }))}
+                required placeholder="08XXXXXXXX (ตัวเลขเท่านั้น · digits only)" />
             </div>
             <div className="full-width form-group">
               <label>แนะนำตัว · Bio</label>

@@ -76,10 +76,18 @@ export default function EditBusinessProfilePage() {
   const [newPw,     setNewPw    ] = useState("");
   const [pwError,   setPwError  ] = useState("");
 
-  /* ── Phone filter — digits only ── */
+  /* ── Welcome (สมัครด้วย Google ครั้งแรก) ── */
+  const [welcomeGoogle, setWelcomeGoogle] = useState(false);
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("welcome") === "google") {
+      setWelcomeGoogle(true);
+    }
+  }, []);
+
+  /* ── Phone filter — digits only (ตัวเลขเท่านั้น) ── */
   const handlePhone = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const raw = (e.target as HTMLInputElement).value;
-    setPhone(raw.replace(/[^0-9+\-() ]/g, ""));
+    setPhone(raw.replace(/[^0-9]/g, ""));
   };
 
   /* ── Province change — reset district ── */
@@ -147,6 +155,15 @@ export default function EditBusinessProfilePage() {
       if (!/[0-9]/.test(newPw)) { setPwError("รหัสผ่านใหม่ต้องมีตัวเลขอย่างน้อย 1 ตัว"); return; }
     }
 
+    // ── ข้อมูลจำเป็น (กันข้าม onboarding) ──
+    if (!businessName.trim()) {
+      setPwError("กรุณากรอกชื่อธุรกิจ · Please enter your business name"); return;
+    }
+    const phoneDigits = phone.replace(/[^0-9]/g, "");
+    if (phoneDigits.length < 9 || phoneDigits.length > 10) {
+      setPwError("กรุณากรอกเบอร์โทร 9-10 หลัก (ตัวเลขเท่านั้น) · Please enter a valid 9–10 digit phone number"); return;
+    }
+
     setIsSaving(true);
     try {
       const res = await fetch("/api/business/me", {
@@ -187,9 +204,22 @@ export default function EditBusinessProfilePage() {
           <PageTag label="BUSINESS PROFILE" />
         </div>
 
+        {welcomeGoogle && (
+          <div style={{ background: "linear-gradient(135deg,#eff6ff,#ecfdf5)", border: "1px solid #bfdbfe", borderRadius: "14px", padding: "14px 20px", marginBottom: "20px", color: "#1e40af", fontSize: 14, lineHeight: 1.7 }}>
+            🎉 <strong>ยินดีต้อนรับสู่ไปเล่า!</strong> คุณเข้าสู่ระบบด้วย Google แล้ว · Welcome!<br />
+            กรุณากรอก <strong>ชื่อธุรกิจ</strong> และ <strong>เบอร์โทร</strong> ให้ครบก่อนเริ่มใช้งาน · Please complete your business name &amp; phone to continue
+          </div>
+        )}
+
         {saveMsg && (
           <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "12px", padding: "14px 20px", marginBottom: "20px", color: "#15803d", fontWeight: 700 }}>
             {saveMsg}
+          </div>
+        )}
+
+        {pwError && (
+          <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "12px", padding: "14px 20px", marginBottom: "20px", color: "#b91c1c", fontWeight: 700 }}>
+            ⚠️ {pwError}
           </div>
         )}
 
@@ -242,8 +272,8 @@ export default function EditBusinessProfilePage() {
             </div>
             <div className="ui-form-grid">
               <div className="ui-field">
-                <label>ชื่อธุรกิจ <span className="en">Business name</span></label>
-                <input className="ui-input" type="text" value={businessName} onChange={e => setBusinessName(e.target.value)} />
+                <label>ชื่อธุรกิจ <span className="en">Business name</span> <span style={{ color: "#ef4444" }}>*</span></label>
+                <input className="ui-input" type="text" value={businessName} onChange={e => setBusinessName(e.target.value)} required placeholder="เช่น ร้านกาแฟดอยช้าง" />
               </div>
               <div className="ui-field">
                 <label>ชื่อผู้ติดต่อ <span className="en">Contact name</span></label>
@@ -254,9 +284,9 @@ export default function EditBusinessProfilePage() {
                 <input className="ui-input" type="email" value={email} onChange={e => setEmail(e.target.value)} />
               </div>
               <div className="ui-field">
-                <label>เบอร์โทร <span className="en">Phone</span></label>
-                <input className="ui-input" type="tel" inputMode="numeric" value={phone}
-                  onChange={handlePhone} placeholder="เช่น 081-234-5678" pattern="[0-9+\-() ]*" />
+                <label>เบอร์โทร <span className="en">Phone</span> <span style={{ color: "#ef4444" }}>*</span></label>
+                <input className="ui-input" type="tel" inputMode="numeric" maxLength={10} value={phone}
+                  onChange={handlePhone} required placeholder="เช่น 0812345678 (ตัวเลขเท่านั้น)" pattern="[0-9]*" />
               </div>
               <div className="ui-field col-full">
                 <label>เว็บไซต์ <span className="en">Website</span></label>

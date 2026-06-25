@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { verifyPassword, signToken, setAuthCookie } from "@/lib/auth";
+import { verifyPassword, signToken, setAuthCookie, isProfileComplete } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rateLimit";
 
 // ── helper: ดึง IP จาก request headers ──────────────────────
@@ -70,8 +70,11 @@ export async function POST(request: NextRequest) {
         bannedUntil: true,
         banReason: true,
         emailVerified: true,
+        authProvider: true,
+        phone: true,
+        gender: true,
         business: {
-          select: { id: true, businessName: true, logoUrl: true, isVerified: true },
+          select: { id: true, businessName: true, logoUrl: true, isVerified: true, phone: true },
         },
       },
     });
@@ -121,6 +124,13 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       username: user.username,
       role: user.role,
+      onb: isProfileComplete({
+        authProvider: user.authProvider,
+        phone: user.phone,
+        gender: user.gender,
+        role: user.role,
+        business: user.business,
+      }),
     });
     await setAuthCookie(token);
 

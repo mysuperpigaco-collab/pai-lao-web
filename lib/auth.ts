@@ -33,7 +33,31 @@ export type JWTPayload = {
   userId: string;
   username: string;
   role: "TRAVELER" | "BUSINESS" | "ADMIN" | "SUPERADMIN";
+  onb?: boolean; // onboarded — ข้อมูลจำเป็นครบแล้วหรือยัง (undefined = ถือว่าครบ, สำหรับ token เก่า)
 };
+
+// ── ตรวจว่าข้อมูลโปรไฟล์จำเป็นครบไหม (ใช้ตัดสิน onb) ──────────
+// บัญชีที่ไม่ใช่ Google ถือว่าครบเสมอ (กรอกครบตอนสมัครฟอร์มแล้ว) → ไม่โดน gate
+const digits = (s?: string | null) => (s ?? "").replace(/[^0-9]/g, "");
+const phoneOk = (s?: string | null) => {
+  const d = digits(s);
+  return d.length >= 9 && d.length <= 10;
+};
+
+export function isProfileComplete(u: {
+  authProvider?: string | null;
+  phone?: string | null;
+  gender?: string | null;
+  role?: string | null;
+  business?: { businessName?: string | null; phone?: string | null } | null;
+}): boolean {
+  if (u.authProvider !== "GOOGLE") return true;
+  if (u.role === "BUSINESS") {
+    return !!u.business?.businessName?.trim() && phoneOk(u.business?.phone);
+  }
+  // TRAVELER (Google): ต้องมีเบอร์โทร (9-10 หลัก) + เพศ
+  return phoneOk(u.phone) && !!u.gender;
+}
 
 export async function signToken(payload: JWTPayload): Promise<string> {
   return new SignJWT({ ...payload })

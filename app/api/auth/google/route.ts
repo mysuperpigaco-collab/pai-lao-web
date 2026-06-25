@@ -13,6 +13,8 @@ export async function GET(request: NextRequest) {
   const redirectUri = `${base}/api/auth/google/callback`;
 
   const state = crypto.randomBytes(16).toString("hex");
+  // intent: สมัคร/เข้าสู่ระบบในนามนักรีวิว (user) หรือเจ้าของสถานที่ (business)
+  const intent = request.nextUrl.searchParams.get("intent") === "business" ? "business" : "user";
 
   const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   authUrl.searchParams.set("client_id", clientId);
@@ -25,6 +27,13 @@ export async function GET(request: NextRequest) {
   const res = NextResponse.redirect(authUrl.toString());
   // เก็บ state ไว้ตรวจตอน callback (อายุ 10 นาที, lax เพื่อให้รอดข้าม redirect กลับ)
   res.cookies.set("pl_oauth_state", state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 600,
+  });
+  res.cookies.set("pl_oauth_intent", intent, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
