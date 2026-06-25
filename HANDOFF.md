@@ -38,6 +38,9 @@
 - **styled-jsx เป็น scoped** → คอมโพเนนต์ลูกไม่ได้ class ของหน้าแม่ (เช่น `.form-control`) ต้องใส่สไตล์ในคอมโพเนนต์เอง
 - **Glob ที่ path มี `[slug]` (วงเล็บเหลี่ยม) มักหาไม่เจอ** → ใช้ Grep หรือ path ตรง ๆ แทน
 - **รีวิวของ "สถานที่" ห้ามใส่ `tripId`** (จะไปโผล่ในคอมเมนต์ของทริป) — review ที่เป็น place review ต้องมีแค่ `placeId`
+- **โดเมนมี 2 ตัวแปร env** — `NEXT_PUBLIC_SITE_URL` (sitemap/OG/แชร์/canonical + redirect_uri ของ Google) และ `NEXT_PUBLIC_BASE_URL` (ลิงก์ในอีเมล) · fallback ในโค้ดทุกจุดเป็น **non-www** `https://pai-lao.com` · เว็บจริงใช้ทั้ง www และ non-www (ลงทะเบียน redirect URI ทั้งคู่ใน Google) — ถ้าจะบังคับ canonical ต้องตั้ง env ทั้งสองตัว + redirect non-www↔www
+- **Google OAuth redirect_uri ต้องตรงเป๊ะกับที่ลงทะเบียนใน Google Cloud** (www vs non-www, http/https, ห้าม `/` ท้าย) — derive จาก `NEXT_PUBLIC_SITE_URL || origin`
+- **styled-jsx `[data-theme="dark"]` ต้องห่อ `:global(...)`** เมื่ออยู่ใน `<style jsx>` ไม่งั้น selector ดาร์กโหมดไม่ทำงาน
 
 ## 4. โมเดล/แนวคิดหลัก
 
@@ -46,6 +49,8 @@
 - **Place** — `approvalStatus` + `rejectionReason` · สถานที่ที่ผู้ใช้เสนอ = PENDING (businessId null)
 - **PendingEdit** — แก้ทริปที่ approved แล้วจะสร้าง PendingEdit ให้แอดมินตรวจ
 - **Review** — `placeId` XOR `tripId` (place review ห้ามมี tripId)
+- **User (auth)** — `email`/`username` unique (1 อีเมล = 1 บัญชี) · `password`/`phone` เป็น **optional** (บัญชี Google ไม่มี) · `googleId String? @unique` · `authProvider` (LOCAL/GOOGLE) · login บังคับ `emailVerified` (ยกเว้น admin) · บัญชี Google ตั้ง emailVerified=true อัตโนมัติ
+- **Place** — มี `descriptionShort` (จุดเด่น/คำโปรย) แสดงบน PlaceCard · `description` (เต็ม, บังคับ)
 - **TRIP_MOODS** อยู่ `data/tripMoods.ts` · **titleStyle helper** อยู่ `lib/titleStyle.ts`
 
 ### Lifecycle ทริป + การแชร์ไปหน้าสถานที่ (สำคัญ — เพิ่งรื้อ)
@@ -66,30 +71,39 @@
 - API แอดมิน: `app/api/admin/trips`, `app/api/admin/places`, `app/api/admin/pending-edits`, `app/api/admin/trip-place-check`
 - แผนที่: `lib/maps.ts` (`googleUrlToLatLng` สแกนพิกัดจาก body) + `app/api/maps/resolve`
 - titleStyleCss ใช้ render หัวข้อทุกการ์ด: home (`app/page.tsx`, `TripSlider`, `AutoGridSection`), `/trips`, `/search`, StoryCard, user profile, planner, hero+related
+- **Auth (Google login):** `app/api/auth/google/route.ts` (เริ่ม + state), `app/api/auth/google/callback/route.ts` (แลก code, find/create/link, signToken, onboarding redirect), `components/auth/GoogleLoginButton.tsx` (ปุ่ม + ดัก in-app LINE) · ปุ่มอยู่หน้า `/login` + `/signup`
+- **บัญชี/รหัสผ่าน:** `app/api/auth/me` (GET คืน `hasPassword`+`authProvider`; PUT แก้ username + ตั้งรหัสผ่านแบบไม่ต้องมีรหัสเดิมถ้ายังไม่มี) · `app/api/business/me` (logic รหัสผ่านเดียวกัน) · หน้าแก้ไข `app/dashboard/edit-profile/page.tsx` (ช่อง username + ส่วนรหัสผ่านมีเงื่อนไข + แบนเนอร์ `?welcome=google`)
+- **hover-link แผนที่↔การ์ด:** `components/maps/RouteHoverContext.tsx` (context กลาง, default no-op = หน้าอื่นไม่กระทบ) · ใช้ใน `LeafletMap`/`NearbyMap`/`TripTimeline`/`PlaceCard` (prop `linkOnHover`) · ครอบ `RouteHoverProvider` ที่หน้าทริป + ExplorerSection
+- **สคริปต์ลบผู้ใช้:** `scripts/delete-users.ts` (dry-run default, `--execute`, ข้าม ADMIN/SUPERADMIN, cascade ลบลูกอัตโนมัติ)
 
-## 6. สถานะล่าสุด (เซสชันนี้ — ทำเสร็จหมดแล้ว ควร deploy ครบ)
+## 6. สถานะล่าสุด (เซสชันนี้ — deploy ครบบน prod แล้ว ✅)
 
-แก้ทั้งหมดและสร้างชุดคำสั่ง deploy ให้แล้ว (Jim ทยอย deploy):
-1. รีวิวไทม์ไลน์ไม่หลุดไปคอมเมนต์ทริป (เอา tripId ออกจาก place review ทุกที่)
-2. navbar จัดกลุ่มเมนูกลางแถบ (`justify-content:center`) สมดุล · มือถือ space-between
-3. mood เป็นกริด 3 คอลัมน์ + ปุ่ม "ทุกสไตล์" · budget+tags อยู่แถวเดียว
-4. ตกแต่ง title: อิโมจิ + แบบตัวอักษร (ปกติ 500 / ตัวหนา 900 / คลาสสิก serif italic) — เอาสีออกแล้ว (เหลือฟอนต์)
-5. ปักหมุด Google Maps ลิงก์ย่อ (resolver สแกน body)
-6. เลื่อนสร้างสถานที่ไปตอนเซฟ + รวมช่องหมุดเดียว
-7. หน้าแก้ไขโหลด pending edit ของเจ้าของ (ค่าล่าสุดไม่หาย)
-8. ทริป REJECTED แก้แล้วกลับเป็น PENDING · อนุมัติ PendingEdit ตั้ง isPublished
-9. แอดมินอนุมัติ/ปฏิเสธสถานที่จากทริปได้ 3 ทาง + แท็บ "สถานที่รอตรวจ"
-10. ป้ายสถานะแดชบอร์ดถูกต้อง (approvalStatus ก่อน isPublished)
-11. แชร์รูป/รีวิวไปหน้าสถานที่ + การ์ด เฉพาะทริปอนุมัติแล้ว
-12. แจ้งเตือน "แสดงเฉพาะรีวิวแรก" ใต้ toggle shareToPlace
+ยืนยันจาก Vercel: ทุก commit ขึ้น Production (Ready) แล้ว ไม่มีโค้ดค้าง
 
-**ค้าง/ติดตามผล:**
-- ข้อมูลเก่าที่รั่วก่อนแก้ (รีวิว/รูปจากทริปที่ไม่อนุมัติ) ยังค้างใน DB — ถ้าจะล้างต้องเขียนสคริปต์ (Jim ยังไม่ขอ)
-- มีตัวเลือกค้างถาม Jim: "อนุมัติทริปแล้วให้อนุมัติสถานที่ PENDING ที่ลิงก์อัตโนมัติด้วยไหม" (ตอนนี้ยังต้องกดแยก)
+**งานที่ทำเสร็จเซสชันนี้:**
+1. **หมุดทริปบนแผนที่ + ไทม์ไลน์** — หมุดมีเลขลำดับ + สี (ROUTE_COLORS) บอกไทม์ไลน์ · วงเลขในไทม์ไลน์สีตรงกับหมุด · เส้นเชื่อมหมุดแบบเส้นประ + ขอบขาว
+2. **hover-link การ์ด↔หมุด** — ชี้การ์ด/หมุดแล้วอีกฝั่งไฮไลต์ (หน้าทริป + หน้าค้นหาใกล้ฉัน) ผ่าน `RouteHoverContext` (default no-op หน้าอื่นไม่กระทบ)
+3. **PlaceCard แสดง "จุดเด่น" (`descriptionShort`)** + ให้ API nearby ส่งฟิลด์นี้มาด้วย
+4. **Google OAuth login** — ปุ่มหน้า login/signup · find/create/link บัญชี (อีเมลซ้ำ = ลิงก์เข้าด้วยกัน) · กัน CSRF ด้วย state · ดัก in-app browser LINE
+5. **DB schema:** `password`/`phone` → optional · เพิ่ม `googleId`, `authProvider` (push แล้ว)
+6. **แก้ username ได้เอง** (เช็ครูปแบบ + ซ้ำ) + **ตั้งรหัสผ่าน** สำหรับบัญชี Google (ไม่ต้องมีรหัสเดิมถ้ายังไม่มี) ในหน้าแก้ไขโปรไฟล์
+7. **Onboarding** — ผู้ใช้ Google ครั้งแรกเด้งไปหน้าแก้ไขโปรไฟล์ + แบนเนอร์ต้อนรับให้ตั้งชื่อ/รหัสผ่าน
+8. `scripts/delete-users.ts` (ลบบัญชีเทสต์ — รันแล้ว)
+
+**ข้อตกลงเชิงนโยบาย (ที่คุยกันเซสชันนี้):**
+- **แยกบัญชีผู้รีวิว (TRAVELER) กับร้าน (BUSINESS)** — 1 อีเมล = 1 บัญชี · จะเป็นร้านให้แอดมินกด "→ BUSINESS" (ยังไม่ทำ self-service upgrade)
+
+**ค้าง/ควรทำ (ไม่เร่ง ไม่บล็อก):**
+- ตั้ง `NEXT_PUBLIC_SITE_URL=https://www.pai-lao.com` + `NEXT_PUBLIC_BASE_URL=...` บน Vercel ให้เป็น canonical เดียว (ตอนนี้ login ใช้ได้เพราะลงทะเบียน redirect ทั้ง www/non-www)
+- **Resend (`RESEND_API_KEY`) ยังว่าง** — ต้องตั้ง + verify domain `pai-lao.com` ถึงจะส่งอีเมลยืนยันสมัคร/รีเซ็ตรหัส/ฟอร์มติดต่อได้ (Google login ไม่ต้องใช้)
+- บั๊กเล็กที่รู้แล้ว: หน้าแก้ไขโปรไฟล์บังคับ `lastName` (Google บางบัญชีไม่ส่งนามสกุล) · เปลี่ยน username ชนกันแบบ race จะขึ้น error 500 ทั่วไป (DB กันให้อยู่)
+- ของเก่ายังค้าง: ตัวเลือก "อนุมัติทริปแล้วอนุมัติสถานที่ PENDING อัตโนมัติไหม" (ยังกดแยก)
+
+**ไอเดียที่เสนอไว้ ยังไม่ทำ:** ระยะ+เวลาเดินทางระหว่างจุด, สรุปงบทริป, ก๊อปทริปไปวางแผน, trending, แจ้งเตือนผู้ใช้, ISR หน้า place/trip (ติดที่หน้าใช้ session), สถานที่ใกล้เคียง, lazy map, บีบอัดรูปก่อนอัปโหลด
 
 **คำสั่ง deploy มาตรฐาน (PowerShell):**
 ```powershell
-npx prisma db push   # เฉพาะตอนมีคอลัมน์ใหม่ (เช่น titleStyle เพิ่มไปแล้ว)
+npx prisma db push   # เฉพาะตอนมีคอลัมน์ใหม่
 npx tsc --noEmit
 git add -A
 git commit -m "..."
@@ -97,4 +111,4 @@ git push
 ```
 
 ---
-*อัปเดตล่าสุด: สรุปงานเซสชันใหญ่ (รื้อ flow อนุมัติทริป+สถานที่, ตกแต่ง title, mood grid, navbar) — อัปเดตไฟล์นี้ทุกครั้งที่มีงานใหม่*
+*อัปเดตล่าสุด: เซสชัน Google login (OAuth + onboarding + แก้ username/รหัสผ่าน) + หมุดทริป/ไทม์ไลน์สี + hover-link + descriptionShort — อัปเดตไฟล์นี้ทุกครั้งที่มีงานใหม่*
