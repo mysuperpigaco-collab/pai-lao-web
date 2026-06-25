@@ -20,6 +20,7 @@ export async function GET() {
         role: true, tripGalleryLimit: true,
         profilePrivacy: true, showEmail: true, showPhone: true,
         showSocial: true, showBirthDate: true,
+        authProvider: true, password: true,
         business: {
           select: { id: true, businessName: true, logoUrl: true, isVerified: true },
         },
@@ -30,7 +31,9 @@ export async function GET() {
       return NextResponse.json({ message: "ไม่พบผู้ใช้" }, { status: 404 });
     }
 
-    return NextResponse.json({ user });
+    // ไม่ส่ง hash ออกไป — ส่งแค่ว่ามีรหัสผ่านแล้วหรือยัง
+    const { password, ...safe } = user;
+    return NextResponse.json({ user: { ...safe, hasPassword: !!password } });
   } catch (error) {
     console.error("GET /api/auth/me:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
@@ -48,20 +51,37 @@ export async function PUT(request: Request) {
       firstName, lastName, displayName, phone, gender, bio,
       lineId, facebook, instagram, tiktok,
       avatarUrl, coverUrl,
-      currentPw, newPw,
+      username, currentPw, newPw,
       profilePrivacy, showEmail, showPhone, showSocial, showBirthDate,
     } = body;
 
+    // ── เปลี่ยน username (เช็ครูปแบบ + ซ้ำ) ──────────────────────
+    let newUsername: string | undefined;
+    if (username !== undefined) {
+      const uname = String(username).trim();
+      if (!/^[a-zA-Z0-9_]{3,30}$/.test(uname)) {
+        return NextResponse.json({ message: "ชื่อผู้ใช้ต้องเป็นภาษาอังกฤษ ตัวเลข หรือ _ (3-30 ตัว)" }, { status: 400 });
+      }
+      const taken = await prisma.user.findFirst({
+        where: { username: { equals: uname, mode: "insensitive" }, NOT: { id: session.userId } },
+        select: { id: true },
+      });
+      if (taken) return NextResponse.json({ message: "ชื่อผู้ใช้นี้ถูกใช้แล้ว" }, { status: 400 });
+      newUsername = uname;
+    }
+
     if (newPw) {
-      if (!currentPw) return NextResponse.json({ message: "กรุณากรอกรหัสผ่านปัจจุบัน" }, { status: 400 });
       if (newPw.length < 8) return NextResponse.json({ message: "รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร" }, { status: 400 });
       if (!/[a-zA-Z]/.test(newPw)) return NextResponse.json({ message: "รหัสผ่านใหม่ต้องมีตัวอักษรอย่างน้อย 1 ตัว" }, { status: 400 });
       if (!/[0-9]/.test(newPw)) return NextResponse.json({ message: "รหัสผ่านใหม่ต้องมีตัวเลขอย่างน้อย 1 ตัว" }, { status: 400 });
       const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { password: true } });
       if (!user) return NextResponse.json({ message: "ไม่พบผู้ใช้" }, { status: 404 });
-      if (!user.password) return NextResponse.json({ message: "บัญชีนี้เข้าสู่ระบบด้วย Google ยังไม่มีรหัสผ่าน" }, { status: 400 });
-      const ok = await verifyPassword(currentPw, user.password);
-      if (!ok) return NextResponse.json({ message: "รหัสผ่านปัจจุบันไม่ถูกต้อง" }, { status: 400 });
+      // มีรหัสผ่านอยู่แล้ว → ต้องยืนยันรหัสเดิม · ยังไม่มี (บัญชี Google) → ตั้งใหม่ได้เลย
+      if (user.password) {
+        if (!currentPw) return NextResponse.json({ message: "กรุณากรอกรหัสผ่านปัจจุบัน" }, { status: 400 });
+        const ok = await verifyPassword(currentPw, user.password);
+        if (!ok) return NextResponse.json({ message: "รหัสผ่านปัจจุบันไม่ถูกต้อง" }, { status: 400 });
+      }
     }
 
     const updated = await prisma.user.update({
@@ -79,6 +99,7 @@ export async function PUT(request: Request) {
         ...(tiktok      !== undefined && { tiktok }),
         ...(avatarUrl      !== undefined && { avatarUrl }),
         ...(coverUrl       !== undefined && { coverUrl }),
+        ...(newUsername    !== undefined && { username: newUsername }),
         ...(newPw          ? { password: await hashPassword(newPw) } : {}),
         ...(profilePrivacy !== undefined && { profilePrivacy }),
         ...(showEmail      !== undefined && { showEmail: Boolean(showEmail) }),

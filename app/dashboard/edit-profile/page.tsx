@@ -71,8 +71,9 @@ export default function EditProfilePage() {
   const [showNewPw, setShowNewPw] = useState(false);
   const [showConfPw, setShowConfPw] = useState(false);
 
+  const [hasPassword, setHasPassword] = useState(true);
   const [form, setForm] = useState({
-    firstName: "", lastName: "", displayName: "", phone: "", gender: "",
+    firstName: "", lastName: "", displayName: "", username: "", phone: "", gender: "",
     bio: "", lineId: "", facebook: "", instagram: "", tiktok: "",
     currentPw: "", newPw: "", confirmPw: "",
   });
@@ -93,6 +94,7 @@ export default function EditProfilePage() {
           firstName:   u.firstName   ?? "",
           lastName:    u.lastName    ?? "",
           displayName: u.displayName ?? "",
+          username:    u.username    ?? "",
           phone:       u.phone       ?? "",
           gender:      u.gender      ?? "",
           bio:         u.bio         ?? "",
@@ -101,6 +103,7 @@ export default function EditProfilePage() {
           instagram:   u.instagram   ?? "",
           tiktok:      u.tiktok      ?? "",
         }));
+        setHasPassword(u.hasPassword !== false);
         setPrivacy({
           profilePrivacy: u.profilePrivacy ?? "PUBLIC",
           showEmail:      u.showEmail      ?? false,
@@ -129,17 +132,20 @@ export default function EditProfilePage() {
     if (form.newPw && form.newPw !== form.confirmPw) {
       setApiError("รหัสผ่านใหม่ไม่ตรงกัน"); return;
     }
+    if (form.username && !/^[a-zA-Z0-9_]{3,30}$/.test(form.username.trim())) {
+      setApiError("ชื่อผู้ใช้ต้องเป็นภาษาอังกฤษ ตัวเลข หรือ _ (3-30 ตัว)"); return;
+    }
     setIsLoading(true); setApiError("");
     try {
       const body: any = {
         firstName: form.firstName, lastName: form.lastName,
-        displayName: form.displayName, phone: form.phone,
+        displayName: form.displayName, username: form.username.trim(), phone: form.phone,
         gender: form.gender || undefined, bio: form.bio,
         lineId: form.lineId || undefined, facebook: form.facebook || undefined,
         instagram: form.instagram || undefined, tiktok: form.tiktok || undefined,
         ...privacy,
       };
-      if (form.newPw) { body.currentPw = form.currentPw; body.newPw = form.newPw; }
+      if (form.newPw) { if (hasPassword) body.currentPw = form.currentPw; body.newPw = form.newPw; }
 
       const res = await fetch("/api/auth/me", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json();
@@ -196,6 +202,11 @@ export default function EditProfilePage() {
             <div className="form-group">
               <label>ชื่อที่แสดง · Display Name <span className="req">*</span></label>
               <input className="form-control" name="displayName" value={form.displayName} onChange={handleChange} required placeholder="ชื่อฉายา" />
+            </div>
+            <div className="form-group">
+              <label>ชื่อผู้ใช้ (สำหรับล็อกอิน) · Username <span className="req">*</span></label>
+              <input className="form-control" name="username" value={form.username} onChange={handleChange} required placeholder="username" autoComplete="off" />
+              <small style={{ fontSize: 11, color: "#94a3b8" }}>ใช้ล็อกอิน + เป็นลิงก์โปรไฟล์ /user/{form.username || "username"} · a-z, 0-9, _ (3-30 ตัว)</small>
             </div>
             <div className="form-group">
               <label>เพศ · Gender</label>
@@ -257,16 +268,25 @@ export default function EditProfilePage() {
             </div>
 
             {/* Security */}
-            <div className="section-label full-width">🔑 เปลี่ยนรหัสผ่าน · Change Password</div>
-            <div className="full-width form-group">
-              <label>รหัสผ่านปัจจุบัน (ต้องกรอกถ้าต้องการเปลี่ยน)</label>
-              <div style={{ position: "relative" }}>
-                <input className="form-control" name="currentPw" type={showCurPw ? "text" : "password"} value={form.currentPw} onChange={handleChange} placeholder="รหัสผ่านปัจจุบัน" style={{ paddingRight: 44 }} />
-                <button type="button" onClick={() => setShowCurPw(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 16, padding: 0, lineHeight: 1 }}>
-                  {showCurPw ? "🙈" : "👁️"}
-                </button>
-              </div>
+            <div className="section-label full-width">
+              🔑 {hasPassword ? "เปลี่ยนรหัสผ่าน · Change Password" : "ตั้งรหัสผ่าน · Set Password"}
             </div>
+            {!hasPassword && (
+              <div className="full-width" style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 12, padding: "10px 14px", marginBottom: 4, fontSize: 13, color: "#1e40af" }}>
+                บัญชีนี้เข้าสู่ระบบด้วย Google · ตั้งรหัสผ่านเพื่อเข้าสู่ระบบด้วยอีเมล/ชื่อผู้ใช้ได้อีกทาง (ไม่ต้องกรอกรหัสเดิม)
+              </div>
+            )}
+            {hasPassword && (
+              <div className="full-width form-group">
+                <label>รหัสผ่านปัจจุบัน (ต้องกรอกถ้าต้องการเปลี่ยน)</label>
+                <div style={{ position: "relative" }}>
+                  <input className="form-control" name="currentPw" type={showCurPw ? "text" : "password"} value={form.currentPw} onChange={handleChange} placeholder="รหัสผ่านปัจจุบัน" style={{ paddingRight: 44 }} />
+                  <button type="button" onClick={() => setShowCurPw(v => !v)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 16, padding: 0, lineHeight: 1 }}>
+                    {showCurPw ? "🙈" : "👁️"}
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="form-group">
               <label>รหัสผ่านใหม่</label>
               <div style={{ position: "relative" }}>
