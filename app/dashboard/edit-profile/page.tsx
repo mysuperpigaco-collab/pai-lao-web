@@ -123,7 +123,10 @@ export default function EditProfilePage() {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    // ชื่อจริง/นามสกุล — ห้ามตัวเลข
+    const v = (name === "firstName" || name === "lastName") ? value.replace(/[0-9]/g, "") : value;
+    setForm(f => ({ ...f, [name]: v }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

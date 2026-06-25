@@ -68,7 +68,12 @@ export default function SignupPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    let v = value;
+    // ชื่อจริง/นามสกุล — ห้ามตัวเลข (ตัวอักษรเท่านั้น)
+    if (name === "firstName" || name === "lastName") v = value.replace(/[0-9]/g, "");
+    // เบอร์โทร — ตัวเลขเท่านั้น
+    else if (name === "phone") v = value.replace(/[^0-9]/g, "");
+    setFormData(prev => ({ ...prev, [name]: v }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -199,9 +204,9 @@ export default function SignupPage() {
           <form onSubmit={handleSubmit}>
             <div className="form-grid">
               <div className="section-divider">ข้อมูลส่วนตัว | <small>Personal Info</small></div>
-              <InputField label="ชื่อจริง" labelEn="First Name" name="firstName" value={formData.firstName} onChange={handleChange} required placeholder="ระบุชื่อจริง" />
-              <InputField label="นามสกุล" labelEn="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} required placeholder="ระบุนามสกุล" />
-              <InputField label="ชื่อที่ใช้แสดง" labelEn="Display Name" name="displayName" value={formData.displayName} onChange={handleChange} required placeholder="ฉายาของคุณ" />
+              <InputField label="ชื่อจริง" labelEn="First Name" name="firstName" value={formData.firstName} onChange={handleChange} required placeholder="ระบุชื่อจริง · First name (ตัวอักษรเท่านั้น)" />
+              <InputField label="นามสกุล" labelEn="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} required placeholder="ระบุนามสกุล · Last name (ตัวอักษรเท่านั้น)" />
+              <InputField label="ชื่อที่ใช้แสดง" labelEn="Display Name" name="displayName" value={formData.displayName} onChange={handleChange} required placeholder="ฉายาของคุณ · Your nickname" />
               <InputField label="วันเกิด" labelEn="Birth Date" name="birthDate" type="date" value={formData.birthDate} onChange={handleChange} required max={today} />
               
               <div className="form-group">
@@ -213,7 +218,7 @@ export default function SignupPage() {
                   <option value="other">อื่นๆ | Other</option>
                 </select>
               </div>
-              <InputField label="เบอร์โทรศัพท์" labelEn="Phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} required placeholder="08XXXXXXXX" />
+              <InputField label="เบอร์โทรศัพท์" labelEn="Phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} required placeholder="08XXXXXXXX · digits only" />
 
               <div className="full-width"><InputField label="อีเมล" labelEn="Email Address" name="email" type="email" value={formData.email} onChange={handleChange} error={errors.email} required placeholder="example@mail.com" /></div>
 
@@ -239,7 +244,7 @@ export default function SignupPage() {
                       value={formData.businessName}
                       onChange={handleChange}
                       required
-                      placeholder="เช่น ร้านกาแฟดอยช้าง, รีสอร์ทภูผา"
+                      placeholder="เช่น ร้านกาแฟดอยช้าง · e.g. Doi Chang Café"
                       error={errors.businessName}
                     />
                   </div>
@@ -255,9 +260,9 @@ export default function SignupPage() {
               )}
 
               <div className="section-divider">ข้อมูลบัญชี | <small>Security</small></div>
-              <div className="full-width"><InputField label="ชื่อผู้ใช้งาน" labelEn="Username" name="username" value={formData.username} onChange={handleChange} error={errors.username} required /></div>
-              <InputField label="รหัสผ่าน" labelEn="Password" name="password" type="password" value={formData.password} onChange={handleChange} error={errors.password} required />
-              <InputField label="ยืนยันรหัสผ่าน" labelEn="Confirm" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} error={errors.confirmPassword} required />
+              <div className="full-width"><InputField label="ชื่อผู้ใช้งาน" labelEn="Username" name="username" value={formData.username} onChange={handleChange} error={errors.username} required placeholder="ภาษาอังกฤษ/ตัวเลข/_ · a-z, 0-9, _ (3-30)" /></div>
+              <InputField label="รหัสผ่าน" labelEn="Password" name="password" type="password" value={formData.password} onChange={handleChange} error={errors.password} required placeholder="อย่างน้อย 8 ตัว · Min 8 characters" />
+              <InputField label="ยืนยันรหัสผ่าน" labelEn="Confirm" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} error={errors.confirmPassword} required placeholder="กรอกรหัสผ่านอีกครั้ง · Re-enter password" />
             </div>
 
             {/* Terms & Privacy */}
