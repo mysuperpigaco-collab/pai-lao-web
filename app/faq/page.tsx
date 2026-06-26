@@ -228,7 +228,7 @@ export default function FAQPage() {
         <h3 style={{ fontSize: 18, fontWeight: 800, margin: "0 0 8px" }}>ยังไม่พบคำตอบ?</h3>
         <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", margin: "0 0 20px" }}>ทีมงานไปเล่าพร้อมช่วยเหลือคุณ</p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <a href="mailto:support@pai-lao.app"
+          <a href="mailto:supportpailao@gmail.com"
             style={{ padding: "11px 24px", background: "#10b981", color: "white", borderRadius: 12, textDecoration: "none", fontWeight: 700, fontSize: 14 }}>
             📧 ส่งอีเมลหาเรา
           </a>

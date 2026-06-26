@@ -5,7 +5,7 @@ import Link from "next/link";
 
 const LAST_UPDATED = "21 พฤษภาคม 2568";
 const SITE_NAME    = "ไปเล่า (PAI-LAO EXPERIENCE)";
-const CONTACT_EMAIL = "support@pai-lao.com";
+const CONTACT_EMAIL = "supportpailao@gmail.com";
 
 type Tab = "terms" | "privacy" | "community";
 
