@@ -72,7 +72,7 @@ function PlaceSearch({ onSelect }: { onSelect: (p: PlaceSuggestion) => void }) {
         </div>
       )}
       {open && results.length > 0 && (
-        <div style={{
+        <div data-lenis-prevent className="pl-scroll-y" style={{
           position:"absolute", top:"100%", left:0, right:0, zIndex:100,
           background:"#fff", border:"1px solid #e5e7eb", borderRadius:8,
           boxShadow:"0 4px 16px rgba(0,0,0,0.12)", maxHeight:220, overflowY:"auto",

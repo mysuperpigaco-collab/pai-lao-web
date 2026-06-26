@@ -196,7 +196,7 @@ function UserListModal({ title, users, onClose }: { title: string; users: Follow
           <h3 style={{fontWeight:800,fontSize:16,color:"var(--pl-text-primary)",margin:0}}>{title}</h3>
           <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:"var(--pl-text-muted)",fontFamily:"inherit"}}>✕</button>
         </div>
-        <div style={{overflowY:"auto",flex:1,padding:"10px 12px"}}>
+        <div data-lenis-prevent className="pl-scroll-y" style={{overflowY:"auto",flex:1,padding:"10px 12px"}}>
           {users.length === 0
             ? <p style={{textAlign:"center",color:"var(--pl-text-muted)",padding:"24px 0",fontSize:14}}>ยังไม่มีรายชื่อ</p>
             : users.map(u => {

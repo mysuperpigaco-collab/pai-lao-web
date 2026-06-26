@@ -188,7 +188,7 @@ function EditDetailModal({ edit, onClose, onApprove, onReject }: {
 }) {
   return (
     <div className="adm-modal-backdrop" onClick={onClose}>
-      <div className="adm-modal" style={{ maxWidth: 680, width: "100%", maxHeight: "90vh", overflowY: "auto" }}
+      <div className="adm-modal pl-scroll-y" data-lenis-prevent style={{ maxWidth: 680, width: "100%", maxHeight: "90vh", overflowY: "auto" }}
         onClick={e => e.stopPropagation()}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
           <div>

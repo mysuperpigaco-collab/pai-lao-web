@@ -273,7 +273,7 @@ export default function AdminPlacesPage() {
       {/* ── Create Place Modal ─────────────────────────────── */}
       {showCreate && (
         <div className="adm-overlay" onClick={() => setShowCreate(false)}>
-          <div className="adm-modal" style={{ maxWidth:620, width:"95vw", maxHeight:"90vh", overflowY:"auto" }}
+          <div className="adm-modal pl-scroll-y" data-lenis-prevent style={{ maxWidth:620, width:"95vw", maxHeight:"90vh", overflowY:"auto" }}
                onClick={e => e.stopPropagation()}>
             <div className="adm-modal-title">➕ เพิ่มสถานที่ใหม่</div>
             <div className="adm-modal-body" style={{ display:"flex", flexDirection:"column", gap:14 }}>

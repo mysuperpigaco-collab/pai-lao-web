@@ -134,7 +134,7 @@ export default function BusinessNotifications() {
               <style>{`@keyframes _sh{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
             </div>
           ) : (
-            <div style={{ maxHeight: 480, overflowY: "auto" }}>
+            <div data-lenis-prevent className="pl-scroll-y" style={{ maxHeight: 480, overflowY: "auto" }}>
               {/* ── Rejected edit alerts ── */}
               {visibleEditAlerts.map((alert) => (
                 <div key={alert.id} style={{

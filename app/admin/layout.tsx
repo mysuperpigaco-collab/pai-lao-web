@@ -102,7 +102,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="adm-shell">
       {/* Sidebar */}
-      <aside className="adm-sidebar">
+      <aside className="adm-sidebar" data-lenis-prevent>
         <div className="adm-logo">
           <div className="adm-logo-title">🗺️ ไปเล่า</div>
           <div className="adm-logo-sub">Admin Panel</div>
