@@ -728,7 +728,7 @@ export default function EditTripPage({ params }: Props) {
                       borderColor: item.placeId ? "#10b981" : undefined,
                       background: item.placeId ? "#f0fdf4" : undefined }} />
                   {(placeSuggestions[idx]?.length > 0) && (
-                    <div style={{ position: "absolute", top: "110%", left: 0, right: 0, background: "var(--pl-white)", border: "1.5px solid #e2e8f0", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.1)", zIndex: 50, maxHeight: 240, overflowY: "auto" }}>
+                    <div data-lenis-prevent className="pl-scroll-y" style={{ position: "absolute", top: "110%", left: 0, right: 0, background: "var(--pl-white)", border: "1.5px solid var(--pl-border)", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.1)", zIndex: 50, maxHeight: 240, overflowY: "auto" }}>
                       {placeSuggestions[idx].map((p: any) => (
                         <button key={p.id} type="button" onClick={() => selectPlace(idx, p)}
                           style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none", background: "none", cursor: "pointer", textAlign: "left", borderBottom: "1px solid #f1f5f9", fontFamily: "inherit" }}

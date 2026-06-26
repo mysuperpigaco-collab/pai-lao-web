@@ -105,6 +105,24 @@ html {
   display: none;
 }
 
+/* Opt-in: แสดงแถบเลื่อนบาง ๆ กลับมา (เช่น dropdown ผลค้นหา) — override การซ่อนด้านบน */
+.pl-scroll-y {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100,116,139,0.5) transparent;
+  -ms-overflow-style: auto;
+}
+.pl-scroll-y::-webkit-scrollbar {
+  display: block;
+  width: 8px;
+}
+.pl-scroll-y::-webkit-scrollbar-thumb {
+  background: rgba(100,116,139,0.45);
+  border-radius: 8px;
+}
+.pl-scroll-y::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 /* Fixed background layer — ใช้ pseudo-element แทน background-attachment: fixed
    เพราะ overflow-x: clip บน html ทำให้ background-attachment: fixed ไม่ทำงานใน Chrome */
 html::before {
