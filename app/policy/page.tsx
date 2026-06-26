@@ -66,7 +66,7 @@ function PolicyPageInner() {
       </div>
 
       {/* ── Content ── */}
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "40px 24px 80px" }}>
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "40px 24px 40px" }}>
 
         {/* ════════════════════════════════════════
             TAB 1 — ข้อกำหนดการใช้งาน (Terms of Service)
@@ -150,7 +150,7 @@ function PolicyPageInner() {
                 ].map(([title, desc]) => (
                   <div key={title} style={{
                     background: "var(--pl-bg)", borderRadius: 12, padding: "14px 16px",
-                    border: "1px solid #e2e8f0",
+                    border: "1px solid var(--pl-border)",
                   }}>
                     <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{title}</div>
                     <div style={{ fontSize: 13, color: "var(--pl-text-secondary)" }}>{desc}</div>
@@ -288,7 +288,7 @@ function PolicyPageInner() {
                   <div key={type} style={{
                     display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8,
                     padding: "10px 14px", background: "var(--pl-bg)", borderRadius: 8,
-                    border: "1px solid #e2e8f0", fontSize: 14,
+                    border: "1px solid var(--pl-border)", fontSize: 14,
                   }}>
                     <span style={{ color: "var(--pl-text-primary)", fontWeight: 600 }}>{type}</span>
                     <span style={{ color: "var(--pl-text-secondary)" }}>{duration}</span>
@@ -310,7 +310,7 @@ function PolicyPageInner() {
                 ].map(([title, desc]) => (
                   <div key={title} style={{
                     background: "var(--pl-bg)", borderRadius: 12, padding: "14px 16px",
-                    border: "1px solid #e2e8f0",
+                    border: "1px solid var(--pl-border)",
                   }}>
                     <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{title}</div>
                     <div style={{ fontSize: 13, color: "var(--pl-text-secondary)" }}>{desc}</div>
@@ -467,7 +467,7 @@ function PolicyPageInner() {
         )}
 
         {/* ── Back link ── */}
-        <div style={{ marginTop: 48, textAlign: "center" }}>
+        <div style={{ marginTop: 28, textAlign: "center" }}>
           <Link href="/" style={{
             display: "inline-flex", alignItems: "center", gap: 8,
             padding: "10px 24px", borderRadius: 12,
@@ -497,11 +497,11 @@ function Section({ icon, title, children }: { icon: string; title: string; child
       <h2 style={{
         display: "flex", alignItems: "center", gap: 10,
         fontSize: "1.05rem", fontWeight: 800, color: "var(--pl-text-primary)",
-        borderBottom: "2px solid #e2e8f0", paddingBottom: 10, marginBottom: 16,
+        borderBottom: "2px solid var(--pl-border)", paddingBottom: 10, marginBottom: 16,
       }}>
         <span>{icon}</span> {title}
       </h2>
-      <div style={{ color: "#374151", lineHeight: 1.8, fontSize: 15 }}>{children}</div>
+      <div style={{ color: "var(--pl-text-secondary)", lineHeight: 1.8, fontSize: 15 }}>{children}</div>
     </div>
   );
 }
@@ -525,7 +525,7 @@ function BulletList({ items, variant = "default" }: { items: string[]; variant?:
           <span style={{ color: colors[variant], fontWeight: 700, flexShrink: 0, marginTop: 1 }}>
             {icons[variant]}
           </span>
-          <span style={{ color: "#374151" }}>{item}</span>
+          <span style={{ color: "var(--pl-text-secondary)" }}>{item}</span>
         </li>
       ))}
     </ul>
