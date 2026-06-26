@@ -5,6 +5,7 @@ import { logActivity, getClientIp } from "@/lib/activityLogger";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { Resend } from "resend";
 import crypto from "crypto";
+import { hashToken } from "@/lib/tokens";
 
 export const dynamic = "force-dynamic";
 
@@ -124,7 +125,7 @@ export async function POST(request: NextRequest) {
 
     await prisma.user.update({
       where: { id: user.id },
-      data: { emailVerifyToken: verifyToken, emailVerifyExp: verifyExp },
+      data: { emailVerifyToken: hashToken(verifyToken), emailVerifyExp: verifyExp },
     });
 
     // ── ส่งอีเมลยืนยัน (ไม่บล็อก response ถ้า fail) ─────────

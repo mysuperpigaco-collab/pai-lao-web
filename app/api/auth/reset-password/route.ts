@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
+import { hashToken } from "@/lib/tokens";
 
 export async function POST(req: NextRequest) {
   const ip        = getClientIp(req);
@@ -13,7 +14,7 @@ export async function POST(req: NextRequest) {
     if (password.length < 8) return NextResponse.json({ error: "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร" }, { status: 400 });
 
     const user = await prisma.user.findFirst({
-      where: { resetToken: token, resetTokenExp: { gt: new Date() } },
+      where: { resetToken: hashToken(token), resetTokenExp: { gt: new Date() } },
     });
 
     if (!user) return NextResponse.json({ error: "ลิงก์หมดอายุหรือไม่ถูกต้อง" }, { status: 400 });

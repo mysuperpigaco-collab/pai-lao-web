@@ -4,6 +4,7 @@ import { Resend } from "resend";
 import crypto from "crypto";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { getClientIp } from "@/lib/activityLogger";
+import { hashToken } from "@/lib/tokens";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     await prisma.user.update({
       where: { id: user.id },
-      data: { emailVerifyToken: verifyToken, emailVerifyExp: verifyExp },
+      data: { emailVerifyToken: hashToken(verifyToken), emailVerifyExp: verifyExp },
     });
 
     const verifyUrl = `${BASE_URL}/api/auth/verify-email?token=${verifyToken}`;

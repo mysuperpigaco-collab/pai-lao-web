@@ -4,6 +4,7 @@ import { Resend } from "resend";
 import crypto from "crypto";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { hashToken } from "@/lib/tokens";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     await prisma.user.update({
       where: { id: user.id },
-      data: { resetToken: token, resetTokenExp: exp },
+      data: { resetToken: hashToken(token), resetTokenExp: exp },
     });
 
     await logActivity({

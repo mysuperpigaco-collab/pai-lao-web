@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { hashToken } from "@/lib/tokens";
 
 // GET /api/auth/verify-email?token=xxx
 export async function GET(req: NextRequest) {
@@ -11,7 +12,7 @@ export async function GET(req: NextRequest) {
 
     const user = await prisma.user.findFirst({
       where: {
-        emailVerifyToken: token,
+        emailVerifyToken: hashToken(token),
         emailVerifyExp: { gt: new Date() },
       },
     });
