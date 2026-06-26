@@ -85,8 +85,8 @@ export default function AboutPage() {
               desc: "เจ้าของธุรกิจส่งโปรโมชั่นเพื่อให้ทีมงานอนุมัติและแสดงในหน้า Deals ช่วยดึงดูดนักท่องเที่ยวให้เข้าหาสถานที่",
             },
           ].map(item => (
-            <div key={item.title} style={{ background: item.color, borderRadius: 16, border: `1.5px solid ${item.border}`, padding: "20px 22px" }}>
-              <div style={{ fontSize: 28, marginBottom: 10 }}>{item.icon}</div>
+            <div key={item.title} style={{ background: "var(--pl-white)", borderRadius: 16, border: "1.5px solid var(--pl-border)", padding: "20px 22px" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 48, height: 48, borderRadius: 12, background: item.color, border: `1px solid ${item.border}`, fontSize: 26, marginBottom: 12 }}>{item.icon}</div>
               <div style={{ fontWeight: 800, fontSize: 15, color: "var(--pl-text-primary)", marginBottom: 8 }}>{item.title}</div>
               <div style={{ fontSize: 13, color: "var(--pl-text-secondary)", lineHeight: 1.7 }}>{item.desc}</div>
             </div>
