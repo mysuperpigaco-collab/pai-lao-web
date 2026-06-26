@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { useRouter } from "next/navigation";
 
 type AuthUser = {
   id: string;
@@ -32,7 +31,6 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
 
   const refresh = async () => {
     try {
@@ -72,9 +70,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      /* ไม่ว่าผลเป็นยังไง ก็เคลียร์ฝั่ง client + ออกไปหน้าแรก */
+    }
     setUser(null);
-    router.push("/");
+    // hard reload เพื่อให้ cookie ที่เคลียร์มีผลจริง + หลุดจาก onboarding gate (กันเด้งกลับ)
+    window.location.href = "/";
   };
 
   return (

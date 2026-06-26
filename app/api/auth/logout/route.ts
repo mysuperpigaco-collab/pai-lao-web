@@ -31,7 +31,16 @@ export async function POST(request: NextRequest) {
       }).catch(() => {});
     }
 
-    return NextResponse.json({ message: "ออกจากระบบแล้ว" });
+    // เคลียร์ cookie ลง response ตรง ๆ ด้วย (กันกรณี cookies().delete ไม่แนบ Set-Cookie)
+    const res = NextResponse.json({ message: "ออกจากระบบแล้ว" });
+    res.cookies.set("pl_token", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+    });
+    return res;
   } catch (error) {
     console.error("POST /api/auth/logout:", error);
     return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
