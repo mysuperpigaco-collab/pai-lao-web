@@ -41,6 +41,12 @@
 - **โดเมนมี 2 ตัวแปร env** — `NEXT_PUBLIC_SITE_URL` (sitemap/OG/แชร์/canonical + redirect_uri ของ Google) และ `NEXT_PUBLIC_BASE_URL` (ลิงก์ในอีเมล) · fallback ในโค้ดทุกจุดเป็น **non-www** `https://pai-lao.com` · เว็บจริงใช้ทั้ง www และ non-www (ลงทะเบียน redirect URI ทั้งคู่ใน Google) — ถ้าจะบังคับ canonical ต้องตั้ง env ทั้งสองตัว + redirect non-www↔www
 - **Google OAuth redirect_uri ต้องตรงเป๊ะกับที่ลงทะเบียนใน Google Cloud** (www vs non-www, http/https, ห้าม `/` ท้าย) — derive จาก `NEXT_PUBLIC_SITE_URL || origin`
 - **styled-jsx `[data-theme="dark"]` ต้องห่อ `:global(...)`** เมื่ออยู่ใน `<style jsx>` ไม่งั้น selector ดาร์กโหมดไม่ทำงาน
+- **scrollbar ถูกซ่อนทั้งเว็บ** (globals `*::-webkit-scrollbar{display:none}`) → กล่อง overflow ที่อยากให้เห็นแถบเลื่อนใช้ class **`.pl-scroll-y`** (คู่กับ `data-lenis-prevent` เสมอ ไม่งั้น Lenis ยึด wheel เลื่อนไม่ได้)
+- **Rate limit ใช้ Upstash Redis** (`lib/rateLimit.ts`, `checkRateLimit` เป็น **async** ต้อง await) env `KV_REST_API_URL/KV_REST_API_TOKEN` · IP เชื่อ `x-real-ip` ก่อน (กันสปูฟ) · **fail-open** ถ้า Redis ล่ม
+- **Onboarding gate:** JWT มี `onb` (มาจาก `isProfileComplete` ใน `lib/auth`) · `middleware.ts` เด้ง onb=false กลับ edit-profile (matcher ครอบทุกหน้า) · **onb เป็น derived ไม่มี column ใน DB** · token เก่าที่ไม่มี onb = ถือว่าผ่าน · ทุกที่ที่ signToken ต้องคำนวณ onb ให้ครบ
+- **email verify/reset token เก็บเป็น SHA-256** (`lib/tokens.ts` → `hashToken`) — เทียบตอน verify ต้อง `hashToken(input)` ก่อน lookup ห้ามเทียบ plaintext
+- **sanitize-server เป็น regex (หลุด `<svg/onload>` ได้)** — ถ้าจะอัปเกรดใช้ **`sanitize-html` เท่านั้น** ห้าม isomorphic-dompurify ฝั่ง server (jsdom ทำ /api crash)
+- **logout ต้องเคลียร์ cookie ลง response (maxAge 0)** + client ใช้ `window.location` ไม่ใช่ router.push (ไม่งั้น onb gate เด้งกลับ ติดกับดัก)
 
 ## 4. โมเดล/แนวคิดหลัก
 
@@ -75,31 +81,35 @@
 - **บัญชี/รหัสผ่าน:** `app/api/auth/me` (GET คืน `hasPassword`+`authProvider`; PUT แก้ username + ตั้งรหัสผ่านแบบไม่ต้องมีรหัสเดิมถ้ายังไม่มี) · `app/api/business/me` (logic รหัสผ่านเดียวกัน) · หน้าแก้ไข `app/dashboard/edit-profile/page.tsx` (ช่อง username + ส่วนรหัสผ่านมีเงื่อนไข + แบนเนอร์ `?welcome=google`)
 - **hover-link แผนที่↔การ์ด:** `components/maps/RouteHoverContext.tsx` (context กลาง, default no-op = หน้าอื่นไม่กระทบ) · ใช้ใน `LeafletMap`/`NearbyMap`/`TripTimeline`/`PlaceCard` (prop `linkOnHover`) · ครอบ `RouteHoverProvider` ที่หน้าทริป + ExplorerSection
 - **สคริปต์ลบผู้ใช้:** `scripts/delete-users.ts` (dry-run default, `--execute`, ข้าม ADMIN/SUPERADMIN, cascade ลบลูกอัตโนมัติ)
+- **Security/onboarding (เซสชันล่าสุด):** `lib/rateLimit.ts` (Upstash) · `lib/tokens.ts` (`hashToken`) · `middleware.ts` (onb gate + role-based redirect) · `isProfileComplete` ใน `lib/auth`
+- **Google signup 2 ทาง:** `components/auth/GoogleLoginButton.tsx` (prop `intent`) · `/api/auth/google` เก็บ `pl_oauth_intent` cookie · `/api/auth/google/callback` แยก business/user + สร้าง Business record · `/login` มีสองแท็บ
+- **ค้นหาสถานที่ในไทม์ไลน์:** `searchPlaces` เรียก `/api/places?q=..&limit=100` · dropdown สูง maxHeight 480 (~8 แถว) + `data-lenis-prevent` + `.pl-scroll-y`
 
-## 6. สถานะล่าสุด (เซสชันนี้ — deploy ครบบน prod แล้ว ✅)
-
-ยืนยันจาก Vercel: ทุก commit ขึ้น Production (Ready) แล้ว ไม่มีโค้ดค้าง
+## 6. สถานะล่าสุด (เซสชัน security + Google business signup — deploy แล้ว)
 
 **งานที่ทำเสร็จเซสชันนี้:**
-1. **หมุดทริปบนแผนที่ + ไทม์ไลน์** — หมุดมีเลขลำดับ + สี (ROUTE_COLORS) บอกไทม์ไลน์ · วงเลขในไทม์ไลน์สีตรงกับหมุด · เส้นเชื่อมหมุดแบบเส้นประ + ขอบขาว
-2. **hover-link การ์ด↔หมุด** — ชี้การ์ด/หมุดแล้วอีกฝั่งไฮไลต์ (หน้าทริป + หน้าค้นหาใกล้ฉัน) ผ่าน `RouteHoverContext` (default no-op หน้าอื่นไม่กระทบ)
-3. **PlaceCard แสดง "จุดเด่น" (`descriptionShort`)** + ให้ API nearby ส่งฟิลด์นี้มาด้วย
-4. **Google OAuth login** — ปุ่มหน้า login/signup · find/create/link บัญชี (อีเมลซ้ำ = ลิงก์เข้าด้วยกัน) · กัน CSRF ด้วย state · ดัก in-app browser LINE
-5. **DB schema:** `password`/`phone` → optional · เพิ่ม `googleId`, `authProvider` (push แล้ว)
-6. **แก้ username ได้เอง** (เช็ครูปแบบ + ซ้ำ) + **ตั้งรหัสผ่าน** สำหรับบัญชี Google (ไม่ต้องมีรหัสเดิมถ้ายังไม่มี) ในหน้าแก้ไขโปรไฟล์
-7. **Onboarding** — ผู้ใช้ Google ครั้งแรกเด้งไปหน้าแก้ไขโปรไฟล์ + แบนเนอร์ต้อนรับให้ตั้งชื่อ/รหัสผ่าน
-8. `scripts/delete-users.ts` (ลบบัญชีเทสต์ — รันแล้ว)
+1. **Rate limiting → Upstash Redis** — จาก in-memory เป็น sliding window (นับข้าม instance, fail-open) · IP เชื่อ `x-real-ip` (กันสปูฟ) · login เพิ่มลิมิตรายบัญชี · `lib/rateLimit.ts` (async) + 7 route · env `KV_REST_API_URL/KV_REST_API_TOKEN` (Vercel Upstash integration · AWS Tokyo · free)
+2. **Google signup แยกสองทาง** — ปุ่ม Google ส่ง `intent` (นักรีวิว=user / เจ้าของสถานที่=business) ผ่าน cookie → callback สร้าง TRAVELER หรือ BUSINESS+Business record (prefill ชื่อ/อีเมล/รูปจาก Google) · `/login` เพิ่มสองแท็บ · `/signup` แท็บเดิม · intent มีผลเฉพาะ**สมัครใหม่** (คนเดิมใช้ role เดิม)
+3. **Onboarding gate (บังคับเต็ม) — ไม่มี field ใน DB** — JWT เพิ่ม `onb` + `isProfileComplete` (`lib/auth`) derive จาก phone+gender (traveler) / businessName+phone (business) · `middleware.ts` เด้ง onb=false กลับ edit-profile ตาม role (ยกเว้น onboarding/auth/policy) · ปลดล็อกเมื่อ `auth/me` หรือ `business/me` บันทึกครบ (ออก token ใหม่)
+4. **หน้า onboarding บังคับข้อมูล** — `dashboard/edit-profile` บังคับ phone (เลข 9-10) + gender · `business/edit-profile` บังคับ businessName + phone + welcome banner + prefill · `/signup` กันตัวเลขในชื่อ/นามสกุล + เบอร์เลขล้วน + คำแปล EN ใน placeholder
+5. **Hash token** — `emailVerifyToken` + `resetToken` เก็บเป็น SHA-256 (`lib/tokens.ts`) · register/resend-verify/forgot เก็บ hash · verify-email/reset-password เทียบด้วย hash (อีเมลส่ง token ดิบ)
+6. **Logout fix** — เคลียร์ cookie ลง response (maxAge 0) + `AuthContext.logout` ใช้ `window.location` (หลุด onb gate ไม่เด้งกลับ)
+7. **Dark theme + UI** — `policy` + `about` ใช้ CSS var แทนสีตายตัว (การ์ด about ย้ายสีพาสเทลไปชิปไอคอน) · อีเมลติดต่อ → `supportpailao@gmail.com` (policy, faq)
+8. **Scroll fix (Lenis)** — dropdown ค้นหาสถานที่ (create+edit) + modals/lists หลายจุด (business dashboard/notifications, user profile, admin approvals/places/missions/sidebar) เติม `data-lenis-prevent` + `.pl-scroll-y` · timeline ค้นหาแสดง ~8 แถว (maxHeight 480) ดึงผลถึง 100 รายการ เลื่อนดูที่เหลือ
 
-**ข้อตกลงเชิงนโยบาย (ที่คุยกันเซสชันนี้):**
-- **แยกบัญชีผู้รีวิว (TRAVELER) กับร้าน (BUSINESS)** — 1 อีเมล = 1 บัญชี · จะเป็นร้านให้แอดมินกด "→ BUSINESS" (ยังไม่ทำ self-service upgrade)
+**เซสชันนี้ไม่แตะ DB schema** (onb เป็น derived) — deploy ไม่ต้อง `prisma db push`
 
-**ค้าง/ควรทำ (ไม่เร่ง ไม่บล็อก):**
-- ตั้ง `NEXT_PUBLIC_SITE_URL=https://www.pai-lao.com` + `NEXT_PUBLIC_BASE_URL=...` บน Vercel ให้เป็น canonical เดียว (ตอนนี้ login ใช้ได้เพราะลงทะเบียน redirect ทั้ง www/non-www)
-- **Resend (`RESEND_API_KEY`) ยังว่าง** — ต้องตั้ง + verify domain `pai-lao.com` ถึงจะส่งอีเมลยืนยันสมัคร/รีเซ็ตรหัส/ฟอร์มติดต่อได้ (Google login ไม่ต้องใช้)
-- บั๊กเล็กที่รู้แล้ว: หน้าแก้ไขโปรไฟล์บังคับ `lastName` (Google บางบัญชีไม่ส่งนามสกุล) · เปลี่ยน username ชนกันแบบ race จะขึ้น error 500 ทั่วไป (DB กันให้อยู่)
-- ของเก่ายังค้าง: ตัวเลือก "อนุมัติทริปแล้วอนุมัติสถานที่ PENDING อัตโนมัติไหม" (ยังกดแยก)
+**ค้าง/ควรทำ (จาก security audit — ยังไม่ทำ, เรียงตามคุ้ม):**
+- **#1 แบน/ถอดสิทธิ์ให้มีผลทันที** — ตอนนี้เช็คแบนแค่ตอน login → คนโดนแบน/แอดมินถูกถอดสิทธิ์ยังใช้ token เดิมได้ถึง 7 วัน · JWT มี `onb` + middleware อ่าน token แล้ว → เพิ่ม token-version หรือ ban-check รูปแบบเดียวกันได้ง่ายขึ้น
+- **EXIF/GPS strip ตอนอัปโหลดรูป** (privacy — upload เซฟ buffer ดิบ, รูปมือถือมีพิกัด) ต้องลง `sharp`
+- **sanitize-server regex → `sanitize-html`** (หลุด `<svg/onload>` ได้ · ตอนนี้กันชั้น render ด้วย DOMPurify ฝั่ง client) — **ห้าม isomorphic-dompurify ฝั่ง server (jsdom ทำ /api crash)**
+- **validate ชื่อ (ห้ามเลข)/เบอร์ ฝั่ง server** (ตอนนี้กันแค่ UI)
+- **security headers** (CSP/X-Frame-Options/HSTS — ยังไม่เช็ค next.config)
+- **self-service ลบบัญชี/ขอข้อมูล (PDPA)** — policy รับรองไว้แต่ยังไม่มี UI
+- **เก็บกวาด Business record `businessName=""`** (Google business ที่ทิ้งกลางทาง)
+- ของเดิม: ตั้ง env canonical www + ตั้ง Resend (`RESEND_API_KEY`) + verify domain `pai-lao.com`
 
-**ไอเดียที่เสนอไว้ ยังไม่ทำ:** ระยะ+เวลาเดินทางระหว่างจุด, สรุปงบทริป, ก๊อปทริปไปวางแผน, trending, แจ้งเตือนผู้ใช้, ISR หน้า place/trip (ติดที่หน้าใช้ session), สถานที่ใกล้เคียง, lazy map, บีบอัดรูปก่อนอัปโหลด
+**ไอเดียเดิม ยังไม่ทำ:** ระยะ+เวลาเดินทางระหว่างจุด, สรุปงบทริป, ก๊อปทริปไปวางแผน, trending, แจ้งเตือนผู้ใช้, ISR place/trip, สถานที่ใกล้เคียง, lazy map, บีบอัดรูป
 
 **คำสั่ง deploy มาตรฐาน (PowerShell):**
 ```powershell
@@ -111,4 +121,4 @@ git push
 ```
 
 ---
-*อัปเดตล่าสุด: เซสชัน Google login (OAuth + onboarding + แก้ username/รหัสผ่าน) + หมุดทริป/ไทม์ไลน์สี + hover-link + descriptionShort — อัปเดตไฟล์นี้ทุกครั้งที่มีงานใหม่*
+*อัปเดตล่าสุด: เซสชัน security (Upstash rate limit + hash token) + Google signup แยก 2 ทาง (นักรีวิว/เจ้าของสถานที่) + onboarding gate + fix logout/dark-theme/scroll (Lenis) — อัปเดตไฟล์นี้ทุกครั้งที่มีงานใหม่*
