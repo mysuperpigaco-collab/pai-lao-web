@@ -189,6 +189,41 @@ export default function ShareButton({
         </button>
       </div>
 
+      {/* ── ช่องลิงก์ + ปุ่มคัดลอก (ก๊อปไปแปะเองที่ไหนก็ได้) ── */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8, marginTop: 8,
+        border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "4px 4px 4px 12px",
+        background: "#f8fafc",
+      }}>
+        <input
+          readOnly
+          value={shareUrl}
+          onFocus={e => e.currentTarget.select()}
+          style={{
+            flex: 1, border: "none", background: "transparent", outline: "none",
+            fontSize: 13, color: "#475569", fontFamily: "inherit",
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          }}
+        />
+        <button
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(shareUrl);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            } catch {}
+          }}
+          style={{
+            flexShrink: 0, display: "flex", alignItems: "center", gap: 6,
+            padding: "8px 14px", borderRadius: 9, border: "none",
+            background: copied ? "#10b981" : "#0f172a", color: "#fff",
+            fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit",
+          }}
+        >
+          {copied ? "✓ คัดลอกแล้ว" : "คัดลอกลิงก์"}
+        </button>
+      </div>
+
       {showQR && <QRModal url={shareUrl} title={title} onClose={() => setShowQR(false)} />}
     </>
   );
