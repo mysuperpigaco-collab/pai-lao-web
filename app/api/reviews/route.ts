@@ -32,8 +32,14 @@ export async function POST(request: NextRequest) {
     if (!tripId && !placeId) {
       return NextResponse.json({ message: "ต้องระบุ tripId หรือ placeId" }, { status: 400 });
     }
-    if (rating < 1 || rating > 5) {
-      return NextResponse.json({ message: "คะแนนต้องอยู่ระหว่าง 1-5" }, { status: 400 });
+    // XOR: ห้ามมีทั้งคู่ — review ที่มีทั้ง tripId+placeId จะโผล่ทั้งคอมเมนต์ทริปและรีวิวสถานที่พร้อมกัน
+    if (tripId && placeId) {
+      return NextResponse.json({ message: "ระบุได้อย่างใดอย่างหนึ่ง: tripId หรือ placeId" }, { status: 400 });
+    }
+    // rating ต้องเป็นจำนวนเต็ม 1-5 (กัน "abc" หลุดไปพัง 500 / กันทศนิยม)
+    const ratingNum = Number(rating);
+    if (!Number.isInteger(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+      return NextResponse.json({ message: "คะแนนต้องเป็นจำนวนเต็ม 1-5" }, { status: 400 });
     }
 
     // ── ตรวจสอบว่าเคยรีวิวแล้วหรือยัง (1 user = 1 review per trip/place) ──
@@ -56,7 +62,7 @@ export async function POST(request: NextRequest) {
         authorId: session.userId,
         tripId:   tripId  ?? null,
         placeId:  placeId ?? null,
-        rating:      Number(rating),
+        rating:      ratingNum,
         text,
         isAnonymous: !!isAnonymous,
       },
