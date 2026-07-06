@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import sharp from "sharp";
 import { prisma } from "@/lib/prisma";
 
 // share card อัตโนมัติ 1200×630 ของหน้าสถานที่
@@ -12,6 +13,21 @@ const CATEGORY_TH: Record<string, string> = {
   FOOD: "ร้านอาหาร", TEMPLE: "วัด/ศาสนสถาน", BEACH: "ทะเล/ชายหาด", MARKET: "ตลาด",
   ADVENTURE: "สายลุย", MUSEUM: "พิพิธภัณฑ์",
 };
+
+// satori ไม่รองรับ webp → fetch รูปแล้วแปลงเป็น JPEG data URI ด้วย sharp (รองรับทุกฟอร์แมต)
+async function coverToDataUri(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const jpeg = await sharp(Buffer.from(await res.arrayBuffer()))
+      .resize(1200, 630, { fit: "cover" })
+      .jpeg({ quality: 78 })
+      .toBuffer();
+    return `data:image/jpeg;base64,${jpeg.toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
 
 async function loadThaiFont(text: string): Promise<ArrayBuffer | null> {
   try {
@@ -36,7 +52,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const place = await prisma.place.findUnique({
     where: { slug: decodeURIComponent(slug) },
     select: {
-      title: true, category: true, coverUrl: true, approvalStatus: true,
+      id: true, title: true, category: true, coverUrl: true, approvalStatus: true,
       province: true, district: true,
       reviews: { select: { rating: true } },
     },
@@ -46,7 +62,23 @@ export default async function Image({ params }: { params: Promise<{ slug: string
 
   const title    = ok ? place.title : "ไปเล่า — สถานที่เที่ยวทั่วไทย";
   const category = ok ? (CATEGORY_TH[place.category as string] ?? "") : "";
-  const cover    = ok ? place.coverUrl : "";
+
+  // รูป: coverUrl ก่อน · ไม่มี (สถานที่ที่ผู้ใช้เสนอ) → รูป community จากจุดแวะที่แชร์มา (ตรรกะเดียวกับ PlaceHero)
+  let coverSrc = ok ? place.coverUrl : "";
+  if (ok && !coverSrc) {
+    const stop = await prisma.timelineStop.findFirst({
+      where: {
+        placeId: place.id,
+        shareToPlace: true,
+        images: { isEmpty: false },
+        trip: { isPublished: true, approvalStatus: "APPROVED", isDraft: false },
+      },
+      select: { images: true },
+      orderBy: { order: "asc" },
+    }).catch(() => null);
+    coverSrc = stop?.images.find(img => img && !img.includes("default-place.svg")) ?? "";
+  }
+  const cover = coverSrc ? await coverToDataUri(coverSrc) : null;
   const loc      = ok ? [place.district && `อ.${place.district}`, place.province].filter(Boolean).join(" · ") : "";
   const ratings  = ok ? place.reviews.map(r => r.rating) : [];
   const avg      = ratings.length ? (ratings.reduce((s, r) => s + r, 0) / ratings.length).toFixed(1) : "";
