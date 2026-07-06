@@ -33,8 +33,8 @@ export default function CommunityPhotosGallery({ images }: Props) {
       )}
       {lightbox !== null && (
         <ImageLightbox
-          src={images[lightbox]}
-          alt={"Community photo " + (lightbox + 1)}
+          images={images}
+          startIndex={lightbox}
           onClose={() => setLightbox(null)}
         />
       )}

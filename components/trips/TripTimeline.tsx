@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import MapsButton from "@/components/common/MapsButton";
+import ImageLightbox from "@/components/common/ImageLightbox";
 import { useRouteHover } from "@/components/maps/RouteHoverContext";
 
 interface TimelineStop {
@@ -183,11 +184,12 @@ export default function TripTimeline({ timeline }: Props) {
         if (!stop) return null;
         const filteredImgs = stop.images.filter(img => img && !img.includes("default-place.svg"));
         return (
-          <div onClick={() => setLightbox(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)",
-            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
-            <img src={filteredImgs[lightbox.imgIdx]} alt=""
-              style={{ maxWidth: "90vw", maxHeight: "85vh", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }} />
-          </div>
+          <ImageLightbox
+            images={filteredImgs}
+            startIndex={lightbox.imgIdx}
+            captions={filteredImgs.map(() => stop.placeName)}
+            onClose={() => setLightbox(null)}
+          />
         );
       })()}
     </div>

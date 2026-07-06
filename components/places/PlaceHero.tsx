@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import ImageLightbox from "@/components/common/ImageLightbox";
 
 interface Props {
   placeId: string;
@@ -17,7 +18,7 @@ export default function PlaceHero({ placeId, realCoverUrl, communityImages, isAd
   const [idx, setIdx] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState(false);
 
   const current = allPhotos[idx] ?? null;
   const total = allPhotos.length;
@@ -55,8 +56,8 @@ export default function PlaceHero({ placeId, realCoverUrl, communityImages, isAd
           src={current}
           alt="Place cover"
           className="pd-hero-img"
-          style={{ cursor: total > 1 ? "zoom-in" : undefined }}
-          onClick={() => total > 1 && setLightbox(current)}
+          style={{ cursor: "zoom-in" }}
+          onClick={() => setLightbox(true)}
         />
 
         {/* Navigation arrows */}
@@ -128,24 +129,13 @@ export default function PlaceHero({ placeId, realCoverUrl, communityImages, isAd
         </div>
       )}
 
-      {/* Lightbox */}
+      {/* Lightbox — ตัวกลางร่วมทั้งเว็บ เปิดจากรูปที่กำลังดู ปัดต่อได้ทุกรูป */}
       {lightbox && (
-        <div
-          onClick={() => setLightbox(null)}
-          style={{
-            position: "fixed", inset: 0, zIndex: 9999,
-            background: "rgba(0,0,0,0.88)", display: "flex",
-            alignItems: "center", justifyContent: "center", padding: 20,
-          }}
-        >
-          <img src={lightbox} alt="" style={{ maxWidth: "100%", maxHeight: "90vh", borderRadius: 12, objectFit: "contain" }} />
-          <button onClick={() => setLightbox(null)} style={{
-            position: "absolute", top: 16, right: 20,
-            background: "rgba(255,255,255,0.15)", border: "none", color: "white",
-            fontSize: 28, cursor: "pointer", borderRadius: "50%", width: 40, height: 40,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>×</button>
-        </div>
+        <ImageLightbox
+          images={allPhotos}
+          startIndex={idx}
+          onClose={() => setLightbox(false)}
+        />
       )}
     </>
   );

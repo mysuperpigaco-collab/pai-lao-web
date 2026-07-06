@@ -9,14 +9,16 @@ interface Props {
 }
 
 export default function TripRichContent({ html }: Props) {
-  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
+  const [lightbox, setLightbox] = useState<{ imgs: string[]; idx: number } | null>(null);
   const safeHtml = sanitizeRichHtml(html);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
     if (target.tagName === "IMG") {
-      const img = target as HTMLImageElement;
-      setLightbox({ src: img.src, alt: img.alt });
+      // เก็บทุกรูปในเนื้อหา → เปิด lightbox แล้วปัดดูรูปถัดไปได้เลย
+      const imgs = Array.from(e.currentTarget.querySelectorAll("img")).map(im => im.src);
+      const idx = Math.max(0, imgs.indexOf((target as HTMLImageElement).src));
+      setLightbox({ imgs, idx });
     }
   };
 
@@ -29,8 +31,8 @@ export default function TripRichContent({ html }: Props) {
       />
       {lightbox && (
         <ImageLightbox
-          src={lightbox.src}
-          alt={lightbox.alt}
+          images={lightbox.imgs}
+          startIndex={lightbox.idx}
           onClose={() => setLightbox(null)}
         />
       )}
