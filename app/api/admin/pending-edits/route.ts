@@ -74,33 +74,39 @@ export async function PUT(request: Request) {
       if (trip) {
         // Handle timeline separately
         if (data.timeline) {
-          await prisma.timelineStop.deleteMany({ where: { tripId: edit.targetId } });
           const { timeline, ...rest } = data;
-          await prisma.trip.update({
-            where: { id: edit.targetId },
-            data: {
-              ...rest,
-              approvalStatus: "APPROVED",
-              isPublished: true,
-              rejectionReason: null,
-              timeline: {
-                create: (timeline as any[]).map((stop: any, i: number) => ({
-                  order: i, date: stop.date ?? "", time: stop.time ?? "",
-                  placeName: stop.place ?? stop.placeName ?? "",
-                  province: stop.province ?? "", district: stop.district ?? "",
-                  description: stop.description ?? "",
-                  transport: stop.transport ?? null, duration: stop.duration ?? null,
-                  cost: stop.cost ?? null,
-                  images: stop.images ?? (stop.image ? [stop.image] : []),
-                  stopType:      stop.stopType      ?? null,
-                  googleMapsUrl: stop.googleMapsUrl ?? null,
-                  tips:          stop.tips          ?? null,
-                  shareToPlace:  stop.shareToPlace  ?? false,
-                  placeId:       stop.placeId       ?? null,
-                })),
+          // transaction: กัน timeline หายถาวรถ้า update ล้มหลัง deleteMany
+          await prisma.$transaction([
+            prisma.timelineStop.deleteMany({ where: { tripId: edit.targetId } }),
+            prisma.trip.update({
+              where: { id: edit.targetId },
+              data: {
+                ...rest,
+                approvalStatus: "APPROVED",
+                isPublished: true,
+                rejectionReason: null,
+                timeline: {
+                  create: (timeline as any[]).map((stop: any, i: number) => ({
+                    order: i, date: stop.date ?? "", time: stop.time ?? "",
+                    placeName: stop.place ?? stop.placeName ?? "",
+                    province: stop.province ?? "", district: stop.district ?? "",
+                    description: stop.description ?? "",
+                    transport: stop.transport ?? null, duration: stop.duration ?? null,
+                    cost: stop.cost ?? null,
+                    images: stop.images ?? (stop.image ? [stop.image] : []),
+                    stopType:      stop.stopType      ?? null,
+                    googleMapsUrl: stop.googleMapsUrl ?? null,
+                    tips:          stop.tips          ?? null,
+                    shareToPlace:  stop.shareToPlace  ?? false,
+                    rating:        stop.rating        ? Number(stop.rating) : null,
+                    placeId:       stop.placeId       ?? null,
+                    lat:           stop.lat           ?? null,
+                    lng:           stop.lng           ?? null,
+                  })),
+                },
               },
-            },
-          });
+            }),
+          ]);
         } else {
           await prisma.trip.update({ where: { id: edit.targetId }, data: { ...data, approvalStatus: "APPROVED", isPublished: true, rejectionReason: null } });
         }

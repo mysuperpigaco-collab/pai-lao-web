@@ -10,11 +10,14 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "img-src 'self' https://*.supabase.co https://images.unsplash.com https://picsum.photos https://*.tile.openstreetmap.org https://unpkg.com data: blob:",
+      // *.googleusercontent.com = รูปโปรไฟล์จาก Google login (lh3.googleusercontent.com)
+      "img-src 'self' https://*.supabase.co https://images.unsplash.com https://picsum.photos https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com data: blob:",
       "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
       "connect-src 'self' https://*.supabase.co",
+      // frame-src = อนุญาต embed YouTube ในหน้าทริป (ไม่มีบรรทัดนี้ default-src 'self' จะบล็อก iframe)
+      "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
       "frame-ancestors 'self'",
       "base-uri 'self'",
       "form-action 'self'",
