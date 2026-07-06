@@ -42,9 +42,11 @@ export default function ShareButton({
 
   // อ่าน URL หลัง mount แล้วเก็บเป็น state → re-render ให้ href ของปุ่ม LINE/FB/คัดลอกมีค่าจริง
   // (เดิมอ่าน window.location.href ตอน render → บน SSR เป็นค่าว่าง แล้วไม่ re-render → FB เปิดหน้าเปล่า)
+  // ถ้า prop url มาทีหลัง (ตั้งใน state ฝั่งหน้าเรียก) ก็ sync ตามด้วย
   const [shareUrl, setShareUrl] = useState(url ?? "");
   useEffect(() => {
-    if (!url && typeof window !== "undefined") setShareUrl(window.location.href);
+    if (url) setShareUrl(url);
+    else if (typeof window !== "undefined") setShareUrl(window.location.href);
   }, [url]);
 
   const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}`;

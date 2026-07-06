@@ -302,6 +302,13 @@ function UserProfileInner() {
   const [followLoading, setFollowLoading] = useState(false);
   const [showCoverMgr, setShowCoverMgr] = useState(false);
   const [avatarLightbox, setAvatarLightbox] = useState(false);
+  const [profileUrl, setProfileUrl] = useState(""); // URL สะอาดสำหรับแชร์ (ตัด query เช่น ?preview=true)
+
+  useEffect(() => {
+    if (username && typeof window !== "undefined") {
+      setProfileUrl(window.location.origin + "/user/" + encodeURIComponent(username));
+    }
+  }, [username]);
 
   useEffect(() => {
     if (me?.username && username && me.username === username && !isPreviewMode) {
@@ -565,11 +572,6 @@ function UserProfileInner() {
               </div>
             )}
 
-            {/* ── แชร์โปรไฟล์ ── */}
-            <div style={{marginBottom:22,maxWidth:520}}>
-              <ShareButton title={`${displayName} (@${user.username}) บนไปเล่า`} />
-            </div>
-
             <div className="up-tab-bar">
               <button className={"up-tab"+(activeTab==="trips"?" active":"")} onClick={() => setActiveTab("trips")}>
                 ✈️ ทริป <span className="up-tab-count">{trips.length}</span>
@@ -698,6 +700,11 @@ function UserProfileInner() {
                 )}
               </div>
             )}
+            {/* ── แชร์โปรไฟล์ — ล่างสุด ใต้เนื้อหาทุกแท็บ (ตำแหน่งคงที่ไม่ว่าเปิดแท็บไหน) ── */}
+            <div className="up-share-card">
+              <p className="up-share-label">แชร์โปรไฟล์นี้</p>
+              <ShareButton title={`${displayName} (@${user.username}) บนไปเล่า`} url={profileUrl || undefined} />
+            </div>
           </>
         )}
 
@@ -802,16 +809,36 @@ function UserProfileInner() {
         }
         .up-contact-item:hover { background: rgba(240,253,244,0.9); border-color: #a7f3d0; }
 
-        .up-tab-bar { display: flex; gap: 4px; border-bottom: 2px solid rgba(241,245,249,0.8); margin-bottom: 20px; }
+        /* Tab bar — segmented control เต็มความกว้าง ช่องเท่ากัน */
+        .up-tab-bar {
+          display: flex; gap: 4px; padding: 4px; margin-bottom: 20px;
+          background: var(--pl-white); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+          border: 1.5px solid rgba(226,232,240,0.6); border-radius: 999px;
+          box-shadow: 0 2px 12px rgba(15,23,42,0.05);
+        }
         .up-tab {
-          padding: 10px 20px; border-radius: 10px 10px 0 0; border: none;
+          flex: 1; justify-content: center;
+          padding: 9px 10px; border-radius: 999px; border: none;
           background: transparent; font-size: 13px; font-weight: 700; color: var(--pl-text-muted);
-          cursor: pointer; font-family: inherit; transition: 0.15s;
+          cursor: pointer; font-family: inherit; transition: 0.18s;
           display: flex; align-items: center; gap: 6px;
         }
-        .up-tab.active { color: #2563eb; border-bottom: 2px solid #2563eb; background: rgba(239,246,255,0.8); }
-        .up-tab:hover:not(.active) { background: rgba(248,250,252,0.7); color: var(--pl-text-secondary); }
+        .up-tab.active { color: #fff; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 3px 10px rgba(16,185,129,0.3); }
+        .up-tab:hover:not(.active) { background: rgba(16,185,129,0.08); color: var(--pl-text-secondary); }
         .up-tab-count { font-size: 11px; background: #e2e8f0; color: #475569; padding: 1px 7px; border-radius: 999px; font-weight: 800; }
+        .up-tab.active .up-tab-count { background: rgba(255,255,255,0.28); color: #fff; }
+
+        /* Share card — ล่างสุด กึ่งกลาง */
+        .up-share-card {
+          background: var(--pl-white); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+          border: 1.5px solid rgba(226,232,240,0.6); border-radius: 18px;
+          padding: 18px 20px; margin: 28px auto 0; max-width: 560px;
+          box-shadow: 0 2px 12px rgba(15,23,42,0.05);
+        }
+        .up-share-label {
+          margin: 0 0 12px; text-align: center;
+          font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: #10b981;
+        }
 
         .up-private-box {
           text-align: center; padding: 64px 20px;
