@@ -11,11 +11,12 @@ const securityHeaders = [
     value: [
       "default-src 'self'",
       // *.googleusercontent.com = รูปโปรไฟล์จาก Google login (lh3.googleusercontent.com)
-      "img-src 'self' https://*.supabase.co https://images.unsplash.com https://picsum.photos https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com data: blob:",
-      "script-src 'self' 'unsafe-inline'",
+      // google-analytics/googletagmanager = GA4 (tracking pixel)
+      "img-src 'self' https://*.supabase.co https://images.unsplash.com https://picsum.photos https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com https://www.google-analytics.com https://www.googletagmanager.com data: blob:",
+      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co",
+      "connect-src 'self' https://*.supabase.co https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com",
       // frame-src = อนุญาต embed YouTube ในหน้าทริป (ไม่มีบรรทัดนี้ default-src 'self' จะบล็อก iframe)
       "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
       "frame-ancestors 'self'",
