@@ -6,6 +6,8 @@ import { useTiltCard } from "@/hooks/useTiltCard";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import ImageLightbox from "@/components/common/ImageLightbox";
+import ShareButton from "@/components/common/ShareButton";
 
 interface PublicUser {
   id: string; username: string; displayName?: string; firstName: string;
@@ -31,6 +33,7 @@ interface ReviewItem {
   trip?: { slug: string; title: string; coverUrl: string } | null;
   place?: { slug: string; title: string; coverUrl: string } | null;
 }
+interface ProfilePhoto { url: string; tripSlug: string; tripTitle: string }
 
 function resizeImage(file: File, maxW = 1920, maxH = 800, quality = 0.82): Promise<File> {
   return new Promise(resolve => {
@@ -291,7 +294,9 @@ function UserProfileInner() {
   const [reviewsOwn, setReviewsOwn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [activeTab, setActiveTab] = useState<"trips"|"reviews">("trips");
+  const [activeTab, setActiveTab] = useState<"trips"|"reviews"|"photos">("trips");
+  const [photos, setPhotos] = useState<ProfilePhoto[] | null>(null); // null = ยังไม่โหลด
+  const [photoLightbox, setPhotoLightbox] = useState<number | null>(null);
   const [followModal, setFollowModal] = useState<"followers"|"following"|null>(null);
   const [followUsers, setFollowUsers] = useState<FollowUser[]>([]);
   const [followLoading, setFollowLoading] = useState(false);
@@ -326,6 +331,15 @@ function UserProfileInner() {
       .then(data => { setReviews(data.reviews ?? []); setReviewsOwn(data.isOwn ?? false); })
       .catch(() => {});
   }, [activeTab, username]);
+
+  // แกลเลอรี — โหลดครั้งแรกที่เปิดแท็บเท่านั้น (lazy)
+  useEffect(() => {
+    if (activeTab !== "photos" || !username || photos !== null) return;
+    fetch("/api/users/" + encodeURIComponent(username) + "/photos")
+      .then(r => r.json())
+      .then(data => setPhotos(data.photos ?? []))
+      .catch(() => setPhotos([]));
+  }, [activeTab, username, photos]);
 
   const openFollowModal = async (type: "followers"|"following") => {
     setFollowModal(type); setFollowLoading(true);
@@ -551,12 +565,20 @@ function UserProfileInner() {
               </div>
             )}
 
+            {/* ── แชร์โปรไฟล์ ── */}
+            <div style={{marginBottom:22,maxWidth:520}}>
+              <ShareButton title={`${displayName} (@${user.username}) บนไปเล่า`} />
+            </div>
+
             <div className="up-tab-bar">
               <button className={"up-tab"+(activeTab==="trips"?" active":"")} onClick={() => setActiveTab("trips")}>
                 ✈️ ทริป <span className="up-tab-count">{trips.length}</span>
               </button>
               <button className={"up-tab"+(activeTab==="reviews"?" active":"")} onClick={() => setActiveTab("reviews")}>
                 ⭐ รีวิว
+              </button>
+              <button className={"up-tab"+(activeTab==="photos"?" active":"")} onClick={() => setActiveTab("photos")}>
+                📷 แกลเลอรี{photos !== null && photos.length > 0 && <span className="up-tab-count">{photos.length}</span>}
               </button>
             </div>
 
@@ -572,6 +594,66 @@ function UserProfileInner() {
                   <div style={{fontSize:44,marginBottom:12}}>✈️</div>
                   <p style={{fontSize:15,fontWeight:600}}>ยังไม่มีทริป</p>
                 </div>
+              )
+            )}
+
+            {activeTab === "photos" && (
+              photos === null ? (
+                <div style={{textAlign:"center",padding:"60px 20px",color:"var(--pl-text-muted)"}}>
+                  <p style={{fontSize:14,fontWeight:600}}>กำลังรวมรูปจากทุกทริป…</p>
+                </div>
+              ) : photos.length === 0 ? (
+                <div style={{textAlign:"center",padding:"60px 20px",color:"var(--pl-text-muted)"}}>
+                  <div style={{fontSize:44,marginBottom:12}}>📷</div>
+                  <p style={{fontSize:15,fontWeight:600}}>ยังไม่มีรูปจากทริป</p>
+                </div>
+              ) : (
+                <>
+                  {/* masonry ด้วย CSS columns — มือถือ 2 คอลัมน์ / จอใหญ่ 3 */}
+                  <div className="up-photo-wall">
+                    {photos.map((p, i) => (
+                      <button key={p.url} className="up-photo-item" onClick={() => setPhotoLightbox(i)} aria-label={"เปิดรูปจากทริป " + p.tripTitle}>
+                        <img src={p.url} alt={p.tripTitle} loading="lazy" />
+                        <span className="up-photo-cap">{p.tripTitle}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {photoLightbox !== null && (
+                    <ImageLightbox
+                      images={photos.map(p => p.url)}
+                      startIndex={photoLightbox}
+                      captions={photos.map(p => p.tripTitle)}
+                      onClose={() => setPhotoLightbox(null)}
+                    />
+                  )}
+                  <style jsx>{`
+                    .up-photo-wall { columns: 3 180px; column-gap: 10px; }
+                    .up-photo-item {
+                      position: relative; display: block; width: 100%; margin: 0 0 10px;
+                      padding: 0; border: none; border-radius: 14px; overflow: hidden;
+                      cursor: zoom-in; break-inside: avoid; background: var(--pl-bg);
+                    }
+                    .up-photo-item img { width: 100%; display: block; transition: transform 0.35s ease; }
+                    .up-photo-item:hover img { transform: scale(1.05); }
+                    .up-photo-cap {
+                      position: absolute; left: 0; right: 0; bottom: 0;
+                      padding: 18px 10px 8px; font-size: 11px; font-weight: 700; color: #fff;
+                      background: linear-gradient(to top, rgba(15,23,42,0.72), transparent);
+                      text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+                      opacity: 0; transition: opacity 0.25s;
+                    }
+                    .up-photo-item:hover .up-photo-cap { opacity: 1; }
+                    @media (max-width: 640px) {
+                      .up-photo-wall { columns: 2 120px; column-gap: 8px; }
+                      .up-photo-item { margin-bottom: 8px; border-radius: 10px; }
+                      .up-photo-cap { opacity: 1; } /* มือถือไม่มี hover — โชว์ชื่อเสมอ */
+                    }
+                    @media (prefers-reduced-motion: reduce) {
+                      .up-photo-item img { transition: none; }
+                      .up-photo-item:hover img { transform: none; }
+                    }
+                  `}</style>
+                </>
               )
             )}
 

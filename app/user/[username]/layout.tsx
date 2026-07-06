@@ -20,8 +20,8 @@ export async function generateMetadata({ params }: Props) {
 
   const name  = user.displayName || `${user.firstName} ${user.lastName || ""}`.trim();
   const desc  = user.bio || `นักเดินทาง ${user._count.trips} เรื่องเล่าบนไปเล่า`;
-  const image = user.avatarUrl || `${SITE_URL}/images/og-default.png`;
 
+  // ไม่ใส่ images — ให้ opengraph-image.tsx (การ์ดโปรไฟล์อัตโนมัติ) จัดการ
   return {
     title:       `${name} (@${username}) | ไปเล่า`,
     description: desc,
@@ -30,15 +30,13 @@ export async function generateMetadata({ params }: Props) {
       description: desc,
       url:         `${SITE_URL}/user/${username}`,
       siteName:    "ไปเล่า",
-      images:      [{ url: image, width: 400, height: 400, alt: name }],
       type:        "profile",
       locale:      "th_TH",
     },
     twitter: {
-      card:        "summary",
+      card:        "summary_large_image",
       title:       `${name} (@${username})`,
       description: desc,
-      images:      [image],
     },
   };
 }
