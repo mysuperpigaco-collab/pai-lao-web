@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import sharp from "sharp";
 import { getCurrentUser } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
@@ -49,15 +50,35 @@ export async function POST(request: NextRequest) {
     // Sanitize extension — อนุญาตเฉพาะ image extensions ที่รู้จัก
     const ALLOWED_EXTS = ["jpg", "jpeg", "png", "webp", "gif", "avif"];
     const rawExt = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-    const ext = ALLOWED_EXTS.includes(rawExt) ? rawExt : "jpg";
+    let ext = ALLOWED_EXTS.includes(rawExt) ? rawExt : "jpg";
     const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, ""); // ป้องกัน path traversal
+    let buffer      = Buffer.from(await file.arrayBuffer());
+    let contentType = file.type;
+
+    // ── บีบอัด + strip EXIF/GPS ด้วย sharp (GIF ข้าม — รักษาอนิเมชัน) ──
+    // .rotate() = หมุนตาม EXIF orientation ก่อน strip (ไม่งั้นรูปมือถือนอนตะแคง)
+    // resize inside 1920 = จอผู้ใช้แสดงได้แค่นี้ ความคมชัดที่เห็นไม่ต่างเดิม
+    // webp q82 = จุด visually-lossless มาตรฐาน · fail-open: sharp พังใช้ไฟล์เดิม
+    if (file.type !== "image/gif") {
+      try {
+        buffer = await sharp(buffer)
+          .rotate()
+          .resize({ width: 1920, height: 1920, fit: "inside", withoutEnlargement: true })
+          .webp({ quality: 82 })
+          .toBuffer();
+        contentType = "image/webp";
+        ext = "webp";
+      } catch (e) {
+        console.error("[upload] sharp failed — fallback to original file:", e);
+      }
+    }
+
     const filename = `${safeFolder}/${session.userId}/${Date.now()}.${ext}`;
-    const buffer   = Buffer.from(await file.arrayBuffer());
 
     const { error } = await supabaseAdmin.storage
       .from(BUCKET)
       .upload(filename, buffer, {
-        contentType:  file.type,
+        contentType,
         cacheControl: "3600",
         upsert:       false,
       });
@@ -75,7 +96,7 @@ export async function POST(request: NextRequest) {
       action: "UPLOAD_FILE",
       ip: getClientIp(request), userAgent: request.headers.get("user-agent"),
       targetType: "FILE",
-      detail: `${filename} (${(file.size / 1024).toFixed(1)} KB)`,
+      detail: `${filename} (${(file.size / 1024).toFixed(1)} KB → ${(buffer.length / 1024).toFixed(1)} KB)`,
     }).catch(() => {});
 
     return NextResponse.json({ url: data.publicUrl }, { status: 201 });

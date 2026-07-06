@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
     ],
   },
   // Prisma requires this for Vercel serverless
-  serverExternalPackages: ["@prisma/client", "prisma", "isomorphic-dompurify", "jsdom"],
+  serverExternalPackages: ["@prisma/client", "prisma", "isomorphic-dompurify", "jsdom", "sharp"],
   async headers() {
     return [
       {
