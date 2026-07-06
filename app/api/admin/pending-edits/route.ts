@@ -119,13 +119,18 @@ export async function PUT(request: Request) {
       }).catch(() => {});
     }
 
-    // approve record นี้ และลบ record ซ้ำอื่นๆ ของ place/trip เดียวกัน
+    // approve record นี้ และลบ record ซ้ำ "ที่เก่ากว่า" เท่านั้น
+    // (ถ้าเจ้าของ submit แก้ไขใหม่ระหว่างแอดมินกดอนุมัติ อันใหม่ต้องรอดไว้ให้ตรวจต่อ — กัน race ลบงานที่ยังไม่ถูกตรวจ)
     await (prisma as any).pendingEdit.update({
       where: { id: editId },
       data: { status: "APPROVED" },
     });
     await (prisma as any).pendingEdit.deleteMany({
-      where: { targetId: edit.targetId, targetType: edit.targetType, id: { not: editId }, status: { in: ["PENDING", "REJECTED"] } },
+      where: {
+        targetId: edit.targetId, targetType: edit.targetType,
+        id: { not: editId }, status: { in: ["PENDING", "REJECTED"] },
+        createdAt: { lte: edit.createdAt },
+      },
     });
     await prisma.adminLog.create({ data: {
       adminId: session.userId, action: "APPROVE_EDIT",
@@ -141,9 +146,13 @@ export async function PUT(request: Request) {
       where: { id: editId },
       data: { status: "REJECTED", rejectionReason: reason },
     });
-    // ลบ PENDING ซ้ำอื่นๆ ที่อาจหลุดรอด
+    // ลบ PENDING ซ้ำ "ที่เก่ากว่า" เท่านั้น (อันใหม่กว่า = การแก้ที่ยังไม่ถูกตรวจ ต้องเก็บไว้)
     await (prisma as any).pendingEdit.deleteMany({
-      where: { targetId: edit.targetId, targetType: edit.targetType, id: { not: editId }, status: "PENDING" },
+      where: {
+        targetId: edit.targetId, targetType: edit.targetType,
+        id: { not: editId }, status: "PENDING",
+        createdAt: { lte: edit.createdAt },
+      },
     });
     await prisma.adminLog.create({ data: {
       adminId: session.userId, action: "REJECT_EDIT",
