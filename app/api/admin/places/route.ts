@@ -16,6 +16,7 @@ async function autoReviewsForApprovedPlace(placeId: string) {
     select: {
       description: true,
       tripId: true,
+      rating: true,
       trip: { select: { authorId: true } },
     },
   });
@@ -29,7 +30,8 @@ async function autoReviewsForApprovedPlace(placeId: string) {
     });
     if (!existing) {
       await prisma.review.create({
-        data: { authorId, placeId, rating: 5, text },
+        // ใช้คะแนนจริงที่ผู้ใช้ให้จุดแวะ · ไม่ได้ให้ = 5 (พฤติกรรมเดิม)
+        data: { authorId, placeId, rating: stop.rating ?? 5, text },
       });
     }
   }

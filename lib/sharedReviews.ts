@@ -18,7 +18,7 @@ export async function syncSharedReviewsForTrip(tripId: string) {
       description: { not: "" },
       place: { approvalStatus: "APPROVED" },
     },
-    select: { description: true, placeId: true },
+    select: { description: true, placeId: true, rating: true },
   });
 
   for (const stop of stops) {
@@ -30,7 +30,8 @@ export async function syncSharedReviewsForTrip(tripId: string) {
     });
     if (!existing) {
       await prisma.review.create({
-        data: { authorId: trip.authorId, placeId: stop.placeId, rating: 5, text },
+        // ใช้คะแนนจริงที่ผู้ใช้ให้จุดแวะ · ไม่ได้ให้ = 5 (พฤติกรรมเดิม)
+        data: { authorId: trip.authorId, placeId: stop.placeId, rating: stop.rating ?? 5, text },
       });
     }
   }
