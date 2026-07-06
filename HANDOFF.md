@@ -47,6 +47,10 @@
 - **email verify/reset token เก็บเป็น SHA-256** (`lib/tokens.ts` → `hashToken`) — เทียบตอน verify ต้อง `hashToken(input)` ก่อน lookup ห้ามเทียบ plaintext
 - **sanitize-server เป็น regex (หลุด `<svg/onload>` ได้)** — ถ้าจะอัปเกรดใช้ **`sanitize-html` เท่านั้น** ห้าม isomorphic-dompurify ฝั่ง server (jsdom ทำ /api crash)
 - **logout ต้องเคลียร์ cookie ลง response (maxAge 0)** + client ใช้ `window.location` ไม่ใช่ router.push (ไม่งั้น onb gate เด้งกลับ ติดกับดัก)
+- **timeline nested create มี 6 จุด** (POST trips, PUT admin, PUT PENDING/REJECTED, draft save, draft finalize, pending-edits approve) — เพิ่ม field ใหม่ใน TimelineStop ต้องเติม**ให้ครบทุกจุด** (เคยตก rating/lat/lng ที่ approve และ transport/cost/tips ที่ draft)
+- **Prisma `where.OR` ทับกันได้** — ถ้ามีสองเงื่อนไข OR (เช่น ค้นหา + สถานะ) ต้องห่อ `AND: [{OR:...},{OR:...}]` (เคยพังที่ค้นหาแท็บรออนุมัติ)
+- **CSP ใน next.config.ts บล็อกเงียบ** — เพิ่ม third-party ใหม่ (สคริปต์/รูป/iframe/fetch) ต้องเติมโดเมนใน directive ที่ตรง (script-src/img-src/frame-src/connect-src) เคยบล็อก GA + avatar Google + YouTube embed มาแล้ว · เช็คได้จาก Console บน prod (error `Refused to ...`) · `ERR_BLOCKED_BY_CLIENT` = adblock ฝั่งผู้ใช้ ไม่ใช่บั้คเรา
+- **รีวิวอัตโนมัติ (shareToPlace) มีโค้ด 2 ชุดซ้ำกัน** — `lib/sharedReviews.ts` (ตอนอนุมัติทริป/แก้ไข) + `autoReviewsForApprovedPlace` ใน `admin/places/route.ts` (ตอนอนุมัติสถานที่ทีหลัง) — แก้อะไรต้องแก้คู่กัน
 
 ## 4. โมเดล/แนวคิดหลัก
 
@@ -85,7 +89,30 @@
 - **Google signup 2 ทาง:** `components/auth/GoogleLoginButton.tsx` (prop `intent`) · `/api/auth/google` เก็บ `pl_oauth_intent` cookie · `/api/auth/google/callback` แยก business/user + สร้าง Business record · `/login` มีสองแท็บ
 - **ค้นหาสถานที่ในไทม์ไลน์:** `searchPlaces` เรียก `/api/places?q=..&limit=100` · dropdown สูง maxHeight 480 (~8 แถว) + `data-lenis-prevent` + `.pl-scroll-y`
 
-## 6. สถานะล่าสุด (เซสชัน security + Google business signup — deploy แล้ว)
+## 6. สถานะล่าสุด (เซสชัน bug-hunt: audit ทั้งระบบ + แก้ 8 จุด — deploy แล้ว)
+
+**งานที่ทำเสร็จเซสชันนี้ (แก้จาก audit หาบั้คทั้งระบบ):**
+1. **pending-edits approve** — เติม `rating`/`lat`/`lng` ที่หายตอนอนุมัติ (หมุดแผนที่+คะแนนจุดแวะเคยหายทั้งทริป) + ห่อ `$transaction` (timeline ไม่หายถ้า update ล้ม) + deleteMany เฉพาะ record `createdAt <= อันที่ตัดสิน` (กัน race ลบการแก้ใหม่ที่ยังไม่ถูกตรวจ) + sanitize `description` ตอน apply
+2. **draft save/finalize** — เติม `transport`/`duration`/`cost`/`tips` ที่เคยถูกทิ้ง (ทริปจาก draft เสียข้อมูล 4 field)
+3. **CSP (next.config.ts)** — เพิ่ม `*.googleusercontent.com` (avatar Google), `frame-src` YouTube, โดเมน GA4 (script/connect/img) — ก่อนแก้ CSP บล็อก GA ทั้งเว็บ (ไม่เก็บสถิติเลย) + avatar Google + YouTube embed พังเงียบ
+4. **shared auto-review ใช้คะแนนจริง** — เดิม hardcode 5 ดาวทั้งสองชุด → ใช้ `stop.rating ?? 5` (Jim เลือก: ไม่ให้คะแนน = 5 เหมือนเดิม) · รีวิว 5 ดาว auto เก่าใน DB ยังค้าง (ไม่มี flag แยก)
+5. **POST /api/reviews** — บังคับ XOR `tripId`/`placeId` ฝั่ง server (กันรีวิวลูกผสมโผล่ 2 หน้า) + rating ต้องเป็น integer 1-5 (เดิม `"abc"` ทำ 500)
+6. **admin/trips GET** — ค้นหาในแท็บรออนุมัติใช้ได้แล้ว (ย้าย q OR เข้า `AND` ไม่ทับ OR สถานะ)
+7. **places/suggest** — อัปเดต `googleMapsUrl` เงียบได้เฉพาะ place ไร้เจ้าของ (`businessId: null`) กันคนสุ่มย้ายหมุดธุรกิจคนอื่น · ส่วน dedup เจอ place REJECTED = ระบบเดิมรองรับแล้ว (TripPlaceCheckWarning ให้ re-approve ได้) ไม่ต้องแก้
+8. ผลพลอยได้: `description: null` ใน PendingEdit ไม่ทำ approve พัง 500 อีก (sanitize แปลงเป็น "")
+
+**เซสชันนี้ไม่แตะ DB schema — deploy ไม่ต้อง `prisma db push`**
+
+**จุดเสี่ยงที่เจอจาก audit แต่ยังไม่แก้ (เรียงตามคุ้ม):**
+- **ปั่น trending ได้** — `POST /trips|places/[slug]/view` ไม่มี dedup/rate limit + viewCount เข้า trending score
+- **owner-edit paths ยังไม่มี transaction** (deleteMany timeline → update ใน `trips/[slug]` 3 จุด — ถ้า update ล้ม timeline หาย เหมือนที่แก้ไปแล้วใน pending-edits)
+- **ไม่มี rate limit**: สร้างทริป / รีวิว / suggest place / likes
+- **trending/popular ดึงทุกแถวเข้า memory ทุก request** + `GET /api/trips` limit ไม่มีเพดาน → cap + cache
+- **ไม่มี unique constraint** `(authorId, placeId)`/`(authorId, tripId)` บน Review (กดรัว = dup ได้)
+- **เปลี่ยน coverUrl ทริป approved มีผลทันทีไม่ผ่านตรวจ** (จงใจไว้ — ตัดสินใจเชิง product)
+- reset-password เช็คแค่ยาว ≥8 (ไม่บังคับตัวอักษร+เลข เหมือน auth/me) + ไม่ตัด session เดิม → รวมกับงาน token-version
+
+## 6.1 สถานะเซสชันก่อน (security + Google business signup — deploy แล้ว)
 
 **งานที่ทำเสร็จเซสชันนี้:**
 1. **Rate limiting → Upstash Redis** — จาก in-memory เป็น sliding window (นับข้าม instance, fail-open) · IP เชื่อ `x-real-ip` (กันสปูฟ) · login เพิ่มลิมิตรายบัญชี · `lib/rateLimit.ts` (async) + 7 route · env `KV_REST_API_URL/KV_REST_API_TOKEN` (Vercel Upstash integration · AWS Tokyo · free)
@@ -104,7 +131,7 @@
 - **EXIF/GPS strip ตอนอัปโหลดรูป** (privacy — upload เซฟ buffer ดิบ, รูปมือถือมีพิกัด) ต้องลง `sharp`
 - **sanitize-server regex → `sanitize-html`** (หลุด `<svg/onload>` ได้ · ตอนนี้กันชั้น render ด้วย DOMPurify ฝั่ง client) — **ห้าม isomorphic-dompurify ฝั่ง server (jsdom ทำ /api crash)**
 - **validate ชื่อ (ห้ามเลข)/เบอร์ ฝั่ง server** (ตอนนี้กันแค่ UI)
-- **security headers** (CSP/X-Frame-Options/HSTS — ยังไม่เช็ค next.config)
+- ~~security headers~~ → มีครบใน next.config.ts แล้ว (เซสชัน bug-hunt เติมโดเมนที่ CSP บล็อกผิด)
 - **self-service ลบบัญชี/ขอข้อมูล (PDPA)** — policy รับรองไว้แต่ยังไม่มี UI
 - **เก็บกวาด Business record `businessName=""`** (Google business ที่ทิ้งกลางทาง)
 - ของเดิม: ตั้ง env canonical www + ตั้ง Resend (`RESEND_API_KEY`) + verify domain `pai-lao.com`
@@ -121,4 +148,4 @@ git push
 ```
 
 ---
-*อัปเดตล่าสุด: เซสชัน security (Upstash rate limit + hash token) + Google signup แยก 2 ทาง (นักรีวิว/เจ้าของสถานที่) + onboarding gate + fix logout/dark-theme/scroll (Lenis) — อัปเดตไฟล์นี้ทุกครั้งที่มีงานใหม่*
+*อัปเดตล่าสุด: เซสชัน bug-hunt (2026-07-06) — audit ทั้งระบบ แก้ 8 จุด: pending-edit field loss/race/sanitize, draft field loss, CSP (GA/avatar/YouTube), auto-review rating จริง, review XOR, admin search, place pin guard — อัปเดตไฟล์นี้ทุกครั้งที่มีงานใหม่*
