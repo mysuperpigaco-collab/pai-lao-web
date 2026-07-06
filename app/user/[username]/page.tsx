@@ -626,33 +626,6 @@ function UserProfileInner() {
                       onClose={() => setPhotoLightbox(null)}
                     />
                   )}
-                  <style jsx>{`
-                    .up-photo-wall { columns: 3 180px; column-gap: 10px; }
-                    .up-photo-item {
-                      position: relative; display: block; width: 100%; margin: 0 0 10px;
-                      padding: 0; border: none; border-radius: 14px; overflow: hidden;
-                      cursor: zoom-in; break-inside: avoid; background: var(--pl-bg);
-                    }
-                    .up-photo-item img { width: 100%; display: block; transition: transform 0.35s ease; }
-                    .up-photo-item:hover img { transform: scale(1.05); }
-                    .up-photo-cap {
-                      position: absolute; left: 0; right: 0; bottom: 0;
-                      padding: 18px 10px 8px; font-size: 11px; font-weight: 700; color: #fff;
-                      background: linear-gradient(to top, rgba(15,23,42,0.72), transparent);
-                      text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-                      opacity: 0; transition: opacity 0.25s;
-                    }
-                    .up-photo-item:hover .up-photo-cap { opacity: 1; }
-                    @media (max-width: 640px) {
-                      .up-photo-wall { columns: 2 120px; column-gap: 8px; }
-                      .up-photo-item { margin-bottom: 8px; border-radius: 10px; }
-                      .up-photo-cap { opacity: 1; } /* มือถือไม่มี hover — โชว์ชื่อเสมอ */
-                    }
-                    @media (prefers-reduced-motion: reduce) {
-                      .up-photo-item img { transition: none; }
-                      .up-photo-item:hover img { transform: none; }
-                    }
-                  `}</style>
                 </>
               )
             )}
@@ -859,6 +832,28 @@ function UserProfileInner() {
         .up-rv-card:hover { box-shadow: 0 8px 28px rgba(15,23,42,0.11); transform: translateY(-2px); }
         .up-rv-hidden { opacity: 0.55; border-style: dashed; }
 
+        /* Photo gallery (masonry) */
+        .up-photo-wall { columns: 3 180px; column-gap: 10px; }
+        .up-photo-item {
+          position: relative; display: block; width: 100%; margin: 0 0 10px;
+          padding: 0; border: none; border-radius: 14px; overflow: hidden;
+          cursor: zoom-in; break-inside: avoid; background: var(--pl-bg);
+        }
+        .up-photo-item img { width: 100%; display: block; transition: transform 0.35s ease; }
+        .up-photo-item:hover img { transform: scale(1.05); }
+        .up-photo-cap {
+          position: absolute; left: 0; right: 0; bottom: 0;
+          padding: 18px 10px 8px; font-size: 11px; font-weight: 700; color: #fff;
+          background: linear-gradient(to top, rgba(15,23,42,0.72), transparent);
+          text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+          opacity: 0; transition: opacity 0.25s;
+        }
+        .up-photo-item:hover .up-photo-cap { opacity: 1; }
+        @media (prefers-reduced-motion: reduce) {
+          .up-photo-item img { transition: none; }
+          .up-photo-item:hover img { transform: none; }
+        }
+
         @media (max-width: 640px) {
           .up-hero-wrapper { padding: 12px 12px 0; }
           .up-hero { height: 200px; border-radius: 16px; }
@@ -868,6 +863,9 @@ function UserProfileInner() {
           .up-body { padding-top: 52px; padding-left: 12px; padding-right: 12px; }
           .up-displayname { font-size: 19px; }
           .up-trips-grid { grid-template-columns: 1fr 1fr; }
+          .up-photo-wall { columns: 2 120px; column-gap: 8px; }
+          .up-photo-item { margin-bottom: 8px; border-radius: 10px; }
+          .up-photo-cap { opacity: 1; } /* มือถือไม่มี hover — โชว์ชื่อทริปเสมอ */
         }
       `}</style>
     </div>
