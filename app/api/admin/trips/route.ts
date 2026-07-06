@@ -19,23 +19,23 @@ export async function GET(request: Request) {
     const skip     = (page - 1) * limit;
 
     const where: any = {};
-    if (q) {
-      where.OR = [
-        { title:    { contains: q, mode: "insensitive" } },
-        { location: { contains: q, mode: "insensitive" } },
-        { author:   { username: { contains: q, mode: "insensitive" } } },
-      ];
-    }
+    // เงื่อนไขค้นหาแยกเป็นก้อน — ห้ามวางที่ where.OR ตรง ๆ เพราะแท็บ PENDING ใช้ OR อยู่แล้ว (เคยทับกันจนค้นหาไม่ทำงาน)
+    const qOr = q ? [
+      { title:    { contains: q, mode: "insensitive" } },
+      { location: { contains: q, mode: "insensitive" } },
+      { author:   { username: { contains: q, mode: "insensitive" } } },
+    ] : null;
     if (approval === "PENDING") {
       // Include PENDING + limbo (isDraft:false, isPublished:false, approvalStatus:null)
       where.isDraft = false;
       where.isPublished = false;
-      where.OR = [
-        { approvalStatus: "PENDING" },
-        { approvalStatus: null },
+      where.AND = [
+        { OR: [{ approvalStatus: "PENDING" }, { approvalStatus: null }] },
+        ...(qOr ? [{ OR: qOr }] : []),
       ];
-    } else if (approval) {
-      where.approvalStatus = approval;
+    } else {
+      if (approval) where.approvalStatus = approval;
+      if (qOr) where.OR = qOr;
     }
 
     const [trips, total] = await Promise.all([

@@ -319,7 +319,7 @@ export async function PUT(request: Request, { params }: Params) {
     const pendingData: Record<string, any> = {};
     if (title       !== undefined) pendingData.title       = title;
     if (subtitle    !== undefined) pendingData.subtitle    = subtitle;
-    if (description !== undefined) pendingData.description = description;
+    if (description !== undefined) pendingData.description = sanitizeServerHtml(description);
     if (coverUrl    !== undefined) pendingData.coverUrl    = coverUrl;
     if (gallery     !== undefined) pendingData.gallery     = gallery;
     if (mood        !== undefined) pendingData.mood        = mood;

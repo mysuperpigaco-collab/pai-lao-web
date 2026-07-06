@@ -40,9 +40,10 @@ export async function POST(request: Request) {
     });
     if (existing) {
       // ถ้ามี googleMapsUrl ใหม่และ place ยังไม่มี → อัปเดตแบบ silent (ไม่ต้องรออนุมัติ เป็น metadata)
+      // เฉพาะสถานที่ไม่มีเจ้าของ (businessId null) — กันคนสุ่มย้ายหมุดของธุรกิจคนอื่น
       if (googleMapsUrl?.trim()) {
         await prisma.place.updateMany({
-          where: { id: existing.id, googleMapsUrl: null },
+          where: { id: existing.id, googleMapsUrl: null, businessId: null },
           data:  { googleMapsUrl: googleMapsUrl.trim() },
         });
       }

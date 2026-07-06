@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { syncSharedReviewsForTrip } from "@/lib/sharedReviews";
+import { sanitizeServerHtml } from "@/lib/sanitize-server";
 
 // GET /api/admin/pending-edits?type=TRIP|PLACE&page=&limit=
 export async function GET(request: Request) {
@@ -65,6 +66,8 @@ export async function PUT(request: Request) {
 
   if (action === "approve") {
     const data = edit.pendingData as Record<string, any>;
+    // sanitize ซ้ำตอน apply — กัน record เก่าที่เก็บ description ดิบไว้ก่อนมีชั้น sanitize ตอนเก็บ
+    if (typeof data.description === "string") data.description = sanitizeServerHtml(data.description);
 
     if (edit.targetType === "TRIP") {
       const trip = await prisma.trip.findUnique({
