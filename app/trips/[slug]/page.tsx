@@ -62,8 +62,9 @@ export async function generateMetadata({ params }: Props) {
   const desc       = trip.subtitle
     || trip.description?.replace(/<[^>]+>/g, "").slice(0, 160)
     || `เรื่องเล่าการเดินทางโดย ${authorName}`;
-  const image      = trip.coverUrl || `${SITE_URL}/opengraph-image`;
 
+  // หมายเหตุ: ไม่ใส่ images ตรงนี้ — ให้ opengraph-image.tsx (share card อัตโนมัติ) เป็นคนจัดการ
+  // ถ้าใส่ images ที่นี่จะ override การ์ดที่ generate ทิ้ง
   return {
     title:       `${trip.title} | ไปเล่า`,
     description: desc,
@@ -73,7 +74,6 @@ export async function generateMetadata({ params }: Props) {
       description: desc,
       url:         `${SITE_URL}/trips/${slug}`,
       siteName:    "ไปเล่า",
-      images:      [{ url: image, width: 1200, height: 630, alt: trip.title }],
       type:        "article",
       locale:      "th_TH",
     },
@@ -81,7 +81,6 @@ export async function generateMetadata({ params }: Props) {
       card:        "summary_large_image",
       title:       trip.title,
       description: desc,
-      images:      [image],
     },
   };
 }

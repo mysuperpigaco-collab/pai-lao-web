@@ -42,9 +42,9 @@ export async function generateMetadata({ params }: Props) {
   const desc = place.descriptionShort
     || place.description?.replace(/<[^>]+>/g, "").slice(0, 160)
     || `${place.title} · ${place.province}`;
-  const image  = place.coverUrl || `${SITE_URL}/opengraph-image`;
   const locStr = [place.district, place.province].filter(Boolean).join(", ");
 
+  // ไม่ใส่ images — ให้ opengraph-image.tsx (share card อัตโนมัติ) จัดการ
   return {
     title:       `${place.title} · ${locStr} | ไปเล่า`,
     description: desc,
@@ -54,7 +54,6 @@ export async function generateMetadata({ params }: Props) {
       description: desc,
       url:         `${SITE_URL}/place/${slug}`,
       siteName:    "ไปเล่า",
-      images:      [{ url: image, width: 1200, height: 630, alt: place.title }],
       type:        "website",
       locale:      "th_TH",
     },
@@ -62,7 +61,6 @@ export async function generateMetadata({ params }: Props) {
       card:        "summary_large_image",
       title:       `${place.title} · ${locStr}`,
       description: desc,
-      images:      [image],
     },
   };
 }

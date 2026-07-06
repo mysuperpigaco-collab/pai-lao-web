@@ -9,6 +9,8 @@ interface ShareButtonProps {
   tripId?: string;
   placeId?: string;
   initialShareCount?: number;
+  /** คำโปรยติดไปกับ share sheet มือถือ (เช่น subtitle ทริป) */
+  text?: string;
 }
 
 const LineIcon = () => (
@@ -31,6 +33,7 @@ export default function ShareButton({
   tripId,
   placeId,
   initialShareCount = 0,
+  text,
 }: ShareButtonProps) {
   const [shareCount, setShareCount] = useState(initialShareCount);
   const [copied, setCopied] = useState(false);
@@ -39,6 +42,7 @@ export default function ShareButton({
 
   const shareUrl = url ?? (typeof window !== "undefined" ? window.location.href : "");
   const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}`;
+  const fbUrl   = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
 
   async function trackShare() {
     try {
@@ -64,7 +68,7 @@ export default function ShareButton({
     try {
       // Try Web Share API first (mobile)
       if (navigator.share) {
-        await navigator.share({ title, url: shareUrl });
+        await navigator.share({ title, text: text ?? title, url: shareUrl });
         await trackShare();
       } else {
         // Fallback: copy to clipboard
@@ -154,6 +158,22 @@ export default function ShareButton({
           }}
         >
           <LineIcon /> LINE
+        </a>
+        <a
+          href={fbUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => trackShare()}
+          style={{
+            flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+            gap: 7, padding: "11px 12px", borderRadius: 12, background: "#1877F2",
+            color: "#fff", textDecoration: "none", fontWeight: 800, fontSize: 13,
+            border: "none", cursor: "pointer",
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          </svg> Facebook
         </a>
         <button
           onClick={() => setShowQR(true)}

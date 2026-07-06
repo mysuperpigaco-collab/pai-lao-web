@@ -20,6 +20,8 @@ const chakraPetch = Chakra_Petch({
 });
 
 export const metadata: Metadata = {
+  // ฐาน URL ให้ og:image ที่เป็น relative path (share card) ชี้โดเมนถูกต้อง
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pai-lao.com"),
   title: "ไปเล่า | PAI-LAO EXPERIENCE",
   description: "ชุมชนนักท่องเที่ยวไทย แบ่งปันเรื่องเล่าการเดินทาง ค้นหาสถานที่ท่องเที่ยว และวางแผนทริปได้ในที่เดียว",
   keywords: ["ท่องเที่ยว", "รีวิวทริป", "สถานที่ท่องเที่ยว", "ไทย", "pai-lao", "travel"],
