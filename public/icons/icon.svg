@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- ไอคอนแอป "ไปเล่า" — แบบ F หนังสือเดินทาง: หนังสือเปิด (เรื่องเล่า) + เส้นทางประสู่หมุดบนหน้ากระดาษ -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#10b981"/>
+      <stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <!-- หน้าซ้าย -->
+  <path d="M102 358 C154 333 205 333 248 354 L248 171 C205 149 154 149 102 175 Z" fill="#ffffff"/>
+  <!-- หน้าขวา (อ่อนกว่านิดให้มีมิติ) -->
+  <path d="M410 358 C358 333 307 333 264 354 L264 171 C307 149 358 149 410 175 Z" fill="#ffffff" opacity="0.85"/>
+  <!-- สันกลาง -->
+  <rect x="252" y="160" width="8" height="196" rx="4" fill="rgba(255,255,255,0.55)"/>
+  <!-- เส้นทางประ ๆ บนหน้าขวา วิ่งขึ้นไปหาหมุด -->
+  <path d="M290 320 C300 280 330 300 340 250" fill="none" stroke="#0F6E56" stroke-width="14" stroke-linecap="round" stroke-dasharray="2 30" opacity="0.9"/>
+  <!-- หมุดปลายทาง -->
+  <circle cx="345" cy="222" r="27" fill="#0F6E56"/>
+  <circle cx="345" cy="222" r="11" fill="#ffffff"/>
+  <!-- เส้นบรรทัดบนหน้าซ้าย (ใบ้ว่าเป็นเรื่องเล่า) -->
+  <path d="M130 216 C160 204 195 204 222 213" fill="none" stroke="#94a3b8" stroke-width="10" stroke-linecap="round" opacity="0.55"/>
+  <path d="M130 258 C160 246 195 246 222 255" fill="none" stroke="#94a3b8" stroke-width="10" stroke-linecap="round" opacity="0.45"/>
+  <path d="M130 300 C154 290 178 289 198 294" fill="none" stroke="#94a3b8" stroke-width="10" stroke-linecap="round" opacity="0.35"/>
+</svg>

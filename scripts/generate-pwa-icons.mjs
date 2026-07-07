@@ -1,24 +1,19 @@
-// สร้างไอคอน PWA จากไฟล์โลโก้ (ต้องเป็นรูปจัตุรัส ≥512px จะคมสุด)
+// สร้างไอคอน PWA — ค่าเริ่มต้นใช้โลโก้ทางการ public/icons/icon.svg (แบบ F หนังสือเดินทาง)
 // วิธีใช้ (PowerShell):
-//   node scripts/generate-pwa-icons.mjs path\to\logo.png
+//   node scripts/generate-pwa-icons.mjs            ← ใช้ icon.svg
+//   node scripts/generate-pwa-icons.mjs logo.png   ← หรือระบุไฟล์อื่น (จัตุรัส ≥512px)
 // ได้ไฟล์: public/icons/icon-192.png, icon-512.png, icon-maskable-512.png (มีขอบกันโดนครอปมุมกลม)
 import sharp from "sharp";
 import { mkdirSync } from "fs";
 
-const src = process.argv[2];
-if (!src) {
-  console.error("ระบุไฟล์โลโก้: node scripts/generate-pwa-icons.mjs <logo.png>");
-  process.exit(1);
-}
+const src = process.argv[2] || "public/icons/icon.svg";
 
 mkdirSync("public/icons", { recursive: true });
 
-await sharp(src).resize(192, 192).png().toFile("public/icons/icon-192.png");
-await sharp(src).resize(512, 512).png().toFile("public/icons/icon-512.png");
-// maskable: ย่อโลโก้เหลือ 80% วางกลางพื้นสีแบรนด์ (Android ครอปเป็นวงกลม/มุมมนได้ไม่โดนตัด)
-const inner = await sharp(src).resize(410, 410).png().toBuffer();
-await sharp({ create: { width: 512, height: 512, channels: 4, background: "#10b981" } })
-  .composite([{ input: inner, gravity: "center" }])
-  .png().toFile("public/icons/icon-maskable-512.png");
+await sharp(src, { density: 300 }).resize(192, 192).png().toFile("public/icons/icon-192.png");
+await sharp(src, { density: 300 }).resize(512, 512).png().toFile("public/icons/icon-512.png");
+// maskable: icon.svg พื้นเต็มขอบ + เนื้อหาหลักอยู่ใน safe zone กลาง 80% แล้ว → ใช้ full-bleed ตรง ๆ
+// (Android ครอปวงกลม/มุมมนได้โดยหนังสือไม่โดนตัด)
+await sharp(src, { density: 300 }).resize(512, 512).png().toFile("public/icons/icon-maskable-512.png");
 
 console.log("สร้างไอคอนเสร็จ: public/icons/icon-192.png, icon-512.png, icon-maskable-512.png");
