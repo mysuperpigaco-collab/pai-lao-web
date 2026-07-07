@@ -54,7 +54,19 @@ export async function googleUrlToLatLng(
   if (!url) return null;
   const direct = extractLatLngFromGoogleUrl(url);
   if (direct) return direct;
-  if (/(maps\.app\.goo\.gl|goo\.gl\/maps|g\.co\/kgs)/i.test(url)) {
+  // เช็ค hostname ตรงตัวเท่านั้น (กัน SSRF — regex เดิมเช็คแค่ "มีคำนี้ใน string" ทำให้
+  // https://evil.com/?x=maps.app.goo.gl ผ่านแล้วเซิร์ฟเวอร์ fetch URL แปลกปลอมได้)
+  const SHORT_LINK_HOSTS = ["maps.app.goo.gl", "goo.gl", "g.co"];
+  let host = "";
+  let protocol = "";
+  try {
+    const parsed = new URL(url);
+    host = parsed.hostname.toLowerCase();
+    protocol = parsed.protocol;
+  } catch {
+    return null;
+  }
+  if (protocol === "https:" && SHORT_LINK_HOSTS.includes(host)) {
     try {
       const res = await fetch(url, {
         redirect: "follow",

@@ -106,6 +106,19 @@
 6. **PWA เฟสแรก** — `public/sw.js` (network-first, ไม่แตะ /api, kill-switch ใน `scripts/sw-kill.js`), `PwaRegister.tsx` (ปุ่มติดตั้ง dismiss ได้), `/offline`, manifest+icons ครบ, ไอคอนแอปแบบ "หนังสือเดินทาง" (`public/icons/icon.svg` + `scripts/generate-pwa-icons.mjs` รันด้วย node ครั้งเดียว)
 7. UI เสนอไว้ยังไม่ทำ: ทิศทางสี A-D (quiet luxury / aurora / dark luxe / bento) + ลูกเล่น (blur-up, route วาดเอง, like burst, scrollytelling) — มี preview ในแชทเก่าแล้ว รอเลือก
 
+## 5.5 เซสชัน re-audit (2026-07-07 บ่าย/เย็น) — แก้ security 5 จุด · ยังไม่ deploy
+
+**งานที่ทำเสร็จเซสชันนี้ (ไม่แตะ DB schema — deploy ไม่ต้อง `prisma db push`):**
+1. **SSRF `/api/maps/resolve`** — `lib/maps.ts` เดิมเช็คลิงก์ย่อด้วย regex "มีคำใน string" (`https://evil.com/?maps.app.goo.gl` ผ่าน แล้ว server fetch ตาม) → เปลี่ยนเป็น parse `new URL()` เช็ค **hostname ตรงตัว** + บังคับ `https:` (allowlist: maps.app.goo.gl / goo.gl / g.co) · route เพิ่ม `checkRateLimit(maps-resolve:userId, 20/min)` + จำกัด url ≤ 2048
+2. **`/api/contact` rate limit ข้ามได้** — เดิมจำกัดตาม "อีเมลที่ผู้ส่งกรอกเอง" (เปลี่ยนอีเมล = ส่งไม่จำกัด เปลือง Resend) → เพิ่ม `checkRateLimit(contact:ip, 3/10min)` + จำกัด message ≤ 5000, name/email/subject มีเพดาน
+3. **`/api/shares` ปั่นได้** — เพิ่ม `checkRateLimit(share:userId, 30/min)` + เปลี่ยนเป็น `updateMany` เงื่อนไข **approved เท่านั้น** (กัน increment ของที่ยังไม่ public)
+4. **clamp `limit`/`page`** ใน GET `/api/trips` (เพดาน 50) + `/api/places` (เพดาน **100** เพราะ timeline dropdown ใช้ limit=100) — กัน `limit=999999` ดึงทั้ง DB, `limit=abc`→NaN→500, `page=-1`→skip ติดลบ
+5. **จำกัดความยาว text** — รีวิว (`/api/reviews`) + reply (`/api/reviews/[id]/reply`) ≤ 2000 ตัว (กัน DB bloat)
+
+**ยังไม่ deploy** — คำสั่งอยู่ท้ายไฟล์ · ยังไม่ได้ `npx tsc --noEmit` (Jim รันเอง)
+
+---
+
 ## 6.0 (เช้าวันเดียวกัน) เซสชัน bug-hunt: audit ทั้งระบบ + แก้ 8 จุด — deploy แล้ว
 
 **งานที่ทำเสร็จเซสชันนี้ (แก้จาก audit หาบั้คทั้งระบบ):**

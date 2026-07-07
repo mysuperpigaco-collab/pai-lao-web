@@ -8,8 +8,11 @@ import { sanitizeServerHtml } from "@/lib/sanitize-server";
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const page     = Number(searchParams.get("page")  ?? 1);
-    const limit    = Number(searchParams.get("limit") ?? 12);
+    // clamp กันค่าแปลก: limit=999999 ดึงทั้ง DB, limit=abc → NaN → Prisma 500, page=-1 → skip ติดลบ
+    const rawPage  = Number(searchParams.get("page")  ?? 1);
+    const rawLimit = Number(searchParams.get("limit") ?? 12);
+    const page     = Number.isFinite(rawPage)  ? Math.max(1, Math.floor(rawPage))            : 1;
+    const limit    = Number.isFinite(rawLimit) ? Math.min(50, Math.max(1, Math.floor(rawLimit))) : 12;
     const mood     = searchParams.get("mood")     ?? undefined;
     const authorId = searchParams.get("authorId") ?? undefined;
     const mine     = searchParams.get("mine")     === "1";

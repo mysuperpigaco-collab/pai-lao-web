@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { getClientIp } from "@/lib/activityLogger";
 
 export const dynamic = "force-dynamic";
 
@@ -19,10 +21,25 @@ function esc(str: string): string {
 export async function POST(req: Request) {
   const resend = new Resend(process.env.RESEND_API_KEY);
   try {
+    // Rate limit ตาม IP (ของเดิมจำกัดตามอีเมลที่ผู้ส่งกรอกเอง — เปลี่ยนอีเมลก็ส่งได้ไม่จำกัด)
+    const ip = getClientIp(req as any);
+    const rlIp = await checkRateLimit(`contact:${ip}`, 3, RATE_LIMIT_MINUTES * 60_000);
+    if (!rlIp.allowed) {
+      return NextResponse.json({ error: `ส่งบ่อยเกินไป กรุณารอ ${RATE_LIMIT_MINUTES} นาที` }, { status: 429 });
+    }
+
     const { name, email, subject, message, category } = await req.json();
 
     if (!name?.trim() || !email?.trim() || !message?.trim()) {
       return NextResponse.json({ error: "กรุณากรอกข้อมูลให้ครบ" }, { status: 400 });
+    }
+
+    // จำกัดความยาว — กันยัดข้อความมหึมาเข้าอีเมล/DB
+    if (name.length > 200 || email.length > 254 || (subject?.length ?? 0) > 300) {
+      return NextResponse.json({ error: "ข้อมูลยาวเกินกำหนด" }, { status: 400 });
+    }
+    if (message.length > 5000) {
+      return NextResponse.json({ error: "ข้อความต้องไม่เกิน 5,000 ตัวอักษร" }, { status: 400 });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -7,8 +7,12 @@ import { googleUrlToLatLng, googleMapsPoint } from "@/lib/maps";
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const page     = Number(searchParams.get("page")     ?? 1);
-    const limit    = Number(searchParams.get("limit")    ?? 12);
+    // clamp กันค่าแปลก: limit=999999 ดึงทั้ง DB, limit=abc → NaN → Prisma 500, page=-1 → skip ติดลบ
+    const rawPage  = Number(searchParams.get("page")  ?? 1);
+    const rawLimit = Number(searchParams.get("limit") ?? 12);
+    const page     = Number.isFinite(rawPage)  ? Math.max(1, Math.floor(rawPage))             : 1;
+    // เพดาน 100 — timeline place-search dropdown ดึง limit=100 (ดู HANDOFF)
+    const limit    = Number.isFinite(rawLimit) ? Math.min(100, Math.max(1, Math.floor(rawLimit))) : 12;
     const category = searchParams.get("category")        ?? undefined;
     const province = searchParams.get("province")        ?? undefined;
     const district = searchParams.get("district")        ?? undefined;

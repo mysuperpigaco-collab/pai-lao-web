@@ -29,6 +29,10 @@ export async function POST(request: NextRequest) {
     if (!rating || !text) {
       return NextResponse.json({ message: "กรุณากรอกคะแนนและความคิดเห็น" }, { status: 400 });
     }
+    // จำกัดความยาว — กัน DB bloat จากข้อความยักษ์
+    if (typeof text !== "string" || text.trim().length === 0 || text.length > 2000) {
+      return NextResponse.json({ message: "ความคิดเห็นต้องยาวไม่เกิน 2,000 ตัวอักษร" }, { status: 400 });
+    }
     if (!tripId && !placeId) {
       return NextResponse.json({ message: "ต้องระบุ tripId หรือ placeId" }, { status: 400 });
     }

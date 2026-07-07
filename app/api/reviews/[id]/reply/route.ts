@@ -43,6 +43,9 @@ export async function POST(
     if (!text?.trim()) {
       return NextResponse.json({ message: "กรุณากรอกข้อความตอบกลับ" }, { status: 400 });
     }
+    if (typeof text !== "string" || text.length > 2000) {
+      return NextResponse.json({ message: "ข้อความต้องยาวไม่เกิน 2,000 ตัวอักษร" }, { status: 400 });
+    }
 
     if (text.trim().length > 1000) {
       return NextResponse.json({ message: "ข้อความยาวเกินไป (สูงสุด 1,000 ตัวอักษร)" }, { status: 400 });
