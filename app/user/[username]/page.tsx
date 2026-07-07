@@ -8,6 +8,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import ImageLightbox from "@/components/common/ImageLightbox";
 import ShareButton from "@/components/common/ShareButton";
+import InstallAppButton from "@/components/common/InstallAppButton";
 
 interface PublicUser {
   id: string; username: string; displayName?: string; firstName: string;
@@ -703,7 +704,10 @@ function UserProfileInner() {
             {/* ── แชร์โปรไฟล์ — ล่างสุด ใต้เนื้อหาทุกแท็บ (ตำแหน่งคงที่ไม่ว่าเปิดแท็บไหน) ── */}
             <div className="up-share-card">
               <p className="up-share-label">แชร์โปรไฟล์นี้</p>
-              <ShareButton title={`${displayName} (@${user.username}) บนไปเล่า`} url={profileUrl || undefined} />
+              <div className="up-share-actions">
+                <ShareButton title={`${displayName} (@${user.username}) บนไปเล่า`} url={profileUrl || undefined} />
+                <InstallAppButton />
+              </div>
             </div>
           </>
         )}
@@ -838,6 +842,10 @@ function UserProfileInner() {
         .up-share-label {
           margin: 0 0 12px; text-align: center;
           font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: #10b981;
+        }
+        .up-share-actions {
+          display: flex; align-items: center; justify-content: center;
+          gap: 10px; flex-wrap: wrap;
         }
 
         .up-private-box {

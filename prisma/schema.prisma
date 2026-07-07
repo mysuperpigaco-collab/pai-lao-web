@@ -67,6 +67,7 @@ model User {
   postBannedUntil DateTime?  // ห้ามโพสจนถึงวันที่นี้ (null = ไม่ถูกแบน)
   bannedUntil     DateTime?  // บัญชีถูกระงับจนถึงวันที่นี้ (null = ไม่ถูกแบน)
   banReason       String?    // เหตุผลที่ถูกแบน
+  deletionRequestedAt DateTime? // ผู้ใช้ขอลบบัญชี — cron ลบจริงหลัง 7 วัน (null = ไม่ได้ขอ / ยกเลิกแล้ว)
   resetToken      String?    // token สำหรับรีเซ็ตรหัสผ่าน
   resetTokenExp   DateTime?  // วันหมดอายุ token
   emailVerified      Boolean   @default(false) // ยืนยันอีเมลแล้วหรือยัง

@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from "react";
 import PageLoading from "@/components/ui/PageLoading";
+import DeleteAccountSection from "@/components/account/DeleteAccountSection";
 import InputField from "@/components/ui/InputField";
 import {
   BackButton,
@@ -407,6 +408,7 @@ export default function EditBusinessProfilePage() {
           </ActionBar>
 
         </form>
+        <DeleteAccountSection />
       </div>
 
       <style jsx>{`

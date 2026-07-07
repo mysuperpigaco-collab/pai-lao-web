@@ -125,7 +125,21 @@
    - `app/share-receive/route.ts` (ใหม่) — fallback ถ้า SW ไม่ active: redirect เข้าฟอร์มเฉย ๆ
    - **เทสบนมือถือ:** ติดตั้ง PWA → แกลเลอรี → แชร์รูป → เลือก "ไปเล่า" → รูปต้องโผล่ในช่องแกลเลอรีของฟอร์ม
 
-**ยังไม่ deploy** — คำสั่งอยู่ท้ายไฟล์ (รอบนี้ต้องมี `prisma db push`) · ยังไม่ได้ `npx tsc --noEmit` (Jim รันเอง)
+**ต่ออีก 2 features (เซสชันเดียวกัน):**
+8. **ลบบัญชี self-service + เปลี่ยนใจได้ 7 วัน (PDPA)** —
+   - schema: `User.deletionRequestedAt DateTime?` (**ต้อง db push**)
+   - `app/api/auth/delete-account/route.ts` — POST ขอลบ (ต้องพิมพ์ username ยืนยัน, แอดมินห้ามใช้, rate limit 5/10นาที) · DELETE ยกเลิก
+   - `app/api/cron/purge-deleted-accounts/route.ts` — ลบจริงหลังครบ 7 วัน (cascade เหมือน scripts/delete-users.ts) เช็ค `Authorization: Bearer CRON_SECRET` · เพดาน 100 บัญชี/รอบ · log ACCOUNT_PURGED
+   - `vercel.json` เพิ่ม cron `0 20 * * *` (ตี 3 ไทย) — **ต้องตั้ง env `CRON_SECRET` ใน Vercel** (สุ่มยาว ๆ) ไม่ตั้ง = cron ยิงแล้วได้ 401 เฉย ๆ ไม่ลบอะไร
+   - UI: `components/account/DeleteAccountSection.tsx` (self-contained, fetch /api/auth/me เอง) ใส่ท้ายหน้า `dashboard/edit-profile` + `business/edit-profile` · โซนแดง → modal พิมพ์ username → แบนเนอร์ส้มนับถอยหลัง + ปุ่มยกเลิก · ระหว่างรอ 7 วันบัญชียังใช้งานได้ปกติ
+   - `auth/me` GET เพิ่ม `deletionRequestedAt` ใน response
+9. **ปุ่มติดตั้งแอปย้ายเข้าการ์ดแชร์โปรไฟล์** —
+   - `PwaRegister.tsx` รื้อ popup ลอยออก (ไม่เด้งกวนอีกแล้ว) เหลือหน้าที่: ลงทะเบียน SW + ดัก `beforeinstallprompt` เก็บใน `window.__plInstallEvt` + ยิง event `pl-install-ready`/`pl-install-done`
+   - `components/common/InstallAppButton.tsx` (ใหม่) — โชว์เฉพาะติดตั้งได้จริง (มี event + ไม่ได้อยู่ใน standalone) กดแล้ว prompt ทันที
+   - ใส่ใน `.up-share-card` หน้า `user/[username]` (ทุกโปรไฟล์) คู่กับ ShareButton (`.up-share-actions` flex wrap — มือถือปุ่มตกบรรทัดเอง)
+   - localStorage key เก่า `pl-pwa-dismissed` ไม่ใช้แล้ว (ทิ้งไว้เฉย ๆ ไม่มีผล)
+
+**ยังไม่ deploy** — คำสั่งอยู่ท้ายไฟล์ (รอบนี้ต้องมี `prisma db push` จาก pg_trgm + deletionRequestedAt) · **ก่อน deploy ตั้ง env `CRON_SECRET` ใน Vercel** · ยังไม่ได้ `npx tsc --noEmit` (Jim รันเอง)
 
 ---
 

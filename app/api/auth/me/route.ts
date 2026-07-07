@@ -21,6 +21,7 @@ export async function GET() {
         profilePrivacy: true, showEmail: true, showPhone: true,
         showSocial: true, showBirthDate: true,
         authProvider: true, password: true,
+        deletionRequestedAt: true,
         business: {
           select: { id: true, businessName: true, logoUrl: true, isVerified: true },
         },

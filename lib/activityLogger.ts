@@ -20,6 +20,9 @@ export type ActivityAction =
   | "REGISTER"
   | "PASSWORD_RESET_REQUEST"
   | "PASSWORD_RESET_SUCCESS"
+  // Account deletion (7-day grace)
+  | "ACCOUNT_DELETE_REQUEST"
+  | "ACCOUNT_DELETE_CANCEL"
   // Trip
   | "CREATE_TRIP"
   | "UPDATE_TRIP"
