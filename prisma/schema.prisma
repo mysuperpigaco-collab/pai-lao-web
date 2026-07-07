@@ -4,13 +4,15 @@
 // ============================================================
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [pg_trgm]
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 // ── Enums ────────────────────────────────────────────────────
@@ -186,6 +188,11 @@ model Place {
   planStops        TripPlanStop[]
   missions         Mission[]     @relation("MissionPlace")
   promotions       Promotion[]   @relation("PromotionPlace")
+
+  // GIN trgm — เร่ง `contains` (ILIKE %q%) ของช่องค้นหา (ดู /api/places OR clause)
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([description(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([province(ops: raw("gin_trgm_ops"))], type: Gin)
 }
 
 // ── Trip ──────────────────────────────────────────────────────
@@ -229,6 +236,10 @@ model Trip {
   reviews     Review[]
   bookmarks   Bookmark[]
   likes       TripLike[]
+
+  // GIN trgm — เร่ง `contains` ของช่องค้นหา (ดู /api/trips OR clause)
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([subtitle(ops: raw("gin_trgm_ops"))], type: Gin)
 }
 
 // ── TimelineStop ──────────────────────────────────────────────
@@ -268,6 +279,8 @@ model TimelineStop {
   @@index([order])
   @@index([placeId])
   @@index([placeName])
+  // GIN trgm — ค้นทริปตามจังหวัด (timeline.some.province contains)
+  @@index([province(ops: raw("gin_trgm_ops"))], type: Gin)
 }
 
 // ── Review ────────────────────────────────────────────────────

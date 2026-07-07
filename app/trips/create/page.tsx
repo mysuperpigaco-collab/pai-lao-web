@@ -12,6 +12,7 @@ import { getDistricts, normalizeProvince, PROVINCES } from "@/data/thailand";
 import { TRIP_MOODS, TRIP_MOOD_VALUES } from "@/data/tripMoods";
 import TitleDecorator from "@/components/trips/TitleDecorator";
 import { extractLatLngFromGoogleUrl } from "@/lib/maps";
+import { readSharedFiles } from "@/lib/shareInbox";
 import RichTextEditor from "@/components/common/RichTextEditor";
 import AIPolish from "@/components/common/AIPolish";
 import dynamic from "next/dynamic";
@@ -72,6 +73,23 @@ export default function CreateStoryPage() {
     fetch("/api/auth/me").then(r => r.json()).then(d => {
       if (d.user?.tripGalleryLimit) setGalleryLimit(d.user.tripGalleryLimit);
     }).catch(() => {});
+  }, []);
+
+  // ── Web Share Target: ดึงรูปที่แชร์มาจากมือถือ (sw.js เก็บพักไว้ใน Cache) ──
+  // เช็คทุกครั้งที่เปิดฟอร์ม — ครอบเคสโดน middleware เด้งไป login ก่อนแล้วค่อยกลับมา
+  // (query ?share=1 หายระหว่างทาง แต่รูปยังอยู่ใน cache)
+  useEffect(() => {
+    let cancelled = false;
+    readSharedFiles().then((files) => {
+      if (cancelled || files.length === 0) return;
+      // ฟอร์ม create เริ่มจาก gallery ว่างเสมอ — slice ด้วย limit ตรง ๆ ได้
+      const valid = files.slice(0, galleryLimit);
+      const previews = valid.map(f => URL.createObjectURL(f));
+      setGalleryFiles(prev => [...prev, ...valid]);
+      setGalleryPreviews(prev => [...prev, ...previews]);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // (create page เริ่มใหม่เสมอ ไม่โหลด draft เก่า — ดู draft ได้ที่ dashboard)

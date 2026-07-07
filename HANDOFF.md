@@ -115,7 +115,17 @@
 4. **clamp `limit`/`page`** ใน GET `/api/trips` (เพดาน 50) + `/api/places` (เพดาน **100** เพราะ timeline dropdown ใช้ limit=100) — กัน `limit=999999` ดึงทั้ง DB, `limit=abc`→NaN→500, `page=-1`→skip ติดลบ
 5. **จำกัดความยาว text** — รีวิว (`/api/reviews`) + reply (`/api/reviews/[id]/reply`) ≤ 2000 ตัว (กัน DB bloat)
 
-**ยังไม่ deploy** — คำสั่งอยู่ท้ายไฟล์ · ยังไม่ได้ `npx tsc --noEmit` (Jim รันเอง)
+**ต่อด้วย features 2 ตัว (เซสชันเดียวกัน):**
+6. **pg_trgm search index** — `prisma/schema.prisma`: เปิด `previewFeatures=["postgresqlExtensions"]` + `extensions=[pg_trgm]` + GIN trgm index ที่คอลัมน์ที่ q ค้นจริง: Place(title/description/province), Trip(title/subtitle), TimelineStop(province) · **deploy รอบนี้ต้อง `npx prisma db push`** (สร้าง extension+index อย่างเดียว ไม่แตะข้อมูล) · ผลการค้นหาเหมือนเดิม แค่เร็วขึ้น
+7. **Web Share Target (แชร์รูปจากมือถือเข้าฟอร์มสร้างทริป)** — เฉพาะ PWA ติดตั้งแล้วบน Android/Chrome (iOS ไม่รองรับ):
+   - `public/manifest.json` เพิ่ม `share_target` (POST /share-receive, files name="images")
+   - `public/sw.js` **bump VERSION v1→v2** + `handleShareTarget` ดัก POST /share-receive → เก็บรูป (สูงสุด 10) ใน cache `*-share` ที่ path `/__pl-share/<n>` → redirect 303 เข้า /trips/create
+   - `lib/shareInbox.ts` (ใหม่) — `readSharedFiles()` อ่านรูปจาก share cache แล้วลบทิ้ง (อ่านครั้งเดียวหาย)
+   - `app/trips/create/page.tsx` — useEffect ตอน mount เรียก readSharedFiles → append เข้า `galleryFiles`+previews (เข้า upload pipeline เดิม: sharp/EXIF strip/rate limit) · เช็คทุก mount ไม่พึ่ง ?share=1 (กันเคสโดนเด้ง login ก่อน query หาย แต่รูปยังอยู่)
+   - `app/share-receive/route.ts` (ใหม่) — fallback ถ้า SW ไม่ active: redirect เข้าฟอร์มเฉย ๆ
+   - **เทสบนมือถือ:** ติดตั้ง PWA → แกลเลอรี → แชร์รูป → เลือก "ไปเล่า" → รูปต้องโผล่ในช่องแกลเลอรีของฟอร์ม
+
+**ยังไม่ deploy** — คำสั่งอยู่ท้ายไฟล์ (รอบนี้ต้องมี `prisma db push`) · ยังไม่ได้ `npx tsc --noEmit` (Jim รันเอง)
 
 ---
 

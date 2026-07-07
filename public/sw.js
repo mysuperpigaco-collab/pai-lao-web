@@ -6,10 +6,11 @@
  *  - รูปในโดเมนเรา = stale-while-revalidate จำกัด 60 รายการ
  * KILL SWITCH: ถ้าอยากปิด PWA ให้แทนที่ไฟล์นี้ทั้งไฟล์ด้วยโค้ดใน scripts/sw-kill.js แล้ว deploy
  */
-const VERSION = "pl-sw-v1";
+const VERSION = "pl-sw-v2";
 const PAGE_CACHE = VERSION + "-pages";
 const STATIC_CACHE = VERSION + "-static";
 const IMG_CACHE = VERSION + "-img";
+const SHARE_CACHE = VERSION + "-share"; // กล่องพักรูปจาก Web Share Target
 const OFFLINE_URL = "/offline";
 
 self.addEventListener("install", (event) => {
@@ -32,8 +33,47 @@ async function trimCache(name, max) {
   if (keys.length > max) await cache.delete(keys[0]).then(() => trimCache(name, max));
 }
 
+// ── Web Share Target: รับรูปที่ผู้ใช้แชร์จากแกลเลอรีมือถือ ──
+// เก็บไฟล์พักไว้ใน SHARE_CACHE แล้ว redirect เข้าฟอร์มสร้างทริป
+// (หน้า create อ่านผ่าน lib/shareInbox.ts แล้วลบทิ้ง)
+async function handleShareTarget(req) {
+  try {
+    const formData = await req.formData();
+    const files = formData
+      .getAll("images")
+      .filter((f) => f && typeof f === "object" && f.size > 0 && (f.type || "").startsWith("image/"))
+      .slice(0, 10); // กันแชร์มาเป็นร้อยรูป
+    const cache = await caches.open(SHARE_CACHE);
+    const old = await cache.keys();
+    await Promise.all(old.map((k) => cache.delete(k))); // เคลียร์ของค้างรอบก่อน
+    await Promise.all(
+      files.map((file, i) =>
+        cache.put(
+          new Request(self.location.origin + "/__pl-share/" + i),
+          new Response(file, {
+            headers: {
+              "Content-Type": file.type || "application/octet-stream",
+              "X-File-Name": encodeURIComponent(file.name || "shared-" + i + ".jpg"),
+            },
+          })
+        )
+      )
+    );
+  } catch (e) {
+    // อ่าน form ไม่ได้ก็แค่เข้าฟอร์มเปล่า
+  }
+  return Response.redirect(self.location.origin + "/trips/create?share=1", 303);
+}
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
+
+  // Web Share Target (POST จุดเดียวที่ SW แตะ — นอกนั้น non-GET ปล่อยผ่านเหมือนเดิม)
+  if (req.method === "POST" && new URL(req.url).pathname === "/share-receive") {
+    event.respondWith(handleShareTarget(req));
+    return;
+  }
+
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
