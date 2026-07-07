@@ -51,6 +51,11 @@
 - **Prisma `where.OR` ทับกันได้** — ถ้ามีสองเงื่อนไข OR (เช่น ค้นหา + สถานะ) ต้องห่อ `AND: [{OR:...},{OR:...}]` (เคยพังที่ค้นหาแท็บรออนุมัติ)
 - **CSP ใน next.config.ts บล็อกเงียบ** — เพิ่ม third-party ใหม่ (สคริปต์/รูป/iframe/fetch) ต้องเติมโดเมนใน directive ที่ตรง (script-src/img-src/frame-src/connect-src) เคยบล็อก GA + avatar Google + YouTube embed มาแล้ว · เช็คได้จาก Console บน prod (error `Refused to ...`) · `ERR_BLOCKED_BY_CLIENT` = adblock ฝั่งผู้ใช้ ไม่ใช่บั้คเรา
 - **รีวิวอัตโนมัติ (shareToPlace) มีโค้ด 2 ชุดซ้ำกัน** — `lib/sharedReviews.ts` (ตอนอนุมัติทริป/แก้ไข) + `autoReviewsForApprovedPlace` ใน `admin/places/route.ts` (ตอนอนุมัติสถานที่ทีหลัง) — แก้อะไรต้องแก้คู่กัน
+- **คอมโพเนนต์เดียวห้ามมี `<style jsx>` ซ้อน 2 ก้อน** — dev ไม่ฟ้อง แต่ Turbopack **fail ทั้ง build** ตอน deploy → CSS ใหม่ให้เติมในก้อนหลักท้ายไฟล์
+- **OG image: ห้ามใส่ `images` ใน generateMetadata** ของหน้าที่มี `opengraph-image.tsx` — จะ override การ์ดที่ generate ทิ้ง
+- **satori (ImageResponse) ไม่รองรับ webp + render ตัวอักษรไม่ได้ถ้าไม่มีฟอนต์** — รูปปกต้อง fetch แล้วแปลง JPEG data URI ด้วย sharp ก่อน · ฟอนต์ไทยโหลด subset จาก Google Fonts (ดู loadThaiFont ใน opengraph-image.tsx) · ทุกไฟล์ og ต้องมี fallback ตอนฟอนต์/รูปพัง
+- **แก้ `public/sw.js` ต้อง bump `VERSION`** (pl-sw-v1 → v2) ไม่งั้นผู้ใช้ติดแคชเก่า · ปิด PWA ฉุกเฉิน = ก๊อป `scripts/sw-kill.js` ทับ sw.js แล้ว deploy
+- **lightbox ทั้งเว็บใช้ตัวกลางตัวเดียว** `components/common/ImageLightbox.tsx` (รับ `src` เดี่ยว หรือ `images[]+startIndex+captions`) — ห้ามเขียน lightbox ใหม่ในหน้าไหนอีก · ยกเว้น avatar lightbox หน้า user (แบบพิเศษ จงใจแยก)
 
 ## 4. โมเดล/แนวคิดหลัก
 
@@ -88,8 +93,20 @@
 - **Security/onboarding (เซสชันล่าสุด):** `lib/rateLimit.ts` (Upstash) · `lib/tokens.ts` (`hashToken`) · `middleware.ts` (onb gate + role-based redirect) · `isProfileComplete` ใน `lib/auth`
 - **Google signup 2 ทาง:** `components/auth/GoogleLoginButton.tsx` (prop `intent`) · `/api/auth/google` เก็บ `pl_oauth_intent` cookie · `/api/auth/google/callback` แยก business/user + สร้าง Business record · `/login` มีสองแท็บ
 - **ค้นหาสถานที่ในไทม์ไลน์:** `searchPlaces` เรียก `/api/places?q=..&limit=100` · dropdown สูง maxHeight 480 (~8 แถว) + `data-lenis-prevent` + `.pl-scroll-y`
+- **Lightbox กลาง:** `components/common/ImageLightbox.tsx` (จุดเดียวทั้งเว็บ) · **OG cards:** `opengraph-image.tsx` ใน trips/place/user segment · **PWA:** `public/sw.js` + `components/PwaRegister.tsx` + `public/icons/icon.svg`
 
-## 6. สถานะล่าสุด (เซสชัน bug-hunt: audit ทั้งระบบ + แก้ 8 จุด — deploy แล้ว)
+## 6. สถานะล่าสุด (เซสชัน bug-hunt + features ใหญ่ — deploy เป็นช่วง ๆ แล้ว)
+
+**ช่วงสอง — features (ทำต่อจาก bug-hunt วันเดียวกัน):**
+1. **Lightbox รวมศูนย์** — ยุบ 5 ชุดเหลือ `common/ImageLightbox.tsx` ตัวเดียว (ปัด/ลูกศร/ESC/ตัวนับ/จุด/ดับเบิลแตะซูม/caption/pointer-capture/data-lenis-prevent/reduced-motion) · จุดเรียก: TripTimeline, TripRichContent, PlaceHero, PlaceGallery×3, PlaceGalleryGrid, CommunityPhotosGallery, แกลเลอรีโปรไฟล์
+2. **บีบอัดรูปตอนอัปโหลด (sharp)** — `/api/upload`: หมุนตาม EXIF → ย่อ ≤1920px → WebP q82 → **strip EXIF/GPS** (ปิดงาน privacy ค้าง) · GIF ผ่านตรง · fail-open · **ต้อง `npm install sharp`** · จับตา: ปกใหม่เป็น .webp
+3. **OG share cards อัตโนมัติ 3 แบบ** — `opengraph-image.tsx` ใน trips/[slug], place/[slug], user/[username] (PNG 1200×630, ฟอนต์ Chakra Petch, รูปแปลง JPEG ผ่าน sharp, place ไม่มีปกใช้รูป community, กัน leak ของที่ยังไม่อนุมัติ) + `metadataBase` ใน layout
+4. **ShareButton อัปเกรด** — ปุ่ม Facebook + prop `text` + ช่องลิงก์+ปุ่มคัดลอก + **fix บั้ค URL ว่าง** (อ่าน location ตอน render บน SSR → ย้ายเข้า useEffect+state, sync prop url ที่มาทีหลัง)
+5. **โปรไฟล์นักรีวิว** — แท็บ "แกลเลอรี" (API ใหม่ `/api/users/[username]/photos`, masonry 3/2 คอลัมน์, lazy load, lightbox+caption) + การ์ดแชร์โปรไฟล์ย้ายไว้ล่างสุดใต้ทุกแท็บ (URL สะอาดตัด ?preview=true) + แท็บเป็น segmented แคปซูล 3 ช่อง
+6. **PWA เฟสแรก** — `public/sw.js` (network-first, ไม่แตะ /api, kill-switch ใน `scripts/sw-kill.js`), `PwaRegister.tsx` (ปุ่มติดตั้ง dismiss ได้), `/offline`, manifest+icons ครบ, ไอคอนแอปแบบ "หนังสือเดินทาง" (`public/icons/icon.svg` + `scripts/generate-pwa-icons.mjs` รันด้วย node ครั้งเดียว)
+7. UI เสนอไว้ยังไม่ทำ: ทิศทางสี A-D (quiet luxury / aurora / dark luxe / bento) + ลูกเล่น (blur-up, route วาดเอง, like burst, scrollytelling) — มี preview ในแชทเก่าแล้ว รอเลือก
+
+## 6.0 (เช้าวันเดียวกัน) เซสชัน bug-hunt: audit ทั้งระบบ + แก้ 8 จุด — deploy แล้ว
 
 **งานที่ทำเสร็จเซสชันนี้ (แก้จาก audit หาบั้คทั้งระบบ):**
 1. **pending-edits approve** — เติม `rating`/`lat`/`lng` ที่หายตอนอนุมัติ (หมุดแผนที่+คะแนนจุดแวะเคยหายทั้งทริป) + ห่อ `$transaction` (timeline ไม่หายถ้า update ล้ม) + deleteMany เฉพาะ record `createdAt <= อันที่ตัดสิน` (กัน race ลบการแก้ใหม่ที่ยังไม่ถูกตรวจ) + sanitize `description` ตอน apply
@@ -148,4 +165,4 @@ git push
 ```
 
 ---
-*อัปเดตล่าสุด: เซสชัน bug-hunt (2026-07-06) — audit ทั้งระบบ แก้ 8 จุด: pending-edit field loss/race/sanitize, draft field loss, CSP (GA/avatar/YouTube), auto-review rating จริง, review XOR, admin search, place pin guard — อัปเดตไฟล์นี้ทุกครั้งที่มีงานใหม่*
+*อัปเดตล่าสุด: 2026-07-07 — เช้า: bug-hunt แก้ 8 จุด · บ่าย: lightbox รวมศูนย์ + sharp บีบรูป/strip EXIF + OG share cards 3 แบบ + ShareButton fix/อัปเกรด + แกลเลอรีโปรไฟล์ + PWA เฟสแรก + ไอคอนแอป — อัปเดตไฟล์นี้ทุกครั้งที่มีงานใหม่*
