@@ -8,6 +8,7 @@ import RippleProvider from "@/components/ui/RippleProvider";
 import SmoothScrollProvider from "@/components/SmoothScrollProvider";
 import SplashScreen from "@/components/SplashScreen";
 import NavTransition from "@/components/NavTransition";
+import PwaRegister from "@/components/PwaRegister";
 import Script from "next/script";
 
 const GA_ID = "G-42HZ2VCDXZ";
@@ -75,6 +76,7 @@ export default function RootLayout({
         `}</Script>
         <SplashScreen />
         <NavTransition />
+        <PwaRegister />
         <AuthProvider>
           <SmoothScrollProvider>
             <RippleProvider />
