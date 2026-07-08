@@ -139,6 +139,9 @@
    - ใส่ใน `.up-share-card` หน้า `user/[username]` (ทุกโปรไฟล์) คู่กับ ShareButton (`.up-share-actions` flex wrap — มือถือปุ่มตกบรรทัดเอง)
    - localStorage key เก่า `pl-pwa-dismissed` ไม่ใช้แล้ว (ทิ้งไว้เฉย ๆ ไม่มีผล)
 
+10. **Planner scroll fix** — กล่องเลื่อน 4 จุดใน `app/planner/page.tsx` (sidebar รายการแผน, คอลัมน์กลาง timeline, แผงขวา places/bookmarks) มี `data-lenis-prevent` แต่ตกหล่น `.pl-scroll-y` → สกอลบาร์ถูกซ่อน ผู้ใช้ไม่รู้ว่าเลื่อนในกล่องได้ + เลื่อนสุดแล้ว scroll ทะลุไปเลื่อนทั้งหน้า (แผงหายขึ้นไปใต้ navbar) → เติม `.pl-scroll-y` ครบ 4 จุด + `overscrollBehavior:"contain"` ที่คอลัมน์กลาง
+11. **fix type:** เพิ่ม `ACCOUNT_DELETE_REQUEST`/`ACCOUNT_DELETE_CANCEL` เข้า union `ActivityAction` (lib/activityLogger.ts) — หน้า admin/logs ใช้ `Record<string,...>` + fallback อยู่แล้ว ไม่กระทบ
+
 **ยังไม่ deploy** — คำสั่งอยู่ท้ายไฟล์ (รอบนี้ต้องมี `prisma db push` จาก pg_trgm + deletionRequestedAt) · **ก่อน deploy ตั้ง env `CRON_SECRET` ใน Vercel** · ยังไม่ได้ `npx tsc --noEmit` (Jim รันเอง)
 
 ---

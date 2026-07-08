@@ -640,7 +640,7 @@ export default function PlannerPage() {
           )}
 
           {/* Plans list */}
-          <div data-lenis-prevent style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
+          <div className="pl-scroll-y" data-lenis-prevent style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
             {loadingPlans ? (
             <div>
               <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
@@ -745,7 +745,7 @@ export default function PlannerPage() {
         {/* ── COL 2: Itinerary + Map ── */}
         <div className="planner-right" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
-        <div data-lenis-prevent style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+        <div className="pl-scroll-y" data-lenis-prevent style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain" }}>
 
           {/* ── แผนที่เส้นทาง (sticky บนสุดของ scroll area) ── */}
           {mapPoints.length > 0 ? (
@@ -1122,7 +1122,7 @@ export default function PlannerPage() {
                 </select>
               </div>
 
-              <div className="planner-scroll-area" data-lenis-prevent style={{ flex: 1, minHeight: 0, overflowY: "auto", WebkitOverflowScrolling: "touch", padding: "10px 14px" }}>
+              <div className="planner-scroll-area pl-scroll-y" data-lenis-prevent style={{ flex: 1, minHeight: 0, overflowY: "auto", WebkitOverflowScrolling: "touch", padding: "10px 14px" }}>
                 {searching && (
                   <div style={{ textAlign: "center", padding: "20px 0", color: "var(--pl-text-muted)", fontSize: 13 }}>
                     <div style={{ fontSize: 24, marginBottom: 6 }}>🔍</div>
@@ -1180,7 +1180,7 @@ export default function PlannerPage() {
 
           {/* ── BOOKMARKS tab ── */}
           {rightTab === "bookmarks" && (
-            <div className="planner-scroll-area" data-lenis-prevent style={{ flex: 1, minHeight: 0, overflowY: "auto", WebkitOverflowScrolling: "touch", padding: "12px 14px" }}>
+            <div className="planner-scroll-area pl-scroll-y" data-lenis-prevent style={{ flex: 1, minHeight: 0, overflowY: "auto", WebkitOverflowScrolling: "touch", padding: "12px 14px" }}>
               {loadingBm ? (
               <div>
               <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderBottom:"1px solid #f8fafc"}}>
