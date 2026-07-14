@@ -4,6 +4,25 @@
 
 ---
 
+## 0. สถานะล่าสุด (2026-07-14 ค่ำ) — ✅ deploy ครบทุกแบตช์แล้ว
+
+**Deploy แล้ว (ยืนยันจากหน้าจริง):** security 5 จุด, pg_trgm, Web Share Target, ลบบัญชี 7 วัน (+CRON_SECRET), ปุ่มติดตั้งแอปในการ์ดแชร์, ถอด popup ลอย, planner scroll fix
+
+**แบตช์ล่าสุด deploy แล้ว (2026-07-14 ค่ำ — รีเช็คจากหน้าจริงผ่าน):** ambient glow ขึ้นจริงที่ hero ทริป+สถานที่ · coverBlur อยู่ใน select ของ /api/trips + /api/places แล้ว (ค่าเป็น null สำหรับรูปเก่า = ถูกต้อง จะมีค่าเมื่อเซฟปกใหม่) · GET /api/reviews ตอบ 200 + mask นิรนาม · ไม่มี console error ค้าง (เจอ React #419 ครั้งเดียวตอน cold load หน้า trip — reload แล้วไม่เกิดซ้ำ เฝ้าดูเฉย ๆ)
+
+**🔧 แก้จากรีเช็คแล้ว — รอ deploy (ไม่แตะ DB):** SSRF ช่องเล็ก (เช็ค URL ด้วย substring แทน hostname — คลาสเดียวกับที่แก้ใน lib/maps.ts) → เพิ่ม `isOurStorageUrl()` ใน `lib/imageUrl.ts` (parse `new URL()` + บังคับ `https:` + hostname ลงท้าย `.supabase.co` + pathname ขึ้นต้น `/storage/v1/object/public/`) ใช้แทน substring-check 3 จุด: `lib/blurGen.ts`, `toDataUri` ใน `lib/watermark.ts`, validate imageUrl ใน `/api/auth/watermark` PUT
+
+**แบตช์ที่ deploy ไป:**
+1. **Ambient glow** หลัง hero (ทริป/สถานที่/โปรไฟล์) — `components/common/AmbientGlow.tsx`
+2. **LQIP blur placeholder** — `Trip.coverBlur`+`Place.coverBlur` (**db push**) · `lib/blurGen.ts` · การ์ด+hero
+3. **รีวิว infinite scroll** — trip/place + GET `/api/reviews`
+4. **Card thumbnail** — `lib/imageUrl.ts` (marker `t`)
+5. **ลายน้ำกันดึงรูป** (`User.watermarkSettings` — **db push**) — `lib/watermark.ts` (satori+sharp) · `/api/auth/watermark` · `/api/upload` ฝัง · **ตัวแก้ไขลากวางอิสระ** `components/account/WatermarkSettings.tsx` (เทมเพลต 5 แบบ + เลเยอร์ text/tiled/badge/image + drag/rotate/resize handle/pill/outline/gap/reps) · **หน้าแยก** `/dashboard/watermark` + `/business/watermark` (+ loading.tsx re-export ม่านกลาง) + ปุ่มลิงก์ใน ProfileHeader + BusinessProfileCard
+
+db push (coverBlur×2 + watermarkSettings) + tsc + push เรียบร้อยแล้ว (Jim รันเอง 2026-07-14)
+
+---
+
 ## 1. โปรเจกต์คืออะไร
 
 **pai-lao (ไปเล่า / www.pai-lao.com)** — เว็บคอมมูนิตี้ท่องเที่ยวไทย ผู้ใช้เขียน "ทริป" (เรื่องเล่าการเดินทาง พร้อม timeline จุดแวะ) และค้นหา "สถานที่" ทั่วไทย
@@ -236,4 +255,4 @@ git push
 ```
 
 ---
-*อัปเดตล่าสุด: 2026-07-14 — re-audit แก้ security 5 จุด + pg_trgm + Web Share Target + ลบบัญชี 7 วัน (Cron+CRON_SECRET) + ปุ่มติดตั้งแอปในการ์ดแชร์ + planner scroll fix + card thumbnails (marker t) + รีวิว infinite scroll/fix นิรนาม — deploy แล้วทั้งชุด · อัปเดตไฟล์นี้ทุกครั้งที่มีงานใหม่*
+*อัปเดตล่าสุด: 2026-07-14 ค่ำ — แบตช์ใหญ่ deploy แล้ว รีเช็คหน้าจริงผ่าน · แก้ SSRF substring-check (isOurStorageUrl) เสร็จแล้ว **รอ Jim push** (ไม่ต้อง db push) · อัปเดตไฟล์นี้ทุกครั้งที่มีงานใหม่*

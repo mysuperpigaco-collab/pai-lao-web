@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import sharp from "sharp";
 import React from "react";
+import { isOurStorageUrl } from "@/lib/imageUrl";
 
 // ── ฝังลายน้ำแบบหลายเลเยอร์ (server only) ────────────────────
 // เรนเดอร์ overlay โปร่งใสด้วย satori (ฟอนต์ไทย) → composite ทับด้วย sharp
@@ -40,7 +41,7 @@ async function loadThaiFont(text: string): Promise<ArrayBuffer | null> {
 
 async function toDataUri(url: string): Promise<string | null> {
   try {
-    if (!url.includes("/storage/v1/object/public/")) return null;
+    if (!isOurStorageUrl(url)) return null; // กัน SSRF — parse hostname จริง ไม่ใช่ substring
     const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) return null;
     const buf = Buffer.from(await res.arrayBuffer());

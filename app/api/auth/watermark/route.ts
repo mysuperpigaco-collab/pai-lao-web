@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { isOurStorageUrl } from "@/lib/imageUrl";
 
 // ── ตั้งค่าลายน้ำหลายเลเยอร์ (traveler + business) ────────────
 // GET = ดึงค่า + defaultText · PUT = validate/clamp ทุกเลเยอร์ก่อนเก็บ
@@ -49,8 +50,8 @@ export async function PUT(request: NextRequest) {
       reps: Math.round(clamp(r?.reps, 2, 10, 5)),
     };
     if (kind === "image") {
-      // เฉพาะรูปใน Supabase storage ของเรา (กันฝัง URL ภายนอก)
-      layer.imageUrl = (typeof r?.imageUrl === "string" && r.imageUrl.includes("/storage/v1/object/public/")) ? r.imageUrl : "";
+      // เฉพาะรูปใน Supabase storage ของเรา (กันฝัง URL ภายนอก + SSRF — parse hostname จริง)
+      layer.imageUrl = (typeof r?.imageUrl === "string" && isOurStorageUrl(r.imageUrl)) ? r.imageUrl : "";
     } else {
       layer.text = (typeof r?.text === "string" ? r.text : "").replace(/\s+/g, " ").trim().slice(0, 40);
     }

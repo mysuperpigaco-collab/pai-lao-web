@@ -8,6 +8,23 @@
 // 3. มี marker → ชี้ไป thumb
 // ผลลัพธ์: รูปเก่าไม่ถูกแตะและไม่มี request หา thumb ที่ไม่มีจริง (ไม่มี 404)
 
+// ── เช็คว่าเป็น URL รูปใน Supabase storage จริง (กัน SSRF) ──────
+// parse ด้วย new URL() จริง ๆ ไม่ใช่ substring — กัน `http://internal/storage/v1/object/public/x`
+// ใช้ทุกจุดที่ server จะ fetch ตาม URL ที่ user ส่งมา (blurGen, watermark)
+export function isOurStorageUrl(url?: string | null): boolean {
+  if (!url || typeof url !== "string") return false;
+  try {
+    const u = new URL(url);
+    return (
+      u.protocol === "https:" &&
+      u.hostname.endsWith(".supabase.co") &&
+      u.pathname.startsWith("/storage/v1/object/public/")
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function cardThumb(url?: string | null): string {
   if (!url) return "";
   if (!url.includes("/storage/v1/object/public/")) return url;
