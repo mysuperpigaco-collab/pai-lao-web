@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { prisma } from "@/lib/prisma";
+import { applyWatermark } from "@/lib/watermark";
 
 // bucket ใน Supabase Storage (ต้องสร้างไว้ก่อน)
 const BUCKET = "pai-lao-media";
@@ -24,6 +26,17 @@ export async function POST(request: NextRequest) {
     const folder = (formData.get("folder") as string) || "misc";
 
     if (!file) return NextResponse.json({ message: "ไม่พบไฟล์" }, { status: 400 });
+
+    // ── ลายน้ำ: เฉพาะรูปเนื้อหา (ไม่ใส่ avatar/โลโก้) + เจ้าของเปิดใช้ ──
+    const isContentImg = !/avatar|logo/i.test(folder);
+    let wmSettings: unknown = null;
+    if (isContentImg) {
+      const u = await prisma.user.findUnique({
+        where: { id: session.userId },
+        select: { watermarkSettings: true },
+      }).catch(() => null);
+      wmSettings = u?.watermarkSettings ?? null;
+    }
 
     // ตรวจประเภทไฟล์ — whitelist เฉพาะ raster (ตัด svg เพราะฝัง script ได้)
     const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
@@ -52,7 +65,7 @@ export async function POST(request: NextRequest) {
     const rawExt = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
     let ext = ALLOWED_EXTS.includes(rawExt) ? rawExt : "jpg";
     const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, ""); // ป้องกัน path traversal
-    let buffer      = Buffer.from(await file.arrayBuffer());
+    let buffer: Buffer = Buffer.from(await file.arrayBuffer());
     let contentType = file.type;
 
     // ── บีบอัด + strip EXIF/GPS ด้วย sharp (GIF ข้าม — รักษาอนิเมชัน) ──
@@ -69,6 +82,10 @@ export async function POST(request: NextRequest) {
           .toBuffer();
         contentType = "image/webp";
         ext = "webp";
+        // ฝังลายน้ำ (ถ้าเปิด) ก่อนสร้าง thumb → thumb ติดลายน้ำด้วย · fail-open
+        if (wmSettings && (wmSettings as any).enabled) {
+          buffer = await applyWatermark(buffer, wmSettings);
+        }
         // thumbnail สำหรับการ์ด (640px = 2x ของการ์ด ~320px, จอ retina ไม่แตก)
         try {
           thumbBuffer = await sharp(buffer)

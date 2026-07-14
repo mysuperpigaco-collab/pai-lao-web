@@ -163,6 +163,15 @@
    - **nullable + fallback:** รูปเก่า/ทุก path ที่ไม่ได้แตะ/blur=null → กล่องเทาเดิม (พฤติกรรมวันนี้) ไม่มีทางแตก · CSP img-src มี `data:` แล้ว
    - `components/common/BlurImage.tsx` มีอยู่ (เผื่อใช้อนาคต) แต่ตอนนี้ทุกจุดใช้เลเยอร์ inline
    - **ยังไม่ครอบ:** `User.coverBlur` (โปรไฟล์ใช้ glow อย่างเดียว), gallery/timeline images, place ที่เสนอโดย user (coverUrl="")
+16. **ลายน้ำกันดึงรูป v2 — freeform หลายเลเยอร์ ลากวางอิสระ** (**db push**: `User.watermarkSettings Json?` — v2 ไม่เพิ่มคอลัมน์ใหม่ แค่เปลี่ยนโครง JSON):
+   - โครง settings: `{ enabled, layers: Layer[] }` · Layer = `{ kind:text|tiled|badge|image, text?/imageUrl?, x,y(%), rot, size(%ของกว้างภาพ), color(hex), opacity, bold, italic, outline, pill }` · cap 12 เลเยอร์
+   - `lib/watermark.ts` — `applyWatermark`: วนทุกเลเยอร์ → 1 satori overlay (ImageResponse + ฟอนต์ไทย subset) → sharp composite · เลเยอร์ image ต้อง fetch → data URI ก่อน (satori embed remote ไม่ได้) · `migrate()` แปลง preset เก่า (ถ้ามี) เป็น layer เดียว · fail-open · **size ฝั่ง server = W*size/100 px** (ฝั่ง preview ใช้ `cqw` ให้ตรงกัน)
+   - `/api/auth/watermark` PUT — validate/clamp ทุก field ต่อเลเยอร์ (x/y 0-100, rot ±180, size 1-20, color hex, opacity 0.05-1) · เลเยอร์ image รับเฉพาะ URL Supabase เรา
+   - `/api/upload` — เหมือนเดิม (ฝังเฉพาะรูปเนื้อหา regex กัน `avatar|logo` · folder โลโก้ = `watermark-logo` → ไม่โดนฝังเอง)
+   - `components/account/WatermarkSettings.tsx` — ตัวแก้ไขลากวาง (pointer drag %) + **เทมเพลตสำเร็จรูป 5 แบบ** (มินิมอล/ทางการ/กันก๊อป/แบรนด์/ผสม) แต่ละปุ่มมีภาพตัวอย่างจิ๋ว (render จาก `layerInner()` ตัวเดียวกับ stage จริง → ตรงเป๊ะ) กดแล้ว setLayers ทั้งชุดปรับต่อได้ + toolbar (+ข้อความ/ทแยง/ตราวงกลม/โลโก้) + panel ต่อเลเยอร์ (หมุน/ขนาด/ความจาง/B/I/ขอบ/พื้นหลัง/สี color-picker/ก๊อป/ล็อก/ลบ) · อยู่ท้าย 2 หน้า edit-profile
+   - `layerInner(l)` = ตัวเรนเดอร์ visual ต่อเลเยอร์ (module scope) ใช้ร่วม stage + preset thumbnails · `PRESETS[]` = build(defaultText) คืน layer array สมดุล
+   - **tiled = เต็มกรอบทะลุขอบ:** กว้าง 2.4x + 16 แถว · overlay root `overflow:hidden` → เหลือเฉพาะตัวอักษรในกรอบ · ลากได้ทะลุขอบ (clamp x/y −30..130 เฉพาะ tiled) เพื่อเลื่อนเฟส · ปรับมุม/ขนาดด้วยสไลเดอร์
+   - **ผลกระทบ:** opt-in · เฉพาะอัปโหลดใหม่ · รูปเก่า/avatar/โลโก้ไม่แตะ
 
 ---
 

@@ -78,6 +78,10 @@ model User {
   missionParticipations MissionParticipant[]
   points                Int      @default(0)
 
+  // Watermark settings (JSON) — { enabled, style, text, opacity, color, position }
+  // null = ปิด · ฝังลายน้ำลงรูปเนื้อหาตอนอัปโหลด (ดู lib/watermark.ts)
+  watermarkSettings Json?
+
   // Privacy settings
   profilePrivacy  String    @default("PUBLIC")  // PUBLIC | PRIVATE
   showEmail       Boolean   @default(false)
