@@ -87,6 +87,7 @@ export default function WatermarkSettings() {
   const [defaultText, setDefaultText] = useState("");
   const stageRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ id: number } | null>(null);
+  const resizing = useRef<{ id: number; startSize: number; cx: number; cy: number; startDist: number } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -123,7 +124,24 @@ export default function WatermarkSettings() {
     e.stopPropagation(); setSel(l.id); drag.current = { id: l.id };
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
   };
+  const startResize = (e: React.PointerEvent, l: Layer) => {
+    e.stopPropagation();
+    if (!stageRef.current) return;
+    setSel(l.id);
+    const r = stageRef.current.getBoundingClientRect();
+    const cx = r.left + (l.x / 100) * r.width;
+    const cy = r.top + (l.y / 100) * r.height;
+    resizing.current = { id: l.id, startSize: l.size, cx, cy, startDist: Math.hypot(e.clientX - cx, e.clientY - cy) || 1 };
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+  };
   const onMove = (e: React.PointerEvent) => {
+    if (resizing.current) {
+      const { id, startSize, cx, cy, startDist } = resizing.current;
+      const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+      const ns = Math.min(20, Math.max(1, startSize * (dist / startDist)));
+      patch(id, { size: Math.round(ns * 10) / 10 });
+      return;
+    }
     if (!drag.current || !stageRef.current) return;
     const l = layers.find(x => x.id === drag.current!.id);
     // ทแยงเลื่อนทะลุขอบได้ (เหลือเฉพาะตัวอักษรในกรอบ) · เลเยอร์อื่นจำกัดในกรอบ
@@ -134,7 +152,7 @@ export default function WatermarkSettings() {
     const y = Math.max(lo, Math.min(hi, ((e.clientY - r.top) / r.height) * 100));
     patch(drag.current.id, { x, y });
   };
-  const endDrag = () => { drag.current = null; };
+  const endDrag = () => { drag.current = null; resizing.current = null; };
 
   const applyPreset = (p: Preset) => {
     const built = p.build(defaultText).map(L => ({ ...L, id: UID++ }));
@@ -207,6 +225,12 @@ export default function WatermarkSettings() {
                 display: "flex", alignItems: "center", justifyContent: "center", whiteSpace: "nowrap",
               }}>
                 {layerInner(l)}
+                {sel === l.id && !l.locked && l.kind !== "tiled" && (
+                  <>
+                    <span className="wm-hdl wm-hdl-del" title="ลบ" onPointerDown={e => { e.stopPropagation(); del(l.id); }}>×</span>
+                    <span className="wm-hdl wm-hdl-size" title="ลากเพื่อขยาย/ย่อ" onPointerDown={e => startResize(e, l)} />
+                  </>
+                )}
               </div>
             ))}
             {layers.length === 0 && <div className="wm-empty">เลือกเทมเพลตด้านบน หรือกด “+ ข้อความ”</div>}
@@ -275,6 +299,9 @@ export default function WatermarkSettings() {
         .wm-sun { position: absolute; left: 20%; top: 20%; width: 12%; aspect-ratio: 1; border-radius: 50%; background: rgba(255,244,214,.9); }
         .wm-shade { position: absolute; inset: auto 0 0 0; height: 34%; background: linear-gradient(0deg,rgba(20,30,60,.34),transparent); }
         .wm-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.85); font-size: 13px; font-weight: 600; }
+        .wm-hdl { position: absolute; z-index: 5; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+        .wm-hdl-del { top: -11px; right: -11px; background: #ef4444; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; line-height: 1; cursor: pointer; }
+        .wm-hdl-size { bottom: -11px; right: -11px; background: #10b981; cursor: nwse-resize; }
         .wm-panel { margin-top: 12px; background: var(--pl-bg,#f8fafc); border-radius: 14px; padding: 12px 14px; }
         .wm-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
         .wm-input { flex: 1; box-sizing: border-box; border: 1.5px solid var(--pl-border,#e2e8f0); border-radius: 10px; padding: 8px 12px; font-size: 14px; font-family: inherit; background: var(--pl-white,#fff); color: var(--pl-text-primary,#0f172a); }
