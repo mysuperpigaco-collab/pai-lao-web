@@ -234,6 +234,7 @@ export default function DeleteAccountSection() {
         }
         .da-input {
           width: 100%;
+          box-sizing: border-box;
           border: 1px solid var(--pl-border, #e2e8f0);
           border-radius: var(--pl-radius-input, 18px);
           padding: 10px 14px;

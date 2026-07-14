@@ -153,7 +153,7 @@
    - `TripComments` + `PlaceReviews`: ใช้ `useInfiniteScroll` (hook เดิม, rootMargin 240px) + sentinel ท้ายลิสต์ → เลื่อนใกล้สุดโหลด 20 ถัดไปเอง · dedupe by id (กันรีวิวใหม่ที่เพิ่งโพสต์ทำ offset เขยื้อน) · โหลดพลาด = หยุดเงียบ ไม่พังหน้า
    - **fix บั้คแฝง:** SSR หน้า trip ไม่ได้ส่ง `isAnonymous` → รีวิวนิรนามเคยโชว์ชื่อ/รูปจริง (เติมใน map แล้ว) · หมายเหตุ: JSON props ฝั่ง SSR ยังมี author จริงอยู่ใน HTML source (UI ซ่อนแล้ว) ถ้าจะ mask ระดับ SSR ด้วยเป็นงานรอบหน้า
 
-**ยังไม่ deploy** — คำสั่งอยู่ท้ายไฟล์ (รอบนี้ต้องมี `prisma db push` จาก pg_trgm + deletionRequestedAt) · **ก่อน deploy ตั้ง env `CRON_SECRET` ใน Vercel** · ยังไม่ได้ `npx tsc --noEmit` (Jim รันเอง)
+**Deploy แล้วทั้งชุด (2026-07-14)** — db push (pg_trgm + deletionRequestedAt) + ตั้ง env `CRON_SECRET` ใน Vercel เรียบร้อย · แก้เพิ่มหลัง deploy: `.da-input` เติม box-sizing (กันล้นบนมือถือ — รอรวมรอบถัดไป)
 
 ---
 
@@ -216,4 +216,4 @@ git push
 ```
 
 ---
-*อัปเดตล่าสุด: 2026-07-07 — เช้า: bug-hunt แก้ 8 จุด · บ่าย: lightbox รวมศูนย์ + sharp บีบรูป/strip EXIF + OG share cards 3 แบบ + ShareButton fix/อัปเกรด + แกลเลอรีโปรไฟล์ + PWA เฟสแรก + ไอคอนแอป — อัปเดตไฟล์นี้ทุกครั้งที่มีงานใหม่*
+*อัปเดตล่าสุด: 2026-07-14 — re-audit แก้ security 5 จุด + pg_trgm + Web Share Target + ลบบัญชี 7 วัน (Cron+CRON_SECRET) + ปุ่มติดตั้งแอปในการ์ดแชร์ + planner scroll fix + card thumbnails (marker t) + รีวิว infinite scroll/fix นิรนาม — deploy แล้วทั้งชุด · อัปเดตไฟล์นี้ทุกครั้งที่มีงานใหม่*
