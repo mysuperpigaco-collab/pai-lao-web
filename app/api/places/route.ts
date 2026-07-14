@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     const select = {
       id: true, slug: true, title: true, titleEn: true,
       province: true, district: true, category: true, tags: true,
-      coverUrl: true, descriptionShort: true, entryFee: true,
+      coverUrl: true, coverBlur: true, descriptionShort: true, entryFee: true,
       lat: true, lng: true,
       isVerified: true, createdAt: true, shareCount: true,
       business: { select: { id: true, businessName: true, logoUrl: true, isVerified: true } },

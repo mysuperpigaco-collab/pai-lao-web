@@ -155,6 +155,7 @@ model Place {
   tags             String[]
 
   coverUrl         String
+  coverBlur        String?   // LQIP data-URI (~500 ตัว) แสดงเบลอทันทีก่อนรูปโหลด · null = ใช้กล่องเทาเดิม
   gallery          String[]
 
   description      String
@@ -205,6 +206,7 @@ model Trip {
   subtitle    String?
   description String
   coverUrl    String
+  coverBlur   String?       // LQIP data-URI (~500 ตัว) แสดงเบลอทันทีก่อนรูปโหลด · null = ใช้กล่องเทาเดิม
   gallery     String[]
 
   mood        String        // ตัวหลัก (= moods[0]) เก็บไว้เพื่อ backward-compat

@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import ImageLightbox from "@/components/common/ImageLightbox";
 import ShareButton from "@/components/common/ShareButton";
 import InstallAppButton from "@/components/common/InstallAppButton";
+import AmbientGlow from "@/components/common/AmbientGlow";
 
 interface PublicUser {
   id: string; username: string; displayName?: string; firstName: string;
@@ -452,8 +453,9 @@ function UserProfileInner() {
       )}
 
       {/* ── Hero Cover — card style, not full-width ── */}
-      <div className="up-hero-wrapper">
-        <div className="up-hero">
+      <div className="up-hero-wrapper" style={{ position: "relative" }}>
+        <AmbientGlow src={covers[0] ?? user.coverUrl ?? null} intensity={0.42} />
+        <div className="up-hero" style={{ position: "relative", zIndex: 1 }}>
           <CoverSlideshow images={covers} defaultCover={user.coverUrl} />
 
           {/* Edit cover button */}

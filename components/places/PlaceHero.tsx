@@ -5,11 +5,12 @@ import ImageLightbox from "@/components/common/ImageLightbox";
 interface Props {
   placeId: string;
   realCoverUrl: string | null;
+  coverBlur?: string | null;
   communityImages: string[];
   isAdmin: boolean;
 }
 
-export default function PlaceHero({ placeId, realCoverUrl, communityImages, isAdmin }: Props) {
+export default function PlaceHero({ placeId, realCoverUrl, coverBlur, communityImages, isAdmin }: Props) {
   // All photos: real cover first, then community
   const allPhotos: string[] = [];
   if (realCoverUrl) allPhotos.push(realCoverUrl);
@@ -52,11 +53,15 @@ export default function PlaceHero({ placeId, realCoverUrl, communityImages, isAd
     <>
       {/* Hero image with nav arrows */}
       <div style={{ position: "relative", width: "100%", height: "100%" }}>
+        {coverBlur && current === realCoverUrl && (
+          <img src={coverBlur} alt="" aria-hidden="true"
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "blur(14px)", transform: "scale(1.06)" }} />
+        )}
         <img
           src={current}
           alt="Place cover"
           className="pd-hero-img"
-          style={{ cursor: "zoom-in" }}
+          style={{ cursor: "zoom-in", position: "relative" }}
           onClick={() => setLightbox(true)}
         />
 

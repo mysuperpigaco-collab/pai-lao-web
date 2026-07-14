@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
 import { sanitizeServerHtml } from "@/lib/sanitize-server";
+import { blurFromUrl } from "@/lib/blurGen";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -93,6 +94,9 @@ export async function PUT(request: Request, { params }: Params) {
     const { title, subtitle, description, coverUrl, gallery, mood, moods, titleStyle, budget,
             location, tags, isPublished, timeline, youtubeUrl, tiktokUrl } = body;
 
+    // LQIP: คำนวณครั้งเดียว ใช้ทุก write path (undefined = ไม่แตะ coverBlur เดิม)
+    const coverBlur = coverUrl !== undefined ? await blurFromUrl(coverUrl) : undefined;
+
     // ── แอดมินแก้ไขตรง ──────────────────────────────────────
     if (isAdmin) {
       if (timeline) {
@@ -104,7 +108,7 @@ export async function PUT(request: Request, { params }: Params) {
           ...(title       !== undefined && { title }),
           ...(subtitle    !== undefined && { subtitle }),
           ...(description !== undefined && { description: sanitizeServerHtml(description) }),
-          ...(coverUrl    !== undefined && { coverUrl }),
+          ...(coverUrl    !== undefined && { coverUrl, coverBlur }),
           ...(gallery     !== undefined && { gallery }),
           ...(mood        !== undefined && { mood }),
           ...(moods       !== undefined && { moods }),
@@ -168,6 +172,7 @@ export async function PUT(request: Request, { params }: Params) {
             title:       finalTitle,
             description: finalDescription,
             coverUrl:    finalCoverUrl,
+            ...(coverUrl !== undefined && { coverBlur }),
             ...(subtitle    !== undefined && { subtitle }),
             ...(gallery     !== undefined && { gallery }),
             ...(mood        !== undefined && { mood }),
@@ -215,7 +220,7 @@ export async function PUT(request: Request, { params }: Params) {
           ...(title       !== undefined && { title }),
           ...(subtitle    !== undefined && { subtitle }),
           ...(description !== undefined && { description: sanitizeServerHtml(description) }),
-          ...(coverUrl    !== undefined && { coverUrl }),
+          ...(coverUrl    !== undefined && { coverUrl, coverBlur }),
           ...(gallery     !== undefined && { gallery }),
           ...(mood        !== undefined && { mood }),
           ...(moods       !== undefined && { moods }),
@@ -265,7 +270,7 @@ export async function PUT(request: Request, { params }: Params) {
           ...(title       !== undefined && { title }),
           ...(subtitle    !== undefined && { subtitle }),
           ...(description !== undefined && { description: sanitizeServerHtml(description) }),
-          ...(coverUrl    !== undefined && { coverUrl }),
+          ...(coverUrl    !== undefined && { coverUrl, coverBlur }),
           ...(gallery     !== undefined && { gallery }),
           ...(mood        !== undefined && { mood }),
           ...(moods       !== undefined && { moods }),
@@ -349,7 +354,7 @@ export async function PUT(request: Request, { params }: Params) {
 
     // อัปเดต coverUrl + titleStyle ทันที (เป็นแค่การแสดงผล/ตกแต่ง ไม่ต้องรออนุมัติ)
     const immediateUpdate: Record<string, any> = {};
-    if (coverUrl !== undefined) immediateUpdate.coverUrl = coverUrl;
+    if (coverUrl !== undefined) { immediateUpdate.coverUrl = coverUrl; immediateUpdate.coverBlur = coverBlur; }
     if (titleStyle !== undefined) immediateUpdate.titleStyle = titleStyle;
     if (Object.keys(immediateUpdate).length > 0) {
       await prisma.trip.update({ where: { slug }, data: immediateUpdate });

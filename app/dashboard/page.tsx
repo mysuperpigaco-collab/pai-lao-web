@@ -37,6 +37,7 @@ type TripItem = {
   slug: string;
   title: string;
   coverUrl: string | null;
+  coverBlur?: string | null;
   createdAt: string;
   isPublished: boolean;
   approvalStatus?: string;   // PENDING | APPROVED | REJECTED

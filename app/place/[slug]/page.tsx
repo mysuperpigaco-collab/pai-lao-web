@@ -10,6 +10,7 @@ import ShareButton from "@/components/common/ShareButton";
 import ReportButton from "@/components/common/ReportButton";
 import ClaimPlaceButton from "@/components/places/ClaimPlaceButton";
 import PlaceHero from "@/components/places/PlaceHero";
+import AmbientGlow from "@/components/common/AmbientGlow";
 import AdminPhotoUpload from "@/components/places/AdminPhotoUpload";
 import MissionSubmitBox from "@/components/places/MissionSubmitBox";
 import MapsButton from "@/components/common/MapsButton";
@@ -249,14 +250,16 @@ export default async function PlaceDetailPage({ params }: Props) {
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     <ViewTracker type="places" slug={slug} />
     <div className="pd-page">
-      <div className="pd-hero-wrap">
-        <div className="pd-hero">
+      <div className="pd-hero-wrap" style={{ position: "relative" }}>
+        <AmbientGlow src={realCoverUrl ?? communityImages[0] ?? null} />
+        <div className="pd-hero" style={{ position: "relative", zIndex: 1 }}>
           <div className="pd-hero-actions">
             <BackButton fallback="/place" label="กลับ · Back" />
           </div>
           <PlaceHero
             placeId={place.id}
             realCoverUrl={realCoverUrl}
+            coverBlur={(place as any).coverBlur ?? null}
             communityImages={communityImages}
             isAdmin={session?.role === "ADMIN" || session?.role === "SUPERADMIN"}
           />

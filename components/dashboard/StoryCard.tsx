@@ -11,6 +11,7 @@ interface TripItem {
   title:           string;
   titleStyle?:     string | null;
   coverUrl?:       string | null;
+  coverBlur?:      string | null;
   createdAt:       string;
   isPublished?:    boolean;
   approvalStatus?: string; // PENDING | APPROVED | REJECTED | null (draft)
@@ -79,7 +80,10 @@ export default function StoryCard({
       <div ref={shineRef} style={shineStyle} />
       {/* Cover */}
       <div style={{ position: "relative", height: "170px", overflow: "hidden", background: "#f1f5f9", flexShrink: 0 }}>
-        <img src={imgSrc} alt={story.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
+        {story.coverBlur && (
+          <img src={story.coverBlur} alt="" aria-hidden="true" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "blur(12px)", transform: "scale(1.06)" }} />
+        )}
+        <img src={imgSrc} alt={story.title} style={{ position: "relative", width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
         {/* Status badge — เช็คสถานะอนุมัติก่อน isPublished (กันทริปถูกปฏิเสธโชว์ว่าเผยแพร่) */}
         {(() => {
           const st =

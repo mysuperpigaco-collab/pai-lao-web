@@ -153,7 +153,16 @@
    - `TripComments` + `PlaceReviews`: ใช้ `useInfiniteScroll` (hook เดิม, rootMargin 240px) + sentinel ท้ายลิสต์ → เลื่อนใกล้สุดโหลด 20 ถัดไปเอง · dedupe by id (กันรีวิวใหม่ที่เพิ่งโพสต์ทำ offset เขยื้อน) · โหลดพลาด = หยุดเงียบ ไม่พังหน้า
    - **fix บั้คแฝง:** SSR หน้า trip ไม่ได้ส่ง `isAnonymous` → รีวิวนิรนามเคยโชว์ชื่อ/รูปจริง (เติมใน map แล้ว) · หมายเหตุ: JSON props ฝั่ง SSR ยังมี author จริงอยู่ใน HTML source (UI ซ่อนแล้ว) ถ้าจะ mask ระดับ SSR ด้วยเป็นงานรอบหน้า
 
-**Deploy แล้วทั้งชุด (2026-07-14)** — db push (pg_trgm + deletionRequestedAt) + ตั้ง env `CRON_SECRET` ใน Vercel เรียบร้อย · แก้เพิ่มหลัง deploy: `.da-input` เติม box-sizing (กันล้นบนมือถือ — รอรวมรอบถัดไป)
+**Deploy แล้วทั้งชุด (2026-07-14)** — db push (pg_trgm + deletionRequestedAt) + ตั้ง env `CRON_SECRET` ใน Vercel เรียบร้อย
+
+14. **Ambient glow (แสงเรืองสีตามรูปปกหลัง hero)** — `components/common/AmbientGlow.tsx` (client, zero backend) อ่านสีเด่นจากรูปด้วย canvas → radial-gradient เบลอหลัง hero · ทำงานกับรูปเก่าทุกใบ · canvas อ่านข้าม origin ไม่ได้ = ไม่โชว์ (graceful) · ใส่ที่: hero ทริป (`trips/[slug]`), hero สถานที่ (`place/[slug]`), hero โปรไฟล์ (`user/[username]`) — วางเป็น child แรกใน wrapper `position:relative` + hero ได้ `zIndex:1`
+15. **Blur placeholder / LQIP (เบลอทันทีก่อนรูปโหลด)** — **db push** (เพิ่ม `Trip.coverBlur` + `Place.coverBlur` nullable):
+   - `lib/blurGen.ts` — `blurFromUrl(url)`: server fetch รูป → sharp 32px webp q40 → base64 data-URI · เฉพาะรูป Supabase เรา · fail-open → null (write ไม่มีวันล้ม) · timeout 5s
+   - **คำนวณฝั่ง server ตอนบันทึก coverUrl** (ไม่แตะฟอร์ม/typed state client เลย): POST `/api/trips` (create), PUT `trips/[slug]` (admin/finalize/immediate-cover ของ approved), PATCH `admin/places/cover`
+   - render: **เลเยอร์ `<img>` เบลอวางหลังรูปจริง** (ไม่ใช้ BlurImage สลับ DOM — กัน overlay เพี้ยน) ที่ hero ทริป+สถานที่ + การ์ด StoryCard/PlaceCard/AutoGridSection(trip+place)/TripSlider · เพิ่ม `coverBlur:true` ใน select ของ `/api/trips` (scored+recent) + `/api/places` · การ์ดรับ `coverBlur?` optional
+   - **nullable + fallback:** รูปเก่า/ทุก path ที่ไม่ได้แตะ/blur=null → กล่องเทาเดิม (พฤติกรรมวันนี้) ไม่มีทางแตก · CSP img-src มี `data:` แล้ว
+   - `components/common/BlurImage.tsx` มีอยู่ (เผื่อใช้อนาคต) แต่ตอนนี้ทุกจุดใช้เลเยอร์ inline
+   - **ยังไม่ครอบ:** `User.coverBlur` (โปรไฟล์ใช้ glow อย่างเดียว), gallery/timeline images, place ที่เสนอโดย user (coverUrl="")
 
 ---
 

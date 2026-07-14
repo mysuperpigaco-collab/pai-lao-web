@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
 import { sanitizeServerHtml } from "@/lib/sanitize-server";
+import { blurFromUrl } from "@/lib/blurGen";
 
 // ── GET /api/trips ─────────────────────────────────────────
 export async function GET(request: Request) {
@@ -46,7 +47,7 @@ export async function GET(request: Request) {
     // ── Shared select for scored sorts ───────────────────────
     const scoredSelect = {
       id: true, slug: true, title: true, subtitle: true,
-      coverUrl: true, mood: true, moods: true, titleStyle: true, budget: true, location: true,
+      coverUrl: true, coverBlur: true, mood: true, moods: true, titleStyle: true, budget: true, location: true,
       tags: true, createdAt: true, isPublished: true, viewCount: true,
       approvalStatus: true, rejectionReason: true,
       author: { select: { id: true, username: true, displayName: true, firstName: true, avatarUrl: true } },
@@ -105,7 +106,7 @@ export async function GET(request: Request) {
         orderBy,
         select: {
           id: true, slug: true, title: true, subtitle: true,
-          coverUrl: true, mood: true, moods: true, titleStyle: true, budget: true, location: true,
+          coverUrl: true, coverBlur: true, mood: true, moods: true, titleStyle: true, budget: true, location: true,
           tags: true, createdAt: true, isPublished: true, viewCount: true,
           approvalStatus: true, rejectionReason: true,
           author: { select: { id: true, username: true, displayName: true, firstName: true, avatarUrl: true } },
@@ -206,6 +207,8 @@ export async function POST(request: Request) {
       .toLowerCase() || "trip";
     const slug = `${titleSlug}-${Date.now()}`;
 
+    const coverBlur = await blurFromUrl(coverUrl); // LQIP (fail-open → null)
+
     const trip = await (prisma as any).trip.create({
       data: {
         slug,
@@ -213,6 +216,7 @@ export async function POST(request: Request) {
         subtitle:    subtitle    ?? "",
         description: sanitizeServerHtml(description ?? ""),
         coverUrl:    coverUrl    ?? "",
+        coverBlur,
         gallery:     gallery     ?? [],
         mood:        mood        ?? "ทั่วไป",
         moods:       Array.isArray(moods) ? moods : [],

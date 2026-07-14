@@ -14,6 +14,7 @@ import ReportButton from "@/components/common/ReportButton";
 import { TripGallery } from "@/components/places/PlaceGallery";
 import Link from "next/link";
 import ReadingProgress from "@/components/common/ReadingProgress";
+import AmbientGlow from "@/components/common/AmbientGlow";
 import BackToTop from "@/components/common/BackToTop";
 import MapView from "@/components/maps/MapView";
 import { RouteHoverProvider } from "@/components/maps/RouteHoverContext";
@@ -265,11 +266,16 @@ export default async function TripDetailPage({ params }: Props) {
       )}
 
       {/* ─── HERO ─── */}
-      <div className="hero-wrapper">
-        <div className="hero-image">
+      <div className="hero-wrapper" style={{ position: "relative" }}>
+        <AmbientGlow src={trip.coverUrl} />
+        <div className="hero-image" style={{ position: "relative", zIndex: 1 }}>
           <div className="hero-actions">
             <BackButton fallback="/" />
           </div>
+          {trip.coverBlur && (
+            <img src={trip.coverBlur} alt="" aria-hidden="true"
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "blur(14px)", transform: "scale(1.06)" }} />
+          )}
           {trip.coverUrl
             ? <img src={trip.coverUrl} alt={trip.title} />
             : <div style={{ width: "100%", height: 480, background: "#e2e8f0" }} />

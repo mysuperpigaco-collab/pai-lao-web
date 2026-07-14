@@ -8,7 +8,7 @@ import { titleStyleCss } from "@/lib/titleStyle";
 import { cardThumb } from "@/lib/imageUrl";
 
 interface Trip {
-  slug: string; title: string; titleStyle?: string | null; coverUrl?: string | null;
+  slug: string; title: string; titleStyle?: string | null; coverUrl?: string | null; coverBlur?: string | null;
   province?: string | null; district?: string | null; mood?: string | null;
   author?: { displayName?: string | null; firstName: string; avatarUrl?: string | null };
   _count?: { reviews: number; bookmarks: number; likes: number };
@@ -16,7 +16,7 @@ interface Trip {
 }
 interface Place {
   id: string; slug: string; title: string; titleEn?: string | null;
-  coverUrl: string; province: string; district: string; category: string;
+  coverUrl: string; coverBlur?: string | null; province: string; district: string; category: string;
   _count?: { reviews: number; bookmarks: number };
   business?: { businessName: string; isVerified?: boolean } | null;
   communityCover?: string | null;
@@ -102,6 +102,9 @@ function TripCard({ trip }: { trip: Trip }) {
       <div ref={shineRef} style={shineStyle} />
       <Link href={`/trips/${trip.slug}`} target="_blank" rel="noopener noreferrer" style={{ ...S.card, boxShadow: "none", height: "100%" }}>
         <div style={S.imgWrap}>
+          {trip.coverBlur && !imgLoaded && (
+            <img src={trip.coverBlur} alt="" aria-hidden="true" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "blur(12px)", transform: "scale(1.06)" }} />
+          )}
           {trip.coverUrl
             ? <img src={cardThumb(trip.coverUrl)} alt={trip.title} loading="lazy"
                 onLoad={() => setImgLoaded(true)}
@@ -160,6 +163,9 @@ function PlaceCard({ place }: { place: Place }) {
       <div ref={shineRef} style={shineStyle} />
       <Link href={`/place/${place.slug}`} target="_blank" rel="noopener noreferrer" style={{ ...S.card, boxShadow: "none", height: "100%" }}>
         <div style={S.imgWrap}>
+          {place.coverBlur && showImg && !imgLoaded && (
+            <img src={place.coverBlur} alt="" aria-hidden="true" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "blur(12px)", transform: "scale(1.06)" }} />
+          )}
           {showImg
             ? <img src={displayImg!} alt={place.title} loading="lazy"
                 onLoad={() => setImgLoaded(true)}

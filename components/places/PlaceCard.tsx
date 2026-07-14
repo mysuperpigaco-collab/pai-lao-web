@@ -10,6 +10,7 @@ export interface PlaceCardData {
   title: string;
   titleEn?: string | null;
   coverUrl: string;
+  coverBlur?: string | null;
   province: string;
   district: string;
   category: string;
@@ -131,6 +132,9 @@ export default function PlaceCard({ place, distanceM, newTab = false, linkOnHove
 
         {/* Image */}
         <div style={{ position: "relative", height: 164, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
+          {place.coverBlur && showImg && !imgLoaded && (
+            <img src={place.coverBlur} alt="" aria-hidden="true" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "blur(12px)", transform: "scale(1.06)" }} />
+          )}
           {showImg
             ? <img
                 src={displayImg!}
