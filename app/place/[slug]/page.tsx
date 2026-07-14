@@ -110,6 +110,7 @@ export default async function PlaceDetailPage({ params }: Props) {
       },
       reviews: {
         orderBy: { createdAt: "desc" },
+        take: 20, // หน้าแรกโหลด 20 — ที่เหลือ infinite scroll ผ่าน GET /api/reviews
         include: {
           author: { select: { id: true, username: true, firstName: true, displayName: true, avatarUrl: true } },
           replies: {
@@ -130,9 +131,12 @@ export default async function PlaceDetailPage({ params }: Props) {
   });
 
   if (!place) return notFound();
-  const avgRating = place.reviews.length
-    ? place.reviews.reduce((s, r) => s + r.rating, 0) / place.reviews.length
-    : 0;
+  // avg ต้องคิดจากรีวิว "ทั้งหมด" ไม่ใช่ 20 ตัวแรกที่โหลดมา — ใช้ aggregate
+  const ratingAgg = await prisma.review.aggregate({
+    where: { placeId: place.id },
+    _avg: { rating: true },
+  }).catch(() => null);
+  const avgRating = ratingAgg?._avg.rating ?? 0;
   const catLabel = CAT_LABEL[place.category] ?? place.category;
   const catIcon  = CAT_ICON[place.category]  ?? "📍";
   const isOwner    = !!session && !!place.business?.userId && session.userId === place.business.userId;
@@ -445,6 +449,7 @@ export default async function PlaceDetailPage({ params }: Props) {
                 placeId={place.id}
                 businessOwnerId={place.business?.userId ?? null}
                 initialReviews={serializedReviews}
+                total={place._count.reviews}
                 avgRating={avgRating}
                 currentUserId={session?.userId ?? null}
               />

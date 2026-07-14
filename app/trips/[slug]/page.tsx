@@ -107,6 +107,7 @@ export default async function TripDetailPage({ params }: Props) {
       },
       reviews: {
         orderBy: { createdAt: "desc" },
+        take: 20, // หน้าแรกโหลด 20 — ที่เหลือ infinite scroll ผ่าน GET /api/reviews
         include: {
           author: { select: { id: true, username: true, firstName: true, displayName: true, avatarUrl: true } },
           replies: {
@@ -160,9 +161,12 @@ export default async function TripDetailPage({ params }: Props) {
   likeCount = await prisma.tripLike.count({ where: { tripId: trip.id } }).catch(() => 0);
   followerCount = await prisma.follow.count({ where: { followingId: trip.author.id } }).catch(() => 0);
 
-  const avgRating = trip.reviews.length
-    ? trip.reviews.reduce((s: number, r: any) => s + r.rating, 0) / trip.reviews.length
-    : 0;
+  // avg ต้องคิดจากรีวิว "ทั้งหมด" ไม่ใช่ 20 ตัวแรกที่โหลดมา — ใช้ aggregate
+  const ratingAgg = await prisma.review.aggregate({
+    where: { tripId: trip.id },
+    _avg: { rating: true },
+  }).catch(() => null);
+  const avgRating = ratingAgg?._avg.rating ?? 0;
 
   const ROUTE_COLORS = ["#ef4444","#f59e0b","#10b981","#0ea5e9","#6366f1","#7c3aed","#ec4899","#0f766e","#b45309","#15803d"];
   const routePoints = trip.timeline
@@ -431,6 +435,7 @@ export default async function TripDetailPage({ params }: Props) {
                   rating: r.rating,
                   text: r.text,
                   createdAt: r.createdAt instanceof Date ? r.createdAt.toISOString() : String(r.createdAt ?? ""),
+                  isAnonymous: r.isAnonymous ?? false, // เดิมตกหล่น — รีวิวนิรนามเคยโชว์ชื่อจริง
                   author: r.author,
                   likes: r.likes ?? 0,
                   replies: r.replies.map((rep: any) => ({
@@ -441,6 +446,7 @@ export default async function TripDetailPage({ params }: Props) {
                   })),
                 }))}
                 avgRating={avgRating}
+                total={trip._count.reviews}
                 tripId={trip.id}
                 currentUserId={session?.userId ?? null}
                 tripAuthorId={trip.author.id}

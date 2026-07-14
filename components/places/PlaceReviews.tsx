@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 interface ReviewAuthor {
   id: string; username: string; firstName: string;
@@ -21,6 +22,7 @@ type Props = {
   initialReviews: Review[];
   avgRating: number;
   currentUserId?: string | null;
+  total?: number; // จำนวนรีวิวทั้งหมด (SSR ส่งมาแค่ 20 แรก ที่เหลือ infinite scroll)
 };
 
 function Stars({ rating, size = 14 }: { rating: number; size?: number }) {
@@ -99,11 +101,38 @@ function ReportModal({ targetId, targetType, onClose }: { targetId: string; targ
   );
 }
 
-export default function PlaceReviews({ placeId, businessOwnerId, initialReviews, avgRating, currentUserId }: Props) {
+export default function PlaceReviews({ placeId, businessOwnerId, initialReviews, avgRating, currentUserId, total }: Props) {
   const { user } = useAuth();
   const router = useRouter();
 
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
+
+  // ── Infinite scroll: เลื่อนถึงท้ายลิสต์โหลดเพิ่มอัตโนมัติ ──
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(initialReviews.length < (total ?? initialReviews.length));
+  const loadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(`/api/reviews?placeId=${placeId}&skip=${reviews.length}&take=20`);
+      const d = await res.json();
+      if (!res.ok || !Array.isArray(d.reviews)) { setHasMore(false); return; }
+      const incoming: Review[] = d.reviews.map((r: any) => ({
+        id: r.id, rating: r.rating, text: r.text ?? "",
+        createdAt: String(r.createdAt ?? ""),
+        isAnonymous: r.isAnonymous ?? false,
+        author: r.author, likes: r.likes ?? 0,
+        replies: (r.replies ?? []).map((rep: any) => ({
+          id: rep.id, text: rep.text, createdAt: String(rep.createdAt ?? ""), author: rep.author,
+        })),
+      }));
+      // dedupe กันรีวิวที่เพิ่งโพสต์ทำ offset เขยื้อนแล้วซ้ำ
+      setReviews(prev => [...prev, ...incoming.filter(n => !prev.some(p => p.id === n.id))]);
+      setHasMore(d.hasMore === true);
+    } catch { setHasMore(false); }
+    finally { setLoadingMore(false); }
+  };
+  const sentinelRef = useInfiniteScroll(loadMore, hasMore && !loadingMore);
   const [newRating, setNewRating] = useState(5);
   const [newText, setNewText] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -436,6 +465,14 @@ export default function PlaceReviews({ placeId, businessOwnerId, initialReviews,
               </div>
             </div>
           ))}
+
+          {/* sentinel — เลื่อนมาถึงตรงนี้ (ก่อนถึงจริง 240px) โหลดหน้าถัดไปเอง */}
+          {hasMore && <div ref={sentinelRef} style={{ height: 1 }} />}
+          {loadingMore && (
+            <p style={{ textAlign: "center", color: "#94a3b8", fontSize: 13, padding: "12px 0" }}>
+              ⏳ กำลังโหลดรีวิวเพิ่ม...
+            </p>
+          )}
         </div>
       )}
 

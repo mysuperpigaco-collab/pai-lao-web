@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
     // .rotate() = หมุนตาม EXIF orientation ก่อน strip (ไม่งั้นรูปมือถือนอนตะแคง)
     // resize inside 1920 = จอผู้ใช้แสดงได้แค่นี้ ความคมชัดที่เห็นไม่ต่างเดิม
     // webp q82 = จุด visually-lossless มาตรฐาน · fail-open: sharp พังใช้ไฟล์เดิม
+    let thumbBuffer: Buffer | null = null;
     if (file.type !== "image/gif") {
       try {
         buffer = await sharp(buffer)
@@ -68,12 +69,38 @@ export async function POST(request: NextRequest) {
           .toBuffer();
         contentType = "image/webp";
         ext = "webp";
+        // thumbnail สำหรับการ์ด (640px = 2x ของการ์ด ~320px, จอ retina ไม่แตก)
+        try {
+          thumbBuffer = await sharp(buffer)
+            .resize({ width: 640, withoutEnlargement: true })
+            .webp({ quality: 78 })
+            .toBuffer();
+        } catch { thumbBuffer = null; }
       } catch (e) {
         console.error("[upload] sharp failed — fallback to original file:", e);
       }
     }
 
-    const filename = `${safeFolder}/${session.userId}/${Date.now()}.${ext}`;
+    // ── ชื่อไฟล์: ถ้ามี thumb สำเร็จ ใส่ marker "t" (<ts>t.webp) — lib/imageUrl.ts
+    //    ใช้ marker นี้ตัดสินว่าไฟล์ไหนมี <ts>t_thumb.webp คู่กัน (ไฟล์เก่าไม่มี marker
+    //    = ไม่ถูกแตะเลย ไม่มีการยิงหา thumb ที่ไม่มีจริง) ──
+    const ts = Date.now();
+
+    // อัปโหลด thumb ก่อน — ถ้าพัง ตัด marker ทิ้ง (ไฟล์หลักจะไม่ชี้หา thumb ที่ไม่มี)
+    let hasThumb = false;
+    if (thumbBuffer) {
+      const { error: thumbErr } = await supabaseAdmin.storage
+        .from(BUCKET)
+        .upload(`${safeFolder}/${session.userId}/${ts}t_thumb.webp`, thumbBuffer, {
+          contentType: "image/webp",
+          cacheControl: "3600",
+          upsert:       false,
+        });
+      if (thumbErr) console.error("[upload] thumb upload failed (non-fatal):", thumbErr);
+      else hasThumb = true;
+    }
+
+    const filename = `${safeFolder}/${session.userId}/${ts}${hasThumb ? "t" : ""}.${ext}`;
 
     const { error } = await supabaseAdmin.storage
       .from(BUCKET)

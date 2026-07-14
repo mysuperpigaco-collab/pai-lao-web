@@ -5,6 +5,7 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useTiltCard } from "@/hooks/useTiltCard";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { titleStyleCss } from "@/lib/titleStyle";
+import { cardThumb } from "@/lib/imageUrl";
 
 interface Trip {
   slug: string; title: string; titleStyle?: string | null; coverUrl?: string | null;
@@ -102,7 +103,7 @@ function TripCard({ trip }: { trip: Trip }) {
       <Link href={`/trips/${trip.slug}`} target="_blank" rel="noopener noreferrer" style={{ ...S.card, boxShadow: "none", height: "100%" }}>
         <div style={S.imgWrap}>
           {trip.coverUrl
-            ? <img src={trip.coverUrl} alt={trip.title} loading="lazy"
+            ? <img src={cardThumb(trip.coverUrl)} alt={trip.title} loading="lazy"
                 onLoad={() => setImgLoaded(true)}
                 style={{ ...S.imgEl, filter: imgLoaded ? "blur(0px)" : "blur(10px)", transform: imgLoaded ? "scale(1)" : "scale(1.06)", opacity: imgLoaded ? 1 : 0, transition: "filter 0.5s ease, transform 0.5s ease, opacity 0.4s ease" }} />
             : <div style={{ ...S.imgEl, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>🗺️</div>
@@ -139,9 +140,9 @@ function PlaceCard({ place }: { place: Place }) {
   const [imgError,  setImgError ] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
   const prov = place.province?.split(" (")[0] ?? place.province;
-  const displayImg = (!place.business && place.communityCover)
+  const displayImg = cardThumb((!place.business && place.communityCover)
     ? place.communityCover
-    : (place.coverUrl && place.coverUrl !== "/images/default-place.svg" ? place.coverUrl : (place.communityCover || ""));
+    : (place.coverUrl && place.coverUrl !== "/images/default-place.svg" ? place.coverUrl : (place.communityCover || "")));
   const showImg = !!displayImg && !imgError;
   const catColors: Record<string,string> = {
     NATURE:"#16a34a",CAFE:"#92400e",ACCOMMODATION:"#1d4ed8",CAMPING:"#15803d",

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 interface ReviewAuthor {
   id: string;
@@ -36,6 +37,7 @@ type Props = {
   tripId: string;
   currentUserId?: string | null;
   tripAuthorId?: string | null;
+  total?: number; // จำนวนรีวิวทั้งหมด (SSR ส่งมาแค่ 20 แรก ที่เหลือ infinite scroll)
 };
 
 function StarRow({ rating }: { rating: number }) {
@@ -122,7 +124,7 @@ function ReportModal({ targetId, targetType, onClose }: { targetId: string; targ
   );
 }
 
-export default function TripComments({ reviews, avgRating, tripId, currentUserId, tripAuthorId }: Props) {
+export default function TripComments({ reviews, avgRating, tripId, currentUserId, tripAuthorId, total }: Props) {
   const { user } = useAuth();
   const isBusiness = user?.role === "BUSINESS";
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
@@ -140,6 +142,33 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [localReviews, setLocalReviews] = useState<Review[]>(reviews);
+
+  // ── Infinite scroll: เลื่อนถึงท้ายลิสต์โหลดเพิ่มอัตโนมัติ ──
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(reviews.length < (total ?? reviews.length));
+  const loadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(`/api/reviews?tripId=${tripId}&skip=${localReviews.length}&take=20`);
+      const d = await res.json();
+      if (!res.ok || !Array.isArray(d.reviews)) { setHasMore(false); return; }
+      const incoming: Review[] = d.reviews.map((r: any) => ({
+        id: r.id, rating: r.rating, text: r.text,
+        createdAt: String(r.createdAt ?? ""),
+        isAnonymous: r.isAnonymous ?? false,
+        author: r.author, likes: r.likes ?? 0,
+        replies: (r.replies ?? []).map((rep: any) => ({
+          id: rep.id, text: rep.text, createdAt: String(rep.createdAt ?? ""), author: rep.author,
+        })),
+      }));
+      // dedupe กันรีวิวที่เพิ่งโพสต์ทำ offset เขยื้อนแล้วซ้ำ
+      setLocalReviews(prev => [...prev, ...incoming.filter(n => !prev.some(p => p.id === n.id))]);
+      setHasMore(d.hasMore === true);
+    } catch { setHasMore(false); }
+    finally { setLoadingMore(false); }
+  };
+  const sentinelRef = useInfiniteScroll(loadMore, hasMore && !loadingMore);
 
   // Reply state per review
   const [replyOpen, setReplyOpen] = useState<Record<string, boolean>>({});
@@ -476,6 +505,14 @@ export default function TripComments({ reviews, avgRating, tripId, currentUserId
             )}
           </div>
         ))
+      )}
+
+      {/* sentinel — เลื่อนมาถึงตรงนี้ (ก่อนถึงจริง 240px) โหลดหน้าถัดไปเอง */}
+      {hasMore && <div ref={sentinelRef} style={{ height: 1 }} />}
+      {loadingMore && (
+        <p style={{ textAlign: "center", color: "var(--pl-text-muted)", fontSize: 13, padding: "12px 0" }}>
+          ⏳ กำลังโหลดรีวิวเพิ่ม...
+        </p>
       )}
     </div>
   );

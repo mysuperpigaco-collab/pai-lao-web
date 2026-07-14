@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { titleStyleCss } from "@/lib/titleStyle";
+import { cardThumb } from "@/lib/imageUrl";
 
 interface Trip {
   id: string;
@@ -252,7 +253,7 @@ export default function TripSlider({ activeTab, onTabChange }: TripSliderProps) 
           {trips.map((t, i) => (
             <button key={t.slug} onClick={() => goTo(i)} style={{ flexShrink: 0, width: 80, height: 56, borderRadius: 12, overflow: "hidden", border: i === current ? `2.5px solid ${activeTab === "trending" ? "#f97316" : "#10b981"}` : "2.5px solid transparent", cursor: "pointer", padding: 0, background: "none", position: "relative", opacity: i === current ? 1 : 0.6, transition: "all 0.25s" }}>
               {t.coverUrl
-                ? <img src={t.coverUrl} alt={t.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ? <img src={cardThumb(t.coverUrl)} alt={t.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 : <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg,#10b981,#06b6d4)" }} />
               }
             </button>

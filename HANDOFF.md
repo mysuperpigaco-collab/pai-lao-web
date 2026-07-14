@@ -141,6 +141,17 @@
 
 10. **Planner scroll fix** — กล่องเลื่อน 4 จุดใน `app/planner/page.tsx` (sidebar รายการแผน, คอลัมน์กลาง timeline, แผงขวา places/bookmarks) มี `data-lenis-prevent` แต่ตกหล่น `.pl-scroll-y` → สกอลบาร์ถูกซ่อน ผู้ใช้ไม่รู้ว่าเลื่อนในกล่องได้ + เลื่อนสุดแล้ว scroll ทะลุไปเลื่อนทั้งหน้า (แผงหายขึ้นไปใต้ navbar) → เติม `.pl-scroll-y` ครบ 4 จุด + `overscrollBehavior:"contain"` ที่คอลัมน์กลาง
 11. **fix type:** เพิ่ม `ACCOUNT_DELETE_REQUEST`/`ACCOUNT_DELETE_CANCEL` เข้า union `ActivityAction` (lib/activityLogger.ts) — หน้า admin/logs ใช้ `Record<string,...>` + fallback อยู่แล้ว ไม่กระทบ
+12. **Card thumbnail (เฉพาะอัปโหลดรอบใหม่ — รูปเก่าไม่แตะ)** — Supabase render/image ใช้ไม่ได้ (Pro plan เท่านั้น) เลยใช้ sharp ทำเองตอนอัปโหลด:
+   - `/api/upload`: สร้าง thumb 640px q78 คู่กับไฟล์หลัก · **marker ในชื่อไฟล์**: ไฟล์หลัก `<ts>t.webp` + thumb `<ts>t_thumb.webp` — อัปโหลด thumb ก่อน ถ้าพังตัด marker ทิ้ง (ไฟล์หลักไม่มีวันชี้หา thumb ที่ไม่มีจริง) · GIF ไม่มี thumb
+   - `lib/imageUrl.ts` (ใหม่) — `cardThumb(url)`: สลับเป็น `_thumb` เฉพาะ URL storage เราที่มี marker `t` — **รูปเก่า/external/seed ผ่านค่าเดิมเป๊ะ ไม่มี request หา thumb ไม่มี 404**
+   - ใช้ที่การ์ด 5 จุด: PlaceCard, StoryCard, AutoGridSection (trip+place), TripSlider (เฉพาะ thumbnail strip — สไลด์ hero ใช้รูปเต็มเหมือนเดิม), BusinessPlaceCard
+   - **ห้ามใช้ cardThumb กับ**: OG images, lightbox, hero, หน้า detail (ต้องรูปเต็ม)
+   - ผลพลอยได้: การ์ดคอนเทนต์ใหม่โหลดเบาลง ~10 เท่า · thumb กำพร้าเมื่อลบรูปหลัก = ยอมรับ (ขยะชิ้นเล็ก ไม่มีผลการทำงาน)
+13. **รีวิว infinite scroll (fix perf: เดิมโหลดรีวิวทั้งหมดทั้งสองหน้า detail)** —
+   - หน้า trip + place: `reviews take: 20` + `avgRating` เปลี่ยนเป็น `prisma.review.aggregate` (เดิมเฉลี่ยจากที่โหลด ถ้าตัด 20 จะเพี้ยน) + ส่ง `total={_count.reviews}`
+   - **GET `/api/reviews`** (ใหม่) — `?tripId=|placeId=&skip=&take=` (clamp ≤50) + **mask author รีวิวนิรนาม** ก่อนส่ง JSON
+   - `TripComments` + `PlaceReviews`: ใช้ `useInfiniteScroll` (hook เดิม, rootMargin 240px) + sentinel ท้ายลิสต์ → เลื่อนใกล้สุดโหลด 20 ถัดไปเอง · dedupe by id (กันรีวิวใหม่ที่เพิ่งโพสต์ทำ offset เขยื้อน) · โหลดพลาด = หยุดเงียบ ไม่พังหน้า
+   - **fix บั้คแฝง:** SSR หน้า trip ไม่ได้ส่ง `isAnonymous` → รีวิวนิรนามเคยโชว์ชื่อ/รูปจริง (เติมใน map แล้ว) · หมายเหตุ: JSON props ฝั่ง SSR ยังมี author จริงอยู่ใน HTML source (UI ซ่อนแล้ว) ถ้าจะ mask ระดับ SSR ด้วยเป็นงานรอบหน้า
 
 **ยังไม่ deploy** — คำสั่งอยู่ท้ายไฟล์ (รอบนี้ต้องมี `prisma db push` จาก pg_trgm + deletionRequestedAt) · **ก่อน deploy ตั้ง env `CRON_SECRET` ใน Vercel** · ยังไม่ได้ `npx tsc --noEmit` (Jim รันเอง)
 

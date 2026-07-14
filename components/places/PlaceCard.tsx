@@ -2,6 +2,7 @@
 import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouteHover } from "@/components/maps/RouteHoverContext";
+import { cardThumb } from "@/lib/imageUrl";
 
 export interface PlaceCardData {
   id: string;
@@ -64,9 +65,9 @@ export default function PlaceCard({ place, distanceM, newTab = false, linkOnHove
   const likes = place._count?.likes     ?? 0;
   const prov  = place.province?.split(" (")[0] ?? place.province ?? "";
 
-  const displayImg = (!place.business && place.communityCover)
+  const displayImg = cardThumb((!place.business && place.communityCover)
     ? place.communityCover
-    : ((place.coverUrl && place.coverUrl !== "/images/default-place.svg") ? place.coverUrl : (place.communityCover || null));
+    : ((place.coverUrl && place.coverUrl !== "/images/default-place.svg") ? place.coverUrl : (place.communityCover || null))) || null;
   const showImg = !!displayImg && !imgError;
 
   const onMove = (e: React.MouseEvent<HTMLDivElement>) => {

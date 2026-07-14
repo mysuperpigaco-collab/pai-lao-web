@@ -3,6 +3,47 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
 
+// ── GET /api/reviews?tripId=|placeId=&skip=&take= — โหลดรีวิวแบบแบ่งหน้า ──
+// ใช้โดย infinite scroll หน้า trip/place (หน้าแรก SSR มากับ page 20 ตัว)
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const tripId  = searchParams.get("tripId")  ?? undefined;
+    const placeId = searchParams.get("placeId") ?? undefined;
+    if (!tripId === !placeId) {
+      return NextResponse.json({ message: "ต้องระบุ tripId หรือ placeId อย่างใดอย่างหนึ่ง" }, { status: 400 });
+    }
+    const rawSkip = Number(searchParams.get("skip") ?? 0);
+    const rawTake = Number(searchParams.get("take") ?? 20);
+    const skip = Number.isFinite(rawSkip) ? Math.max(0, Math.floor(rawSkip)) : 0;
+    const take = Number.isFinite(rawTake) ? Math.min(50, Math.max(1, Math.floor(rawTake))) : 20;
+
+    const reviews = await prisma.review.findMany({
+      where: tripId ? { tripId } : { placeId },
+      orderBy: { createdAt: "desc" },
+      skip, take,
+      include: {
+        author: { select: { id: true, username: true, firstName: true, displayName: true, avatarUrl: true } },
+        replies: {
+          orderBy: { createdAt: "asc" },
+          include: { author: { select: { id: true, username: true, firstName: true, displayName: true, avatarUrl: true } } },
+        },
+      },
+    });
+
+    // mask ตัวตนรีวิวนิรนาม — endpoint สาธารณะ ห้ามหลุด author จริงใน JSON
+    const safe = reviews.map((r) =>
+      r.isAnonymous
+        ? { ...r, author: { id: "anonymous", username: "", firstName: "ผู้ใช้นิรนาม", displayName: null, avatarUrl: null } }
+        : r
+    );
+    return NextResponse.json({ reviews: safe, hasMore: reviews.length === take });
+  } catch (e) {
+    console.error("GET /api/reviews:", e);
+    return NextResponse.json({ message: "เกิดข้อผิดพลาด" }, { status: 500 });
+  }
+}
+
 // ── POST /api/reviews — เขียนรีวิว ───────────────────────
 export async function POST(request: NextRequest) {
   try {

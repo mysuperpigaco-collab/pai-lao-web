@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useTiltCard } from "@/hooks/useTiltCard";
+import { cardThumb } from "@/lib/imageUrl";
 
 type Props = {
   slug: string;
@@ -111,7 +112,7 @@ export default function BusinessPlaceCard({
       {/* Cover */}
       <div style={{ position: "relative", height: 180, overflow: "hidden", background: "#e2e8f0", flexShrink: 0 }}>
         {coverUrl
-          ? <img src={coverUrl} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
+          ? <img src={cardThumb(coverUrl)} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
           : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48, background: "linear-gradient(135deg,#f0fdf4,#ecfeff)" }}>{icon}</div>
         }
         <span style={{ position: "absolute", bottom: 10, left: 10, background: "rgba(15,23,42,0.65)", backdropFilter: "blur(6px)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 999 }}>

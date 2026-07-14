@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useTiltCard } from "@/hooks/useTiltCard";
 import { titleStyleCss } from "@/lib/titleStyle";
+import { cardThumb } from "@/lib/imageUrl";
 
 interface TripItem {
   slug:            string;
@@ -60,7 +61,7 @@ export default function StoryCard({
 
   const published   = story.isPublished === true;
   const pendingEdit = story.hasPendingEdit === true;
-  const imgSrc    = story.coverUrl || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=800";
+  const imgSrc    = cardThumb(story.coverUrl) || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=800";
 
   const handleDelete = async () => {
     if (!confirm) { setConfirm(true); return; }
