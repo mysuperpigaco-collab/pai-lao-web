@@ -218,6 +218,9 @@ export default function ProfileHeader({ isOwner, loading, user = DEFAULT_USER }:
             <Link href={"/user/" + u.username.replace("@", "") + "?preview=true"} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 16px", borderRadius: "12px", background: "#f0fdf4", color: "#059669", textDecoration: "none", fontSize: "13px", fontWeight: 700, border: "1.5px solid #bbf7d0" }}>
               <IconEye /> โปรไฟล์สาธารณะ · Public Profile
             </Link>
+            <Link href="/dashboard/watermark" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 16px", borderRadius: "12px", background: "#faf5ff", color: "#7c3aed", textDecoration: "none", fontSize: "13px", fontWeight: 700, border: "1.5px solid #e9d5ff" }}>
+              🖼️ ลายน้ำกันดึงรูป · Watermark
+            </Link>
             <button onClick={handleLogout} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 16px", borderRadius: "12px", background: "#fff5f5", color: "#dc2626", fontSize: "13px", fontWeight: 700, border: "1.5px solid #fecaca", cursor: "pointer", width: "100%", fontFamily: "inherit" }}>
               <IconLogout /> ออกจากระบบ · Logout
             </button>

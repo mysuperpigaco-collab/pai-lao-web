@@ -8,7 +8,6 @@
 import { useState, useEffect } from "react";
 import PageLoading from "@/components/ui/PageLoading";
 import DeleteAccountSection from "@/components/account/DeleteAccountSection";
-import WatermarkSettings from "@/components/account/WatermarkSettings";
 import InputField from "@/components/ui/InputField";
 import {
   BackButton,
@@ -409,7 +408,6 @@ export default function EditBusinessProfilePage() {
           </ActionBar>
 
         </form>
-        <WatermarkSettings />
         <DeleteAccountSection />
       </div>
 

@@ -73,7 +73,8 @@ export default function BusinessProfileCard({ businessName, phone, lineId, logoU
         </div>
       </div>
 
-      {/* Edit button */}
+      {/* Edit + watermark buttons */}
+      <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: isMobile ? "12px" : "10px", flexShrink: 0 }}>
       <Link href="/business/edit-profile" style={{
         display: "inline-flex", alignItems: "center", justifyContent: isMobile ? "center" : undefined,
         gap: "10px", padding: "10px 20px 10px 10px",
@@ -89,6 +90,21 @@ export default function BusinessProfileCard({ businessName, phone, lineId, logoU
           <span style={{ fontSize: 10, color: "#60a5fa", display: "block" }}>Edit Profile</span>
         </span>
       </Link>
+
+      <Link href="/business/watermark" style={{
+        display: "inline-flex", alignItems: "center", justifyContent: isMobile ? "center" : undefined,
+        gap: "10px", padding: "10px 20px 10px 10px",
+        borderRadius: "14px", background: "#ffffff", border: "1.5px solid #e9d5ff",
+        color: "#7c3aed", textDecoration: "none", fontSize: "13px", fontWeight: 700,
+        cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap",
+      }}>
+        <span style={{ width: 30, height: 30, borderRadius: 8, background: "#f3e8ff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 15 }}>🖼️</span>
+        <span style={{ display: "flex", flexDirection: "column", gap: 2, lineHeight: 1, textAlign: "left" }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#7c3aed", display: "block" }}>ลายน้ำกันดึงรูป</span>
+          <span style={{ fontSize: 10, color: "#a78bfa", display: "block" }}>Watermark</span>
+        </span>
+      </Link>
+      </div>
 
     </div>
   );

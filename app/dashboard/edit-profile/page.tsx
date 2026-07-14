@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import DeleteAccountSection from "@/components/account/DeleteAccountSection";
-import WatermarkSettings from "@/components/account/WatermarkSettings";
 
 const GENDER_OPTIONS = [
   { value: "MALE",             label: "ชาย · Male" },
@@ -353,7 +352,6 @@ export default function EditProfilePage() {
             </button>
           </div>
         </form>
-        <WatermarkSettings />
         <DeleteAccountSection />
       </div>
     </div>

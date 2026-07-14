@@ -170,6 +170,8 @@
    - `/api/upload` — เหมือนเดิม (ฝังเฉพาะรูปเนื้อหา regex กัน `avatar|logo` · folder โลโก้ = `watermark-logo` → ไม่โดนฝังเอง)
    - `components/account/WatermarkSettings.tsx` — ตัวแก้ไขลากวาง (pointer drag %) + **เทมเพลตสำเร็จรูป 5 แบบ** (มินิมอล/ทางการ/กันก๊อป/แบรนด์/ผสม) แต่ละปุ่มมีภาพตัวอย่างจิ๋ว (render จาก `layerInner()` ตัวเดียวกับ stage จริง → ตรงเป๊ะ) กดแล้ว setLayers ทั้งชุดปรับต่อได้ + toolbar (+ข้อความ/ทแยง/ตราวงกลม/โลโก้) + panel ต่อเลเยอร์ (หมุน/ขนาด/ความจาง/B/I/ขอบ/พื้นหลัง/สี color-picker/ก๊อป/ล็อก/ลบ) · อยู่ท้าย 2 หน้า edit-profile
    - `layerInner(l)` = ตัวเรนเดอร์ visual ต่อเลเยอร์ (module scope) ใช้ร่วม stage + preset thumbnails · `PRESETS[]` = build(defaultText) คืน layer array สมดุล
+   - **จุดจับบนเลเยอร์** (เลือก+ไม่ล็อก+ไม่ใช่ tiled): กากบาทแดงมุมบนขวา (ลบ) + จุดเขียวมุมล่างขวา (ลากปรับ size ตามระยะจากจุดกึ่งกลาง) · tiled ปรับ size/gap/reps ผ่านสไลเดอร์
+   - **ย้ายเป็นหน้าแยกแล้ว** (17): เอา `<WatermarkSettings/>` ออกจาก 2 หน้า edit-profile → หน้าใหม่ `app/dashboard/watermark/page.tsx` + `app/business/watermark/page.tsx` (render component ตัวเดียวกัน) · ปุ่มลิงก์: `ProfileHeader.tsx` (แดชบอร์ด user, ใต้ปุ่มโปรไฟล์สาธารณะ) + `BusinessProfileCard.tsx` (แดชบอร์ด business, ข้างปุ่มแก้ไขโปรไฟล์) · เพิ่ม `/business/watermark` ใน middleware PROTECTED_ROUTES
    - **tiled = เต็มกรอบทะลุขอบ:** กว้าง 2.4x + 16 แถว · overlay root `overflow:hidden` → เหลือเฉพาะตัวอักษรในกรอบ · ลากได้ทะลุขอบ (clamp x/y −30..130 เฉพาะ tiled) เพื่อเลื่อนเฟส · ปรับมุม/ขนาดด้วยสไลเดอร์
    - **ผลกระทบ:** opt-in · เฉพาะอัปโหลดใหม่ · รูปเก่า/avatar/โลโก้ไม่แตะ
 

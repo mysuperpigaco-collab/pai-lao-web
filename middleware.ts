@@ -8,6 +8,7 @@ const PROTECTED_ROUTES = [
   "/business/dashboard",
   "/business/edit-profile",
   "/business/places",
+  "/business/watermark",
   "/admin",
   "/planner",
 ];
