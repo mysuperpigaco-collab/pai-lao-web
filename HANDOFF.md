@@ -8,7 +8,14 @@
 
 **Deploy แล้ว (ยืนยันจากหน้าจริง):** security 5 จุด, pg_trgm, Web Share Target, ลบบัญชี 7 วัน (+CRON_SECRET), ปุ่มติดตั้งแอปในการ์ดแชร์, ถอด popup ลอย, planner scroll fix
 
+**รีเช็คมือถือ (390px) ผ่าน:** trip/place/home ไม่มี overflow แนวนอน · glow ขึ้นครบ · ไม่มีรูปแตก · ตัวแก้ไขลายน้ำรองรับ touch แล้ว (pointer events + `touch-action:none` + pointer capture, layout เป็น auto-fit grid + flex-wrap) · หมายเหตุ: จุดจับ 22px เล็กสำหรับนิ้ว (ยังใช้ได้ ไม่ถึงขั้นบั๊ก) + preview ขนาดใช้ `cqw` ต้อง iOS 16+ (เก่ากว่านั้น preview ขนาดเพี้ยนแต่เซฟได้ปกติ)
+
 **แบตช์ล่าสุด deploy แล้ว (2026-07-14 ค่ำ — รีเช็คจากหน้าจริงผ่าน):** ambient glow ขึ้นจริงที่ hero ทริป+สถานที่ · coverBlur อยู่ใน select ของ /api/trips + /api/places แล้ว (ค่าเป็น null สำหรับรูปเก่า = ถูกต้อง จะมีค่าเมื่อเซฟปกใหม่) · GET /api/reviews ตอบ 200 + mask นิรนาม · ไม่มี console error ค้าง (เจอ React #419 ครั้งเดียวตอน cold load หน้า trip — reload แล้วไม่เกิดซ้ำ เฝ้าดูเฉย ๆ)
+
+**🆕 งานกฎหมายไทย (2026-07-15 — รอ deploy, ไม่แตะ DB):**
+1. **Cookie consent (PDPA)** — `components/common/CookieConsent.tsx` (banner ล่างจอ desktop=แถบ mobile=การ์ด, เก็บ localStorage `pl-cookie-consent`) + `components/common/Analytics.tsx` (โหลด GA4 **เฉพาะเมื่อยินยอม** ฟัง event `pl-consent-analytics`) · layout.tsx ถอด `<Script>` GA เดิมออกใช้ 2 ตัวนี้แทน · หน้า policy หัวข้อคุกกี้มีปุ่ม "ตั้งค่าคุกกี้ใหม่" (ลบ key + ยิง `pl-consent-open`)
+2. **ปุ่มรายงานผู้ใช้** — หน้า `user/[username]` เพิ่ม ReportButton (USER) ข้าง @username (ซ่อนถ้าโปรไฟล์ตัวเอง/ไม่ login) · รีวิว/ตอบกลับ**มีอยู่แล้ว**ใน TripComments+PlaceReviews (ReportModal) ไม่ต้องทำเพิ่ม
+3. **`/api/reports` เพิ่ม rate limit** 10 ครั้ง/10 นาที ต่อ user + จำกัด detail ≤ 1000 ตัว
 
 **🔧 แก้จากรีเช็คแล้ว — รอ deploy (ไม่แตะ DB):** SSRF ช่องเล็ก (เช็ค URL ด้วย substring แทน hostname — คลาสเดียวกับที่แก้ใน lib/maps.ts) → เพิ่ม `isOurStorageUrl()` ใน `lib/imageUrl.ts` (parse `new URL()` + บังคับ `https:` + hostname ลงท้าย `.supabase.co` + pathname ขึ้นต้น `/storage/v1/object/public/`) ใช้แทน substring-check 3 จุด: `lib/blurGen.ts`, `toDataUri` ใน `lib/watermark.ts`, validate imageUrl ใน `/api/auth/watermark` PUT
 
@@ -255,4 +262,4 @@ git push
 ```
 
 ---
-*อัปเดตล่าสุด: 2026-07-14 ค่ำ — แบตช์ใหญ่ deploy แล้ว รีเช็คหน้าจริงผ่าน · แก้ SSRF substring-check (isOurStorageUrl) เสร็จแล้ว **รอ Jim push** (ไม่ต้อง db push) · อัปเดตไฟล์นี้ทุกครั้งที่มีงานใหม่*
+*อัปเดตล่าสุด: 2026-07-15 — งานกฎหมาย (cookie consent PDPA + ปุ่มรายงานผู้ใช้ + rate limit reports) + แก้ SSRF (isOurStorageUrl) เสร็จแล้ว **รอ Jim push** (ไม่ต้อง db push) · งานกฎหมายค้าง: PDPA data export, log retention cron · อัปเดตไฟล์นี้ทุกครั้งที่มีงานใหม่*

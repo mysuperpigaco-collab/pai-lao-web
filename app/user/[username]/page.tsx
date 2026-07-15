@@ -8,6 +8,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import ImageLightbox from "@/components/common/ImageLightbox";
 import ShareButton from "@/components/common/ShareButton";
+import ReportButton from "@/components/common/ReportButton";
 import InstallAppButton from "@/components/common/InstallAppButton";
 import AmbientGlow from "@/components/common/AmbientGlow";
 
@@ -527,6 +528,16 @@ function UserProfileInner() {
           <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginTop:4}}>
             <span className="up-username">@{user.username}</span>
             {joinYear && <span className="up-since">· สมาชิกตั้งแต่ {joinYear}</span>}
+            {!isOwnProfile && (
+              <ReportButton
+                targetId={user.id}
+                targetType="USER"
+                currentUserId={me?.id ?? null}
+                ownerId={user.id}
+                label="🚩 รายงานผู้ใช้นี้"
+                compact
+              />
+            )}
           </div>
         </div>
 

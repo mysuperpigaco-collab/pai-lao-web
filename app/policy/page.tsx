@@ -330,9 +330,16 @@ function PolicyPageInner() {
               <p>แพลตฟอร์มใช้คุกกี้ประเภทดังนี้:</p>
               <BulletList items={[
                 "คุกกี้จำเป็น (Strictly Necessary): สำหรับการล็อกอินและความปลอดภัย — ไม่สามารถปฏิเสธได้",
-                "คุกกี้ประสิทธิภาพ (Performance): วิเคราะห์การใช้งานเพื่อปรับปรุงบริการ",
-                "ท่านสามารถตั้งค่าคุกกี้ผ่านเบราว์เซอร์ แต่อาจกระทบการใช้งานบางส่วน",
+                "คุกกี้วิเคราะห์ (Analytics — Google Analytics): เก็บสถิติการใช้งานเพื่อปรับปรุงบริการ จะทำงานเฉพาะเมื่อท่านกดยินยอมเท่านั้น",
+                "ท่านสามารถเปลี่ยนการตั้งค่าได้ทุกเมื่อจากปุ่มด้านล่าง หรือผ่านเบราว์เซอร์",
               ]} />
+              <button
+                type="button"
+                onClick={() => { try { localStorage.removeItem("pl-cookie-consent"); } catch {} window.dispatchEvent(new Event("pl-consent-open")); }}
+                style={{ marginTop: 8, background: "transparent", border: "1px solid var(--pl-border, #cbd5e1)", color: "var(--pl-text-secondary, #64748b)", borderRadius: 999, padding: "7px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+              >
+                🍪 ตั้งค่าคุกกี้ใหม่ · Cookie settings
+              </button>
             </Section>
 
             <Section icon="🌍" title="8. การโอนข้อมูลระหว่างประเทศ">

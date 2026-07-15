@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { logActivity, getClientIp } from "@/lib/activityLogger";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 // POST /api/reports — รายงานเนื้อหา
 export async function POST(request: NextRequest) {
@@ -9,9 +10,18 @@ export async function POST(request: NextRequest) {
     const session = await getCurrentUser();
     if (!session) return NextResponse.json({ message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
 
+    // กันสแปมรายงาน: 10 ครั้ง / 10 นาที ต่อ user
+    const rl = await checkRateLimit(`report:${session.userId}`, 10, 600_000);
+    if (!rl.allowed) {
+      return NextResponse.json({ message: "ส่งรายงานบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
+    }
+
     const { targetId, targetType, reason, detail } = await request.json();
     if (!targetId || !targetType || !reason) {
       return NextResponse.json({ message: "ข้อมูลไม่ครบ" }, { status: 400 });
+    }
+    if (detail != null && (typeof detail !== "string" || detail.length > 1000)) {
+      return NextResponse.json({ message: "รายละเอียดต้องยาวไม่เกิน 1,000 ตัวอักษร" }, { status: 400 });
     }
 
     const VALID_TARGET_TYPES = ["REVIEW", "REPLY", "TRIP", "PLACE", "USER"];

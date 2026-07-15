@@ -9,9 +9,8 @@ import SmoothScrollProvider from "@/components/SmoothScrollProvider";
 import SplashScreen from "@/components/SplashScreen";
 import NavTransition from "@/components/NavTransition";
 import PwaRegister from "@/components/PwaRegister";
-import Script from "next/script";
-
-const GA_ID = "G-42HZ2VCDXZ";
+import Analytics from "@/components/common/Analytics";
+import CookieConsent from "@/components/common/CookieConsent";
 
 const chakraPetch = Chakra_Petch({
   subsets: ["latin", "thai"],
@@ -67,13 +66,8 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('pl-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();` }} />
       </head>
       <body className={chakraPetch.className}>
-        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
-        <Script id="ga4-init" strategy="afterInteractive">{`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', '${GA_ID}');
-        `}</Script>
+        <Analytics />
+        <CookieConsent />
         <SplashScreen />
         <NavTransition />
         <PwaRegister />
