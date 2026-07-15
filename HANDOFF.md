@@ -12,7 +12,8 @@
 
 **แบตช์ล่าสุด deploy แล้ว (2026-07-14 ค่ำ — รีเช็คจากหน้าจริงผ่าน):** ambient glow ขึ้นจริงที่ hero ทริป+สถานที่ · coverBlur อยู่ใน select ของ /api/trips + /api/places แล้ว (ค่าเป็น null สำหรับรูปเก่า = ถูกต้อง จะมีค่าเมื่อเซฟปกใหม่) · GET /api/reviews ตอบ 200 + mask นิรนาม · ไม่มี console error ค้าง (เจอ React #419 ครั้งเดียวตอน cold load หน้า trip — reload แล้วไม่เกิดซ้ำ เฝ้าดูเฉย ๆ)
 
-**🆕 งานกฎหมายไทย (2026-07-15 — รอ deploy, ไม่แตะ DB):**
+**🆕 งานกฎหมายไทย (2026-07-15 — ✅ deploy แล้ว รีเช็คหน้าจริงผ่านทุก flow):** banner ขึ้นครั้งแรก · GA ไม่โหลดก่อนยินยอม · กดยอมรับ→GA โหลดทันที · กดปฏิเสธ→หน้าถัดไปไม่มี GA · ปุ่มตั้งค่าใน policy เปิด banner ใหม่ได้ · ปุ่มรายงานผู้ใช้เปิด modal ได้ · มือถือ 390px เป็นการ์ด · ไม่มี console error
+**ค้างชิ้นเดียว (แก้แล้วรอ push):** ปุ่มรายงานบนโปรไฟล์เปลี่ยนจาก compact (🚩) เป็นป้ายเต็ม "🚩 รายงานผู้ใช้นี้" ให้ตรง preview ที่อนุมัติ
 1. **Cookie consent (PDPA)** — `components/common/CookieConsent.tsx` (banner ล่างจอ desktop=แถบ mobile=การ์ด, เก็บ localStorage `pl-cookie-consent`) + `components/common/Analytics.tsx` (โหลด GA4 **เฉพาะเมื่อยินยอม** ฟัง event `pl-consent-analytics`) · layout.tsx ถอด `<Script>` GA เดิมออกใช้ 2 ตัวนี้แทน · หน้า policy หัวข้อคุกกี้มีปุ่ม "ตั้งค่าคุกกี้ใหม่" (ลบ key + ยิง `pl-consent-open`)
 2. **ปุ่มรายงานผู้ใช้** — หน้า `user/[username]` เพิ่ม ReportButton (USER) ข้าง @username (ซ่อนถ้าโปรไฟล์ตัวเอง/ไม่ login) · รีวิว/ตอบกลับ**มีอยู่แล้ว**ใน TripComments+PlaceReviews (ReportModal) ไม่ต้องทำเพิ่ม
 3. **`/api/reports` เพิ่ม rate limit** 10 ครั้ง/10 นาที ต่อ user + จำกัด detail ≤ 1000 ตัว

@@ -535,7 +535,6 @@ function UserProfileInner() {
                 currentUserId={me?.id ?? null}
                 ownerId={user.id}
                 label="🚩 รายงานผู้ใช้นี้"
-                compact
               />
             )}
           </div>
